@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mein 3D Roblox Obby</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #87CEEB; font-family: sans-serif; touch-action: none; }
+        canvas { display: block; }
+        .controls { position: absolute; bottom: 20px; width: 100%; display: flex; justify-content: space-around; padding: 0 20px; box-sizing: border-box; z-index: 10; }
+        .btn { width: 70px; height: 70px; background: rgba(255,255,255,0.4); border: 3px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: white; user-select: none; -webkit-tap-highlight-color: transparent; }
+        #ui { position: absolute; top: 10px; left: 10px; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); pointer-events: none; }
+    </style>
+</head>
+<body>
+
+<div id="ui"><h1>3D OBBY RUN</h1><p>Level 1 - Erreiche das Ziel!</p></div>
+
+<div class="controls">
+    <div style="display:flex; gap: 15px;">
+        <div class="btn" id="leftBtn">◀</div>
+        <div class="btn" id="rightBtn">▶</div>
+    </div>
+    <div class="btn" id="jumpBtn">▲</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<script>
+    let scene, camera, renderer, playerBox;
+    let moveLeft = false, moveRight = false, shouldJump = false;
+    let py = 0, dy = 0, isGrounded = false;
+    let keys = {};
+
+    function init() {
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x87CEEB);
+        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        const light = new THREE.DirectionateLight = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(5, 10, 7.5);
+        scene.add(light);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+
+        // BACON HAIR PLAYER
+        playerBox = new THREE.Group();
+        const body = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.8, 0.4), new THREE.MeshLambertMaterial({color: 0x3498db}));
+        const head = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.4, 0.4), new THREE.MeshLambertMaterial({color: 0xffdbac}));
+        head.position.y = 0.6;
+        const hair = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.2, 0.45), new THREE.MeshLambertMaterial({color: 0x4e342e}));
+        hair.position.y = 0.8;
+        playerBox.add(body, head, hair);
+        scene.add(playerBox);
+
+        // LEVEL (Plattformen)
+        const platGeom = new THREE.BoxGeometry(5, 0.5, 2);
+        const matNormal = new THREE.MeshLambertMaterial({color: 0x2ecc71});
+        const matLava = new THREE.MeshLambertMaterial({color: 0xff4757});
+
+        const platforms = [
+            {x: 0, y: -0.5, z: 0, w: 10, t: 0},
+            {x: 8, y: 0.5, z: 0, w: 3, t: 0},
+            {x: 14, y: -0.5, z: 0, w: 5, t: 1}, // Lava
+            {x: 20, y: 1.5, z: 0, w: 4, t: 0}
+        ];
+
+        platforms.forEach(p => {
+            const mesh = new THREE.Mesh(new THREE.BoxGeometry(p.w, 0.5, 2), p.t === 0 ? matNormal : matLava);
+            mesh.position.set(p.x, p.y, p.z);
+            mesh.userData = { type: p.t, width: p.w, x: p.x, y: p.y };
+            scene.add(mesh);
+        });
+
+        camera.position.z = 5;
+        camera.position.y = 2;
+
+        // EVENTS
+        window.addEventListener('keydown', e => keys[e.code] = true);
+        window.addEventListener('keyup', e => keys[e.code] = false);
+        const touch = (id, act, val) => {
+            const el = document.getElementById(id);
+            el.addEventListener('touchstart', e => { e.preventDefault(); window[act] = val; }, {passive: false});
+            el.addEventListener('touchend', e => { e.preventDefault(); window[act] = !val; }, {passive: false});
+        };
+        touch('leftBtn', 'moveLeft', true);
+        touch('rightBtn', 'moveRight', true);
+        touch('jumpBtn', 'shouldJump', true);
+
+        animate();
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+
+        // Bewegung
+        if (moveLeft || keys['ArrowLeft'] || keys['KeyA']) playerBox.position.x -= 0.1;
+        if (moveRight || keys['ArrowRight'] || keys['KeyD']) playerBox.position.x += 0.1;
+        
+        // Gravitation & Sprung
+        dy -= 0.02; 
+        playerBox.position.y += dy;
+
+        // Kollision (einfach)
+        isGrounded = false;
+        scene.children.forEach(obj => {
+            if (obj.userData.type !== undefined) {
+                if (Math.abs(playerBox.position.x - obj.position.x) < obj.userData.width/2 + 0.3 &&
+                    playerBox.position.y > obj.position.y && playerBox.position.y < obj.position.y + 0.8) {
+                    
+                    if (obj.userData.type === 1) { // Lava
+                        playerBox.position.set(0, 2, 0);
+                    } else {
+                        playerBox.position.y = obj.position.y + 0.65;
+                        dy = 0;
+                        isGrounded = true;
+                    }
+                }
+            }
+        });
+
+        if (isGrounded && (shouldJump || keys['Space'] || keys['ArrowUp'])) {
+            dy = 0.35;
+        }
+
+        if (playerBox.position.y < -5) playerBox.position.set(0, 2, 0);
+
+        camera.position.x = playerBox.position.x;
+        renderer.render(scene, camera);
+    }
+
+    init();
+</script>
+</body>
+</html>
