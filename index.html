@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>3D Bacon Hair Obby</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #87CEEB; font-family: Arial, sans-serif; touch-action: none; }
+        #ui { position: absolute; top: 10px; left: 10px; color: white; text-shadow: 2px 2px 4px #000; pointer-events: none; }
+        .controls { position: absolute; bottom: 20px; width: 100%; display: flex; justify-content: space-around; pointer-events: none; }
+        .btn { width: 70px; height: 70px; background: rgba(255,255,255,0.3); border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 24px; pointer-events: auto; user-select: none; }
+        .btn:active { background: rgba(255,255,255,0.6); }
+    </style>
+</head>
+<body>
+    <div id="ui">
+        <h1>Bacon Hair Obby</h1>
+        <p>Level 1 - Erreiche das Ziel!</p>
+    </div>
+
+    <div class="controls">
+        <div style="display: flex; gap: 20px;">
+            <div id="btnLeft" class="btn">◀</div>
+            <div id="btnRight" class="btn">▶</div>
+        </div>
+        <div id="btnJump" class="btn">▲</div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Setup Szene
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x87CEEB);
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Licht
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(5, 10, 7.5);
+        scene.add(light);
+        scene.add(new THREE.AmbientLight(0x404040));
+
+        // Bacon Hair Charakter (Einfaches Modell)
+        const playerGroup = new THREE.Group();
+        const body = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.8, 0.3), new THREE.MeshStandardMaterial({ color: 0x3d5a80 }));
+        body.position.y = 0.4;
+        playerGroup.add(body);
+        
+        const head = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.4, 0.4), new THREE.MeshStandardMaterial({ color: 0xffdbac }));
+        head.position.y = 1;
+        playerGroup.add(head);
+
+        // Die berühmten Bacon-Haare
+        const hair = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.1, 0.45), new THREE.MeshStandardMaterial({ color: 0x4b3621 }));
+        hair.position.y = 1.25;
+        playerGroup.add(hair);
+
+        scene.add(playerGroup);
+
+        // Welt / Hindernisse
+        const platforms = [];
+        function createPlatform(x, y, z, w, d) {
+            const geo = new THREE.BoxGeometry(w, 0.5, d);
+            const mat = new THREE.MeshStandardMaterial({ color: 0x98c1d9 });
+            const p = new THREE.Mesh(geo, mat);
+            p.position.set(x, y, z);
+            scene.add(p);
+            platforms.push(p);
+        }
+
+        // Parcours
+        createPlatform(0, -0.25, 0, 5, 5); // Start
+        createPlatform(0, -0.25, -7, 3, 3);
+        createPlatform(4, 0.5, -12, 2, 2);
+        createPlatform(0, 1.5, -17, 3, 3); // Ziel
+        
+        // Ziel-Markierung
+        const goalGeo = new THREE.BoxGeometry(1, 2, 1);
+        const goalMat = new THREE.MeshStandardMaterial({ color: 0xffd166, emissive: 0xffd166, emissiveIntensity: 0.5 });
+        const goal = new THREE.Mesh(goalGeo, goalMat);
+        goal.position.set(0, 2.5, -17);
+        scene.add(goal);
+
+        camera.position.set(0, 3, 5);
+        camera.lookAt(playerGroup.position);
+
+        // Steuerung
+        let moveState = { left: false, right: false, jump: false, forward: true };
+        let velocityY = 0;
+        let isGrounded = true;
+
+        const btnLeft = document.getElementById('btnLeft');
+        const btnRight = document.getElementById('btnRight');
+        const btnJump = document.getElementById('btnJump');
+
+        btnLeft.ontouchstart = () => moveState.left = true;
+        btnLeft.ontouchend = () => moveState.left = false;
+        btnRight.ontouchstart = () => moveState.right = true;
+        btnRight.ontouchend = () => moveState.right = false;
+        btnJump.ontouchstart = () => { if(isGrounded) velocityY = 0.15; };
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Bewegung
+            if (moveState.left) playerGroup.position.x -= 0.05;
+            if (moveState.right) playerGroup.position.x += 0.05;
+            playerGroup.position.z -= 0.05; // Läuft automatisch vorwärts
+
+            // Schwerkraft
+            velocityY -= 0.008;
+            playerGroup.position.y += velocityY;
+
+            // Boden-Kollision (einfach)
+            if (playerGroup.position.y < 0.3) {
+                playerGroup.position.y = 0.3;
+                velocityY = 0;
+                isGrounded = true;
+            } else {
+                isGrounded = false;
+            }
+
+            // Kamera folgt Spieler
+            camera.position.z = playerGroup.position.z + 5;
+            camera.position.x = playerGroup.position.x;
+            camera.lookAt(playerGroup.position);
+
+            // Absturz-Check
+            if (playerGroup.position.y < -5) {
+                playerGroup.position.set(0, 0.3, 0);
+            }
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
