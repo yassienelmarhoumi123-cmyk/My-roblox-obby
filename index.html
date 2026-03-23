@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bacon Obby - Keyboard & Touch</title>
+    <title>Bacon Hair Adventure v3</title>
     <style>
         body { margin: 0; overflow: hidden; background: #87CEEB; font-family: sans-serif; touch-action: none; }
         #ui { position: absolute; top: 20px; left: 20px; color: white; text-shadow: 2px 2px 4px #000; pointer-events: none; }
         .controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: space-around; pointer-events: none; }
         .btn { width: 70px; height: 70px; background: rgba(0,0,0,0.5); border-radius: 15px; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-size: 25px; pointer-events: auto; }
-        @media (min-width: 800px) { .controls { display: none; } } /* Versteckt Touch-Buttons am PC */
+        @media (min-width: 800px) { .controls { display: none; } }
     </style>
 </head>
 <body>
     <div id="ui">
-        <h2>BACON OBBY</h2>
+        <h2>BACON ADVENTURE</h2>
         <p>Steuerung: WASD, Pfeiltasten oder Buttons</p>
     </div>
 
@@ -29,117 +29,64 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x44ccff);
+        scene.background = new THREE.Color(0x55ccff);
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true; // Schatten für mehr Tiefe
         document.body.appendChild(renderer.domElement);
 
         const sun = new THREE.DirectionalLight(0xffffff, 1);
         sun.position.set(5, 15, 10);
+        sun.castShadow = true;
         scene.add(sun);
-        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+        scene.add(new THREE.AmbientLight(0xffffff, 0.4));
 
-        // SPIELER
+        // --- ROBlox CHARAKTER BAUEN ---
         const player = new THREE.Group();
-        const body = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.9, 0.4), new THREE.MeshStandardMaterial({ color: 0xee6c4d }));
-        body.position.y = 0.45;
-        player.add(body);
-        const head = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.45, 0.45), new THREE.MeshStandardMaterial({ color: 0xffdbac }));
-        head.position.y = 1.1;
-        player.add(head);
-        const hair = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.15, 0.5), new THREE.MeshStandardMaterial({ color: 0x3d2b1f }));
-        hair.position.y = 1.35;
-        player.add(hair);
-        scene.add(player);
+        player.castShadow = true;
 
-        // WELT
-        const platforms = [];
-        function createBlock(x, y, z, w, d, color = 0xffffff) {
-            const b = new THREE.Mesh(new THREE.BoxGeometry(w, 0.6, d), new THREE.MeshStandardMaterial({ color }));
-            b.position.set(x, y, z);
-            scene.add(b);
-            b.userData = { w, d };
-            platforms.push(b);
-        }
+        // Materialien
+        const skinMat = new THREE.MeshStandardMaterial({ color: 0xffdbac }); // Haut
+        const torseMat = new THREE.MeshStandardMaterial({ color: 0x3333ee }); // Blaues Shirt
+        const limbMat = new THREE.MeshStandardMaterial({ color: 0x333333 }); // Schwarze Hose/Arme
+        const hairBaseMat = new THREE.MeshStandardMaterial({ color: 0x3d2b1f }); // Dunkles Haar
+        const hairStreakMat = new THREE.MeshStandardMaterial({ color: 0xffd700 }); // Goldene Bacon-Strähne
 
-        // Level Design (Engere Abstände)
-        createBlock(0, 0, 0, 5, 5, 0x777777);     // Start
-        createBlock(0, 0.3, -5, 3, 3, 0x00ff00);   // Block 1
-        createBlock(2, 0.7, -9, 2, 2, 0x00eeee);   // Block 2
-        createBlock(-2, 1.2, -13, 2, 2, 0xff00ff); // Block 3
-        createBlock(0, 1.6, -17, 4, 4, 0xffff00);  // Ziel
+        // Torso
+        const torse = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.2, 0.4), torseMat);
+        torse.position.y = 0.6;
+        torse.castShadow = true;
+        player.add(torse);
 
-        // Lava
-        const lava = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshStandardMaterial({ color: 0xff4400 }));
-        lava.rotation.x = -Math.PI/2; lava.position.y = -3;
-        scene.add(lava);
+        // Kopf
+        const headGroup = new THREE.Group();
+        const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), skinMat);
+        headGroup.add(head);
 
-        // STEUERUNG LOGIK
-        let px = 0, py = 5, pz = 0, vy = 0;
-        let keys = { a: false, d: false, w: false, s: false, space: false };
-        let onGround = false;
+        // Augen (Zwei kleine schwarze Punkte)
+        const eyeGeo = new THREE.BoxGeometry(0.08, 0.08, 0.01);
+        const eyeMat = new THREE.MeshStandardMaterial({ color: 0x000000 });
+        const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
+        leftEye.position.set(-0.15, 0.05, 0.25);
+        headGroup.add(leftEye);
+        const rightEye = new THREE.Mesh(eyeGeo, eyeMat);
+        rightEye.position.set(0.15, 0.05, 0.25);
+        headGroup.add(rightEye);
 
-        // Tastatur Events
-        window.addEventListener('keydown', (e) => {
-            if(e.code === 'KeyA' || e.code === 'ArrowLeft') keys.a = true;
-            if(e.code === 'KeyD' || e.code === 'ArrowRight') keys.d = true;
-            if(e.code === 'KeyW' || e.code === 'ArrowUp') keys.w = true;
-            if(e.code === 'KeyS' || e.code === 'ArrowDown') keys.s = true;
-            if(e.code === 'Space') { if(onGround) vy = 0.18; }
-        });
-        window.addEventListener('keyup', (e) => {
-            if(e.code === 'KeyA' || e.code === 'ArrowLeft') keys.a = false;
-            if(e.code === 'KeyD' || e.code === 'ArrowRight') keys.d = false;
-            if(e.code === 'KeyW' || e.code === 'ArrowUp') keys.w = false;
-            if(e.code === 'KeyS' || e.code === 'ArrowDown') keys.s = false;
-        });
+        // Bacon Hair (Dunkel mit Streifen)
+        const hairBase = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.2, 0.6), hairBaseMat);
+        hairBase.position.y = 0.35;
+        headGroup.add(hairBase);
+        const hairStreak = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.25, 0.61), hairStreakMat);
+        hairStreak.position.set(-0.2, 0.35, 0); // Die goldene Bacon-Strähne
+        headGroup.add(hairStreak);
 
-        // Touch Events
-        const bL = document.getElementById('btnLeft');
-        const bR = document.getElementById('btnRight');
-        const bJ = document.getElementById('btnJump');
-        bL.ontouchstart = () => keys.a = true; bL.ontouchend = () => keys.a = false;
-        bR.ontouchstart = () => keys.d = true; bR.ontouchend = () => keys.d = false;
-        bJ.ontouchstart = () => { if(onGround) vy = 0.18; };
+        headGroup.position.y = 1.45;
+        headGroup.castShadow = true;
+        player.add(headGroup);
 
-        function loop() {
-            if(keys.a) px -= 0.1;
-            if(keys.d) px += 0.1;
-            if(keys.w) pz -= 0.1;
-            if(keys.s) pz += 0.1;
-
-            vy -= 0.008; // Schwerkraft
-            py += vy;
-
-            onGround = false;
-            platforms.forEach(p => {
-                let dx = Math.abs(px - p.position.x);
-                let dz = Math.abs(pz - p.position.z);
-                if(dx < p.userData.w/2 + 0.2 && dz < p.userData.d/2 + 0.2) {
-                    let top = p.position.y + 0.3;
-                    if(py <= top && py > top - 0.5 && vy <= 0) {
-                        py = top; vy = 0; onGround = true;
-                    }
-                }
-            });
-
-            if(py < -2) { px = 0; py = 2; pz = 0; vy = 0; } // Respawn
-
-            player.position.set(px, py, pz);
-            camera.position.set(px, py + 4, pz + 7);
-            camera.lookAt(px, py, pz - 2);
-
-            renderer.render(scene, camera);
-            requestAnimationFrame(loop);
-        }
-        loop();
-
-        window.onresize = () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        };
-    </script>
-</body>
-</html>
+        // Arme (Beweglich)
+        const leftArmGroup = new THREE.Group();
+        const leftArm = new THREE.Mesh(new THREE.BoxGeometry(0.3, 1.1, 0.3), limbMat);
+        leftArm.position.y = -0.45; // Drehpunkt an die Schulter
