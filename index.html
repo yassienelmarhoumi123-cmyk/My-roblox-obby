@@ -3,165 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BRAINROT STEALER - TOTAL FIX</title>
+    <title>Brainrot Obby - Visible Fix</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #87CEEB; font-family: 'Arial Black', sans-serif; touch-action: none; }
-        #gui { position: absolute; width: 100%; top: 20px; text-align: center; color: #fff; z-index: 10; pointer-events: none; text-shadow: 2px 2px 4px #000; }
-        .controls { position: absolute; bottom: 40px; width: 100%; display: flex; justify-content: center; gap: 10px; z-index: 100; pointer-events: none; }
-        .btn { width: 70px; height: 70px; background: rgba(0,0,0,0.7); border: 2px solid #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; pointer-events: auto; font-size: 14px; font-weight: bold; }
-        #btnJump { background: #00ff00; color: #000; width: 85px; height: 85px; }
+        body { margin: 0; overflow: hidden; background: #87CEEB; font-family: sans-serif; touch-action: none; }
+        #gui { position: absolute; top: 20px; width: 100%; text-align: center; color: white; z-index: 10; text-shadow: 2px 2px 4px #000; pointer-events: none; }
+        .controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: center; gap: 10px; z-index: 100; pointer-events: none; }
+        .btn { width: 70px; height: 70px; background: rgba(0,0,0,0.8); border: 2px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; pointer-events: auto; }
+        #jump { background: #ff00ff; width: 80px; height: 80px; }
     </style>
 </head>
 <body>
-
-    <div id="gui">
-        <div style="font-size: 32px;" id="score">STEALS: 0</div>
-        <div style="font-size: 12px;">Wische zum Umschauen | Drücke VOR</div>
-    </div>
-
+    <div id="gui"><h1 id="score">STEALS: 0</h1><p>Bewege dich mit den Buttons!</p></div>
     <div class="controls">
-        <div id="btnL" class="btn">L</div>
-        <div id="btnF" class="btn" style="background: #fff; color: #000;">VOR</div>
-        <div id="btnR" class="btn">R</div>
-        <div id="btnJ" class="btn">JUMP</div>
+        <div id="left" class="btn">L</div>
+        <div id="fwd" class="btn" style="background:white; color:black;">VOR</div>
+        <div id="right" class="btn">R</div>
+        <div id="jump" class="btn">JUMP</div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        // --- SCENE SETUP ---
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x87CEEB); // Heller Himmel
-        
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+        scene.background = new THREE.Color(0x87CEEB);
+        // Nebel hilft, Entfernungen zu sehen
+        scene.fog = new THREE.Fog(0x87CEEB, 10, 150);
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // STARKES LICHT (Damit nichts schwarz bleibt)
-        const amb = new THREE.AmbientLight(0xffffff, 1.2);
-        scene.add(amb);
-        const dir = new THREE.DirectionalLight(0xffffff, 0.8);
-        dir.position.set(50, 100, 50);
-        scene.add(dir);
+        // VIEL LICHT
+        scene.add(new THREE.AmbientLight(0xffffff, 1.0));
+        const sun = new THREE.DirectionalLight(0xffffff, 1.0);
+        sun.position.set(10, 50, 10);
+        scene.add(sun);
 
-        // --- GAMEPLAY VARS ---
-        let px = 0, py = 15, pz = 10; // Start etwas höher
-        let vy = 0, moveX = 0, moveZ = 0, yaw = 0, pitch = -0.3;
-        let score = 0, onGround = false;
-        const platforms = [];
-        const items = [];
-
-        // --- GENERATOR ---
-        function createBlock(id) {
-            let w = id === 0 ? 30 : 8;
-            let d = id === 0 ? 30 : 8;
-            let h = 2;
-            let color = id === 0 ? 0x555555 : new THREE.Color().setHSL((id * 0.1) % 1, 0.7, 0.5);
-            
-            const mesh = new THREE.Mesh(
-                new THREE.BoxGeometry(w, h, d),
-                new THREE.MeshStandardMaterial({ color: color, roughness: 0.2 })
-            );
-
-            let x = 0, y = 0, z = 0;
-            if(id > 0) {
-                let a = id * 0.5;
-                x = Math.sin(a) * 15;
-                z = id * -15;
-                y = id * 2.5;
-            }
-
-            mesh.position.set(x, y, z);
-            scene.add(mesh);
-            mesh.userData = { w: w/2, d: d/2, h: h/2, id: id };
-            platforms.push(mesh);
-
-            // Item zum Sammeln
-            if(id > 0 && id % 2 === 0) {
-                const item = new THREE.Mesh(
-                    new THREE.IcosahedronGeometry(1.2, 0),
-                    new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true })
-                );
-                item.position.set(x, y + 3, z);
-                scene.add(item);
-                items.push(item);
-            }
-        }
-
-        for(let i=0; i<40; i++) createBlock(i);
-
-        // --- CONTROLS ---
-        const setupBtn = (id, startAction, endAction) => {
-            const el = document.getElementById(id);
-            el.addEventListener('touchstart', (e) => { e.preventDefault(); startAction(); }, false);
-            el.addEventListener('touchend', (e) => { e.preventDefault(); endAction(); }, false);
-        };
-
-        setupBtn('btnL', () => moveX = -0.2, () => moveX = 0);
-        setupBtn('btnR', () => moveX = 0.2, () => moveX = 0);
-        setupBtn('btnF', () => moveZ = -0.2, () => moveZ = 0);
-        setupBtn('btnJ', () => { if(onGround) vy = 0.38; }, () => {});
-
-        let sX = 0, sY = 0;
-        window.addEventListener('touchstart', e => { sX = e.touches[0].pageX; sY = e.touches[0].pageY; });
-        window.addEventListener('touchmove', e => {
-            yaw -= (e.touches[0].pageX - sX) * 0.01;
-            pitch -= (e.touches[0].pageY - sY) * 0.01;
-            pitch = Math.max(-1.4, Math.min(0.5, pitch));
-            sX = e.touches[0].pageX; sY = e.touches[0].pageY;
-        });
-
-        // --- GAME LOOP ---
-        function loop() {
-            vy -= 0.016; py += vy;
-            
-            // Movement
-            px += Math.sin(yaw) * moveZ + Math.cos(yaw) * moveX;
-            pz += Math.cos(yaw) * moveZ - Math.sin(yaw) * moveX;
-
-            onGround = false;
-            platforms.forEach(p => {
-                let dx = Math.abs(px - p.position.x);
-                let dz = Math.abs(pz - p.position.z);
-                if(dx < p.userData.w + 0.5 && dz < p.userData.d + 0.5) {
-                    let top = p.position.y + p.userData.h;
-                    if(py <= top + 1.8 && py > top - 1.0 && vy <= 0) {
-                        py = top + 1.8; vy = 0; onGround = true;
-                        if(platforms.length - p.userData.id < 15) createBlock(platforms.length);
-                    }
-                }
-            });
-
-            // Sammler
-            items.forEach(item => {
-                if(item.visible && Math.abs(px - item.position.x) < 3 && Math.abs(py - item.position.y) < 4) {
-                    item.visible = false;
-                    score++;
-                    document.getElementById('score').innerText = "STEALS: " + score;
-                }
-                item.rotation.y += 0.05;
-            });
-
-            if(py < -50) location.reload(); // Tod durch Fallen
-
-            camera.position.set(px, py, pz);
-            camera.rotation.order = 'YXZ';
-            camera.rotation.y = yaw;
-            camera.rotation.x = pitch;
-
-            renderer.render(scene, camera);
-            requestAnimationFrame(loop);
-        }
-
-        loop();
-
-        // Resize Fix
-        window.onresize = () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        };
-    </script>
-</body>
-</html>
+        // SPIELER-OBJEKT (Damit du siehst, wen du steuerst)
+        const playerGeo = new THREE.BoxGeometry(1, 2, 1);
+        const playerMat = new THREE.MeshStandardMaterial({ color: 0xffff00 });
+        const player = new THREE.Mesh(playerGeo, playerMat);
+        scene.add
