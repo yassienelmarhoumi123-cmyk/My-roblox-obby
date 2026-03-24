@@ -3,10 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bacon Obby - Perfect Distance</title>
+    <title>Bacon Obby - Infinite Highscore</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #111; font-family: sans-serif; touch-action: none; }
+        body { margin: 0; overflow: hidden; background: #111; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; touch-action: none; }
         .noise { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 5; opacity: 0.1; pointer-events: none; background: url('https://upload.wikimedia.org/wikipedia/commons/7/76/1k_Static_Noise_v2.png'); }
+        
+        /* UI FÜR SCORE */
+        #ui { position: absolute; top: 20px; left: 20px; color: white; z-index: 10; text-shadow: 2px 2px 4px #000; pointer-events: none; }
+        #scoreBox { font-size: 24px; font-weight: bold; color: #00ff88; }
+        #highBox { font-size: 16px; color: #ffffff; opacity: 0.8; }
+
         .controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: space-around; z-index: 10; pointer-events: none; }
         .btn { width: 85px; height: 85px; background: rgba(0,0,0,0.7); border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; pointer-events: auto; font-weight: bold; }
         #crosshair { position: absolute; top: 50%; left: 50%; width: 8px; height: 8px; border: 2px solid #ffffff; border-radius: 50%; transform: translate(-50%, -50%); z-index: 20; opacity: 0.6; }
@@ -15,6 +21,11 @@
 <body>
     <div class="noise"></div>
     <div id="crosshair"></div>
+    
+    <div id="ui">
+        <div id="scoreBox">Score: 0</div>
+        <div id="highBox">Best: 0</div>
+    </div>
 
     <div class="controls">
         <div style="display: flex; gap: 20px;">
@@ -38,26 +49,41 @@
         sun.position.set(10, 20, 10);
         scene.add(sun);
 
+        // SPIELER & SCORE WERTE
+        let px = 0, py = 2, pz = 0, vy = 0;
+        let moveX = 0, yaw = 0, pitch = 0, onGround = false;
+        let score = 0;
+        let highscore = localStorage.getItem('obbyHighscore') || 0;
+        document.getElementById('highBox').innerText = "Best: " + highscore;
+
+        // UNENDLICHE GENERIERUNG
         const platforms = [];
-        function block(x, y, z, w, d, c) {
-            const b = new THREE.Mesh(new THREE.BoxGeometry(w, 0.5, d), new THREE.MeshStandardMaterial({ color: c }));
-            b.position.set(x, y, z);
+        let lastZ = 0;
+        let lastX = 0;
+        let platformHeight = 0;
+        const colors = [0x00ff88, 0x00ccff, 0xff0088, 0xffdd00, 0xffffff];
+
+        function createPlatform(isStart = false) {
+            let w = isStart ? 10 : 6;
+            let d = isStart ? 10 : 6;
+            let color = isStart ? 0x333333 : colors[Math.floor(Math.random() * colors.length)];
+            
+            const b = new THREE.Mesh(new THREE.BoxGeometry(w, 0.5, d), new THREE.MeshStandardMaterial({ color: color }));
+            
+            if (!isStart) {
+                lastZ -= (8 + Math.random() * 2); // Distanz ca. 8-10
+                lastX += (Math.random() - 0.5) * 6; // Leichte Kurven
+                platformHeight += 0.8;
+            }
+            
+            b.position.set(lastX, platformHeight, lastZ);
             scene.add(b);
-            b.userData = { w, d };
+            b.userData = { w, d, id: platforms.length };
             platforms.push(b);
         }
 
-        // --- LEVEL DESIGN: ROTER BLOCK NÄHER DRAN ---
-        block(0, 0, 0, 10, 10, 0x333333);      // Start
-        block(0, 0.8, -8.5, 6, 6, 0x00ff88);  // Sprung 1 (Grün)
-        block(2, 1.6, -16.5, 6, 6, 0x00ccff); // Sprung 2 (Türkis)
-        block(-2, 2.4, -24.5, 6, 6, 0xff0088);// Sprung 3 (ROT/PINK) -> NÄHER DRAN (war -26.5)
-        block(0, 3.2, -32.5, 6, 6, 0x00ff88); // Sprung 4 (Grün)
-        block(0, 4.0, -41.5, 6, 6, 0x00ccff); // Sprung 5 (Türkis)
-        block(0, 5.0, -55, 20, 20, 0xffcc00); // GOLDENES ZIEL
-
-        let px = 0, py = 2, pz = 0, vy = 0;
-        let moveX = 0, yaw = 0, pitch = 0, onGround = false;
+        // Start-Setup: 10 Plattformen vorausbauen
+        for(let i=0; i<15; i++) { createPlatform(i === 0); }
 
         // TOUCH LOOK
         let touchStartX = 0, touchStartY = 0;
@@ -83,6 +109,16 @@
         document.getElementById('btnLeft').ontouchend = document.getElementById('btnRight').ontouchend = () => moveX = 0;
         document.getElementById('btnJump').ontouchstart = () => { if(onGround) vy = 0.26; };
 
+        function resetGame() {
+            if(score > highscore) {
+                highscore = score;
+                localStorage.setItem('obbyHighscore', highscore);
+                document.getElementById('highBox').innerText = "Best: " + highscore;
+            }
+            px = 0; py = 3; pz = 0; vy = 0; yaw = 0; pitch = 0; score = 0;
+            document.getElementById('scoreBox').innerText = "Score: 0";
+        }
+
         function loop() {
             vy -= 0.01; py += vy;
             px += Math.cos(yaw) * moveX; pz += Math.sin(yaw) * moveX;
@@ -94,20 +130,5 @@
                 let dz = Math.abs(pz - p.position.z);
                 if(dx < p.userData.w/2 + 0.3 && dz < p.userData.d/2 + 0.3) {
                     let top = p.position.y + 0.25;
-                    if(py <= top + 1.5 && py > top) { py = top + 1.5; vy = 0; onGround = true; }
-                }
-            });
-
-            if(py < -20) { px = 0; py = 3; pz = 0; vy = 0; yaw = 0; pitch = 0; }
-
-            camera.position.set(px, py, pz);
-            camera.rotation.order = "YXZ";
-            camera.rotation.y = yaw; camera.rotation.x = pitch;
-
-            renderer.render(scene, camera);
-            requestAnimationFrame(loop);
-        }
-        loop();
-    </script>
-</body>
-</html>
+                    if(py <= top + 1.5 && py > top) { 
+                        py = top + 1.5; vy = 0;
