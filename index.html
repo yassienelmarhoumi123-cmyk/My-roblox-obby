@@ -3,22 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bacon Obby - Infinite Fix</title>
+    <title>Rainbow Spiral Obby</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #333; font-family: sans-serif; touch-action: none; }
+        body { margin: 0; overflow: hidden; background: #87CEEB; font-family: sans-serif; touch-action: none; }
         #ui { position: absolute; top: 20px; left: 20px; color: white; z-index: 10; text-shadow: 2px 2px 4px #000; pointer-events: none; }
-        #scoreBox { font-size: 24px; font-weight: bold; color: #00ff88; }
-        #highBox { font-size: 16px; opacity: 0.8; }
+        #scoreBox { font-size: 28px; font-weight: bold; color: #fff; }
         .controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: space-around; z-index: 10; pointer-events: none; }
-        .btn { width: 80px; height: 80px; background: rgba(0,0,0,0.7); border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; pointer-events: auto; font-weight: bold; }
-        #crosshair { position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; background: white; border-radius: 50%; transform: translate(-50%, -50%); z-index: 20; }
+        .btn { width: 80px; height: 80px; background: rgba(0,0,0,0.5); border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; pointer-events: auto; font-weight: bold; }
+        #crosshair { position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; background: white; border-radius: 50%; transform: translate(-50%, -50%); z-index: 20; border: 1px solid black; }
     </style>
 </head>
 <body>
-    <div id="ui">
-        <div id="scoreBox">Score: 0</div>
-        <div id="highBox">Best: 0</div>
-    </div>
+    <div id="ui"><div id="scoreBox">Höhe: 0</div></div>
     <div id="crosshair"></div>
 
     <div class="controls">
@@ -31,9 +27,8 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        // 1. SZENE SETUP
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x22aaff);
+        scene.background = new THREE.Color(0x87CEEB); // Himmelblau
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -41,45 +36,63 @@
 
         scene.add(new THREE.AmbientLight(0xffffff, 0.8));
         const sun = new THREE.DirectionalLight(0xffffff, 0.6);
-        sun.position.set(5, 15, 5);
+        sun.position.set(10, 50, 10);
         scene.add(sun);
 
-        // 2. VARIABLEN
-        let px = 0, py = 2, pz = 0, vy = 0;
+        // VARIABLEN
+        let px = 0, py = 5, pz = 15, vy = 0;
         let moveX = 0, yaw = 0, pitch = 0, onGround = false;
         let score = 0;
-        let highscore = localStorage.getItem('obbyHighscore') || 0;
-        document.getElementById('highBox').innerText = "Best: " + highscore;
 
         const platforms = [];
-        let nextZ = 0;
-        let nextX = 0;
-        let nextY = 0;
+        let angle = 0;
+        let radius = 12;
+        let currentHeight = 0;
 
-        // 3. GENERATOR
-        function addBlock(isStart = false) {
-            const w = isStart ? 10 : 6;
-            const d = isStart ? 10 : 6;
-            const color = isStart ? 0x444444 : new THREE.Color(`hsl(${Math.random() * 360}, 80%, 60%)`);
+        // REGENBOGEN FARBEN
+        const rainbow = [0xff0000, 0xff7f00, 0xffff00, 0x00ff00, 0x0000ff, 0x4b0082, 0x9400d3];
+
+        function addSpiralBlock(isStart = false) {
+            const w = isStart ? 10 : 5;
+            const d = isStart ? 10 : 5;
+            const color = isStart ? 0xeeeeee : rainbow[platforms.length % rainbow.length];
             
-            const b = new THREE.Mesh(new THREE.BoxGeometry(w, 0.5, d), new THREE.MeshStandardMaterial({ color: color }));
+            const b = new THREE.Mesh(new THREE.BoxGeometry(w, 0.6, d), new THREE.MeshStandardMaterial({ color: color }));
             
             if (!isStart) {
-                nextZ -= 9; // Feste Distanz
-                nextX += (Math.random() - 0.5) * 5; // Leichte Kurve
-                nextY += 0.5;
+                angle += 0.4; // Drehung der Spirale
+                currentHeight += 1.2; // Wie viel es nach oben geht
+                px_pos = Math.cos(angle) * radius;
+                pz_pos = Math.sin(angle) * radius;
+            } else {
+                px_pos = 0;
+                pz_pos = 15;
             }
             
-            b.position.set(nextX, nextY, nextZ);
+            b.position.set(px_pos, currentHeight, pz_pos);
+            b.lookAt(0, currentHeight, 0); // Blöcke schauen zur Mitte
             scene.add(b);
             b.userData = { w, d, id: platforms.length };
             platforms.push(b);
         }
 
-        // Erste Blöcke bauen
-        for(let i=0; i<20; i++) { addBlock(i === 0); }
+        // Start-Welt bauen
+        for(let i=0; i<30; i++) { addSpiralBlock(i === 0); }
 
-        // 4. TOUCH & STEUERUNG
+        // STEUERUNG FIX (Keyboard)
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && onGround) {
+                vy = 0.28;
+                onGround = false;
+            }
+            if (e.code === 'KeyA') moveX = -0.15;
+            if (e.code === 'KeyD') moveX = 0.15;
+        });
+        window.addEventListener('keyup', (e) => {
+            if (e.code === 'KeyA' || e.code === 'KeyD') moveX = 0;
+        });
+
+        // TOUCH LOOK
         let startX = 0, startY = 0;
         window.addEventListener('touchstart', e => { startX = e.touches[0].pageX; startY = e.touches[0].pageY; });
         window.addEventListener('touchmove', e => {
@@ -90,51 +103,60 @@
             startX = e.touches[0].pageX; startY = e.touches[0].pageY;
         });
 
+        // MOBILE BUTTONS
         document.getElementById('btnLeft').ontouchstart = () => moveX = -0.15;
         document.getElementById('btnRight').ontouchstart = () => moveX = 0.15;
         document.getElementById('btnLeft').ontouchend = document.getElementById('btnRight').ontouchend = () => moveX = 0;
-        document.getElementById('btnJump').ontouchstart = () => { if(onGround) vy = 0.25; };
+        document.getElementById('btnJump').ontouchstart = () => { if(onGround) vy = 0.28; };
 
-        // 5. GAME LOOP
+        // INITIAL POSITION
+        px = 0; py = 2; pz = 15;
+
         function loop() {
             vy -= 0.01; py += vy;
-            px += Math.cos(yaw) * moveX; pz += Math.sin(yaw) * moveX;
-            pz -= Math.cos(yaw) * 0.08; px -= Math.sin(yaw) * 0.08; // Dauerlauf
+            
+            // Bewegung relativ zur Kamera
+            px += Math.cos(yaw) * moveX;
+            pz += Math.sin(yaw) * moveX;
+            
+            // Leichter Vorwärtsdrang in Blickrichtung
+            pz -= Math.cos(yaw) * 0.07;
+            px -= Math.sin(yaw) * 0.07;
 
             onGround = false;
             platforms.forEach(p => {
                 let dx = Math.abs(px - p.position.x);
                 let dz = Math.abs(pz - p.position.z);
-                if(dx < p.userData.w/2 + 0.3 && dz < p.userData.d/2 + 0.3) {
-                    let top = p.position.y + 0.25;
-                    if(py <= top + 1.5 && py > top) {
+                if(dx < p.userData.w/2 + 0.4 && dz < p.userData.d/2 + 0.4) {
+                    let top = p.position.y + 0.3;
+                    if(py <= top + 1.5 && py > top && vy <= 0) {
                         py = top + 1.5; vy = 0; onGround = true;
                         if(p.userData.id > score) {
                             score = p.userData.id;
-                            document.getElementById('scoreBox').innerText = "Score: " + score;
-                            if(platforms.length - score < 10) addBlock();
+                            document.getElementById('scoreBox').innerText = "Höhe: " + score;
+                            if(platforms.length - score < 15) addSpiralBlock();
                         }
                     }
                 }
             });
 
-            if(py < -15) {
-                if(score > highscore) {
-                    highscore = score;
-                    localStorage.setItem('obbyHighscore', highscore);
-                    document.getElementById('highBox').innerText = "Best: " + highscore;
-                }
-                location.reload(); // Sicherster Reset gegen "Grauen Screen"
-            }
+            if(py < currentHeight - 30) { location.reload(); }
 
             camera.position.set(px, py, pz);
             camera.rotation.order = "YXZ";
-            camera.rotation.y = yaw; camera.rotation.x = pitch;
+            camera.rotation.y = yaw;
+            camera.rotation.x = pitch;
 
             renderer.render(scene, camera);
             requestAnimationFrame(loop);
         }
         loop();
+
+        window.onresize = () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        };
     </script>
 </body>
 </html>
