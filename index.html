@@ -1,34 +1,94 @@
-// --- DER ENDGÜLTIGE, BEHOBENE AVATAR (Steht auf y=0) ---
-const player = new THREE.Group();
-const mat = new THREE.MeshStandardMaterial({ color: 0xcccccc });
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Mein Spiel Fix</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #222; }
+        .controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: space-around; z-index: 10; }
+        .btn { width: 70px; height: 70px; background: rgba(0,0,0,0.5); border: 2px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 25px; user-select: none; -webkit-user-select: none; }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <div id="btnL" class="btn">◀</div>
+        <div id="btnR" class="btn">▶</div>
+        <div id="btnJ" class="btn">JUMP</div>
+    </div>
 
-// Torso (0.5 Einheiten hoch schieben)
-const torso = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1, 0.4), mat);
-torso.position.y = 1; // Mitte des Torsos ist bei y=1, Füße bei y=0.5
-player.add(torso);
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x333333);
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
 
-// Kopf
-const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), mat);
-head.position.y = 1.8;
-player.add(head);
+        const light = new THREE.DirectionalLight(0xffffff, 1.2);
+        light.position.set(5, 10, 7);
+        scene.add(light);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
 
-// Arme
-const lArm = new THREE.Mesh(new THREE.BoxGeometry(0.35, 1, 0.35), mat);
-lArm.position.set(-0.65, 1, 0);
-player.add(lArm);
+        // --- BODEN ---
+        const floor = new THREE.Mesh(
+            new THREE.BoxGeometry(20, 0.5, 20), 
+            new THREE.MeshStandardMaterial({ color: 0x00ffff, transparent: true, opacity: 0.5 })
+        );
+        floor.position.y = -0.25;
+        scene.add(floor);
 
-const rArm = new THREE.Mesh(new THREE.BoxGeometry(0.35, 1, 0.35), mat);
-rArm.position.set(0.65, 1, 0);
-player.add(rArm);
+        // --- DER BEHOBENE AVATAR (Steht oben drauf) ---
+        const player = new THREE.Group();
+        const mat = new THREE.MeshStandardMaterial({ color: 0xcccccc });
 
-// Beine (Stehen jetzt direkt auf dem Boden bei y=0.5)
-const lLeg = new THREE.Mesh(new THREE.BoxGeometry(0.38, 1, 0.38), mat);
-lLeg.position.set(-0.25, 0, 0);
-player.add(lLeg);
+        const torso = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1, 0.4), mat);
+        torso.position.y = 1.5; 
+        player.add(torso);
 
-const rLeg = new THREE.Mesh(new THREE.BoxGeometry(0.38, 1, 0.38), mat);
-rLeg.position.set(0.25, 0, 0);
-player.add(rLeg);
+        const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), mat);
+        head.position.y = 2.3;
+        player.add(head);
 
-scene.add(player);
-// --- ENDE DES AVATAR-BLOCKS ---
+        const lArm = new THREE.Mesh(new THREE.BoxGeometry(0.35, 1, 0.35), mat);
+        lArm.position.set(-0.65, 1.5, 0);
+        player.add(lArm);
+
+        const rArm = new THREE.Mesh(new THREE.BoxGeometry(0.35, 1, 0.35), mat);
+        rArm.position.set(0.65, 1.5, 0);
+        player.add(rArm);
+
+        const lLeg = new THREE.Mesh(new THREE.BoxGeometry(0.38, 1, 0.38), mat);
+        lLeg.position.set(-0.25, 0.5, 0);
+        player.add(lLeg);
+
+        const rLeg = new THREE.Mesh(new THREE.BoxGeometry(0.38, 1, 0.38), mat);
+        rLeg.position.set(0.25, 0.5, 0);
+        player.add(rLeg);
+
+        scene.add(player);
+        camera.position.set(0, 4, 8);
+        camera.lookAt(0, 1, 0);
+
+        // STEUERUNG
+        let moveX = 0, vy = 0, onGround = true;
+        document.getElementById('btnL').ontouchstart = () => moveX = -0.15;
+        document.getElementById('btnR').ontouchstart = () => moveX = 0.15;
+        document.getElementById('btnL').ontouchend = document.getElementById('btnR').ontouchend = () => moveX = 0;
+        document.getElementById('btnJ').ontouchstart = () => { if(onGround) { vy = 0.2; onGround = false; } };
+
+        function animate() {
+            player.position.x += moveX;
+            vy -= 0.01;
+            player.position.y += vy;
+            if(player.position.y <= 0) { player.position.y = 0; vy = 0; onGround = true; }
+            camera.position.x = player.position.x;
+            camera.lookAt(player.position.x, 1, 0);
+            renderer.render(scene, camera);
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>
