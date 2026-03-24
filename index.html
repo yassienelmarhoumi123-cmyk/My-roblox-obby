@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rainbow Obby - Physics Fix</title>
+    <title>Rainbow Obby - Correct Orientation</title>
     <style>
         body { margin: 0; overflow: hidden; background: #87CEEB; font-family: sans-serif; touch-action: none; }
         #ui { position: absolute; top: 20px; left: 20px; color: white; z-index: 10; text-shadow: 2px 2px 4px #000; pointer-events: none; }
@@ -33,12 +33,12 @@
 
         scene.add(new THREE.AmbientLight(0xffffff, 1.0));
         const sun = new THREE.DirectionalLight(0xffffff, 0.8);
-        sun.position.set(10, 50, 10);
+        sun.position.set(0, 50, 0);
         scene.add(sun);
 
-        // PHYSIK-WERTE
-        let px = 0, py = 5, pz = 0, vy = 0;
-        let moveX = 0, yaw = Math.PI, pitch = 0, onGround = false;
+        // --- POSITION & BLICKWINKEL ---
+        let px = 0, py = 5, pz = 5; // Start leicht versetzt nach hinten
+        let vy = 0, moveX = 0, yaw = 0, pitch = 0, onGround = false;
         let score = 0;
         const rainbow = [0xff0000, 0xff7f00, 0xffff00, 0x00ff00, 0x0000ff, 0x4b0082, 0x9400d3];
         const platforms = [];
@@ -48,17 +48,16 @@
             let xPos, yPos, zPos;
 
             if (id === 0) {
-                w = 20; d = 20; color = 0xcccccc;
-                xPos = 0; yPos = 0; zPos = 0;
+                w = 20; d = 25; color = 0xcccccc;
+                xPos = 0; yPos = 0; zPos = -5; // Startplatte liegt vor uns
             } else {
-                // Mischung aus Gerade und Spirale
-                if (id < 5) {
-                    xPos = 0; zPos = id * -15; yPos = id * 2;
+                if (id < 6) {
+                    xPos = 0; zPos = id * -15; yPos = id * 2.2;
                 } else {
-                    let a = (id - 4) * 0.4;
+                    let a = (id - 5) * 0.45;
                     xPos = Math.sin(a) * 15;
-                    zPos = -60 + (Math.cos(a) * -15);
-                    yPos = id * 2;
+                    zPos = -75 + (Math.cos(a) * -15);
+                    yPos = id * 2.2;
                 }
             }
 
@@ -71,11 +70,11 @@
 
         for(let i=0; i<60; i++) addBlock(i);
 
-        // STEUERUNG (PRÄZISER FIX)
+        // STEUERUNG
         window.addEventListener('keydown', (e) => {
-            if (e.code === 'Space' && onGround) vy = 0.3;
-            if (e.code === 'KeyA') moveX = -0.15;
-            if (e.code === 'KeyD') moveX = 0.15;
+            if (e.code === 'Space' && onGround) vy = 0.32;
+            if (e.code === 'KeyA') moveX = -0.16;
+            if (e.code === 'KeyD') moveX = 0.16;
         });
         window.addEventListener('keyup', (e) => { if (e.code === 'KeyA' || e.code === 'KeyD') moveX = 0; });
 
@@ -88,29 +87,28 @@
             sX = e.touches[0].pageX; sY = e.touches[0].pageY;
         });
 
-        document.getElementById('btnLeft').ontouchstart = () => moveX = -0.15;
-        document.getElementById('btnRight').ontouchstart = () => moveX = 0.15;
-        document.getElementById('btnJump').ontouchstart = (e) => { e.preventDefault(); if(onGround) vy = 0.3; };
+        document.getElementById('btnLeft').ontouchstart = () => moveX = -0.16;
+        document.getElementById('btnRight').ontouchstart = () => moveX = 0.16;
+        document.getElementById('btnJump').ontouchstart = (e) => { e.preventDefault(); if(onGround) vy = 0.32; };
         document.getElementById('btnLeft').ontouchend = document.getElementById('btnRight').ontouchend = () => moveX = 0;
 
+        // --- LOOP ---
         function loop() {
-            vy -= 0.012; // Schwerkraft
-            py += vy;
+            vy -= 0.012; py += vy;
 
-            // RICHTIGE BEWEGUNG: Vorwärts immer in Blickrichtung, L/R seitlich dazu
-            // Automatisches Vorwärtslaufen
-            px += Math.sin(yaw) * 0.12;
-            pz += Math.cos(yaw) * 0.12;
+            // Bewegung: Vorwärts ist jetzt -Z (Standard in Three.js)
+            px += Math.sin(yaw) * 0.1;
+            pz -= Math.cos(yaw) * 0.1;
             
-            // Seitliche Korrektur (L/R Tasten)
-            px += Math.sin(yaw + Math.PI/2) * moveX;
-            pz += Math.cos(yaw + Math.PI/2) * moveX;
+            // Seitlich
+            px += Math.cos(yaw) * moveX;
+            pz += Math.sin(yaw) * moveX;
 
             onGround = false;
             platforms.forEach(p => {
                 let dx = Math.abs(px - p.position.x);
                 let dz = Math.abs(pz - p.position.z);
-                if(dx < p.userData.w/2 + 0.2 && dz < p.userData.d/2 + 0.2) {
+                if(dx < p.userData.w/2 + 0.3 && dz < p.userData.d/2 + 0.3) {
                     let top = p.position.y + 0.5;
                     if(py <= top + 1.5 && py > top && vy <= 0) {
                         py = top + 1.5; vy = 0; onGround = true;
@@ -123,7 +121,7 @@
                 }
             });
 
-            if(py < -40 || (score > 5 && py < (score * 2) - 20)) location.reload();
+            if(py < -40 || (score > 2 && py < (score * 2.2) - 20)) location.reload();
 
             camera.position.set(px, py, pz);
             camera.rotation.order = "YXZ";
