@@ -3,29 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bacon Obby - Infinite Highscore</title>
+    <title>Bacon Obby - Infinite Fix</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #111; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; touch-action: none; }
-        .noise { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 5; opacity: 0.1; pointer-events: none; background: url('https://upload.wikimedia.org/wikipedia/commons/7/76/1k_Static_Noise_v2.png'); }
-        
-        /* UI FÜR SCORE */
+        body { margin: 0; overflow: hidden; background: #333; font-family: sans-serif; touch-action: none; }
         #ui { position: absolute; top: 20px; left: 20px; color: white; z-index: 10; text-shadow: 2px 2px 4px #000; pointer-events: none; }
         #scoreBox { font-size: 24px; font-weight: bold; color: #00ff88; }
-        #highBox { font-size: 16px; color: #ffffff; opacity: 0.8; }
-
+        #highBox { font-size: 16px; opacity: 0.8; }
         .controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: space-around; z-index: 10; pointer-events: none; }
-        .btn { width: 85px; height: 85px; background: rgba(0,0,0,0.7); border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; pointer-events: auto; font-weight: bold; }
-        #crosshair { position: absolute; top: 50%; left: 50%; width: 8px; height: 8px; border: 2px solid #ffffff; border-radius: 50%; transform: translate(-50%, -50%); z-index: 20; opacity: 0.6; }
+        .btn { width: 80px; height: 80px; background: rgba(0,0,0,0.7); border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; pointer-events: auto; font-weight: bold; }
+        #crosshair { position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; background: white; border-radius: 50%; transform: translate(-50%, -50%); z-index: 20; }
     </style>
 </head>
 <body>
-    <div class="noise"></div>
-    <div id="crosshair"></div>
-    
     <div id="ui">
         <div id="scoreBox">Score: 0</div>
         <div id="highBox">Best: 0</div>
     </div>
+    <div id="crosshair"></div>
 
     <div class="controls">
         <div style="display: flex; gap: 20px;">
@@ -37,92 +31,75 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
+        // 1. SZENE SETUP
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x1188ff);
+        scene.background = new THREE.Color(0x22aaff);
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
         scene.add(new THREE.AmbientLight(0xffffff, 0.8));
-        const sun = new THREE.DirectionalLight(0xffffff, 0.7);
-        sun.position.set(10, 20, 10);
+        const sun = new THREE.DirectionalLight(0xffffff, 0.6);
+        sun.position.set(5, 15, 5);
         scene.add(sun);
 
-        // SPIELER & SCORE WERTE
+        // 2. VARIABLEN
         let px = 0, py = 2, pz = 0, vy = 0;
         let moveX = 0, yaw = 0, pitch = 0, onGround = false;
         let score = 0;
         let highscore = localStorage.getItem('obbyHighscore') || 0;
         document.getElementById('highBox').innerText = "Best: " + highscore;
 
-        // UNENDLICHE GENERIERUNG
         const platforms = [];
-        let lastZ = 0;
-        let lastX = 0;
-        let platformHeight = 0;
-        const colors = [0x00ff88, 0x00ccff, 0xff0088, 0xffdd00, 0xffffff];
+        let nextZ = 0;
+        let nextX = 0;
+        let nextY = 0;
 
-        function createPlatform(isStart = false) {
-            let w = isStart ? 10 : 6;
-            let d = isStart ? 10 : 6;
-            let color = isStart ? 0x333333 : colors[Math.floor(Math.random() * colors.length)];
+        // 3. GENERATOR
+        function addBlock(isStart = false) {
+            const w = isStart ? 10 : 6;
+            const d = isStart ? 10 : 6;
+            const color = isStart ? 0x444444 : new THREE.Color(`hsl(${Math.random() * 360}, 80%, 60%)`);
             
             const b = new THREE.Mesh(new THREE.BoxGeometry(w, 0.5, d), new THREE.MeshStandardMaterial({ color: color }));
             
             if (!isStart) {
-                lastZ -= (8 + Math.random() * 2); // Distanz ca. 8-10
-                lastX += (Math.random() - 0.5) * 6; // Leichte Kurven
-                platformHeight += 0.8;
+                nextZ -= 9; // Feste Distanz
+                nextX += (Math.random() - 0.5) * 5; // Leichte Kurve
+                nextY += 0.5;
             }
             
-            b.position.set(lastX, platformHeight, lastZ);
+            b.position.set(nextX, nextY, nextZ);
             scene.add(b);
             b.userData = { w, d, id: platforms.length };
             platforms.push(b);
         }
 
-        // Start-Setup: 10 Plattformen vorausbauen
-        for(let i=0; i<15; i++) { createPlatform(i === 0); }
+        // Erste Blöcke bauen
+        for(let i=0; i<20; i++) { addBlock(i === 0); }
 
-        // TOUCH LOOK
-        let touchStartX = 0, touchStartY = 0;
-        window.addEventListener('touchstart', e => { touchStartX = e.touches[0].pageX; touchStartY = e.touches[0].pageY; });
+        // 4. TOUCH & STEUERUNG
+        let startX = 0, startY = 0;
+        window.addEventListener('touchstart', e => { startX = e.touches[0].pageX; startY = e.touches[0].pageY; });
         window.addEventListener('touchmove', e => {
-            let dx = e.touches[0].pageX - touchStartX;
-            let dy = e.touches[0].pageY - touchStartY;
-            yaw -= dx * 0.006; pitch -= dy * 0.006;
+            let dx = e.touches[0].pageX - startX;
+            let dy = e.touches[0].pageY - startY;
+            yaw -= dx * 0.007; pitch -= dy * 0.007;
             pitch = Math.max(-1.4, Math.min(1.4, pitch));
-            touchStartX = e.touches[0].pageX; touchStartY = e.touches[0].pageY;
+            startX = e.touches[0].pageX; startY = e.touches[0].pageY;
         });
-
-        // INPUTS
-        window.addEventListener('keydown', e => {
-            if(e.code === 'Space' && onGround) vy = 0.26; 
-            if(e.code === 'KeyA') moveX = -0.15;
-            if(e.code === 'KeyD') moveX = 0.15;
-        });
-        window.addEventListener('keyup', e => { if(e.code === 'KeyA' || e.code === 'KeyD') moveX = 0; });
 
         document.getElementById('btnLeft').ontouchstart = () => moveX = -0.15;
         document.getElementById('btnRight').ontouchstart = () => moveX = 0.15;
         document.getElementById('btnLeft').ontouchend = document.getElementById('btnRight').ontouchend = () => moveX = 0;
-        document.getElementById('btnJump').ontouchstart = () => { if(onGround) vy = 0.26; };
+        document.getElementById('btnJump').ontouchstart = () => { if(onGround) vy = 0.25; };
 
-        function resetGame() {
-            if(score > highscore) {
-                highscore = score;
-                localStorage.setItem('obbyHighscore', highscore);
-                document.getElementById('highBox').innerText = "Best: " + highscore;
-            }
-            px = 0; py = 3; pz = 0; vy = 0; yaw = 0; pitch = 0; score = 0;
-            document.getElementById('scoreBox').innerText = "Score: 0";
-        }
-
+        // 5. GAME LOOP
         function loop() {
             vy -= 0.01; py += vy;
             px += Math.cos(yaw) * moveX; pz += Math.sin(yaw) * moveX;
-            pz -= Math.cos(yaw) * 0.09; px -= Math.sin(yaw) * 0.09; 
+            pz -= Math.cos(yaw) * 0.08; px -= Math.sin(yaw) * 0.08; // Dauerlauf
 
             onGround = false;
             platforms.forEach(p => {
@@ -130,5 +107,34 @@
                 let dz = Math.abs(pz - p.position.z);
                 if(dx < p.userData.w/2 + 0.3 && dz < p.userData.d/2 + 0.3) {
                     let top = p.position.y + 0.25;
-                    if(py <= top + 1.5 && py > top) { 
-                        py = top + 1.5; vy = 0;
+                    if(py <= top + 1.5 && py > top) {
+                        py = top + 1.5; vy = 0; onGround = true;
+                        if(p.userData.id > score) {
+                            score = p.userData.id;
+                            document.getElementById('scoreBox').innerText = "Score: " + score;
+                            if(platforms.length - score < 10) addBlock();
+                        }
+                    }
+                }
+            });
+
+            if(py < -15) {
+                if(score > highscore) {
+                    highscore = score;
+                    localStorage.setItem('obbyHighscore', highscore);
+                    document.getElementById('highBox').innerText = "Best: " + highscore;
+                }
+                location.reload(); // Sicherster Reset gegen "Grauen Screen"
+            }
+
+            camera.position.set(px, py, pz);
+            camera.rotation.order = "YXZ";
+            camera.rotation.y = yaw; camera.rotation.x = pitch;
+
+            renderer.render(scene, camera);
+            requestAnimationFrame(loop);
+        }
+        loop();
+    </script>
+</body>
+</html>
