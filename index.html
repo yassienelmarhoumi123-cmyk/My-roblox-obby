@@ -3,14 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rainbow Spiral Obby</title>
+    <title>Rainbow Spiral Obby - Safe Start</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #87CEEB; font-family: sans-serif; touch-action: none; }
+        body { margin: 0; overflow: hidden; background: #87CEEB; font-family: 'Segoe UI', sans-serif; touch-action: none; }
+        
+        /* UI FÜR HÖHE */
         #ui { position: absolute; top: 20px; left: 20px; color: white; z-index: 10; text-shadow: 2px 2px 4px #000; pointer-events: none; }
         #scoreBox { font-size: 28px; font-weight: bold; color: #fff; }
+
+        /* MOBILE STEUERUNG */
         .controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: space-around; z-index: 10; pointer-events: none; }
-        .btn { width: 80px; height: 80px; background: rgba(0,0,0,0.5); border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; pointer-events: auto; font-weight: bold; }
-        #crosshair { position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; background: white; border-radius: 50%; transform: translate(-50%, -50%); z-index: 20; border: 1px solid black; }
+        .btn { width: 85px; height: 85px; background: rgba(0,0,0,0.6); border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; pointer-events: auto; font-weight: bold; }
+        
+        /* FADENKREUZ */
+        #crosshair { position: absolute; top: 50%; left: 50%; width: 8px; height: 8px; border: 2px solid #ffffff; border-radius: 50%; transform: translate(-50%, -50%); z-index: 20; opacity: 0.6; }
     </style>
 </head>
 <body>
@@ -28,7 +34,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x87CEEB); // Himmelblau
+        scene.background = new THREE.Color(0x87CEEB); // Himmelblau durchgehend
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -39,124 +45,103 @@
         sun.position.set(10, 50, 10);
         scene.add(sun);
 
-        // VARIABLEN
-        let px = 0, py = 5, pz = 15, vy = 0;
+        // --- VARIABLEN & PHYSIK ---
+        let px = 0, py = 2, pz = 15, vy = 0; // Startposition
         let moveX = 0, yaw = 0, pitch = 0, onGround = false;
         let score = 0;
+        const rainbow = [0xff0000, 0xff7f00, 0xffff00, 0x00ff00, 0x0000ff, 0x4b0082, 0x9400d3];
 
         const platforms = [];
         let angle = 0;
-        let radius = 12;
+        let radius = 10;
         let currentHeight = 0;
+        let startPlatformLength = 50; // Länge der geraden Startbahn
 
-        // REGENBOGEN FARBEN
-        const rainbow = [0xff0000, 0xff7f00, 0xffff00, 0x00ff00, 0x0000ff, 0x4b0082, 0x9400d3];
+        // --- GENERATOR: GERADER START & UNENDLICHE SPIRALE ---
+        function addPlatform(isSpiral = false, lengthFactor = 0) {
+            let w, d, color;
+            let platformPos;
 
-        function addSpiralBlock(isStart = false) {
-            const w = isStart ? 10 : 5;
-            const d = isStart ? 10 : 5;
-            const color = isStart ? 0xeeeeee : rainbow[platforms.length % rainbow.length];
-            
-            const b = new THREE.Mesh(new THREE.BoxGeometry(w, 0.6, d), new THREE.MeshStandardMaterial({ color: color }));
-            
-            if (!isStart) {
-                angle += 0.4; // Drehung der Spirale
-                currentHeight += 1.2; // Wie viel es nach oben geht
-                px_pos = Math.cos(angle) * radius;
-                pz_pos = Math.sin(angle) * radius;
+            if (!isSpiral) {
+                // Gerade Startbahn (Weiß)
+                w = 10;
+                d = startPlatformLength;
+                color = 0xeeeeee;
+                platformPos = new THREE.Vector3(0, 0, 0); // Start-Position
             } else {
-                px_pos = 0;
-                pz_pos = 15;
+                // Spirale-Blöcke (Bunt)
+                w = 6;
+                d = 6;
+                color = rainbow[platforms.length % rainbow.length];
+                
+                // Spiral-Formel
+                angle += 0.45;
+                currentHeight += 1.3;
+                let spiralX = Math.cos(angle) * radius;
+                let spiralZ = Math.sin(angle) * radius;
+                platformPos = new THREE.Vector3(spiralX, currentHeight, spiralZ - startPlatformLength/2 - 10);
             }
             
-            b.position.set(px_pos, currentHeight, pz_pos);
-            b.lookAt(0, currentHeight, 0); // Blöcke schauen zur Mitte
+            const material = new THREE.MeshStandardMaterial({ color: color });
+            if (!isSpiral) material.emissive = new THREE.Color(0x333333); // Startbahn leicht leuchten lassen
+
+            const b = new THREE.Mesh(new THREE.BoxGeometry(w, 0.8, d), material);
+            b.position.copy(platformPos);
+            
+            // Spirale nach innen ausrichten, Startbahn gerade lassen
+            if (isSpiral) b.lookAt(0, currentHeight, 0); 
+
             scene.add(b);
-            b.userData = { w, d, id: platforms.length };
+            b.userData = { w, d, id: platforms.length, isSpiral };
             platforms.push(b);
         }
 
-        // Start-Welt bauen
-        for(let i=0; i<30; i++) { addSpiralBlock(i === 0); }
+        // --- LEVEL INITIALISIERUNG ---
+        addPlatform(false); // 1. Start-Bahn (Gerade)
+        
+        // Füge die ersten 20 Spiral-Blöcke hinzu, weit entfernt von der Start-Kante
+        for(let i=0; i<30; i++) { addPlatform(true); }
 
-        // STEUERUNG FIX (Keyboard)
+        // --- STEUERUNG FIX (Tastatur Space) ---
         window.addEventListener('keydown', (e) => {
             if (e.code === 'Space' && onGround) {
-                vy = 0.28;
+                vy = 0.28; // Sprungkraft
                 onGround = false;
             }
-            if (e.code === 'KeyA') moveX = -0.15;
-            if (e.code === 'KeyD') moveX = 0.15;
+            if (e.code === 'KeyA') moveX = -0.16; // Links
+            if (e.code === 'KeyD') moveX = 0.16; // Rechts
         });
         window.addEventListener('keyup', (e) => {
             if (e.code === 'KeyA' || e.code === 'KeyD') moveX = 0;
         });
 
-        // TOUCH LOOK
-        let startX = 0, startY = 0;
-        window.addEventListener('touchstart', e => { startX = e.touches[0].pageX; startY = e.touches[0].pageY; });
+        // --- TOUCH-LOOK FÜR MOBILE ---
+        let touchStartX = 0, touchStartY = 0;
+        window.addEventListener('touchstart', e => { touchStartX = e.touches[0].pageX; touchStartY = e.touches[0].pageY; });
         window.addEventListener('touchmove', e => {
-            let dx = e.touches[0].pageX - startX;
-            let dy = e.touches[0].pageY - startY;
-            yaw -= dx * 0.007; pitch -= dy * 0.007;
+            let dx = e.touches[0].pageX - touchStartX;
+            let dy = e.touches[0].pageY - touchStartY;
+            yaw -= dx * 0.006; pitch -= dy * 0.006;
             pitch = Math.max(-1.4, Math.min(1.4, pitch));
-            startX = e.touches[0].pageX; startY = e.touches[0].pageY;
+            touchStartX = e.touches[0].pageX; touchStartY = e.touches[0].pageY;
         });
 
-        // MOBILE BUTTONS
-        document.getElementById('btnLeft').ontouchstart = () => moveX = -0.15;
-        document.getElementById('btnRight').ontouchstart = () => moveX = 0.15;
+        // --- MOBILE BUTTONS ---
+        document.getElementById('btnLeft').ontouchstart = () => moveX = -0.16;
+        document.getElementById('btnRight').ontouchstart = () => moveX = 0.16;
         document.getElementById('btnLeft').ontouchend = document.getElementById('btnRight').ontouchend = () => moveX = 0;
         document.getElementById('btnJump').ontouchstart = () => { if(onGround) vy = 0.28; };
 
-        // INITIAL POSITION
-        px = 0; py = 2; pz = 15;
+        // --- INITIAL POSITION & KAMERA ---
+        px = 0; py = 2.5; pz = 18; // Startpunkt auf der Bahn, nicht an der Kante
+        yaw = 0; // Nach vorne blicken
 
+        // --- GAME LOOP ---
         function loop() {
-            vy -= 0.01; py += vy;
+            vy -= 0.01; py += vy; // Schwerkraft
             
-            // Bewegung relativ zur Kamera
+            // Bewegung relativ zur Blickrichtung
             px += Math.cos(yaw) * moveX;
             pz += Math.sin(yaw) * moveX;
             
-            // Leichter Vorwärtsdrang in Blickrichtung
-            pz -= Math.cos(yaw) * 0.07;
-            px -= Math.sin(yaw) * 0.07;
-
-            onGround = false;
-            platforms.forEach(p => {
-                let dx = Math.abs(px - p.position.x);
-                let dz = Math.abs(pz - p.position.z);
-                if(dx < p.userData.w/2 + 0.4 && dz < p.userData.d/2 + 0.4) {
-                    let top = p.position.y + 0.3;
-                    if(py <= top + 1.5 && py > top && vy <= 0) {
-                        py = top + 1.5; vy = 0; onGround = true;
-                        if(p.userData.id > score) {
-                            score = p.userData.id;
-                            document.getElementById('scoreBox').innerText = "Höhe: " + score;
-                            if(platforms.length - score < 15) addSpiralBlock();
-                        }
-                    }
-                }
-            });
-
-            if(py < currentHeight - 30) { location.reload(); }
-
-            camera.position.set(px, py, pz);
-            camera.rotation.order = "YXZ";
-            camera.rotation.y = yaw;
-            camera.rotation.x = pitch;
-
-            renderer.render(scene, camera);
-            requestAnimationFrame(loop);
-        }
-        loop();
-
-        window.onresize = () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        };
-    </script>
-</body>
-</html>
+            // Automatischer Vorwärtsdr
