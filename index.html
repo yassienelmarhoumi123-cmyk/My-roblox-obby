@@ -3,20 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rainbow Obby - Start Fix</title>
+    <title>Rainbow Obby - Final Fix</title>
     <style>
         body { margin: 0; overflow: hidden; background: #87CEEB; font-family: sans-serif; touch-action: none; }
-        #ui { position: absolute; top: 20px; left: 20px; color: white; z-index: 10; text-shadow: 2px 2px 4px #000; pointer-events: none; }
+        #ui { position: absolute; top: 20px; left: 20px; color: white; z-index: 10; text-shadow: 2px 2px 4px #000; }
         #scoreBox { font-size: 28px; font-weight: bold; }
         .controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: space-around; z-index: 10; pointer-events: none; }
-        .btn { width: 80px; height: 80px; background: rgba(0,0,0,0.5); border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; pointer-events: auto; font-weight: bold; }
-        #crosshair { position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; background: white; border-radius: 50%; transform: translate(-50%, -50%); z-index: 20; }
+        .btn { width: 80px; height: 80px; background: rgba(0,0,0,0.6); border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; pointer-events: auto; font-weight: bold; }
     </style>
 </head>
 <body>
     <div id="ui"><div id="scoreBox">Höhe: 0</div></div>
-    <div id="crosshair"></div>
-
     <div class="controls">
         <div style="display: flex; gap: 20px;">
             <div id="btnLeft" class="btn">L</div>
@@ -34,20 +31,107 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        scene.add(new THREE.AmbientLight(0xffffff, 0.9));
-        const sun = new THREE.DirectionalLight(0xffffff, 0.6);
-        sun.position.set(5, 50, 5);
+        scene.add(new THREE.AmbientLight(0xffffff, 1.0));
+        const sun = new THREE.DirectionalLight(0xffffff, 0.8);
+        sun.position.set(0, 50, 0);
         scene.add(sun);
 
-        // VARIABLEN (Startposition direkt auf dem ersten Block)
-        let px = 0, py = 2, pz = 0, vy = 0; 
-        let moveX = 0, yaw = 0, pitch = 0, onGround = false;
+        // VARIABLEN
+        let px = 0, py = 5, pz = 0; // Start etwas höher in der Luft
+        let vy = 0, moveX = 0, yaw = 0, pitch = 0, onGround = false;
         let score = 0;
         const rainbow = [0xff0000, 0xff7f00, 0xffff00, 0x00ff00, 0x0000ff, 0x4b0082, 0x9400d3];
-
         const platforms = [];
-        let angle = 0;
-        let currentHeight = 0;
 
         // GENERATOR
-        function addBlock(type)
+        function addBlock(id) {
+            let w = 8, d = 8, color = rainbow[id % rainbow.length];
+            let xPos, yPos, zPos;
+
+            if (id === 0) {
+                w = 20; d = 20; color = 0xcccccc; // Riesige graue Startplatte
+                xPos = 0; yPos = 0; zPos = 0;
+            } else {
+                // Erst 5 Blöcke geradeaus, dann Spirale
+                if (id < 6) {
+                    xPos = 0;
+                    zPos = id * -12;
+                    yPos = id * 1.5;
+                } else {
+                    let angle = (id - 5) * 0.4;
+                    xPos = Math.cos(angle) * 12;
+                    zPos = -60 + (Math.sin(angle) * 12);
+                    yPos = id * 1.5;
+                }
+            }
+
+            const b = new THREE.Mesh(new THREE.BoxGeometry(w, 1, d), new THREE.MeshStandardMaterial({ color: color }));
+            b.position.set(xPos, yPos, zPos);
+            scene.add(b);
+            b.userData = { w, d, id };
+            platforms.push(b);
+        }
+
+        // Start-Welt (Sofort 50 Blöcke bauen)
+        for(let i=0; i<50; i++) { addBlock(i); }
+
+        // STEUERUNG
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && onGround) vy = 0.28;
+            if (e.code === 'KeyA') moveX = -0.15;
+            if (e.code === 'KeyD') moveX = 0.15;
+        });
+        window.addEventListener('keyup', (e) => { if (e.code === 'KeyA' || e.code === 'KeyD') moveX = 0; });
+
+        let sX = 0, sY = 0;
+        window.addEventListener('touchstart', e => { sX = e.touches[0].pageX; sY = e.touches[0].pageY; });
+        window.addEventListener('touchmove', e => {
+            yaw -= (e.touches[0].pageX - sX) * 0.007;
+            pitch -= (e.touches[0].pageY - sY) * 0.007;
+            pitch = Math.max(-1.4, Math.min(1.4, pitch));
+            sX = e.touches[0].pageX; sY = e.touches[0].pageY;
+        });
+
+        document.getElementById('btnLeft').ontouchstart = () => moveX = -0.15;
+        document.getElementById('btnRight').ontouchstart = () => moveX = 0.15;
+        document.getElementById('btnLeft').ontouchend = document.getElementById('btnRight').ontouchend = () => moveX = 0;
+        document.getElementById('btnJump').ontouchstart = () => { if(onGround) vy = 0.28; };
+
+        // INITIALER BLICKWINKEL (Ganz wichtig!)
+        yaw = Math.PI; // Schaut genau nach vorne auf die Z-Achse
+
+        function loop() {
+            vy -= 0.01; py += vy;
+            px += Math.cos(yaw) * moveX + Math.sin(yaw) * 0.08;
+            pz += Math.sin(yaw) * moveX - Math.cos(yaw) * 0.08;
+
+            onGround = false;
+            platforms.forEach(p => {
+                let dx = Math.abs(px - p.position.x);
+                let dz = Math.abs(pz - p.position.z);
+                if(dx < p.userData.w/2 + 0.3 && dz < p.userData.d/2 + 0.3) {
+                    let top = p.position.y + 0.5;
+                    if(py <= top + 1.5 && py > top && vy <= 0) {
+                        py = top + 1.5; vy = 0; onGround = true;
+                        if(p.userData.id > score) {
+                            score = p.userData.id;
+                            document.getElementById('scoreBox').innerText = "Höhe: " + score;
+                            if(platforms.length - score < 15) addBlock(platforms.length);
+                        }
+                    }
+                }
+            });
+
+            if(py < -30) location.reload();
+
+            camera.position.set(px, py, pz);
+            camera.rotation.order = "YXZ";
+            camera.rotation.y = yaw; camera.rotation.x = pitch;
+
+            renderer.render(scene, camera);
+            requestAnimationFrame(loop);
+        }
+        loop();
+    </script>
+</body>
+</html>
