@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bacon Obby - Balanced</title>
+    <title>Bacon Obby - Perfect Distance</title>
     <style>
         body { margin: 0; overflow: hidden; background: #111; font-family: sans-serif; touch-action: none; }
         .noise { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 5; opacity: 0.1; pointer-events: none; background: url('https://upload.wikimedia.org/wikipedia/commons/7/76/1k_Static_Noise_v2.png'); }
@@ -47,14 +47,14 @@
             platforms.push(b);
         }
 
-        // --- LEVEL DESIGN: BALANCIERTE ABSTÄNDE (ca. 8.5 - 9 Einheiten) ---
+        // --- LEVEL DESIGN: ROTER BLOCK NÄHER DRAN ---
         block(0, 0, 0, 10, 10, 0x333333);      // Start
-        block(0, 0.8, -8.5, 6, 6, 0x00ff88);  // Sprung 1
-        block(2, 1.6, -17.5, 6, 6, 0x00ccff); // Sprung 2
-        block(-2, 2.4, -26.5, 6, 6, 0xff0088);// Sprung 3
-        block(0, 3.2, -35.5, 6, 6, 0x00ff88); // Sprung 4
-        block(0, 4.0, -44.5, 6, 6, 0x00ccff); // Sprung 5
-        block(0, 5.0, -58, 20, 20, 0xffcc00); // GOLDENES ZIEL (Etwas weiter, aber riesig)
+        block(0, 0.8, -8.5, 6, 6, 0x00ff88);  // Sprung 1 (Grün)
+        block(2, 1.6, -16.5, 6, 6, 0x00ccff); // Sprung 2 (Türkis)
+        block(-2, 2.4, -24.5, 6, 6, 0xff0088);// Sprung 3 (ROT/PINK) -> NÄHER DRAN (war -26.5)
+        block(0, 3.2, -32.5, 6, 6, 0x00ff88); // Sprung 4 (Grün)
+        block(0, 4.0, -41.5, 6, 6, 0x00ccff); // Sprung 5 (Türkis)
+        block(0, 5.0, -55, 20, 20, 0xffcc00); // GOLDENES ZIEL
 
         let px = 0, py = 2, pz = 0, vy = 0;
         let moveX = 0, yaw = 0, pitch = 0, onGround = false;
@@ -86,7 +86,7 @@
         function loop() {
             vy -= 0.01; py += vy;
             px += Math.cos(yaw) * moveX; pz += Math.sin(yaw) * moveX;
-            pz -= Math.cos(yaw) * 0.09; px -= Math.sin(yaw) * 0.09; // Angenehmer Vorwärts-Speed
+            pz -= Math.cos(yaw) * 0.09; px -= Math.sin(yaw) * 0.09; 
 
             onGround = false;
             platforms.forEach(p => {
