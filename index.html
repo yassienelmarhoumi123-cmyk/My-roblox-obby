@@ -3,155 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Steal the Brainrot - Obby Edition</title>
+    <title>BRAINROT STEALER - FIX</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #000; font-family: 'Comic Sans MS', sans-serif; touch-action: none; }
-        #ui { position: absolute; top: 20px; left: 20px; color: #0f0; z-index: 10; text-shadow: 2px 2px 0px #000; pointer-events: none; }
-        #scoreBox { font-size: 32px; font-weight: bold; }
-        #msg { font-size: 18px; color: #fff; }
-        .controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: center; gap: 15px; z-index: 10; pointer-events: none; }
-        .btn { width: 80px; height: 80px; background: rgba(255,0,255,0.4); border-radius: 15px; border: 3px solid #fff; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; pointer-events: auto; font-weight: bold; }
-        #btnForward { background: rgba(0, 255, 255, 0.5); width: 90px; height: 90px; }
+        body { margin: 0; overflow: hidden; background: #87CEEB; font-family: 'Arial Black', sans-serif; touch-action: none; }
+        #gui { position: absolute; width: 100%; top: 20px; text-align: center; color: #fff; z-index: 10; pointer-events: none; text-shadow: 2px 2px 0px #000; }
+        .mobile-controls { position: absolute; bottom: 40px; width: 100%; display: flex; justify-content: space-around; z-index: 100; pointer-events: none; }
+        .btn { width: 75px; height: 75px; background: rgba(0,0,0,0.6); border: 3px solid #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; pointer-events: auto; font-weight: bold; }
+        #btnJump { background: rgba(0, 255, 100, 0.5); width: 90px; height: 90px; }
     </style>
 </head>
 <body>
-    <div id="ui">
-        <div id="scoreBox">BRAINROT STOLEN: 0</div>
-        <div id="msg">FIND THE NEXT ITEM!</div>
+
+    <div id="gui">
+        <div style="font-size: 30px;" id="score">STEALS: 0</div>
+        <div style="font-size: 14px;">WISCHE ZUM UMSCHAUEN</div>
     </div>
-    <div class="controls">
-        <div id="btnLeft" class="btn">LEFT</div>
-        <div id="btnForward" class="btn">GO SIGMA</div>
-        <div id="btnRight" class="btn">RIGHT</div>
-        <div id="btnJump" class="btn">YEET</div>
+
+    <div class="mobile-controls">
+        <div id="btnLeft" class="btn">L</div>
+        <div id="btnFwd" class="btn" style="background: rgba(255,255,255,0.4)">VOR</div>
+        <div id="btnRight" class="btn">R</div>
+        <div id="btnJump" class="btn">UP</div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x111111);
+        scene.background = new THREE.Color(0x87CEEB);
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        scene.add(new THREE.AmbientLight(0xffffff, 1.2));
-        
-        let px = 0, py = 5, pz = 10, vy = 0; 
-        let moveX = 0, moveZ = 0, yaw = 0, pitch = 0, onGround = false;
-        let score = 0;
-        const rainbow = [0xff00ff, 0x00ffff, 0xffff00, 0x00ff00, 0xff0000];
+        scene.add(new THREE.AmbientLight(0xffffff, 1.0));
+        const sun = new THREE.DirectionalLight(0xffffff, 0.8);
+        sun.position.set(10, 50, 10);
+        scene.add(sun);
+
+        // PLAYER
+        let px = 0, py = 10, pz = 0; // Spawn über der Mitte
+        let vy = 0, moveX = 0, moveZ = 0, yaw = 0, pitch = -0.2;
+        let score = 0, onGround = false;
+
         const platforms = [];
         const items = [];
 
-        // HIER WERDEN DIE ITEMS ERZEUGT (Kleine schwebende Würfel als Platzhalter für Memes)
-        function addItem(x, y, z) {
-            const geom = new THREE.IcosahedronGeometry(1, 0);
-            const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.5 });
-            const item = new THREE.Mesh(geom, mat);
-            item.position.set(x, y + 2, z);
-            scene.add(item);
-            items.push(item);
-        }
-
         function addBlock(id) {
-            let w = 7, d = 7, h = 1, color = rainbow[id % rainbow.length];
-            let xPos, yPos, zPos;
-
-            if (id === 0) {
-                w = 20; d = 20; color = 0x333333;
-                xPos = 0; yPos = 0; zPos = 0;
-            } else {
-                let a = id * 0.5;
-                xPos = Math.sin(a) * 12;
-                zPos = id * -12;
-                yPos = id * 2;
-                // Jede 3. Plattform hat ein Brainrot-Item zum Stehlen
-                if (id % 3 === 0) addItem(xPos, yPos, zPos);
-            }
-
-            const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshStandardMaterial({ color: color, wireframe: false }));
-            b.position.set(xPos, yPos, zPos);
-            scene.add(b);
-            b.userData = { w, d, h, id };
-            platforms.push(b);
-        }
-
-        for(let i=0; i<60; i++) addBlock(i);
-
-        // STEUERUNG
-        window.addEventListener('keydown', (e) => {
-            if (e.code === 'Space' && onGround) vy = 0.35;
-            if (e.code === 'KeyA') moveX = -0.18;
-            if (e.code === 'KeyD') moveX = 0.18;
-            if (e.code === 'KeyW') moveZ = -0.18;
-            if (e.code === 'KeyS') moveZ = 0.18;
-        });
-        window.addEventListener('keyup', (e) => {
-            if (['KeyA', 'KeyD'].includes(e.code)) moveX = 0;
-            if (['KeyW', 'KeyS'].includes(e.code)) moveZ = 0;
-        });
-
-        document.getElementById('btnForward').ontouchstart = () => moveZ = -0.18;
-        document.getElementById('btnForward').ontouchend = () => moveZ = 0;
-        document.getElementById('btnLeft').ontouchstart = () => moveX = -0.18;
-        document.getElementById('btnLeft').ontouchend = () => moveX = 0;
-        document.getElementById('btnRight').ontouchstart = () => moveX = 0.18;
-        document.getElementById('btnRight').ontouchend = () => moveX = 0;
-        document.getElementById('btnJump').ontouchstart = (e) => { e.preventDefault(); if(onGround) vy = 0.35; };
-
-        let sX = 0, sY = 0;
-        window.addEventListener('touchstart', e => { sX = e.touches[0].pageX; sY = e.touches[0].pageY; });
-        window.addEventListener('touchmove', e => {
-            yaw -= (e.touches[0].pageX - sX) * 0.008;
-            pitch -= (e.touches[0].pageY - sY) * 0.008;
-            pitch = Math.max(-1.4, Math.min(1.4, pitch));
-            sX = e.touches[0].pageX; sY = e.touches[0].pageY;
-        });
-
-        function loop() {
-            vy -= 0.013; py += vy;
-            let nextPx = px + (Math.sin(yaw) * moveZ + Math.cos(yaw) * moveX);
-            let nextPz = pz + (Math.cos(yaw) * moveZ - Math.sin(yaw) * moveX);
-
-            onGround = false;
-            platforms.forEach(p => {
-                let dx = Math.abs(nextPx - p.position.x);
-                let dz = Math.abs(nextPz - p.position.z);
-                if (dx < p.userData.w/2 + 0.3 && dz < p.userData.d/2 + 0.3) {
-                    let pTop = p.position.y + p.userData.h/2;
-                    if (py <= pTop + 1.6 && py > pTop && vy <= 0) {
-                        py = pTop + 1.6; vy = 0; onGround = true;
-                        if(platforms.length - p.userData.id < 20) addBlock(platforms.length);
-                    }
-                }
-            });
-
-            // ITEM STEHLEN LOGIK
-            items.forEach((item, index) => {
-                let dist = Math.sqrt((px-item.position.x)**2 + (py-item.position.y)**2 + (pz-item.position.z)**2);
-                if (dist < 2.5) {
-                    scene.remove(item);
-                    items.splice(index, 1);
-                    score++;
-                    document.getElementById('scoreBox').innerText = "BRAINROT STOLEN: " + score;
-                    document.getElementById('msg').innerText = "W RIZZ! +1";
-                    setTimeout(() => document.getElementById('msg').innerText = "", 1000);
-                }
-                item.rotation.y += 0.05; // Items drehen sich
-            });
-
-            px = nextPx; pz = nextPz;
-            if(py < -40) location.reload();
-
-            camera.position.set(px, py, pz);
-            camera.rotation.order = "YXZ";
-            camera.rotation.y = yaw; camera.rotation.x = pitch;
-
-            renderer.render(scene, camera);
-            requestAnimationFrame(loop);
-        }
-        loop();
-    </script>
-</body>
-</html>
+            let w = id === 0 ? 25 : 7;
+            let d = id === 0 ? 25 : 7;
+            let h = 1.5
