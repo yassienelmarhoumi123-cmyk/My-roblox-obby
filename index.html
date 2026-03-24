@@ -3,64 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rainbow Obby - Solid Blocks</title>
+    <title>Steal the Brainrot - Obby Edition</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #87CEEB; font-family: sans-serif; touch-action: none; }
-        #ui { position: absolute; top: 20px; left: 20px; color: white; z-index: 10; text-shadow: 2px 2px 4px #000; pointer-events: none; }
-        #scoreBox { font-size: 28px; font-weight: bold; }
+        body { margin: 0; overflow: hidden; background: #000; font-family: 'Comic Sans MS', sans-serif; touch-action: none; }
+        #ui { position: absolute; top: 20px; left: 20px; color: #0f0; z-index: 10; text-shadow: 2px 2px 0px #000; pointer-events: none; }
+        #scoreBox { font-size: 32px; font-weight: bold; }
+        #msg { font-size: 18px; color: #fff; }
         .controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: center; gap: 15px; z-index: 10; pointer-events: none; }
-        .btn { width: 75px; height: 75px; background: rgba(0,0,0,0.6); border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; color: white; font-size: 16px; pointer-events: auto; font-weight: bold; -webkit-user-select: none; }
-        #btnForward { background: rgba(0, 255, 136, 0.4); width: 90px; height: 90px; }
+        .btn { width: 80px; height: 80px; background: rgba(255,0,255,0.4); border-radius: 15px; border: 3px solid #fff; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; pointer-events: auto; font-weight: bold; }
+        #btnForward { background: rgba(0, 255, 255, 0.5); width: 90px; height: 90px; }
     </style>
 </head>
 <body>
-    <div id="ui"><div id="scoreBox">Höhe: 0</div></div>
+    <div id="ui">
+        <div id="scoreBox">BRAINROT STOLEN: 0</div>
+        <div id="msg">FIND THE NEXT ITEM!</div>
+    </div>
     <div class="controls">
-        <div id="btnLeft" class="btn">LINKS</div>
-        <div id="btnForward" class="btn">VOR</div>
-        <div id="btnRight" class="btn">RECHTS</div>
-        <div id="btnJump" class="btn">SPRUNG</div>
+        <div id="btnLeft" class="btn">LEFT</div>
+        <div id="btnForward" class="btn">GO SIGMA</div>
+        <div id="btnRight" class="btn">RIGHT</div>
+        <div id="btnJump" class="btn">YEET</div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x87CEEB);
+        scene.background = new THREE.Color(0x111111);
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        scene.add(new THREE.AmbientLight(0xffffff, 1.0));
-        const sun = new THREE.DirectionalLight(0xffffff, 0.8);
-        sun.position.set(10, 50, 10);
-        scene.add(sun);
-
-        let px = 0, py = 5, pz = 10; 
-        let vy = 0, moveX = 0, moveZ = 0, yaw = 0, pitch = 0, onGround = false;
+        scene.add(new THREE.AmbientLight(0xffffff, 1.2));
+        
+        let px = 0, py = 5, pz = 10, vy = 0; 
+        let moveX = 0, moveZ = 0, yaw = 0, pitch = 0, onGround = false;
         let score = 0;
-        const rainbow = [0xff0000, 0xff7f00, 0xffff00, 0x00ff00, 0x0000ff, 0x4b0082, 0x9400d3];
+        const rainbow = [0xff00ff, 0x00ffff, 0xffff00, 0x00ff00, 0xff0000];
         const platforms = [];
+        const items = [];
+
+        // HIER WERDEN DIE ITEMS ERZEUGT (Kleine schwebende Würfel als Platzhalter für Memes)
+        function addItem(x, y, z) {
+            const geom = new THREE.IcosahedronGeometry(1, 0);
+            const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.5 });
+            const item = new THREE.Mesh(geom, mat);
+            item.position.set(x, y + 2, z);
+            scene.add(item);
+            items.push(item);
+        }
 
         function addBlock(id) {
-            let w = 8, d = 8, h = 1.2, color = rainbow[id % rainbow.length];
+            let w = 7, d = 7, h = 1, color = rainbow[id % rainbow.length];
             let xPos, yPos, zPos;
 
             if (id === 0) {
-                w = 25; d = 25; h = 1; color = 0xcccccc;
+                w = 20; d = 20; color = 0x333333;
                 xPos = 0; yPos = 0; zPos = 0;
             } else {
-                if (id < 6) {
-                    xPos = 0; zPos = id * -10; yPos = id * 2;
-                } else {
-                    let a = (id - 5) * 0.45;
-                    xPos = Math.sin(a) * 13;
-                    zPos = -50 + (Math.cos(a) * -13);
-                    yPos = id * 2;
-                }
+                let a = id * 0.5;
+                xPos = Math.sin(a) * 12;
+                zPos = id * -12;
+                yPos = id * 2;
+                // Jede 3. Plattform hat ein Brainrot-Item zum Stehlen
+                if (id % 3 === 0) addItem(xPos, yPos, zPos);
             }
 
-            const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshStandardMaterial({ color: color }));
+            const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshStandardMaterial({ color: color, wireframe: false }));
             b.position.set(xPos, yPos, zPos);
             scene.add(b);
             b.userData = { w, d, h, id };
@@ -71,24 +81,24 @@
 
         // STEUERUNG
         window.addEventListener('keydown', (e) => {
-            if (e.code === 'Space' && onGround) vy = 0.32;
-            if (e.code === 'KeyA') moveX = -0.16;
-            if (e.code === 'KeyD') moveX = 0.16;
-            if (e.code === 'KeyW') moveZ = -0.16;
-            if (e.code === 'KeyS') moveZ = 0.16;
+            if (e.code === 'Space' && onGround) vy = 0.35;
+            if (e.code === 'KeyA') moveX = -0.18;
+            if (e.code === 'KeyD') moveX = 0.18;
+            if (e.code === 'KeyW') moveZ = -0.18;
+            if (e.code === 'KeyS') moveZ = 0.18;
         });
         window.addEventListener('keyup', (e) => {
             if (['KeyA', 'KeyD'].includes(e.code)) moveX = 0;
             if (['KeyW', 'KeyS'].includes(e.code)) moveZ = 0;
         });
 
-        document.getElementById('btnForward').ontouchstart = () => moveZ = -0.16;
+        document.getElementById('btnForward').ontouchstart = () => moveZ = -0.18;
         document.getElementById('btnForward').ontouchend = () => moveZ = 0;
-        document.getElementById('btnLeft').ontouchstart = () => moveX = -0.16;
+        document.getElementById('btnLeft').ontouchstart = () => moveX = -0.18;
         document.getElementById('btnLeft').ontouchend = () => moveX = 0;
-        document.getElementById('btnRight').ontouchstart = () => moveX = 0.16;
+        document.getElementById('btnRight').ontouchstart = () => moveX = 0.18;
         document.getElementById('btnRight').ontouchend = () => moveX = 0;
-        document.getElementById('btnJump').ontouchstart = (e) => { e.preventDefault(); if(onGround) vy = 0.32; };
+        document.getElementById('btnJump').ontouchstart = (e) => { e.preventDefault(); if(onGround) vy = 0.35; };
 
         let sX = 0, sY = 0;
         window.addEventListener('touchstart', e => { sX = e.touches[0].pageX; sY = e.touches[0].pageY; });
@@ -100,9 +110,7 @@
         });
 
         function loop() {
-            vy -= 0.012; py += vy;
-
-            // Bewegung berechnen
+            vy -= 0.013; py += vy;
             let nextPx = px + (Math.sin(yaw) * moveZ + Math.cos(yaw) * moveX);
             let nextPz = pz + (Math.cos(yaw) * moveZ - Math.sin(yaw) * moveX);
 
@@ -110,32 +118,27 @@
             platforms.forEach(p => {
                 let dx = Math.abs(nextPx - p.position.x);
                 let dz = Math.abs(nextPz - p.position.z);
-                let halfW = p.userData.w / 2 + 0.3;
-                let halfD = p.userData.d / 2 + 0.3;
-                let halfH = p.userData.h / 2;
-
-                if (dx < halfW && dz < halfD) {
-                    let pTop = p.position.y + halfH;
-                    let pBottom = p.position.y - halfH;
-
-                    // Oben drauf landen
+                if (dx < p.userData.w/2 + 0.3 && dz < p.userData.d/2 + 0.3) {
+                    let pTop = p.position.y + p.userData.h/2;
                     if (py <= pTop + 1.6 && py > pTop && vy <= 0) {
                         py = pTop + 1.6; vy = 0; onGround = true;
-                        if(p.userData.id > score) {
-                            score = p.userData.id;
-                            document.getElementById('scoreBox').innerText = "Höhe: " + score;
-                            if(platforms.length - score < 20) addBlock(platforms.length);
-                        }
-                    } 
-                    // Von unten dagegen stoßen (Kopf stoßen)
-                    else if (py + 0.5 > pBottom && py < pTop && vy > 0) {
-                        vy = -0.05; // Nach unten abprallen
-                    }
-                    // Seitliche Kollision verhindern (einfaches Blockieren)
-                    else if (py < pTop && py > pBottom) {
-                        nextPx = px; nextPz = pz; 
+                        if(platforms.length - p.userData.id < 20) addBlock(platforms.length);
                     }
                 }
+            });
+
+            // ITEM STEHLEN LOGIK
+            items.forEach((item, index) => {
+                let dist = Math.sqrt((px-item.position.x)**2 + (py-item.position.y)**2 + (pz-item.position.z)**2);
+                if (dist < 2.5) {
+                    scene.remove(item);
+                    items.splice(index, 1);
+                    score++;
+                    document.getElementById('scoreBox').innerText = "BRAINROT STOLEN: " + score;
+                    document.getElementById('msg').innerText = "W RIZZ! +1";
+                    setTimeout(() => document.getElementById('msg').innerText = "", 1000);
+                }
+                item.rotation.y += 0.05; // Items drehen sich
             });
 
             px = nextPx; pz = nextPz;
