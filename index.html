@@ -1,57 +1,214 @@
 <!DOCTYPE html>
-<html>
+<html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Roblox Back to Basics</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bacon Obby - R6 Update</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #66ccff; font-family: sans-serif; }
-        .controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: space-around; z-index: 10; }
-        .btn { width: 70px; height: 70px; background: rgba(0,0,0,0.5); border: 2px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; user-select: none; -webkit-user-select: none; }
+        body { margin: 0; overflow: hidden; background: #222; font-family: 'Segoe UI', sans-serif; touch-action: none; }
+        
+        /* RAUSCHEN (Film Grain) */
+        .noise {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 5; opacity: 0.08; pointer-events: none;
+            background: url('https://upload.wikimedia.org/wikipedia/commons/7/76/1k_Static_Noise_v2.png');
+        }
+
+        #ui { position: absolute; top: 20px; left: 20px; color: white; text-shadow: 2px 2px 4px #000; pointer-events: none; z-index: 10; }
+        .controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: space-around; pointer-events: none; z-index: 10; }
+        .btn { width: 70px; height: 70px; background: rgba(0,0,0,0.6); border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-size: 25px; pointer-events: auto; user-select: none; }
     </style>
 </head>
 <body>
+    <div class="noise"></div> 
+    
+    <div id="ui">
+        <h2>BACON OBBY</h2>
+        <p id="debug">Lädt...</p>
+    </div>
+
     <div class="controls">
-        <div id="left" class="btn">◀</div>
-        <div id="right" class="btn">▶</div>
-        <div id="jump" class="btn">JUMP</div>
+        <div style="display: flex; gap: 15px;">
+            <div id="btnLeft" class="btn">◀</div>
+            <div id="btnRight" class="btn">▶</div>
+        </div>
+        <div id="btnJump" class="btn">JUMP</div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
+        // SZENE SETUP
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x66ccff);
+        scene.background = new THREE.Color(0x33bbaa);
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        const light = new THREE.DirectionalLight(0xffffff, 1);
+        // LICHT
+        const light = new THREE.DirectionalLight(0xffffff, 1.2);
         light.position.set(5, 10, 5);
         scene.add(light);
         scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
-        // DER ALTE EINFACHE AVATAR (Ein Block)
-        const player = new THREE.Mesh(
-            new THREE.BoxGeometry(1, 1, 1),
-            new THREE.MeshStandardMaterial({ color: 0xffffff })
-        );
-        player.position.y = 0.5;
+        // --- ROBLOX AVATAR BAUEN (R6 STYLE) ---
+        const player = new THREE.Group();
+
+        // Materialien
+        const skinMat = new THREE.MeshStandardMaterial({ color: 0xffdbac, roughness: 0.8 }); // Haut
+        const torseMat = new THREE.MeshStandardMaterial({ color: 0x3333ee, roughness: 0.8 }); // Blaues Shirt
+        const limeMat = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.8 }); // Dunkle Glieder
+        const hairBaseMat = new THREE.MeshStandardMaterial({ color: 0x3d2b1f, roughness: 0.8 }); // Dunkles Haar
+        const hairStreakMat = new THREE.MeshStandardMaterial({ color: 0xffd700, roughness: 0.8 }); // Goldene Strähne
+
+        // Torso (Der R6 Rumpf)
+        const torso = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.0, 0.4), torseMat);
+        torso.position.y = 0.5;
+        player.add(torso);
+
+        // Kopf
+        const headGroup = new THREE.Group();
+        const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), skinMat);
+        headGroup.add(head);
+
+        // Bacon Hair (Dunkel mit Streifen)
+        const hairBase = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.2, 0.6), hairBaseMat);
+        hairBase.position.y = 0.35;
+        headGroup.add(hairBase);
+        const hairStreak = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.25, 0.61), hairStreakMat);
+        hairStreak.position.set(-0.2, 0.35, 0); // Die legendäre Bacon-Strähne
+        headGroup.add(hairStreak);
+
+        // Augen (Kleine schwarze Punkte)
+        const eyeGeo = new THREE.BoxGeometry(0.08, 0.08, 0.01);
+        const eyeMat = new THREE.MeshStandardMaterial({ color: 0x000000 });
+        const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
+        leftEye.position.set(-0.15, 0.05, 0.25);
+        headGroup.add(leftEye);
+        const rightEye = new THREE.Mesh(eyeGeo, eyeMat);
+        rightEye.position.set(0.15, 0.05, 0.25);
+        headGroup.add(rightEye);
+
+        headGroup.position.y = 1.35;
+        player.add(headGroup);
+
+        // Arme (Beweglich)
+        const leftArmGroup = new THREE.Group();
+        const leftArm = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.9, 0.3), limeMat);
+        leftArm.position.y = -0.4; // Drehpunkt an die Schulter
+        leftArmGroup.add(leftArm);
+        leftArmGroup.position.set(-0.6, 1.0, 0);
+        player.add(leftArmGroup);
+
+        const rightArmGroup = new THREE.Group();
+        const rightArm = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.9, 0.3), limeMat);
+        rightArm.position.y = -0.4;
+        rightArmGroup.add(rightArm);
+        rightArmGroup.position.set(0.6, 1.0, 0);
+        player.add(rightArmGroup);
+
+        // Beine (Beweglich)
+        const leftLegGroup = new THREE.Group();
+        const leftLeg = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.9, 0.35), limeMat);
+        leftLeg.position.y = -0.4; // Drehpunkt an die Hüfte
+        leftLegGroup.add(leftLeg);
+        leftLegGroup.position.set(-0.25, 0.1, 0);
+        player.add(leftLegGroup);
+
+        const rightLegGroup = new THREE.Group();
+        const rightLeg = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.9, 0.35), limeMat);
+        rightLeg.position.y = -0.4;
+        rightLegGroup.add(rightLeg);
+        rightLegGroup.position.set(0.25, 0.1, 0);
+        player.add(rightLegGroup);
+
         scene.add(player);
 
-        // BODEN
-        const floor = new THREE.Mesh(
-            new THREE.BoxGeometry(100, 0.5, 10),
-            new THREE.MeshStandardMaterial({ color: 0x22cc22 })
-        );
-        floor.position.y = -0.25;
-        scene.add(floor);
+        // --- WELT ---
+        const platforms = [];
+        function block(x, y, z, w, d, c) {
+            const b = new THREE.Mesh(new THREE.BoxGeometry(w, 0.5, d), new THREE.MeshStandardMaterial({ color: c, roughness: 0.8 }));
+            b.position.set(x, y, z);
+            scene.add(b);
+            b.userData = { w, d };
+            platforms.push(b);
+        }
 
-        camera.position.set(0, 3, 7);
-        camera.lookAt(0, 0, 0);
+        block(0, -0.3, 0, 5, 5, 0x333333); // Start
+        block(0, 0, -6, 3, 3, 0x00ff88);   // Block 1
+        block(2, 0.6, -11, 2, 2, 0x00ccff); // Block 2
+        block(-2, 1.2, -16, 2, 2, 0xff0088); // Block 3
+        block(0, 1.8, -22, 5, 5, 0xffdd00); // Ziel
 
-        let moveX = 0, vy = 0, onGround = true;
+        // PHYSIK & ANIMATION
+        let px = 0, py = 5, pz = 0, vy = 0;
+        let keys = { a: false, d: false, w: false, s: false };
+        let onGround = false;
+        let walkTime = 0;
 
-        document.getElementById('left').ontouchstart = () => moveX = -0.15;
-        document.getElementById('right').ontouchstart = () => moveX = 0.15;
-        document
+        // INPUT
+        window.addEventListener('keydown', e => {
+            if(e.code === 'KeyA') keys.a = true; if(e.code === 'KeyD') keys.d = true;
+            if(e.code === 'KeyW') keys.w = true; if(e.code === 'KeyS') keys.s = true;
+            if(e.code === 'Space' && onGround) vy = 0.18; // Springt etwas höher
+        });
+        window.addEventListener('keyup', e => {
+            if(e.code === 'KeyA') keys.a = false; if(e.code === 'KeyD') keys.d = false;
+            if(e.code === 'KeyW') keys.w = false; if(e.code === 'KeyS') keys.s = false;
+        });
+        
+        document.getElementById('btnLeft').ontouchstart = () => keys.a = true;
+        document.getElementById('btnLeft').ontouchend = () => keys.a = false;
+        document.getElementById('btnRight').ontouchstart = () => keys.d = true;
+        document.getElementById('btnRight').ontouchend = () => keys.d = false;
+        document.getElementById('btnJump').ontouchstart = () => { if(onGround) vy = 0.18; };
+
+        document.getElementById('debug').innerText = "R6 Avatar aktiv!";
+
+        function loop() {
+            let isMoving = false;
+            if(keys.a) { px -= 0.12; isMoving = true; }
+            if(keys.d) { px += 0.12; isMoving = true; }
+            if(keys.w) { pz -= 0.12; isMoving = true; }
+            if(keys.s) { pz += 0.12; isMoving = true; }
+            
+            vy -= 0.009; py += vy;
+
+            // KOLLISION
+            onGround = false;
+            platforms.forEach(p => {
+                let dx = Math.abs(px - p.position.x);
+                let dz = Math.abs(pz - p.position.z);
+                if(dx < p.userData.w/2 + 0.3 && dz < p.userData.d/2 + 0.3) {
+                    let top = p.position.y + 0.25;
+                    if(py <= top && py > top - 0.4 && vy <= 0) {
+                        py = top; vy = 0; onGround = true;
+                    }
+                }
+            });
+
+            if(py < -5) { px = 0; py = 2; pz = 0; vy = 0; }
+
+            // Position setzen & Lauf-Animation
+            player.position.set(px, py, pz);
+            if(isMoving && onGround) {
+                walkTime += 0.2;
+                leftLegGroup.rotation.x = Math.sin(walkTime) * 0.5;
+                rightLegGroup.rotation.x = -Math.sin(walkTime) * 0.5;
+                leftArmGroup.rotation.x = -Math.sin(walkTime) * 0.4;
+                rightArmGroup.rotation.x = Math.sin(walkTime) * 0.4;
+            } else {
+                leftLegGroup.rotation.x = 0; rightLegGroup.rotation.x = 0;
+                leftArmGroup.rotation.x = 0; rightArmGroup.rotation.x = 0;
+            }
+
+            camera.position.set(px, py + 5, pz + 8);
+            camera.lookAt(px, py + 1.5, pz - 2);
+
+            renderer.render(scene, camera);
+            requestAnimationFrame(loop);
+        }
+        loop();
+    </script>
+</body>
+</html>
