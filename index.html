@@ -1,33 +1,115 @@
-// DER KORRIGIERTE AVATAR (Steht jetzt AUF dem Block)
-const player = new THREE.Group();
-const mat = new THREE.MeshStandardMaterial({ color: 0xcccccc });
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Mein Roblox Game - Behoben</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #222; font-family: sans-serif; }
+        .controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: space-around; z-index: 10; }
+        .btn { width: 70px; height: 70px; background: rgba(0,0,0,0.5); border: 2px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 25px; pointer-events: auto; user-select: none; -webkit-user-select: none; }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <div id="btnL" class="btn">◀</div>
+        <div id="btnR" class="btn">▶</div>
+        <div id="btnJ" class="btn">JUMP</div>
+    </div>
 
-// Torso (0.5 Einheiten hoch schieben)
-const torso = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1, 0.4), mat);
-torso.position.y = 1.5; 
-player.add(torso);
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x333333);
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
 
-// Kopf
-const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), mat);
-head.position.y = 2.3;
-player.add(head);
+        const light = new THREE.DirectionalLight(0xffffff, 1.2);
+        light.position.set(5, 10, 7);
+        scene.add(light);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
 
-// Arme
-const lArm = new THREE.Mesh(new THREE.BoxGeometry(0.35, 1, 0.35), mat);
-lArm.position.set(-0.65, 1.5, 0);
-player.add(lArm);
+        // --- BODEN ---
+        const floorGeo = new THREE.BoxGeometry(20, 0.5, 20);
+        const floorMat = new THREE.MeshStandardMaterial({ color: 0x00ffff, transparent: true, opacity: 0.5 });
+        const floor = new THREE.Mesh(floorGeo, floorMat);
+        floor.position.y = -0.25;
+        scene.add(floor);
 
-const rArm = new THREE.Mesh(new THREE.BoxGeometry(0.35, 1, 0.35), mat);
-rArm.position.set(0.65, 1.5, 0);
-player.add(rArm);
+        // --- DER BEHOBENE AVATAR ---
+        const player = new THREE.Group();
+        const mat = new THREE.MeshStandardMaterial({ color: 0xcccccc });
 
-// Beine (Stehen jetzt direkt auf dem Boden bei y=0.5)
-const lLeg = new THREE.Mesh(new THREE.BoxGeometry(0.38, 1, 0.38), mat);
-lLeg.position.set(-0.22, 0.5, 0);
-player.add(lLeg);
+        // Torso
+        const torso = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1, 0.4), mat);
+        torso.position.y = 1; // Mitte des Torsos ist bei y=1, Füße bei y=0.5
+        player.add(torso);
 
-const rLeg = new THREE.Mesh(new THREE.BoxGeometry(0.38, 1, 0.38), mat);
-rLeg.position.set(0.22, 0.5, 0);
-player.add(rLeg);
+        // Kopf
+        const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), mat);
+        head.position.y = 1.8;
+        player.add(head);
 
-scene.add(player);
+        // Arme
+        const lArm = new THREE.Mesh(new THREE.BoxGeometry(0.35, 1, 0.35), mat);
+        lArm.position.set(-0.65, 1, 0);
+        player.add(lArm);
+
+        const rArm = new THREE.Mesh(new THREE.BoxGeometry(0.35, 1, 0.35), mat);
+        rArm.position.set(0.65, 1, 0);
+        player.add(rArm);
+
+        // Beine (Stehen jetzt direkt auf dem Boden bei y=0.5)
+        const lLeg = new THREE.Mesh(new THREE.BoxGeometry(0.38, 1, 0.38), mat);
+        lLeg.position.set(-0.25, 0, 0);
+        player.add(lLeg);
+
+        const rLeg = new THREE.Mesh(new THREE.BoxGeometry(0.38, 1, 0.38), mat);
+        rLeg.position.set(0.25, 0, 0);
+        player.add(rLeg);
+
+        scene.add(player);
+        
+        // --- KAMERA POSITION ---
+        camera.position.set(0, 3, 7);
+        camera.lookAt(0, 1, 0);
+
+        // --- STEUERUNG ---
+        let moveX = 0, vy = 0, onGround = true;
+        
+        document.getElementById('btnL').ontouchstart = () => moveX = -0.15;
+        document.getElementById('btnR').ontouchstart = () => moveX = 0.15;
+        document.getElementById('btnL').ontouchend = document.getElementById('btnR').ontouchend = () => moveX = 0;
+        document.getElementById('btnJ').ontouchstart = () => { if(onGround) { vy = 0.22; onGround = false; } };
+
+        // --- KONTROLLIERTES UPDATE DES BODENS IN DER ANIMATION ---
+        function animate() {
+            player.position.x += moveX;
+            vy -= 0.01;
+            player.position.y += vy;
+            
+            // DIE WICHTIGSTE ZEILE: Stoppt genau auf y=0 (wo die Füße sind)
+            if(player.position.y <= 0) {
+                player.position.y = 0;
+                vy = 0;
+                onGround = true;
+            }
+
+            camera.position.x = player.position.x;
+            camera.lookAt(player.position.x, 1, 0);
+            
+            renderer.render(scene, camera);
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        window.onresize = () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        };
+    </script>
+</body>
+</html>
