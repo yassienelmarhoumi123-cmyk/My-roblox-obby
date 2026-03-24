@@ -3,22 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rainbow Obby - Correct Orientation</title>
+    <title>Rainbow Obby - Manual Control</title>
     <style>
         body { margin: 0; overflow: hidden; background: #87CEEB; font-family: sans-serif; touch-action: none; }
         #ui { position: absolute; top: 20px; left: 20px; color: white; z-index: 10; text-shadow: 2px 2px 4px #000; pointer-events: none; }
         #scoreBox { font-size: 28px; font-weight: bold; }
         .controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: space-around; z-index: 10; pointer-events: none; }
         .btn { width: 85px; height: 85px; background: rgba(0,0,0,0.6); border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; pointer-events: auto; font-weight: bold; -webkit-user-select: none; }
+        #btnForward { width: 100px; height: 100px; background: rgba(255,255,255,0.3); }
     </style>
 </head>
 <body>
     <div id="ui"><div id="scoreBox">Höhe: 0</div></div>
     <div class="controls">
-        <div style="display: flex; gap: 20px;">
-            <div id="btnLeft" class="btn">L</div>
-            <div id="btnRight" class="btn">R</div>
-        </div>
+        <div id="btnLeft" class="btn">L</div>
+        <div id="btnForward" class="btn">VOR</div>
+        <div id="btnRight" class="btn">R</div>
         <div id="btnJump" class="btn">JUMP</div>
     </div>
 
@@ -36,9 +36,8 @@
         sun.position.set(0, 50, 0);
         scene.add(sun);
 
-        // --- POSITION & BLICKWINKEL ---
-        let px = 0, py = 5, pz = 5; // Start leicht versetzt nach hinten
-        let vy = 0, moveX = 0, yaw = 0, pitch = 0, onGround = false;
+        let px = 0, py = 5, pz = 10; 
+        let vy = 0, moveX = 0, moveZ = 0, yaw = 0, pitch = 0, onGround = false;
         let score = 0;
         const rainbow = [0xff0000, 0xff7f00, 0xffff00, 0x00ff00, 0x0000ff, 0x4b0082, 0x9400d3];
         const platforms = [];
@@ -48,16 +47,17 @@
             let xPos, yPos, zPos;
 
             if (id === 0) {
-                w = 20; d = 25; color = 0xcccccc;
-                xPos = 0; yPos = 0; zPos = -5; // Startplatte liegt vor uns
+                w = 20; d = 20; color = 0xcccccc;
+                xPos = 0; yPos = 0; zPos = 0;
             } else {
                 if (id < 6) {
-                    xPos = 0; zPos = id * -15; yPos = id * 2.2;
+                    // Die ersten Stufen sind jetzt viel näher (nur 9 Einheiten Abstand)
+                    xPos = 0; zPos = id * -9; yPos = id * 1.8;
                 } else {
                     let a = (id - 5) * 0.45;
-                    xPos = Math.sin(a) * 15;
-                    zPos = -75 + (Math.cos(a) * -15);
-                    yPos = id * 2.2;
+                    xPos = Math.sin(a) * 12;
+                    zPos = -45 + (Math.cos(a) * -12);
+                    yPos = id * 1.8;
                 }
             }
 
@@ -70,13 +70,27 @@
 
         for(let i=0; i<60; i++) addBlock(i);
 
-        // STEUERUNG
+        // STEUERUNG (Manuell)
         window.addEventListener('keydown', (e) => {
             if (e.code === 'Space' && onGround) vy = 0.32;
-            if (e.code === 'KeyA') moveX = -0.16;
-            if (e.code === 'KeyD') moveX = 0.16;
+            if (e.code === 'KeyA' || e.code === 'ArrowLeft') moveX = -0.15;
+            if (e.code === 'KeyD' || e.code === 'ArrowRight') moveX = 0.15;
+            if (e.code === 'KeyW' || e.code === 'ArrowUp') moveZ = -0.15;
+            if (e.code === 'KeyS' || e.code === 'ArrowDown') moveZ = 0.15;
         });
-        window.addEventListener('keyup', (e) => { if (e.code === 'KeyA' || e.code === 'KeyD') moveX = 0; });
+        window.addEventListener('keyup', (e) => {
+            if (['KeyA', 'KeyD', 'ArrowLeft', 'ArrowRight'].includes(e.code)) moveX = 0;
+            if (['KeyW', 'KeyS', 'ArrowUp', 'ArrowDown'].includes(e.code)) moveZ = 0;
+        });
+
+        // Touch Steuerung
+        document.getElementById('btnForward').ontouchstart = () => moveZ = -0.15;
+        document.getElementById('btnForward').ontouchend = () => moveZ = 0;
+        document.getElementById('btnLeft').ontouchstart = () => moveX = -0.15;
+        document.getElementById('btnLeft').ontouchend = () => moveX = 0;
+        document.getElementById('btnRight').ontouchstart = () => moveX = 0.15;
+        document.getElementById('btnRight').ontouchend = () => moveX = 0;
+        document.getElementById('btnJump').ontouchstart = (e) => { e.preventDefault(); if(onGround) vy = 0.32; };
 
         let sX = 0, sY = 0;
         window.addEventListener('touchstart', e => { sX = e.touches[0].pageX; sY = e.touches[0].pageY; });
@@ -87,22 +101,12 @@
             sX = e.touches[0].pageX; sY = e.touches[0].pageY;
         });
 
-        document.getElementById('btnLeft').ontouchstart = () => moveX = -0.16;
-        document.getElementById('btnRight').ontouchstart = () => moveX = 0.16;
-        document.getElementById('btnJump').ontouchstart = (e) => { e.preventDefault(); if(onGround) vy = 0.32; };
-        document.getElementById('btnLeft').ontouchend = document.getElementById('btnRight').ontouchend = () => moveX = 0;
-
-        // --- LOOP ---
         function loop() {
             vy -= 0.012; py += vy;
 
-            // Bewegung: Vorwärts ist jetzt -Z (Standard in Three.js)
-            px += Math.sin(yaw) * 0.1;
-            pz -= Math.cos(yaw) * 0.1;
-            
-            // Seitlich
-            px += Math.cos(yaw) * moveX;
-            pz += Math.sin(yaw) * moveX;
+            // Manuelle Bewegung basierend auf Blickrichtung
+            px += Math.sin(yaw) * moveZ + Math.cos(yaw) * moveX;
+            pz += Math.cos(yaw) * moveZ - Math.sin(yaw) * moveX;
 
             onGround = false;
             platforms.forEach(p => {
@@ -121,7 +125,7 @@
                 }
             });
 
-            if(py < -40 || (score > 2 && py < (score * 2.2) - 20)) location.reload();
+            if(py < -40) location.reload();
 
             camera.position.set(px, py, pz);
             camera.rotation.order = "YXZ";
