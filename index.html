@@ -3,92 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Mein Spiel Fix</title>
+    <title>Roblox Back to Basics</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #222; }
+        body { margin: 0; overflow: hidden; background: #66ccff; font-family: sans-serif; }
         .controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: space-around; z-index: 10; }
-        .btn { width: 70px; height: 70px; background: rgba(0,0,0,0.5); border: 2px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 25px; user-select: none; -webkit-user-select: none; }
+        .btn { width: 70px; height: 70px; background: rgba(0,0,0,0.5); border: 2px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; user-select: none; -webkit-user-select: none; }
     </style>
 </head>
 <body>
     <div class="controls">
-        <div id="btnL" class="btn">◀</div>
-        <div id="btnR" class="btn">▶</div>
-        <div id="btnJ" class="btn">JUMP</div>
+        <div id="left" class="btn">◀</div>
+        <div id="right" class="btn">▶</div>
+        <div id="jump" class="btn">JUMP</div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x333333);
+        scene.background = new THREE.Color(0x66ccff);
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        const light = new THREE.DirectionalLight(0xffffff, 1.2);
-        light.position.set(5, 10, 7);
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(5, 10, 5);
         scene.add(light);
-        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
-        // --- BODEN ---
+        // DER ALTE EINFACHE AVATAR (Ein Block)
+        const player = new THREE.Mesh(
+            new THREE.BoxGeometry(1, 1, 1),
+            new THREE.MeshStandardMaterial({ color: 0xffffff })
+        );
+        player.position.y = 0.5;
+        scene.add(player);
+
+        // BODEN
         const floor = new THREE.Mesh(
-            new THREE.BoxGeometry(20, 0.5, 20), 
-            new THREE.MeshStandardMaterial({ color: 0x00ffff, transparent: true, opacity: 0.5 })
+            new THREE.BoxGeometry(100, 0.5, 10),
+            new THREE.MeshStandardMaterial({ color: 0x22cc22 })
         );
         floor.position.y = -0.25;
         scene.add(floor);
 
-        // --- DER BEHOBENE AVATAR (Steht oben drauf) ---
-        const player = new THREE.Group();
-        const mat = new THREE.MeshStandardMaterial({ color: 0xcccccc });
+        camera.position.set(0, 3, 7);
+        camera.lookAt(0, 0, 0);
 
-        const torso = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1, 0.4), mat);
-        torso.position.y = 1.5; 
-        player.add(torso);
-
-        const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), mat);
-        head.position.y = 2.3;
-        player.add(head);
-
-        const lArm = new THREE.Mesh(new THREE.BoxGeometry(0.35, 1, 0.35), mat);
-        lArm.position.set(-0.65, 1.5, 0);
-        player.add(lArm);
-
-        const rArm = new THREE.Mesh(new THREE.BoxGeometry(0.35, 1, 0.35), mat);
-        rArm.position.set(0.65, 1.5, 0);
-        player.add(rArm);
-
-        const lLeg = new THREE.Mesh(new THREE.BoxGeometry(0.38, 1, 0.38), mat);
-        lLeg.position.set(-0.25, 0.5, 0);
-        player.add(lLeg);
-
-        const rLeg = new THREE.Mesh(new THREE.BoxGeometry(0.38, 1, 0.38), mat);
-        rLeg.position.set(0.25, 0.5, 0);
-        player.add(rLeg);
-
-        scene.add(player);
-        camera.position.set(0, 4, 8);
-        camera.lookAt(0, 1, 0);
-
-        // STEUERUNG
         let moveX = 0, vy = 0, onGround = true;
-        document.getElementById('btnL').ontouchstart = () => moveX = -0.15;
-        document.getElementById('btnR').ontouchstart = () => moveX = 0.15;
-        document.getElementById('btnL').ontouchend = document.getElementById('btnR').ontouchend = () => moveX = 0;
-        document.getElementById('btnJ').ontouchstart = () => { if(onGround) { vy = 0.2; onGround = false; } };
 
-        function animate() {
-            player.position.x += moveX;
-            vy -= 0.01;
-            player.position.y += vy;
-            if(player.position.y <= 0) { player.position.y = 0; vy = 0; onGround = true; }
-            camera.position.x = player.position.x;
-            camera.lookAt(player.position.x, 1, 0);
-            renderer.render(scene, camera);
-            requestAnimationFrame(animate);
-        }
-        animate();
-    </script>
-</body>
-</html>
+        document.getElementById('left').ontouchstart = () => moveX = -0.15;
+        document.getElementById('right').ontouchstart = () => moveX = 0.15;
+        document
