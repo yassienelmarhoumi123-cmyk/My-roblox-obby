@@ -3,32 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bacon Obby - Stabil</title>
+    <title>Bacon Obby - First Person</title>
     <style>
         body { margin: 0; overflow: hidden; background: #222; font-family: sans-serif; touch-action: none; }
-        
-        /* MEIN RAUSCHEN-EFFEKT */
-        .noise {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            z-index: 5;
-            opacity: 0.08;
-            pointer-events: none;
-            background: url('https://upload.wikimedia.org/wikipedia/commons/7/76/1k_Static_Noise_v2.png');
-        }
-
-        #ui { position: absolute; top: 20px; left: 20px; color: white; text-shadow: 2px 2px 4px #000; pointer-events: none; z-index: 10; }
-        .controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: space-around; pointer-events: none; z-index: 10; }
-        .btn { width: 70px; height: 70px; background: rgba(0,0,0,0.6); border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-size: 25px; pointer-events: auto; }
+        .noise { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 5; opacity: 0.08; pointer-events: none; background: url('https://upload.wikimedia.org/wikipedia/commons/7/76/1k_Static_Noise_v2.png'); }
+        #ui { position: absolute; top: 20px; left: 20px; color: white; text-shadow: 2px 2px 4px #000; z-index: 10; }
+        .controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: space-around; z-index: 10; pointer-events: none; }
+        .btn { width: 75px; height: 75px; background: rgba(0,0,0,0.6); border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-size: 25px; pointer-events: auto; }
+        /* Fadenkreuz in der Mitte */
+        #crosshair { position: absolute; top: 50%; left: 50%; width: 10px; height: 10px; border: 2px solid white; border-radius: 50%; transform: translate(-50%, -50%); z-index: 20; opacity: 0.5; }
     </style>
 </head>
 <body>
-    <div class="noise"></div> 
-    <div id="ui">
-        <h2>BACON OBBY</h2>
-        <p id="debug">Ich lade die alte Version...</p>
-    </div>
+    <div class="noise"></div>
+    <div id="crosshair"></div>
+    <div id="ui"><h2>FIRST PERSON OBBY</h2></div>
 
     <div class="controls">
         <div style="display: flex; gap: 15px;">
@@ -47,18 +36,13 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
+        // LICHT
         const light = new THREE.DirectionalLight(0xffffff, 1);
         light.position.set(5, 10, 5);
         scene.add(light);
-        scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
-        // MEIN KLASSISCHER AVATAR
-        const player = new THREE.Group();
-        const mat = new THREE.MeshStandardMaterial({ color: 0xee6c4d });
-        const char = new THREE.Mesh(new THREE.BoxGeometry(0.6, 1.2, 0.4), mat);
-        player.add(char);
-        scene.add(player);
-
+        // WELT BAUEN
         const platforms = [];
         function block(x, y, z, w, d, c) {
             const b = new THREE.Mesh(new THREE.BoxGeometry(w, 0.5, d), new THREE.MeshStandardMaterial({ color: c }));
@@ -68,48 +52,73 @@
             platforms.push(b);
         }
 
-        block(0, -0.3, 0, 5, 5, 0x333333);
-        block(0, 0, -6, 3, 3, 0x00ff88);
-        block(2, 0.6, -11, 2, 2, 0x00ccff);
-        block(-2, 1.2, -16, 2, 2, 0xff0088);
-        block(0, 1.8, -22, 5, 5, 0xffdd00);
+        block(0, -0.3, 0, 10, 10, 0x333333); // Startplatte
+        block(0, 0.5, -10, 4, 4, 0x00ff88);
+        block(0, 1.5, -18, 4, 4, 0x00ccff);
+        block(0, 2.5, -26, 6, 6, 0xffdd00); // Ziel
 
-        let px = 0, py = 5, pz = 0, vy = 0;
-        let keys = { a: false, d: false };
+        // SPIELER WERTE
+        let px = 0, py = 2, pz = 0, vy = 0;
+        let moveX = 0; 
         let onGround = false;
 
-        document.getElementById('btnLeft').ontouchstart = () => keys.a = true;
-        document.getElementById('btnLeft').ontouchend = () => keys.a = false;
-        document.getElementById('btnRight').ontouchstart = () => keys.d = true;
-        document.getElementById('btnRight').ontouchend = () => keys.d = false;
-        document.getElementById('btnJump').ontouchstart = () => { if(onGround) vy = 0.16; };
+        // BUTTON STEUERUNG (iPad)
+        document.getElementById('btnLeft').ontouchstart = () => moveX = -0.12;
+        document.getElementById('btnRight').ontouchstart = () => moveX = 0.12;
+        document.getElementById('btnLeft').ontouchend = document.getElementById('btnRight').ontouchend = () => moveX = 0;
+        document.getElementById('btnJump').ontouchstart = () => { if(onGround) vy = 0.18; };
+
+        // TASTATUR (Nur noch links/rechts)
+        window.addEventListener('keydown', e => {
+            if(e.code === 'ArrowLeft' || e.code === 'KeyA') moveX = -0.12;
+            if(e.code === 'ArrowRight' || e.code === 'KeyD') moveX = 0.12;
+            if(e.code === 'Space' && onGround) vy = 0.18;
+        });
+        window.addEventListener('keyup', e => {
+            if(e.code === 'ArrowLeft' || e.code === 'KeyA' || e.code === 'ArrowRight' || e.code === 'KeyD') moveX = 0;
+        });
 
         function loop() {
-            if(keys.a) px -= 0.12; if(keys.d) px += 0.12;
-            vy -= 0.008; py += vy;
+            // Bewegen (Nur seitlich und automatisch vorwärts für den Obby-Run)
+            px += moveX;
+            pz -= 0.05; // Automatischer Vorwärtsdrang (kannst du auf 0 setzen, wenn du stehen willst)
 
+            // Schwerkraft
+            vy -= 0.008;
+            py += vy;
+
+            // Kollision
             onGround = false;
             platforms.forEach(p => {
                 let dx = Math.abs(px - p.position.x);
                 let dz = Math.abs(pz - p.position.z);
-                if(dx < p.userData.w/2 + 0.3 && dz < p.userData.d/2 + 0.3) {
+                if(dx < p.userData.w/2 + 0.2 && dz < p.userData.d/2 + 0.2) {
                     let top = p.position.y + 0.25;
-                    if(py <= top && py > top - 0.4 && vy <= 0) {
-                        py = top; vy = 0; onGround = true;
+                    if(py <= top + 1.2 && py > top && vy <= 0) {
+                        py = top + 1.2; // Kamera-Höhe (Augenhöhe)
+                        vy = 0;
+                        onGround = true;
                     }
                 }
             });
 
-            if(py < -5) { px = 0; py = 2; pz = 0; vy = 0; }
+            // Runtergefallen?
+            if(py < -10) { px = 0; py = 3; pz = 0; vy = 0; }
 
-            player.position.set(px, py, pz);
-            camera.position.set(px, py + 5, pz + 8);
-            camera.lookAt(px, py, pz - 2);
+            // KAMERA IST JETZT DER SPIELER (First Person)
+            camera.position.set(px, py, pz);
+            camera.lookAt(px, py, pz - 10); // Schaut immer geradeaus nach vorne
 
             renderer.render(scene, camera);
             requestAnimationFrame(loop);
         }
         loop();
+
+        window.onresize = () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        };
     </script>
 </body>
 </html>
