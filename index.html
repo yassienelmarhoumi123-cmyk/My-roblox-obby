@@ -1,46 +1,97 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Brainrot Obby - Visible Fix</title>
-    <style>
-        body { margin: 0; overflow: hidden; background: #87CEEB; font-family: sans-serif; touch-action: none; }
-        #gui { position: absolute; top: 20px; width: 100%; text-align: center; color: white; z-index: 10; text-shadow: 2px 2px 4px #000; pointer-events: none; }
-        .controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: center; gap: 10px; z-index: 100; pointer-events: none; }
-        .btn { width: 70px; height: 70px; background: rgba(0,0,0,0.8); border: 2px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; pointer-events: auto; }
-        #jump { background: #ff00ff; width: 80px; height: 80px; }
-    </style>
-</head>
-<body>
-    <div id="gui"><h1 id="score">STEALS: 0</h1><p>Bewege dich mit den Buttons!</p></div>
-    <div class="controls">
-        <div id="left" class="btn">L</div>
-        <div id="fwd" class="btn" style="background:white; color:black;">VOR</div>
-        <div id="right" class="btn">R</div>
-        <div id="jump" class="btn">JUMP</div>
-    </div>
+import pygame
+import sys
+import random
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script>
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x87CEEB);
-        // Nebel hilft, Entfernungen zu sehen
-        scene.fog = new THREE.Fog(0x87CEEB, 10, 150);
+# Initialisierung
+pygame.init()
 
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(renderer.domElement);
+# Konstanten
+SCREEN_WIDTH = 400
+SCREEN_HEIGHT = 600
+GRAVITY = 0.25
+FLAP_STRENGTH = -6
+PIPE_SPEED = 3
+PIPE_GAP = 150
 
-        // VIEL LICHT
-        scene.add(new THREE.AmbientLight(0xffffff, 1.0));
-        const sun = new THREE.DirectionalLight(0xffffff, 1.0);
-        sun.position.set(10, 50, 10);
-        scene.add(sun);
+# Farben
+WHITE = (255, 255, 255)
+SKY_BLUE = (135, 206, 235)
+BIRD_YELLOW = (255, 255, 0)
+PIPE_GREEN = (34, 139, 34)
 
-        // SPIELER-OBJEKT (Damit du siehst, wen du steuerst)
-        const playerGeo = new THREE.BoxGeometry(1, 2, 1);
-        const playerMat = new THREE.MeshStandardMaterial({ color: 0xffff00 });
-        const player = new THREE.Mesh(playerGeo, playerMat);
-        scene.add
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+clock = pygame.time.Clock()
+font = pygame.font.SysFont("Arial", 32)
+
+def draw_text(text, x, y):
+    img = font.render(text, True, WHITE)
+    screen.blit(img, (x, y))
+
+def main():
+    bird_rect = pygame.Rect(50, SCREEN_HEIGHT // 2, 30, 30)
+    bird_movement = 0
+    
+    pipes = []
+    spawn_pipe_event = pygame.USEREVENT
+    pygame.time.set_timer(spawn_pipe_event, 1200)
+    
+    score = 0
+    game_active = True
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    if game_active:
+                        bird_movement = FLAP_STRENGTH
+                    else:
+                        # Neustart
+                        main()
+
+            if event.type == spawn_pipe_event and game_active:
+                pipe_height = random.randint(150, 400)
+                top_pipe = pygame.Rect(SCREEN_WIDTH, 0, 50, pipe_height - PIPE_GAP // 2)
+                bottom_pipe = pygame.Rect(SCREEN_WIDTH, pipe_height + PIPE_GAP // 2, 50, SCREEN_HEIGHT)
+                pipes.append(top_pipe)
+                pipes.append(bottom_pipe)
+
+        screen.fill(SKY_BLUE)
+
+        if game_active:
+            # Vogel Bewegung
+            bird_movement += GRAVITY
+            bird_rect.centery += int(bird_movement)
+            pygame.draw.ellipse(screen, BIRD_YELLOW, bird_rect)
+
+            # Röhren Bewegung
+            for pipe in pipes:
+                pipe.centerx -= PIPE_SPEED
+                pygame.draw.rect(screen, PIPE_GREEN, pipe)
+            
+            # Röhren entfernen, wenn sie aus dem Bild sind
+            pipes = [pipe for pipe in pipes if pipe.right > 0]
+
+            # Kollisionen
+            for pipe in pipes:
+                if bird_rect.colliderect(pipe):
+                    game_active = False
+            
+            if bird_rect.top <= 0 or bird_rect.bottom >= SCREEN_HEIGHT:
+                game_active = False
+
+            # Score (vereinfacht: zählt passierte Röhren-Paare)
+            score += 0.01 
+            draw_text(f"Score: {int(score)}", 10, 10)
+        else:
+            draw_text("GAME OVER", 120, 250)
+            draw_text("Drücke LEERTASTE für Neustart", 30, 300)
+
+        pygame.display.update()
+        clock.tick(60)
+
+if __name__ == "__main__":
+    main()
