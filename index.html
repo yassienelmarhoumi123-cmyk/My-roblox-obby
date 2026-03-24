@@ -3,23 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rainbow Obby - Manual Control</title>
+    <title>Rainbow Obby - Solid Blocks</title>
     <style>
         body { margin: 0; overflow: hidden; background: #87CEEB; font-family: sans-serif; touch-action: none; }
         #ui { position: absolute; top: 20px; left: 20px; color: white; z-index: 10; text-shadow: 2px 2px 4px #000; pointer-events: none; }
         #scoreBox { font-size: 28px; font-weight: bold; }
-        .controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: space-around; z-index: 10; pointer-events: none; }
-        .btn { width: 85px; height: 85px; background: rgba(0,0,0,0.6); border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; pointer-events: auto; font-weight: bold; -webkit-user-select: none; }
-        #btnForward { width: 100px; height: 100px; background: rgba(255,255,255,0.3); }
+        .controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: center; gap: 15px; z-index: 10; pointer-events: none; }
+        .btn { width: 75px; height: 75px; background: rgba(0,0,0,0.6); border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; color: white; font-size: 16px; pointer-events: auto; font-weight: bold; -webkit-user-select: none; }
+        #btnForward { background: rgba(0, 255, 136, 0.4); width: 90px; height: 90px; }
     </style>
 </head>
 <body>
     <div id="ui"><div id="scoreBox">Höhe: 0</div></div>
     <div class="controls">
-        <div id="btnLeft" class="btn">L</div>
+        <div id="btnLeft" class="btn">LINKS</div>
         <div id="btnForward" class="btn">VOR</div>
-        <div id="btnRight" class="btn">R</div>
-        <div id="btnJump" class="btn">JUMP</div>
+        <div id="btnRight" class="btn">RECHTS</div>
+        <div id="btnJump" class="btn">SPRUNG</div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -33,7 +33,7 @@
 
         scene.add(new THREE.AmbientLight(0xffffff, 1.0));
         const sun = new THREE.DirectionalLight(0xffffff, 0.8);
-        sun.position.set(0, 50, 0);
+        sun.position.set(10, 50, 10);
         scene.add(sun);
 
         let px = 0, py = 5, pz = 10; 
@@ -43,52 +43,50 @@
         const platforms = [];
 
         function addBlock(id) {
-            let w = 8, d = 8, color = rainbow[id % rainbow.length];
+            let w = 8, d = 8, h = 1.2, color = rainbow[id % rainbow.length];
             let xPos, yPos, zPos;
 
             if (id === 0) {
-                w = 20; d = 20; color = 0xcccccc;
+                w = 25; d = 25; h = 1; color = 0xcccccc;
                 xPos = 0; yPos = 0; zPos = 0;
             } else {
                 if (id < 6) {
-                    // Die ersten Stufen sind jetzt viel näher (nur 9 Einheiten Abstand)
-                    xPos = 0; zPos = id * -9; yPos = id * 1.8;
+                    xPos = 0; zPos = id * -10; yPos = id * 2;
                 } else {
                     let a = (id - 5) * 0.45;
-                    xPos = Math.sin(a) * 12;
-                    zPos = -45 + (Math.cos(a) * -12);
-                    yPos = id * 1.8;
+                    xPos = Math.sin(a) * 13;
+                    zPos = -50 + (Math.cos(a) * -13);
+                    yPos = id * 2;
                 }
             }
 
-            const b = new THREE.Mesh(new THREE.BoxGeometry(w, 1, d), new THREE.MeshStandardMaterial({ color: color }));
+            const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshStandardMaterial({ color: color }));
             b.position.set(xPos, yPos, zPos);
             scene.add(b);
-            b.userData = { w, d, id };
+            b.userData = { w, d, h, id };
             platforms.push(b);
         }
 
         for(let i=0; i<60; i++) addBlock(i);
 
-        // STEUERUNG (Manuell)
+        // STEUERUNG
         window.addEventListener('keydown', (e) => {
             if (e.code === 'Space' && onGround) vy = 0.32;
-            if (e.code === 'KeyA' || e.code === 'ArrowLeft') moveX = -0.15;
-            if (e.code === 'KeyD' || e.code === 'ArrowRight') moveX = 0.15;
-            if (e.code === 'KeyW' || e.code === 'ArrowUp') moveZ = -0.15;
-            if (e.code === 'KeyS' || e.code === 'ArrowDown') moveZ = 0.15;
+            if (e.code === 'KeyA') moveX = -0.16;
+            if (e.code === 'KeyD') moveX = 0.16;
+            if (e.code === 'KeyW') moveZ = -0.16;
+            if (e.code === 'KeyS') moveZ = 0.16;
         });
         window.addEventListener('keyup', (e) => {
-            if (['KeyA', 'KeyD', 'ArrowLeft', 'ArrowRight'].includes(e.code)) moveX = 0;
-            if (['KeyW', 'KeyS', 'ArrowUp', 'ArrowDown'].includes(e.code)) moveZ = 0;
+            if (['KeyA', 'KeyD'].includes(e.code)) moveX = 0;
+            if (['KeyW', 'KeyS'].includes(e.code)) moveZ = 0;
         });
 
-        // Touch Steuerung
-        document.getElementById('btnForward').ontouchstart = () => moveZ = -0.15;
+        document.getElementById('btnForward').ontouchstart = () => moveZ = -0.16;
         document.getElementById('btnForward').ontouchend = () => moveZ = 0;
-        document.getElementById('btnLeft').ontouchstart = () => moveX = -0.15;
+        document.getElementById('btnLeft').ontouchstart = () => moveX = -0.16;
         document.getElementById('btnLeft').ontouchend = () => moveX = 0;
-        document.getElementById('btnRight').ontouchstart = () => moveX = 0.15;
+        document.getElementById('btnRight').ontouchstart = () => moveX = 0.16;
         document.getElementById('btnRight').ontouchend = () => moveX = 0;
         document.getElementById('btnJump').ontouchstart = (e) => { e.preventDefault(); if(onGround) vy = 0.32; };
 
@@ -104,27 +102,43 @@
         function loop() {
             vy -= 0.012; py += vy;
 
-            // Manuelle Bewegung basierend auf Blickrichtung
-            px += Math.sin(yaw) * moveZ + Math.cos(yaw) * moveX;
-            pz += Math.cos(yaw) * moveZ - Math.sin(yaw) * moveX;
+            // Bewegung berechnen
+            let nextPx = px + (Math.sin(yaw) * moveZ + Math.cos(yaw) * moveX);
+            let nextPz = pz + (Math.cos(yaw) * moveZ - Math.sin(yaw) * moveX);
 
             onGround = false;
             platforms.forEach(p => {
-                let dx = Math.abs(px - p.position.x);
-                let dz = Math.abs(pz - p.position.z);
-                if(dx < p.userData.w/2 + 0.3 && dz < p.userData.d/2 + 0.3) {
-                    let top = p.position.y + 0.5;
-                    if(py <= top + 1.5 && py > top && vy <= 0) {
-                        py = top + 1.5; vy = 0; onGround = true;
+                let dx = Math.abs(nextPx - p.position.x);
+                let dz = Math.abs(nextPz - p.position.z);
+                let halfW = p.userData.w / 2 + 0.3;
+                let halfD = p.userData.d / 2 + 0.3;
+                let halfH = p.userData.h / 2;
+
+                if (dx < halfW && dz < halfD) {
+                    let pTop = p.position.y + halfH;
+                    let pBottom = p.position.y - halfH;
+
+                    // Oben drauf landen
+                    if (py <= pTop + 1.6 && py > pTop && vy <= 0) {
+                        py = pTop + 1.6; vy = 0; onGround = true;
                         if(p.userData.id > score) {
                             score = p.userData.id;
                             document.getElementById('scoreBox').innerText = "Höhe: " + score;
                             if(platforms.length - score < 20) addBlock(platforms.length);
                         }
+                    } 
+                    // Von unten dagegen stoßen (Kopf stoßen)
+                    else if (py + 0.5 > pBottom && py < pTop && vy > 0) {
+                        vy = -0.05; // Nach unten abprallen
+                    }
+                    // Seitliche Kollision verhindern (einfaches Blockieren)
+                    else if (py < pTop && py > pBottom) {
+                        nextPx = px; nextPz = pz; 
                     }
                 }
             });
 
+            px = nextPx; pz = nextPz;
             if(py < -40) location.reload();
 
             camera.position.set(px, py, pz);
