@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rainbow Battle Obby - Fixed View</title>
+    <title>Rainbow Battle Obby - Final Controls</title>
     <style>
         body { margin: 0; overflow: hidden; background: #87CEEB; font-family: sans-serif; touch-action: none; }
         .ui-container { position: absolute; width: 100%; height: 100%; pointer-events: none; display: flex; }
@@ -19,8 +19,8 @@
     <div id="win-msg">GEWONNEN!</div>
     <div id="divider"></div>
     <div class="ui-container">
-        <div class="player-ui">P1 (Blau): <span id="s1">0</span>/100</div>
-        <div class="player-ui" style="text-align: right;">P2 (Rot): <span id="s2">0</span>/100</div>
+        <div class="player-ui">P1: <span id="s1">0</span>/100<br>WASD | <b>Q/E</b> Drehen | F Hit</div>
+        <div class="player-ui" style="text-align: right;">P2: <span id="s2">0</span>/100<br>Pfeile | <b>, / .</b> Drehen | Alt Hit</div>
     </div>
 
     <div class="controls-container">
@@ -68,11 +68,10 @@
                 this.bat.position.set(0.7, 0, 0.5);
                 this.group.add(this.bat);
                 scene.add(this.group);
-                this.x = startX; this.y = 10; this.z = 10; // Höherer Start
+                this.x = startX; this.y = 10; this.z = 10;
                 this.vy = 0; this.yaw = 0; this.score = 0;
                 this.keys = {}; this.knockback = {x:0, z:0};
                 this.hitCooldown = 0;
-                this.lastTouchX = 0;
             }
         }
         const p1 = new Player(1, 0x0000ff, -3); 
@@ -82,51 +81,34 @@
         const colors = [0xff0000, 0xff7f00, 0xffff00, 0x00ff00, 0x0000ff, 0x4b0082, 0x9400d3];
         for(let i=0; i<=100; i++) {
             let w = (i===0) ? 25 : 8;
-            let d = (i===0) ? 25 : 8;
             const b = new THREE.Mesh(
-                new THREE.BoxGeometry(w, 1.2, d),
+                new THREE.BoxGeometry(w, 1.2, (i===0)?25:8),
                 new THREE.MeshStandardMaterial({ color: (i===0)?0xcccccc : (i===100?0xffd700 : colors[i % colors.length]) })
             );
             if(i > 0) {
                 let a = i * 0.45;
                 b.position.set(Math.sin(a)*12, i*2.2, Math.cos(a)*12);
             } else b.position.set(0, 0, 0);
-            b.userData = { w: w/2, d: d/2, y: b.position.y, id: i };
+            b.userData = { w: w/2, d: (i===0)?12.5:4, y: b.position.y, id: i };
             scene.add(b); platforms.push(b);
         }
 
-        // Steuerung
         const handleKey = (e, val) => {
+            // P1
             if(e.code === 'KeyW') p1.keys.f = val; if(e.code === 'KeyS') p1.keys.b = val;
             if(e.code === 'KeyA') p1.keys.l = val; if(e.code === 'KeyD') p1.keys.r = val;
+            if(e.code === 'KeyQ') p1.keys.rl = val; if(e.code === 'KeyE') p1.keys.rr = val;
             if(e.code === 'Space') p1.keys.j = val; if(e.code === 'KeyF') p1.keys.hit = val;
+            
+            // P2
             if(e.code === 'ArrowUp') p2.keys.f = val; if(e.code === 'ArrowDown') p2.keys.b = val;
             if(e.code === 'ArrowLeft') p2.keys.l = val; if(e.code === 'ArrowRight') p2.keys.r = val;
+            if(e.code === 'Comma') p2.keys.rl = val; if(e.code === 'Period') p2.keys.rr = val;
             if(e.code === 'Enter') p2.keys.j = val; 
             if(e.code.includes('Alt')) { e.preventDefault(); p2.keys.hit = val; }
         };
         window.onkeydown = (e) => handleKey(e, true);
         window.onkeyup = (e) => handleKey(e, false);
-
-        window.ontouchstart = (e) => {
-            for(let t of e.touches) {
-                if(t.pageX < window.innerWidth/2) p1.lastTouchX = t.pageX;
-                else p2.lastTouchX = t.pageX;
-            }
-        };
-        window.ontouchmove = (e) => {
-            for(let t of e.touches) {
-                if(t.target.className !== 'btn') {
-                    if(t.pageX < window.innerWidth/2) {
-                        p1.yaw -= (t.pageX - p1.lastTouchX) * 0.012;
-                        p1.lastTouchX = t.pageX;
-                    } else {
-                        p2.yaw -= (t.pageX - p2.lastTouchX) * 0.012;
-                        p2.lastTouchX = t.pageX;
-                    }
-                }
-            }
-        };
 
         const setupBtn = (id, p, k) => {
             const el = document.getElementById(id);
@@ -139,6 +121,9 @@
         function updatePlayer(p, cam, other) {
             p.vy -= 0.012; p.y += p.vy;
             if(p.hitCooldown > 0) p.hitCooldown--;
+            
+            if(p.keys.rl) p.yaw += 0.05;
+            if(p.keys.rr) p.yaw -= 0.05;
 
             let speed = 0.22;
             let moveX = p.knockback.x, moveZ = p.knockback.z;
@@ -179,14 +164,12 @@
                 }
             }
 
-            // Kamera-Fix: Immer auf den Spieler schauen
             cam.position.set(p.x - Math.sin(p.yaw)*9, p.y + 5, p.z - Math.cos(p.yaw)*9);
             cam.lookAt(p.x, p.y + 1, p.z);
         }
 
         function loop() {
-            updatePlayer(p1, cam1, p2);
-            updatePlayer(p2, cam2, p1);
+            updatePlayer(p1, cam1, p2); updatePlayer(p2, cam2, p1);
             let w = window.innerWidth, h = window.innerHeight;
             renderer.setViewport(0, 0, w/2, h); renderer.setScissor(0, 0, w/2, h);
             renderer.setScissorTest(true); renderer.render(scene, cam1);
@@ -195,7 +178,6 @@
             requestAnimationFrame(loop);
         }
         loop();
-
         window.onresize = () => {
             renderer.setSize(window.innerWidth, window.innerHeight);
             cam1.aspect = cam2.aspect = (window.innerWidth/2)/window.innerHeight;
