@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rainbow Obby - Ultimate Fix</title>
+    <title>Rainbow Spiral Obby</title>
     <style>
         body { margin: 0; overflow: hidden; background: #87CEEB; font-family: sans-serif; touch-action: none; }
         #ui { position: absolute; top: 20px; left: 20px; color: white; z-index: 10; text-shadow: 2px 2px 4px #000; pointer-events: none; }
@@ -20,7 +20,7 @@
 </head>
 <body>
     <div id="ui">
-        <div id="scoreBox" style="font-size:24px;">Höhe: 0</div>
+        <div id="scoreBox" style="font-size:24px;">STEALS: 0</div>
         <div id="flyStatus" style="color: #00ff88; display:none; font-weight:bold;">FLUGMODUS AKTIV 🚀</div>
     </div>
 
@@ -44,7 +44,7 @@
     <script>
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x87CEEB);
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
@@ -54,13 +54,12 @@
         sun.position.set(10, 50, 10);
         scene.add(sun);
 
-        // Spieler-Werte (Direkter Spawn auf Plattform 0)
-        let px = 0, py = 2, pz = 5; 
-        let vy = 0, moveX = 0, moveZ = 0, yaw = 0, pitch = -0.2;
-        let score = 0, canFly = false, onGround = false;
+        let px = 0, py = 5, pz = 12, vy = 0; 
+        let yaw = 0, pitch = -0.2, score = 0, canFly = false, onGround = false;
         const platforms = [];
+        const keys = {};
 
-        // Maschine (Schwarz)
+        // Die Flug-Maschine (Schwarz) auf der Startinsel
         const machine = new THREE.Mesh(new THREE.BoxGeometry(3, 4, 3), new THREE.MeshStandardMaterial({ color: 0x111111 }));
         machine.position.set(7, 2, 0);
         scene.add(machine);
@@ -69,33 +68,37 @@
             let w = 8, d = 8, h = 1.2;
             const colors = [0xff0000, 0xff7f00, 0xffff00, 0x00ff00, 0x0000ff, 0x4b0082, 0x9400d3];
             let color = id === 0 ? 0xcccccc : colors[id % colors.length];
-            if (id === 0) { w = 30; d = 30; }
+            if (id === 0) { w = 25; d = 25; }
             
             const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshStandardMaterial({ color }));
+            
             let x = 0, y = 0, z = 0;
             if (id > 0) {
-                let a = id * 0.45;
-                x = Math.sin(a) * 15; z = id * -14; y = id * 2.5;
+                // SPIRAL-FORMEL
+                let radius = 12;
+                let angle = id * 0.4; // Drehung der Spirale
+                x = Math.sin(angle) * radius;
+                z = Math.cos(angle) * radius;
+                y = id * 2.2; // Höhe pro Stufe
             }
+            
             b.position.set(x, y, z);
-            b.userData = { w, d, h, id };
+            b.userData = { w: w/2, d: d/2, h: h/2, id: id };
             scene.add(b);
             platforms.push(b);
         }
-        for(let i=0; i<80; i++) addBlock(i);
+        for(let i=0; i<150; i++) addBlock(i);
 
-        // LOGIK
         function checkPin() {
             if(document.getElementById('pinInput').value === "1234") {
                 canFly = true;
                 document.getElementById('flyStatus').style.display = "block";
                 closePin();
-            } else { alert("Falsch!"); }
+            } else { alert("Falscher Code!"); }
         }
         function closePin() { document.getElementById('pinPad').style.display = "none"; }
 
-        // STEUERUNG (Tastatur & Buttons)
-        const keys = {};
+        // STEUERUNG
         window.onkeydown = (e) => { 
             keys[e.code] = true; 
             if(e.code === 'Space') { if(canFly) vy = 0.25; else if(onGround) vy = 0.35; }
@@ -112,7 +115,6 @@
         };
         setup('btnLeft', 'KeyA'); setup('btnRight', 'KeyD'); setup('btnForward', 'KeyW'); setup('btnJump', 'Space');
 
-        // Kamera-Drehung
         let lastX, lastY;
         window.ontouchstart = e => { lastX = e.touches[0].pageX; lastY = e.touches[0].pageY; };
         window.ontouchmove = e => {
@@ -125,8 +127,8 @@
             if(!canFly) vy -= 0.012;
             py += vy;
 
-            moveX = (keys['KeyD'] ? 0.2 : 0) - (keys['KeyA'] ? 0.2 : 0);
-            moveZ = (keys['KeyS'] ? 0.2 : 0) - (keys['KeyW'] ? 0.2 : 0);
+            let moveX = (keys['KeyD'] ? 0.2 : 0) - (keys['KeyA'] ? 0.2 : 0);
+            let moveZ = (keys['KeyS'] ? 0.2 : 0) - (keys['KeyW'] ? 0.2 : 0);
 
             let nextPx = px + (Math.sin(yaw) * moveZ + Math.cos(yaw) * moveX);
             let nextPz = pz + (Math.cos(yaw) * moveZ - Math.sin(yaw) * moveX);
@@ -137,18 +139,18 @@
             onGround = false;
             platforms.forEach(p => {
                 let dx = Math.abs(nextPx - p.position.x), dz = Math.abs(nextPz - p.position.z);
-                if (dx < p.userData.w/2 + 0.4 && dz < p.userData.d/2 + 0.4) {
-                    let top = p.position.y + p.userData.h/2;
+                if (dx < p.userData.w + 0.3 && dz < p.userData.d + 0.3) {
+                    let top = p.position.y + p.userData.h;
                     if (py <= top + 1.8 && py > top - 0.5) {
                         if(!canFly) { py = top + 1.8; vy = 0; onGround = true; }
                         score = Math.max(score, p.userData.id);
-                        document.getElementById('scoreBox').innerText = "Höhe: " + score;
+                        document.getElementById('scoreBox').innerText = "STEALS: " + score;
                     }
                 }
             });
 
             px = nextPx; pz = nextPz;
-            if(py < -40) { px = 0; py = 2; pz = 5; vy = 0; } // Schneller Respawn
+            if(py < -40) { px = 0; py = 5; pz = 12; vy = 0; yaw = 0; }
 
             camera.position.set(px, py, pz);
             camera.rotation.order = "YXZ";
