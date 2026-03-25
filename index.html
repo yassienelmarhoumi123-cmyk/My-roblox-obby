@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rainbow Battle Obby - Touch & Keyboard Fixed</title>
+    <title>Rainbow Battle - Final Fix</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #87CEEB; font-family: 'Arial Black', sans-serif; touch-action: none; }
+        body { margin: 0; overflow: hidden; background: #87CEEB; font-family: sans-serif; touch-action: none; }
         .ui-container { position: absolute; width: 100%; height: 100%; pointer-events: none; display: flex; }
-        .player-ui { flex: 1; padding: 15px; color: white; text-shadow: 2px 2px 4px #000; z-index: 10; font-size: 12px; }
-        .score-box { background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.3); display: inline-block; }
+        .player-ui { flex: 1; padding: 15px; color: white; text-shadow: 2px 2px 4px #000; z-index: 10; font-size: 14px; }
+        .score-box { background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 8px; display: inline-block; }
         .controls-container { position: absolute; bottom: 20px; width: 100%; display: flex; justify-content: space-between; padding: 0 10px; box-sizing: border-box; z-index: 100; pointer-events: none; }
         .btn-group { display: flex; gap: 4px; pointer-events: auto; }
         .btn { width: 45px; height: 45px; background: rgba(0,0,0,0.6); border: 2px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; font-weight: bold; -webkit-user-select: none; }
@@ -20,8 +20,8 @@
     <div id="win-msg">GEWONNEN! 🏆</div>
     <div id="divider"></div>
     <div class="ui-container">
-        <div class="player-ui"><div class="score-box">P1: <span id="s1">0</span>/100<br>Q/E oder Wischen</div></div>
-        <div class="player-ui" style="text-align: right;"><div class="score-box">P2: <span id="s2">0</span>/100<br>,/. oder Wischen</div></div>
+        <div class="player-ui"><div class="score-box">P1: <span id="s1">0</span>/100</div></div>
+        <div class="player-ui" style="text-align: right;"><div class="score-box">P2: <span id="s2">0</span>/100</div></div>
     </div>
 
     <div class="controls-container">
@@ -57,16 +57,16 @@
             constructor(id, color, startX) {
                 this.id = id;
                 this.group = new THREE.Group();
-                this.mat = new THREE.MeshStandardMaterial({ color: color });
+                this.mat = new THREE.MeshStandardMaterial({ color: color, transparent: true });
                 this.body = new THREE.Mesh(new THREE.BoxGeometry(1, 2, 1), this.mat);
                 this.group.add(this.body);
-                this.bat = new THREE.Mesh(new THREE.BoxGeometry(0.3, 1.6, 0.3), new THREE.MeshStandardMaterial({ color: 0x444444 }));
+                this.bat = new THREE.Mesh(new THREE.BoxGeometry(0.3, 1.6, 0.3), new THREE.MeshStandardMaterial({ color: 0x222222 }));
                 this.bat.position.set(0.7, 0, 0.6);
                 this.group.add(this.bat);
                 scene.add(this.group);
-                this.spawn(startX);
                 this.keys = {}; this.knockback = {x:0, z:0};
                 this.hitCooldown = 0; this.respawnTimer = 0; this.lastTouchX = 0;
+                this.spawn(startX);
             }
             spawn(startX) {
                 this.x = startX; this.y = 10; this.z = 10;
@@ -93,28 +93,39 @@
             scene.add(b); platforms.push(b);
         }
 
-        const handleKey = (e, val) => {
-            if(e.code === 'KeyW') p1.keys.f = val; if(e.code === 'KeyS') p1.keys.b = val;
-            if(e.code === 'KeyA') p1.keys.l = val; if(e.code === 'KeyD') p1.keys.r = val;
-            if(e.code === 'KeyQ') p1.keys.rl = val; if(e.code === 'KeyE') p1.keys.rr = val;
-            if(e.code === 'Space') p1.keys.j = val; if(e.code === 'KeyF') p1.keys.hit = val;
-            if(e.code === 'ArrowUp') p2.keys.f = val; if(e.code === 'ArrowDown') p2.keys.b = val;
-            if(e.code === 'ArrowLeft') p2.keys.l = val; if(e.code === 'ArrowRight') p2.keys.r = val;
-            if(e.code === 'Comma') p2.keys.rl = val; if(e.code === 'Period') p2.keys.rr = val;
-            if(e.code === 'Enter') p2.keys.j = val; 
-            if(e.code.includes('Alt')) { e.preventDefault(); p2.keys.hit = val; }
-        };
-        window.onkeydown = (e) => handleKey(e, true);
-        window.onkeyup = (e) => handleKey(e, false);
+        // TASTATUR FIX: Explizite Abfrage der KeyCodes
+        window.addEventListener('keydown', (e) => {
+            if(e.code === 'KeyW') p1.keys.f = true; if(e.code === 'KeyS') p1.keys.b = true;
+            if(e.code === 'KeyA') p1.keys.l = true; if(e.code === 'KeyD') p1.keys.r = true;
+            if(e.code === 'KeyQ') p1.keys.rl = true; if(e.code === 'KeyE') p1.keys.rr = true;
+            if(e.code === 'Space') p1.keys.j = true; if(e.code === 'KeyF') p1.keys.hit = true;
+            if(e.code === 'ArrowUp') p2.keys.f = true; if(e.code === 'ArrowDown') p2.keys.b = true;
+            if(e.code === 'ArrowLeft') p2.keys.l = true; if(e.code === 'ArrowRight') p2.keys.r = true;
+            if(e.code === 'Comma') p2.keys.rl = true; if(e.code === 'Period') p2.keys.rr = true;
+            if(e.code === 'Enter') p2.keys.j = true; 
+            if(e.code.includes('Alt')) { e.preventDefault(); p2.keys.hit = true; }
+        });
+        window.addEventListener('keyup', (e) => {
+            if(e.code === 'KeyW') p1.keys.f = false; if(e.code === 'KeyS') p1.keys.b = false;
+            if(e.code === 'KeyA') p1.keys.l = false; if(e.code === 'KeyD') p1.keys.r = false;
+            if(e.code === 'KeyQ') p1.keys.rl = false; if(e.code === 'KeyE') p1.keys.rr = false;
+            if(e.code === 'Space') p1.keys.j = false; if(e.code === 'KeyF') p1.keys.hit = false;
+            if(e.code === 'ArrowUp') p2.keys.f = false; if(e.code === 'ArrowDown') p2.keys.b = false;
+            if(e.code === 'ArrowLeft') p2.keys.l = false; if(e.code === 'ArrowRight') p2.keys.r = false;
+            if(e.code === 'Comma') p2.keys.rl = false; if(e.code === 'Period') p2.keys.rr = false;
+            if(e.code === 'Enter') p2.keys.j = false; 
+            if(e.code.includes('Alt')) p2.keys.hit = false;
+        });
 
-        // TOUCH DREHUNG REPARIERT
-        window.ontouchstart = (e) => {
+        // TOUCH DREHUNG FIX
+        window.addEventListener('touchstart', (e) => {
             for(let t of e.touches) {
                 if(t.pageX < window.innerWidth/2) p1.lastTouchX = t.pageX;
                 else p2.lastTouchX = t.pageX;
             }
-        };
-        window.ontouchmove = (e) => {
+        }, {passive: false});
+
+        window.addEventListener('touchmove', (e) => {
             for(let t of e.touches) {
                 if(t.target.className.indexOf('btn') === -1) {
                     if(t.pageX < window.innerWidth/2) {
@@ -126,7 +137,7 @@
                     }
                 }
             }
-        };
+        }, {passive: false});
 
         function updatePlayer(p, cam, other) {
             p.vy -= 0.012; p.y += p.vy;
@@ -134,7 +145,6 @@
             if(p.respawnTimer > 0) {
                 p.respawnTimer--;
                 p.mat.opacity = (p.respawnTimer % 10 < 5) ? 0.3 : 1;
-                p.mat.transparent = true;
             } else { p.mat.opacity = 1; }
 
             if(p.keys.rl) p.yaw += 0.05; if(p.keys.rr) p.yaw -= 0.05;
@@ -163,7 +173,7 @@
             });
 
             if(onG && p.keys.j) p.vy = 0.35;
-            if(p.y < -30) { p.spawn((p.id===1)?-4:4); p.knockback = {x:0, z:0}; }
+            if(p.y < -35) { p.spawn((p.id===1)?-4:4); p.knockback = {x:0, z:0}; }
             
             p.group.position.set(p.x, p.y - 1, p.z);
             p.group.rotation.y = p.yaw;
@@ -173,7 +183,7 @@
                 let d = Math.sqrt((p.x-other.x)**2 + (p.z-other.z)**2);
                 if(d < 3.5 && Math.abs(p.y-other.y) < 2.5 && other.respawnTimer <= 0) {
                     let a = Math.atan2(other.x-p.x, other.z-p.z);
-                    other.knockback.x = Math.sin(a)*1.5; other.knockback.z = Math.cos(a)*1.5;
+                    other.knockback.x = Math.sin(a)*1.6; other.knockback.z = Math.cos(a)*1.6;
                     p.hitCooldown = 30;
                     other.mat.emissive.setHex(0xffffff);
                     setTimeout(() => other.mat.emissive.setHex(0x000000), 100);
@@ -196,8 +206,8 @@
 
         const setupBtn = (id, p, k) => {
             const el = document.getElementById(id);
-            el.ontouchstart = (e) => { e.preventDefault(); e.stopPropagation(); p.keys[k] = true; };
-            el.ontouchend = (e) => { e.preventDefault(); e.stopPropagation(); p.keys[k] = false; };
+            el.addEventListener('touchstart', (e) => { e.preventDefault(); p.keys[k] = true; }, {passive: false});
+            el.addEventListener('touchend', (e) => { e.preventDefault(); p.keys[k] = false; }, {passive: false});
         };
         ['F','L','R','Hit','J'].forEach(k => { setupBtn('p1'+k, p1, k.toLowerCase()); setupBtn('p2'+k, p2, k.toLowerCase()); });
 
