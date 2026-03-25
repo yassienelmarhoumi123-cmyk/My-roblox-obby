@@ -3,18 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rainbow Obby - Solid Blocks</title>
+    <title>Rainbow Obby - Fly Machine</title>
     <style>
         body { margin: 0; overflow: hidden; background: #87CEEB; font-family: sans-serif; touch-action: none; }
         #ui { position: absolute; top: 20px; left: 20px; color: white; z-index: 10; text-shadow: 2px 2px 4px #000; pointer-events: none; }
-        #scoreBox { font-size: 28px; font-weight: bold; }
         .controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: center; gap: 15px; z-index: 10; pointer-events: none; }
-        .btn { width: 75px; height: 75px; background: rgba(0,0,0,0.6); border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; color: white; font-size: 16px; pointer-events: auto; font-weight: bold; -webkit-user-select: none; }
-        #btnForward { background: rgba(0, 255, 136, 0.4); width: 90px; height: 90px; }
+        .btn { width: 75px; height: 75px; background: rgba(0,0,0,0.6); border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; color: white; font-size: 16px; pointer-events: auto; font-weight: bold; }
+        
+        /* PIN-PAD STYLING */
+        #pinPad { 
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9); padding: 20px; border: 4px solid #00ff88; border-radius: 15px;
+            display: none; flex-direction: column; align-items: center; z-index: 1000;
+        }
+        #pinPad input { font-size: 24px; width: 100px; text-align: center; margin-bottom: 10px; }
+        #pinPad button { padding: 10px 20px; background: #00ff88; border: none; font-weight: bold; cursor: pointer; }
+        #flyStatus { color: #00ff88; font-weight: bold; display: none; }
     </style>
 </head>
 <body>
-    <div id="ui"><div id="scoreBox">Höhe: 0</div></div>
+    <div id="ui">
+        <div id="scoreBox">Höhe: 0</div>
+        <div id="flyStatus">FLUGMODUS AKTIV 🚀</div>
+    </div>
+
+    <div id="pinPad">
+        <h3 style="color:white; margin-top:0;">CODE EINGEBEN</h3>
+        <input type="number" id="pinInput" placeholder="****">
+        <button onclick="checkPin()">OK</button>
+        <button onclick="closePin()" style="background:red; margin-top:5px;">X</button>
+    </div>
+
     <div class="controls">
         <div id="btnLeft" class="btn">LINKS</div>
         <div id="btnForward" class="btn">VOR</div>
@@ -38,26 +57,30 @@
 
         let px = 0, py = 5, pz = 10; 
         let vy = 0, moveX = 0, moveZ = 0, yaw = 0, pitch = 0, onGround = false;
-        let score = 0;
-        const rainbow = [0xff0000, 0xff7f00, 0xffff00, 0x00ff00, 0x0000ff, 0x4b0082, 0x9400d3];
+        let score = 0, canFly = false;
         const platforms = [];
 
+        // Maschine erstellen (Schwarzer Block mit grünem Licht)
+        const machineGeo = new THREE.BoxGeometry(3, 4, 3);
+        const machineMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
+        const machine = new THREE.Mesh(machineGeo, machineMat);
+        machine.position.set(5, 2, 0); // Steht auf der ersten Platform
+        scene.add(machine);
+
         function addBlock(id) {
-            let w = 8, d = 8, h = 1.2, color = rainbow[id % rainbow.length];
+            let w = 8, d = 8, h = 1.2;
+            const colors = [0xff0000, 0xff7f00, 0xffff00, 0x00ff00, 0x0000ff, 0x4b0082, 0x9400d3];
+            let color = colors[id % colors.length];
             let xPos, yPos, zPos;
 
             if (id === 0) {
-                w = 25; d = 25; h = 1; color = 0xcccccc;
+                w = 30; d = 30; h = 1; color = 0xcccccc;
                 xPos = 0; yPos = 0; zPos = 0;
             } else {
-                if (id < 6) {
-                    xPos = 0; zPos = id * -10; yPos = id * 2;
-                } else {
-                    let a = (id - 5) * 0.45;
-                    xPos = Math.sin(a) * 13;
-                    zPos = -50 + (Math.cos(a) * -13);
-                    yPos = id * 2;
-                }
+                let a = id * 0.45;
+                xPos = Math.sin(a) * 15;
+                zPos = id * -12;
+                yPos = id * 2.5;
             }
 
             const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshStandardMaterial({ color: color }));
@@ -69,26 +92,33 @@
 
         for(let i=0; i<60; i++) addBlock(i);
 
-        // STEUERUNG
-        window.addEventListener('keydown', (e) => {
-            if (e.code === 'Space' && onGround) vy = 0.32;
-            if (e.code === 'KeyA') moveX = -0.16;
-            if (e.code === 'KeyD') moveX = 0.16;
-            if (e.code === 'KeyW') moveZ = -0.16;
-            if (e.code === 'KeyS') moveZ = 0.16;
-        });
-        window.addEventListener('keyup', (e) => {
-            if (['KeyA', 'KeyD'].includes(e.code)) moveX = 0;
-            if (['KeyW', 'KeyS'].includes(e.code)) moveZ = 0;
-        });
+        // PIN-LOGIK
+        function checkPin() {
+            const val = document.getElementById('pinInput').value;
+            if(val === "1234") {
+                canFly = true;
+                document.getElementById('flyStatus').style.display = "block";
+                closePin();
+            } else {
+                alert("Falscher Code!");
+            }
+        }
+        function closePin() { document.getElementById('pinPad').style.display = "none"; }
 
+        // STEUERUNG
         document.getElementById('btnForward').ontouchstart = () => moveZ = -0.16;
         document.getElementById('btnForward').ontouchend = () => moveZ = 0;
         document.getElementById('btnLeft').ontouchstart = () => moveX = -0.16;
         document.getElementById('btnLeft').ontouchend = () => moveX = 0;
         document.getElementById('btnRight').ontouchstart = () => moveX = 0.16;
         document.getElementById('btnRight').ontouchend = () => moveX = 0;
-        document.getElementById('btnJump').ontouchstart = (e) => { e.preventDefault(); if(onGround) vy = 0.32; };
+        
+        document.getElementById('btnJump').ontouchstart = (e) => { 
+            e.preventDefault(); 
+            if(canFly) vy = 0.2; // Im Flugmodus: Aufsteigen
+            else if(onGround) vy = 0.35; // Normal: Springen
+        };
+        document.getElementById('btnJump').ontouchend = () => { if(canFly) vy = 0; };
 
         let sX = 0, sY = 0;
         window.addEventListener('touchstart', e => { sX = e.touches[0].pageX; sY = e.touches[0].pageY; });
@@ -100,40 +130,28 @@
         });
 
         function loop() {
-            vy -= 0.012; py += vy;
+            if(!canFly) vy -= 0.012; // Nur Schwerkraft wenn man nicht fliegt
+            py += vy;
 
-            // Bewegung berechnen
             let nextPx = px + (Math.sin(yaw) * moveZ + Math.cos(yaw) * moveX);
             let nextPz = pz + (Math.cos(yaw) * moveZ - Math.sin(yaw) * moveX);
+
+            // Maschine berühren?
+            let distToMachine = Math.sqrt((px-5)**2 + (pz-0)**2);
+            if(distToMachine < 3 && Math.abs(py - 2) < 3) {
+                document.getElementById('pinPad').style.display = "flex";
+            }
 
             onGround = false;
             platforms.forEach(p => {
                 let dx = Math.abs(nextPx - p.position.x);
                 let dz = Math.abs(nextPz - p.position.z);
-                let halfW = p.userData.w / 2 + 0.3;
-                let halfD = p.userData.d / 2 + 0.3;
-                let halfH = p.userData.h / 2;
-
-                if (dx < halfW && dz < halfD) {
-                    let pTop = p.position.y + halfH;
-                    let pBottom = p.position.y - halfH;
-
-                    // Oben drauf landen
-                    if (py <= pTop + 1.6 && py > pTop && vy <= 0) {
-                        py = pTop + 1.6; vy = 0; onGround = true;
-                        if(p.userData.id > score) {
-                            score = p.userData.id;
-                            document.getElementById('scoreBox').innerText = "Höhe: " + score;
-                            if(platforms.length - score < 20) addBlock(platforms.length);
-                        }
-                    } 
-                    // Von unten dagegen stoßen (Kopf stoßen)
-                    else if (py + 0.5 > pBottom && py < pTop && vy > 0) {
-                        vy = -0.05; // Nach unten abprallen
-                    }
-                    // Seitliche Kollision verhindern (einfaches Blockieren)
-                    else if (py < pTop && py > pBottom) {
-                        nextPx = px; nextPz = pz; 
+                if (dx < p.userData.w/2 + 0.3 && dz < p.userData.d/2 + 0.3) {
+                    let pTop = p.position.y + p.userData.h/2;
+                    if (py <= pTop + 1.6 && py > pTop - 0.5) {
+                        if(!canFly) { py = pTop + 1.6; vy = 0; onGround = true; }
+                        score = Math.max(score, p.userData.id);
+                        document.getElementById('scoreBox').innerText = "Höhe: " + score;
                     }
                 }
             });
