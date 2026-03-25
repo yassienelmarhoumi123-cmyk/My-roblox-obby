@@ -3,26 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rainbow Battle Obby - Ultra Edition</title>
+    <title>Rainbow Battle Obby - Touch & Keyboard Fixed</title>
     <style>
         body { margin: 0; overflow: hidden; background: #87CEEB; font-family: 'Arial Black', sans-serif; touch-action: none; }
         .ui-container { position: absolute; width: 100%; height: 100%; pointer-events: none; display: flex; }
-        .player-ui { flex: 1; padding: 15px; color: white; text-shadow: 2px 2px 4px #000; z-index: 10; }
-        .score-box { background: rgba(0,0,0,0.5); padding: 8px 15px; border-radius: 10px; border: 2px solid rgba(255,255,255,0.3); }
+        .player-ui { flex: 1; padding: 15px; color: white; text-shadow: 2px 2px 4px #000; z-index: 10; font-size: 12px; }
+        .score-box { background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.3); display: inline-block; }
         .controls-container { position: absolute; bottom: 20px; width: 100%; display: flex; justify-content: space-between; padding: 0 10px; box-sizing: border-box; z-index: 100; pointer-events: none; }
         .btn-group { display: flex; gap: 4px; pointer-events: auto; }
-        .btn { width: 50px; height: 50px; background: rgba(0,0,0,0.6); border: 2px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; font-weight: bold; }
-        #divider { position: absolute; left: 50%; width: 2px; height: 100%; background: white; z-index: 50; transform: translateX(-50%); opacity: 0.5; }
-        #win-msg { position: absolute; top: 40%; width: 100%; text-align: center; color: gold; font-size: 45px; font-weight: bold; text-shadow: 4px 4px #000; display: none; z-index: 200; animation: blink 0.5s infinite; }
-        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } }
+        .btn { width: 45px; height: 45px; background: rgba(0,0,0,0.6); border: 2px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; font-weight: bold; -webkit-user-select: none; }
+        #divider { position: absolute; left: 50%; width: 2px; height: 100%; background: white; z-index: 50; transform: translateX(-50%); opacity: 0.3; }
+        #win-msg { position: absolute; top: 40%; width: 100%; text-align: center; color: gold; font-size: 40px; font-weight: bold; text-shadow: 4px 4px #000; display: none; z-index: 200; }
     </style>
 </head>
 <body>
     <div id="win-msg">GEWONNEN! 🏆</div>
     <div id="divider"></div>
     <div class="ui-container">
-        <div class="player-ui"><div class="score-box">P1 (Blau)<br>Level: <span id="s1">0</span>/100</div></div>
-        <div class="player-ui" style="text-align: right;"><div class="score-box">P2 (Rot)<br>Level: <span id="s2">0</span>/100</div></div>
+        <div class="player-ui"><div class="score-box">P1: <span id="s1">0</span>/100<br>Q/E oder Wischen</div></div>
+        <div class="player-ui" style="text-align: right;"><div class="score-box">P2: <span id="s2">0</span>/100<br>,/. oder Wischen</div></div>
     </div>
 
     <div class="controls-container">
@@ -58,7 +57,6 @@
             constructor(id, color, startX) {
                 this.id = id;
                 this.group = new THREE.Group();
-                this.color = color;
                 this.mat = new THREE.MeshStandardMaterial({ color: color });
                 this.body = new THREE.Mesh(new THREE.BoxGeometry(1, 2, 1), this.mat);
                 this.group.add(this.body);
@@ -68,18 +66,17 @@
                 scene.add(this.group);
                 this.spawn(startX);
                 this.keys = {}; this.knockback = {x:0, z:0};
-                this.hitCooldown = 0; this.respawnTimer = 0;
+                this.hitCooldown = 0; this.respawnTimer = 0; this.lastTouchX = 0;
             }
             spawn(startX) {
                 this.x = startX; this.y = 10; this.z = 10;
                 this.vy = 0; this.yaw = 0; this.score = 0;
-                this.respawnTimer = 60; // Unverwundbar für 1 Sekunde
+                this.respawnTimer = 60;
             }
         }
         const p1 = new Player(1, 0x0055ff, -4); 
         const p2 = new Player(2, 0xff2222, 4);
 
-        // Plattformen
         const platforms = [];
         const colors = [0xff0000, 0xff7f00, 0xffff00, 0x00ff00, 0x0000ff, 0x4b0082, 0x9400d3];
         for(let i=0; i<=100; i++) {
@@ -96,7 +93,6 @@
             scene.add(b); platforms.push(b);
         }
 
-        // Steuerung
         const handleKey = (e, val) => {
             if(e.code === 'KeyW') p1.keys.f = val; if(e.code === 'KeyS') p1.keys.b = val;
             if(e.code === 'KeyA') p1.keys.l = val; if(e.code === 'KeyD') p1.keys.r = val;
@@ -110,6 +106,27 @@
         };
         window.onkeydown = (e) => handleKey(e, true);
         window.onkeyup = (e) => handleKey(e, false);
+
+        // TOUCH DREHUNG REPARIERT
+        window.ontouchstart = (e) => {
+            for(let t of e.touches) {
+                if(t.pageX < window.innerWidth/2) p1.lastTouchX = t.pageX;
+                else p2.lastTouchX = t.pageX;
+            }
+        };
+        window.ontouchmove = (e) => {
+            for(let t of e.touches) {
+                if(t.target.className.indexOf('btn') === -1) {
+                    if(t.pageX < window.innerWidth/2) {
+                        p1.yaw -= (t.pageX - p1.lastTouchX) * 0.015;
+                        p1.lastTouchX = t.pageX;
+                    } else {
+                        p2.yaw -= (t.pageX - p2.lastTouchX) * 0.015;
+                        p2.lastTouchX = t.pageX;
+                    }
+                }
+            }
+        };
 
         function updatePlayer(p, cam, other) {
             p.vy -= 0.012; p.y += p.vy;
@@ -152,15 +169,12 @@
             p.group.rotation.y = p.yaw;
             p.bat.rotation.x = p.keys.hit ? -1.2 : 0;
 
-            // Kampf-Logik mit Blitz
             if(p.keys.hit && p.hitCooldown <= 0) {
                 let d = Math.sqrt((p.x-other.x)**2 + (p.z-other.z)**2);
                 if(d < 3.5 && Math.abs(p.y-other.y) < 2.5 && other.respawnTimer <= 0) {
                     let a = Math.atan2(other.x-p.x, other.z-p.z);
-                    other.knockback.x = Math.sin(a)*1.5;
-                    other.knockback.z = Math.cos(a)*1.5;
+                    other.knockback.x = Math.sin(a)*1.5; other.knockback.z = Math.cos(a)*1.5;
                     p.hitCooldown = 30;
-                    // Blitz Effekt
                     other.mat.emissive.setHex(0xffffff);
                     setTimeout(() => other.mat.emissive.setHex(0x000000), 100);
                 }
@@ -182,8 +196,8 @@
 
         const setupBtn = (id, p, k) => {
             const el = document.getElementById(id);
-            el.ontouchstart = (e) => { e.preventDefault(); p.keys[k] = true; };
-            el.ontouchend = (e) => { e.preventDefault(); p.keys[k] = false; };
+            el.ontouchstart = (e) => { e.preventDefault(); e.stopPropagation(); p.keys[k] = true; };
+            el.ontouchend = (e) => { e.preventDefault(); e.stopPropagation(); p.keys[k] = false; };
         };
         ['F','L','R','Hit','J'].forEach(k => { setupBtn('p1'+k, p1, k.toLowerCase()); setupBtn('p2'+k, p2, k.toLowerCase()); });
 
