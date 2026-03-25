@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rainbow Battle Obby - Touch Fixed</title>
+    <title>Rainbow Battle Obby - Fixed View</title>
     <style>
         body { margin: 0; overflow: hidden; background: #87CEEB; font-family: sans-serif; touch-action: none; }
         .ui-container { position: absolute; width: 100%; height: 100%; pointer-events: none; display: flex; }
@@ -16,11 +16,11 @@
     </style>
 </head>
 <body>
-    <div id="win-msg">SPIELER GEWINNT!</div>
+    <div id="win-msg">GEWONNEN!</div>
     <div id="divider"></div>
     <div class="ui-container">
-        <div class="player-ui">P1 (Blau): <span id="s1">0</span>/100<br>WASD | F = HIT | Wischen: Drehen</div>
-        <div class="player-ui" style="text-align: right;">P2 (Rot): <span id="s2">0</span>/100<br>Pfeile | ALT = HIT | Wischen: Drehen</div>
+        <div class="player-ui">P1 (Blau): <span id="s1">0</span>/100</div>
+        <div class="player-ui" style="text-align: right;">P2 (Rot): <span id="s2">0</span>/100</div>
     </div>
 
     <div class="controls-container">
@@ -50,4 +50,33 @@
         renderer.autoClear = false;
         document.body.appendChild(renderer.domElement);
 
-        scene
+        scene.add(new THREE.AmbientLight(0xffffff, 1.2));
+        const sun = new THREE.DirectionalLight(0xffffff, 1.0);
+        sun.position.set(10, 50, 10);
+        scene.add(sun);
+
+        const cam1 = new THREE.PerspectiveCamera(75, (window.innerWidth/2)/window.innerHeight, 0.1, 1000);
+        const cam2 = new THREE.PerspectiveCamera(75, (window.innerWidth/2)/window.innerHeight, 0.1, 1000);
+
+        class Player {
+            constructor(id, color, startX) {
+                this.id = id;
+                this.group = new THREE.Group();
+                const body = new THREE.Mesh(new THREE.BoxGeometry(1, 2, 1), new THREE.MeshStandardMaterial({ color: color }));
+                this.group.add(body);
+                this.bat = new THREE.Mesh(new THREE.BoxGeometry(0.3, 1.5, 0.3), new THREE.MeshStandardMaterial({ color: 0x444444 }));
+                this.bat.position.set(0.7, 0, 0.5);
+                this.group.add(this.bat);
+                scene.add(this.group);
+                this.x = startX; this.y = 10; this.z = 10; // Höherer Start
+                this.vy = 0; this.yaw = 0; this.score = 0;
+                this.keys = {}; this.knockback = {x:0, z:0};
+                this.hitCooldown = 0;
+                this.lastTouchX = 0;
+            }
+        }
+        const p1 = new Player(1, 0x0000ff, -3); 
+        const p2 = new Player(2, 0xff0000, 3);
+
+        const platforms = [];
+        const colors = [0xff0000, 0xff7f00, 0xffff00,
