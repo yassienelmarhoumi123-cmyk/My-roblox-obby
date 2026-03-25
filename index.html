@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rainbow Battle Obby</title>
+    <title>Rainbow Battle Obby - Alt Key Update</title>
     <style>
         body { margin: 0; overflow: hidden; background: #87CEEB; font-family: sans-serif; touch-action: none; }
         .ui-container { position: absolute; width: 100%; height: 100%; pointer-events: none; display: flex; }
@@ -12,15 +12,15 @@
         .btn-group { display: flex; gap: 4px; pointer-events: auto; }
         .btn { width: 48px; height: 48px; background: rgba(0,0,0,0.6); border: 2px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; font-weight: bold; -webkit-user-select: none; }
         #divider { position: absolute; left: 50%; width: 2px; height: 100%; background: white; z-index: 50; transform: translateX(-50%); }
-        #win-msg { position: absolute; top: 50%; width: 100%; text-align: center; color: gold; font-size: 50px; font-weight: bold; text-shadow: 4px 4px #000; display: none; z-index: 200; pointer-events: none; }
+        #win-msg { position: absolute; top: 40%; width: 100%; text-align: center; color: gold; font-size: 40px; font-weight: bold; text-shadow: 4px 4px #000; display: none; z-index: 200; pointer-events: none; }
     </style>
 </head>
 <body>
     <div id="win-msg">SPIELER GEWINNT!</div>
     <div id="divider"></div>
     <div class="ui-container">
-        <div class="player-ui">P1 (Blau): <span id="s1">0</span>/100<br>W,A,S,D | F = SCHLAGEN</div>
-        <div class="player-ui" style="text-align: right;">P2 (Rot): <span id="s2">0</span>/100<br>Pfeile | # = SCHLAGEN</div>
+        <div class="player-ui">P1 (Blau): <span id="s1">0</span>/100<br>WASD | <b>F</b> = HIT</div>
+        <div class="player-ui" style="text-align: right;">P2 (Rot): <span id="s2">0</span>/100<br>Pfeile | <b>ALT</b> = HIT</div>
     </div>
 
     <div class="controls-container">
@@ -64,12 +64,9 @@
                 this.group = new THREE.Group();
                 this.body = new THREE.Mesh(new THREE.BoxGeometry(1, 2, 1), new THREE.MeshStandardMaterial({ color: color }));
                 this.group.add(this.body);
-                
-                // Schläger hinzufügen
-                this.bat = new THREE.Mesh(new THREE.BoxGeometry(0.3, 1.5, 0.3), new THREE.MeshStandardMaterial({ color: 0x555555 }));
+                this.bat = new THREE.Mesh(new THREE.BoxGeometry(0.3, 1.5, 0.3), new THREE.MeshStandardMaterial({ color: 0x444444 }));
                 this.bat.position.set(0.7, 0, 0.5);
                 this.group.add(this.bat);
-                
                 scene.add(this.group);
                 this.x = startX; this.y = 5; this.z = 12;
                 this.vy = 0; this.yaw = 0; this.score = 0;
@@ -105,7 +102,9 @@
             if(e.code === 'ArrowUp') p2.keys.f = true; if(e.code === 'ArrowDown') p2.keys.b = true;
             if(e.code === 'ArrowLeft') p2.keys.l = true; if(e.code === 'ArrowRight') p2.keys.r = true;
             if(e.code === 'Comma') p2.keys.rl = true; if(e.code === 'Period') p2.keys.rr = true;
-            if(e.code === 'Enter') p2.keys.j = true; if(e.code === 'Digit0' || e.code === 'Backslash') p2.keys.hit = true;
+            if(e.code === 'Enter') p2.keys.j = true; 
+            // Spieler 2 nutzt jetzt ALT (links oder rechts)
+            if(e.code === 'AltLeft' || e.code === 'AltRight') { e.preventDefault(); p2.keys.hit = true; }
         };
         window.onkeyup = (e) => {
             if(e.code === 'KeyW') p1.keys.f = false; if(e.code === 'KeyS') p1.keys.b = false;
@@ -115,7 +114,8 @@
             if(e.code === 'ArrowUp') p2.keys.f = false; if(e.code === 'ArrowDown') p2.keys.b = false;
             if(e.code === 'ArrowLeft') p2.keys.l = false; if(e.code === 'ArrowRight') p2.keys.r = false;
             if(e.code === 'Comma') p2.keys.rl = false; if(e.code === 'Period') p2.keys.rr = false;
-            if(e.code === 'Enter') p2.keys.j = false; if(e.code === 'Digit0' || e.code === 'Backslash') p2.keys.hit = false;
+            if(e.code === 'Enter') p2.keys.j = false; 
+            if(e.code === 'AltLeft' || e.code === 'AltRight') p2.keys.hit = false;
         };
 
         const setupBtn = (id, p, k) => {
@@ -125,18 +125,6 @@
         };
         setupBtn('p1F', p1, 'f'); setupBtn('p1L', p1, 'l'); setupBtn('p1R', p1, 'r'); setupBtn('p1J', p1, 'j'); setupBtn('p1Hit', p1, 'hit');
         setupBtn('p2F', p2, 'f'); setupBtn('p2L', p2, 'l'); setupBtn('p2R', p2, 'r'); setupBtn('p2J', p2, 'j'); setupBtn('p2Hit', p2, 'hit');
-
-        function checkHit(attacker, victim) {
-            if(attacker.keys.hit && attacker.hitCooldown <= 0) {
-                let dist = Math.sqrt((attacker.x - victim.x)**2 + (attacker.z - victim.z)**2);
-                if(dist < 3 && Math.abs(attacker.y - victim.y) < 2) {
-                    let angle = Math.atan2(victim.x - attacker.x, victim.z - attacker.z);
-                    victim.knockback.x = Math.sin(angle) * 0.8;
-                    victim.knockback.z = Math.cos(angle) * 0.8;
-                    attacker.hitCooldown = 30; // Cooldown
-                }
-            }
-        }
 
         function update(p, cam, other) {
             p.vy -= 0.012; p.y += p.vy;
@@ -162,24 +150,32 @@
                         p.score = Math.max(p.score, pl.userData.id);
                         document.getElementById('s'+p.id).innerText = p.score;
                         if(p.score === 100) {
-                            document.getElementById('win-msg').style.display = 'block';
-                            document.getElementById('win-msg').innerText = "SPIELER " + p.id + " GEWINNT!";
+                            const msg = document.getElementById('win-msg');
+                            msg.style.display = 'block';
+                            msg.innerText = "SPIELER " + p.id + " GEWINNT!";
                         }
                     }
                 }
             });
             if(onG && p.keys.j) p.vy = 0.35;
-            if(p.y < -30) { p.y = 5; p.z = 12; p.x = (p.id===1)?-3:3; p.vy = 0; }
+            if(p.y < -30) { p.y = 5; p.z = 12; p.x = (p.id===1)?-3:3; p.vy = 0; p.knockback = {x:0, z:0}; }
             
             p.group.position.set(p.x, p.y - 1, p.z);
             p.group.rotation.y = p.yaw;
-            
-            // Schläger Animation
-            if(p.keys.hit) p.bat.rotation.x = -1; else p.bat.rotation.x = 0;
+            if(p.keys.hit) p.bat.rotation.x = -1.2; else p.bat.rotation.x = 0;
+
+            if(p.keys.hit && p.hitCooldown <= 0) {
+                let dist = Math.sqrt((p.x - other.x)**2 + (p.z - other.z)**2);
+                if(dist < 3 && Math.abs(p.y - other.y) < 2) {
+                    let angle = Math.atan2(other.x - p.x, other.z - p.z);
+                    other.knockback.x = Math.sin(angle) * 0.9;
+                    other.knockback.z = Math.cos(angle) * 0.9;
+                    p.hitCooldown = 25;
+                }
+            }
 
             cam.position.set(p.x - Math.sin(p.yaw)*8, p.y + 4, p.z - Math.cos(p.yaw)*8);
             cam.lookAt(p.x, p.y, p.z);
-            checkHit(p, other);
         }
 
         function loop() {
