@@ -3,22 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rainbow Obby - Split Screen New Keys</title>
+    <title>Rainbow Obby - Split Screen Fixed</title>
     <style>
         body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; touch-action: none; }
         .ui-container { position: absolute; width: 100%; height: 100%; pointer-events: none; display: flex; }
-        .player-ui { flex: 1; padding: 20px; color: white; text-shadow: 2px 2px 4px #000; font-size: 16px; }
+        .player-ui { flex: 1; padding: 15px; color: white; text-shadow: 2px 2px 4px #000; font-size: 14px; z-index: 10; }
         .controls-container { position: absolute; bottom: 20px; width: 100%; display: flex; justify-content: space-between; padding: 0 10px; box-sizing: border-box; z-index: 100; pointer-events: none; }
         .btn-group { display: flex; gap: 4px; pointer-events: auto; }
-        .btn { width: 45px; height: 45px; background: rgba(0,0,0,0.6); border: 2px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; font-weight: bold; -webkit-user-select: none; }
+        .btn { width: 50px; height: 50px; background: rgba(0,0,0,0.6); border: 2px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; font-weight: bold; -webkit-user-select: none; }
         #divider { position: absolute; left: 50%; width: 2px; height: 100%; background: white; z-index: 50; transform: translateX(-50%); }
     </style>
 </head>
 <body>
     <div id="divider"></div>
     <div class="ui-container">
-        <div class="player-ui">P1: <span id="s1">0</span><br><small>Q/E Drehen</small></div>
-        <div class="player-ui" style="text-align: right;">P2: <span id="s2">0</span><br><small>,/. Drehen</small></div>
+        <div class="player-ui">P1: <span id="s1">0</span><br>W,A,S,D + Q,E</div>
+        <div class="player-ui" style="text-align: right;">P2: <span id="s2">0</span><br>Pfeile + , .</div>
     </div>
 
     <div class="controls-container">
@@ -38,143 +38,41 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
+        // INITIALISIERUNG
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x87CEEB);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
         renderer.autoClear = false;
         document.body.appendChild(renderer.domElement);
 
-        const cam1 = new THREE.PerspectiveCamera(75, (window.innerWidth/2) / window.innerHeight, 0.1, 1000);
-        const cam2 = new THREE.PerspectiveCamera(75, (window.innerWidth/2) / window.innerHeight, 0.1, 1000);
-        cam1.rotation.order = cam2.rotation.order = "YXZ";
-
-        scene.add(new THREE.AmbientLight(0xffffff, 1.2));
+        // LICHT
+        const light = new THREE.AmbientLight(0xffffff, 1.0);
+        scene.add(light);
         const sun = new THREE.DirectionalLight(0xffffff, 0.8);
-        sun.position.set(10, 50, 10);
+        sun.position.set(5, 20, 10);
         scene.add(sun);
 
+        // KAMERAS
+        const cam1 = new THREE.PerspectiveCamera(75, (window.innerWidth/2)/window.innerHeight, 0.1, 1000);
+        const cam2 = new THREE.PerspectiveCamera(75, (window.innerWidth/2)/window.innerHeight, 0.1, 1000);
+        cam1.rotation.order = "YXZ";
+        cam2.rotation.order = "YXZ";
+
+        // SPIELER KLASSE
         class Player {
-            constructor(id, startX) {
-                this.id = id; this.x = startX; this.y = 5; this.z = 12;
+            constructor(id, x) {
+                this.id = id; this.x = x; this.y = 5; this.z = 12;
                 this.vy = 0; this.yaw = 0; this.score = 0;
-                this.keys = {}; this.lastTouchX = 0;
+                this.keys = {}; this.lastX = 0;
             }
         }
         const p1 = new Player(1, -3);
         const p2 = new Player(2, 3);
 
+        // OBBY BAUEN
         const platforms = [];
-        function addBlock(id) {
+        function createWorld() {
             const colors = [0xff0000, 0xff7f00, 0xffff00, 0x00ff00, 0x0000ff, 0x4b0082, 0x9400d3];
-            let w = id === 0 ? 25 : 8, d = id === 0 ? 25 : 8;
-            const b = new THREE.Mesh(new THREE.BoxGeometry(w, 1.2, d), new THREE.MeshStandardMaterial({ color: id === 0 ? 0xcccccc : colors[id % colors.length] }));
-            let x = 0, y = 0, z = 0;
-            if (id > 0) {
-                let angle = id * 0.45;
-                x = Math.sin(angle) * 12; z = Math.cos(angle) * 12; y = id * 2.2;
-            }
-            b.position.set(x, y, z);
-            b.userData = { w: w/2, d: d/2, h: 0.6, id: id };
-            scene.add(b); platforms.push(b);
-        }
-        for(let i=0; i<100; i++) addBlock(i);
-
-        window.onkeydown = (e) => {
-            // Spieler 1 (W,A,S,D + Q,E)
-            if(e.code === 'KeyW') p1.keys.f = true; if(e.code === 'KeyS') p1.keys.b = true;
-            if(e.code === 'KeyA') p1.keys.l = true; if(e.code === 'KeyD') p1.keys.r = true;
-            if(e.code === 'KeyQ') p1.keys.rotL = true; if(e.code === 'KeyE') p1.keys.rotR = true;
-            if(e.code === 'Space') p1.keys.j = true;
-
-            // Spieler 2 (Pfeile + Komma, Punkt)
-            if(e.code === 'ArrowUp') p2.keys.f = true; if(e.code === 'ArrowDown') p2.keys.b = true;
-            if(e.code === 'ArrowLeft') p2.keys.l = true; if(e.code === 'ArrowRight') p2.keys.r = true;
-            if(e.code === 'Comma') p2.keys.rotL = true; if(e.code === 'Period') p2.keys.rotR = true;
-            if(e.code === 'Enter') p2.keys.j = true;
-        };
-        window.onkeyup = (e) => {
-            if(e.code === 'KeyW') p1.keys.f = false; if(e.code === 'KeyS') p1.keys.b = false;
-            if(e.code === 'KeyA') p1.keys.l = false; if(e.code === 'KeyD') p1.keys.r = false;
-            if(e.code === 'KeyQ') p1.keys.rotL = false; if(e.code === 'KeyE') p1.keys.rotR = false;
-            if(e.code === 'Space') p1.keys.j = false;
-
-            if(e.code === 'ArrowUp') p2.keys.f = false; if(e.code === 'ArrowDown') p2.keys.b = false;
-            if(e.code === 'ArrowLeft') p2.keys.l = false; if(e.code === 'ArrowRight') p2.keys.r = false;
-            if(e.code === 'Comma') p2.keys.rotL = false; if(e.code === 'Period') p2.keys.rotR = false;
-            if(e.code === 'Enter') p2.keys.j = false;
-        };
-
-        // Touch Drehung bleibt für iPad aktiv
-        window.ontouchstart = (e) => {
-            for(let t of e.touches) {
-                if(t.pageX < window.innerWidth/2) p1.lastTouchX = t.pageX;
-                else p2.lastTouchX = t.pageX;
-            }
-        };
-        window.ontouchmove = (e) => {
-            for(let t of e.touches) {
-                if(t.pageX < window.innerWidth/2) {
-                    p1.yaw -= (t.pageX - p1.lastTouchX) * 0.01;
-                    p1.lastTouchX = t.pageX;
-                } else {
-                    p2.yaw -= (t.pageX - p2.lastTouchX) * 0.01;
-                    p2.lastTouchX = t.pageX;
-                }
-            }
-        };
-
-        const setupTouch = (id, p, key) => {
-            const el = document.getElementById(id);
-            el.ontouchstart = (e) => { e.preventDefault(); p.keys[key] = true; };
-            el.ontouchend = (e) => { e.preventDefault(); p.keys[key] = false; };
-        };
-        setupTouch('p1F', p1, 'f'); setupTouch('p1L', p1, 'l'); setupTouch('p1R', p1, 'r'); setupTouch('p1J', p1, 'j');
-        setupTouch('p2F', p2, 'f'); setupTouch('p2L', p2, 'l'); setupTouch('p2R', p2, 'r'); setupTouch('p2J', p2, 'j');
-
-        function updatePlayer(p, cam) {
-            p.vy -= 0.012; p.y += p.vy;
-            if(p.keys.rotL) p.yaw += 0.05; if(p.keys.rotR) p.yaw -= 0.05;
-            
-            let mX = (p.keys.r ? 0.2 : 0) - (p.keys.l ? 0.2 : 0);
-            let mZ = (p.keys.b ? 0.2 : 0) - (p.keys.f ? 0.2 : 0);
-            let nextX = p.x + (Math.sin(p.yaw) * mZ + Math.cos(p.yaw) * mX);
-            let nextZ = p.z + (Math.cos(p.yaw) * mZ - Math.sin(p.yaw) * mX);
-
-            let onG = false;
-            platforms.forEach(pl => {
-                let dx = Math.abs(nextX - pl.position.x), dz = Math.abs(nextZ - pl.position.z);
-                if (dx < pl.userData.w + 0.3 && dz < pl.userData.d + 0.3) {
-                    let top = pl.position.y + pl.userData.h;
-                    if (p.y <= top + 1.8 && p.y > top - 0.5) {
-                        p.y = top + 1.8; p.vy = 0; onG = true;
-                        p.score = Math.max(p.score, pl.userData.id);
-                        document.getElementById('s' + p.id).innerText = p.score;
-                    }
-                }
-            });
-            if(onG && p.keys.j) p.vy = 0.35;
-            p.x = nextX; p.z = nextZ;
-            if(p.y < -30) { p.y = 5; p.z = 12; p.x = p.id === 1 ? -3 : 3; p.vy = 0; }
-            cam.position.set(p.x, p.y, p.z); cam.rotation.y = p.yaw;
-        }
-
-        function loop() {
-            updatePlayer(p1, cam1); updatePlayer(p2, cam2);
-            renderer.setViewport(0, 0, window.innerWidth / 2, window.innerHeight);
-            renderer.setScissor(0, 0, window.innerWidth / 2, window.innerHeight);
-            renderer.setScissorTest(true); renderer.render(scene, cam1);
-            renderer.setViewport(window.innerWidth / 2, 0, window.innerWidth / 2, window.innerHeight);
-            renderer.setScissor(window.innerWidth / 2, 0, window.innerWidth / 2, window.innerHeight);
-            renderer.setScissorTest(true); renderer.render(scene, cam2);
-            requestAnimationFrame(loop);
-        }
-        loop();
-        window.onresize = () => {
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            cam1.aspect = cam2.aspect = (window.innerWidth/2) / window.innerHeight;
-            cam1.updateProjectionMatrix(); cam2.updateProjectionMatrix();
-        };
-    </script>
-</body>
-</html>
+            for(let i=0; i<100; i++) {
