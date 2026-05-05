@@ -30,17 +30,25 @@
             padding: 15px; 
             cursor: pointer;
             transition: all 0.3s ease;
+            overflow: hidden;
         }
         .card:hover { transform: translateY(-5px); background: rgba(0, 0, 0, 0.6); border-color: white; }
         
         .card img { 
             width: 100%; 
-            border-radius: 15px; 
             aspect-ratio: 1/1; 
             object-fit: cover;
-            background-color: #333;
+            display: block;
+            border-radius: 15px;
         }
 
+        .game-title {
+            padding: 10px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        /* Fullscreen Overlay für die Spiele */
         #game-overlay {
             display: none;
             position: fixed;
@@ -56,21 +64,23 @@
 
         .close-btn {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 15px;
+            right: 15px;
             background: #ff0000;
             color: white;
             border: none;
-            padding: 12px 20px;
+            padding: 12px 25px;
             border-radius: 8px;
             font-weight: bold;
             z-index: 10000;
             cursor: pointer;
+            box-shadow: 0 0 15px rgba(255,0,0,0.5);
         }
     </style>
 </head>
 <body>
 
+    <!-- Das Fenster, in dem das Spiel geladen wird -->
     <div id="game-overlay">
         <button class="close-btn" onclick="closeGame()">X SCHLIESSEN</button>
         <iframe id="game-frame" src=""></iframe>
@@ -79,27 +89,29 @@
     <h1>Classroom Resources</h1>
 
     <div class="grid">
-        <!-- Basket Random -->
+        <!-- Kachel für Basket Random -->
         <div class="card" onclick="openGame('https://basketballrandom.gitlab.io/')">
             <img src="https://play-lh.googleusercontent.com/I6P9S9X1vD2zQ7z_Xp6hY9Y9Q-W6zCj6X_O3o7G3_5R6T-mU6n-9f_8R3n-v_8" alt="Basket Random">
             <div class="game-title">Basket Random</div>
         </div>
 
-        <!-- Halal Granny 2 -->
+        <!-- Kachel für Halal Granny 2 -->
         <div class="card" onclick="openGame('https://horrorgamesfree.com/granny2')">
-            <!-- Hier ist dein bearbeitetes Bild als direkter Link -->
-            <img src="https://api.screenshotmachine.com/?key=bc892d&url=https://i.ibb.co/L6V8z9R/halal-granny.png&dimension=500x500" alt="Halal Granny 2" onerror="this.src='https://i.ibb.co/L6V8z9R/halal-granny.png'">
-            <div style="color: #ff4444; font-weight: bold; margin-top: 5px;">HALAL GRANNY 2</div>
+            <!-- Greift auf dein hochgeladenes Bild 'halalgranny.png' zu -->
+            <img src="halalgranny.png" alt="Halal Granny 2">
+            <div class="game-title" style="color: #bc0000; text-shadow: 1px 1px 2px black;">HALAL GRANNY 2</div>
         </div>
     </div>
 
     <script>
+        // Funktion zum Öffnen des Spiels im Vollbild
         function openGame(url) {
             document.getElementById('game-frame').src = url;
             document.getElementById('game-overlay').style.display = 'block';
             document.body.style.overflow = 'hidden';
         }
 
+        // Funktion zum Schließen des Spiels
         function closeGame() {
             document.getElementById('game-overlay').style.display = 'none';
             document.getElementById('game-frame').src = '';
