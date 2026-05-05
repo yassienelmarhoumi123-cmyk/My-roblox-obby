@@ -1,22 +1,57 @@
 <!DOCTYPE html>
-<html>
+<html lang="de">
 <head>
+    <meta charset="UTF-8">
+    <title>Top Unblocked Games</title>
     <style>
-        body { background: #8a2be2; color: white; font-family: sans-serif; text-align: center; padding: 20px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; }
-        .card { background: rgba(0,0,0,0.3); border-radius: 10px; padding: 10px; text-decoration: none; color: white; display: block; }
-        .card img { width: 100%; border-radius: 5px; aspect-ratio: 1/1; object-fit: cover; }
+        body { 
+            background-color: #8a2be2; 
+            color: white; 
+            font-family: sans-serif; 
+            text-align: center; 
+            margin: 0; 
+            padding: 20px; 
+        }
+        .grid-container { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
+            gap: 20px; 
+            padding: 20px; 
+        }
+        .game-card { 
+            background: rgba(0, 0, 0, 0.4); 
+            border-radius: 12px; 
+            padding: 10px; 
+            text-decoration: none; 
+            color: white; 
+            transition: 0.3s;
+        }
+        .game-card:hover { transform: scale(1.05); }
+        .game-card img { 
+            width: 100%; 
+            border-radius: 8px; 
+            aspect-ratio: 16/9; 
+            object-fit: cover; 
+        }
     </style>
 </head>
 <body>
-    <h2>Top Unblocked Games</h2>
-    <div class="grid">
+
+    <h1>Top Unblocked Games</h1>
+
+    <div class="grid-container">
         <!-- Granny Kachel -->
-        <a href="https://granny-unblocked.github.io" class="card">
+        <a href="https://granny-unblocked.github.io" class="game-card">
             <img src="https://play-lh.googleusercontent.com/6X9k7aHhK8V6zCj6X_O3o7G3_5R6T-mU6n-9f_8R3n-v_8" alt="Granny">
             <p>Granny</p>
         </a>
-        <!-- Hier kannst du weitere Kacheln einfügen -->
+
+        <!-- Snow Rider 3D Kachel -->
+        <a href="https://snowrider3d.github.io" class="game-card">
+            <img src="https://snow-rider-3d.com/logo.png" alt="Snow Rider">
+            <p>Snow Rider 3D</p>
+        </a>
     </div>
+
 </body>
 </html>
