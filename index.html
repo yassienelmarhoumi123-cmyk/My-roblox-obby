@@ -33,24 +33,12 @@
         }
         .card:hover { transform: translateY(-5px); background: rgba(0, 0, 0, 0.6); }
         
-        /* Das Bild-Styling */
-        .card-img { 
+        .card img { 
             width: 100%; 
+            border-radius: 15px; 
             aspect-ratio: 1/1; 
-            background-color: #333;
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3em;
-            margin-bottom: 10px;
-            overflow: hidden;
-        }
-
-        .card-img img {
-            width: 100%;
-            height: 100%;
             object-fit: cover;
+            background-color: #333;
         }
 
         #game-overlay {
@@ -92,13 +80,13 @@
     <div class="grid">
         <!-- Basket Random -->
         <div class="card" onclick="openGame('https://basketballrandom.gitlab.io/')">
-            <div class="card-img">🏀</div>
+            <img src="https://raw.githubusercontent.com/top-unblocked-games/top-unblocked-games.github.io/main/basket-random/logo.png" alt="Basket Random">
             <div class="game-title">Basket Random</div>
         </div>
 
         <!-- Granny 2 -->
         <div class="card" onclick="openGame('https://horrorgamesfree.com/granny2')">
-            <div class="card-img">👵</div>
+            <img src="https://raw.githubusercontent.com/top-unblocked-games/top-unblocked-games.github.io/main/granny/logo.png" alt="Granny 2">
             <div class="game-title">Granny 2</div>
         </div>
     </div>
