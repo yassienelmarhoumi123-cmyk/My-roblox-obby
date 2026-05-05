@@ -18,7 +18,6 @@
             font-size: 3em; 
             margin-bottom: 50px; 
             text-shadow: 0 0 20px rgba(138, 43, 226, 0.8);
-            letter-spacing: 2px;
         }
 
         .grid { 
@@ -38,106 +37,81 @@
             width: 220px; 
             cursor: pointer; 
             transition: all 0.4s ease; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             backdrop-filter: blur(10px);
         }
 
-        .card:hover { 
-            transform: translateY(-10px); 
-            background: rgba(255, 255, 255, 0.12); 
-            border-color: #8a2be2;
-        }
+        .card:hover { transform: translateY(-10px); border-color: #8a2be2; }
 
-        .card img { 
-            width: 100%; 
-            aspect-ratio: 1/1; 
-            object-fit: cover; 
-            border-radius: 20px; 
-            margin-bottom: 15px;
-        }
+        .card img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 20px; margin-bottom: 15px; }
 
-        .game-title { 
-            font-size: 1.1em; 
-            font-weight: bold; 
-            text-transform: uppercase;
-        }
-
+        /* Overlay & Controls */
         #game-overlay { 
             display: none; 
             position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
+            top: 0; left: 0; 
+            width: 100%; height: 100%; 
             background: black; 
             z-index: 9999; 
         }
 
-        iframe { width: 100%; height: 100%; border: none; }
-
-        .close-btn { 
-            position: absolute; 
-            top: 20px; 
-            right: 20px; 
-            background: #ff0000; 
-            color: white; 
-            border: 2px solid white; 
-            padding: 12px 25px; 
-            border-radius: 15px; 
-            font-weight: 900; 
-            cursor: pointer; 
-            z-index: 10000;
+        .controls {
+            position: absolute; top: 0; width: 100%; height: 60px;
+            background: #111; display: flex; justify-content: space-around; align-items: center;
         }
+
+        iframe { width: 100%; height: calc(100% - 60px); border: none; margin-top: 60px; }
+
+        .btn { 
+            padding: 10px 20px; border-radius: 10px; border: none; 
+            cursor: pointer; font-weight: bold; color: white;
+        }
+        .btn-tab { background: #8a2be2; }
+        .btn-close { background: #ff0000; }
     </style>
 </head>
 <body>
 
     <div id="game-overlay">
-        <button class="close-btn" onclick="closeGame()">✖ SCHLIESSEN</button>
+        <div class="controls">
+            <button class="btn btn-tab" onclick="openExternal()">🌐 Falls Screen schwarz: Hier klicken</button>
+            <button class="btn btn-close" onclick="closeGame()">✖ SCHLIESSEN</button>
+        </div>
         <iframe id="game-frame" src=""></iframe>
     </div>
 
     <h1>HALAL GAMES PORTAL</h1>
 
     <div class="grid">
-        <!-- Basket Random -->
         <div class="card" onclick="openGame('https://basketballrandom.gitlab.io/')">
-            <img src="basket.png" alt="Basket Random">
-            <div class="game-title">Basket Random</div>
+            <img src="basket.png"><div class="game-title">Basket Random</div>
         </div>
-
-        <!-- Wordle Deutsch -->
         <div class="card" onclick="openGame('https://wordledeutsch.org/')">
-            <img src="wordle.png" alt="Halal Wordle">
-            <div class="game-title" style="color: #4CAF50;">Halal Wordle</div>
+            <img src="wordle.png"><div class="game-title" style="color: #4CAF50;">Halal Wordle</div>
         </div>
-
-        <!-- DTA 6 (Update mit neuem Bild) -->
         <div class="card" onclick="openGame('https://gamulo.com/game/dta-6-unblocked/')">
-            <img src="dta6.png" alt="Halal DTA 6">
-            <div class="game-title" style="color: #ffaa00;">Halal DTA 6</div>
+            <img src="dta6.png"><div class="game-title" style="color: #ffaa00;">Halal DTA 6</div>
         </div>
-
-        <!-- Granny 2 -->
         <div class="card" onclick="openGame('https://horrorgamesfree.com/granny2')">
-            <img src="halalgranny.png" alt="Halal Granny 2">
-            <div class="game-title" style="color: #ff4444;">Halal Granny 2</div>
+            <img src="halalgranny.png"><div class="game-title" style="color: #ff4444;">Halal Granny 2</div>
         </div>
     </div>
 
     <script>
+        let lastUrl = "";
         function openGame(url) {
+            lastUrl = url;
             document.getElementById('game-frame').src = url;
             document.getElementById('game-overlay').style.display = 'block';
             document.body.style.overflow = 'hidden';
         }
-
         function closeGame() {
             document.getElementById('game-overlay').style.display = 'none';
             document.getElementById('game-frame').src = '';
             document.body.style.overflow = 'auto';
         }
+        function openExternal() {
+            window.open(lastUrl, '_blank');
+        }
     </script>
-
 </body>
 </html>
