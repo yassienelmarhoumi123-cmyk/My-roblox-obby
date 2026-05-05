@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Classroom Resources</title>
     <style>
-        /* Hintergrund und Schrift wie in deinem Wunsch-Design */
         body { 
             background-color: #8a2be2; 
             color: white; 
@@ -14,10 +13,10 @@
             margin: 0; 
             padding: 20px; 
         }
-
-        h1 { margin-bottom: 30px; }
-
-        /* Das Raster für die Spiele-Kacheln */
+        h1 { 
+            margin-bottom: 30px; 
+            font-size: 2.5em;
+        }
         .grid { 
             display: grid; 
             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
@@ -25,8 +24,6 @@
             max-width: 900px;
             margin: 0 auto;
         }
-
-        /* Die einzelnen Karten */
         .card { 
             background: rgba(0, 0, 0, 0.3); 
             border: 1px solid rgba(255, 255, 255, 0.4);
@@ -35,18 +32,18 @@
             text-decoration: none; 
             color: white; 
             display: block; 
-            transition: transform 0.2s;
+            transition: transform 0.2s, background 0.2s;
         }
-
-        .card:hover { transform: scale(1.05); }
-
+        .card:hover { 
+            transform: scale(1.05); 
+            background: rgba(0, 0, 0, 0.5);
+        }
         .card img { 
             width: 100%; 
             border-radius: 10px; 
             aspect-ratio: 1/1; 
             object-fit: cover; 
         }
-
         .game-title { 
             margin-top: 10px; 
             font-weight: bold; 
@@ -60,22 +57,16 @@
 
     <div class="grid">
         
-        <!-- Spiel 1: Granny -->
-        <a href="https://webglmath.github.io/granny/" class="card">
-            <img src="https://play-lh.googleusercontent.com/6X9k7aHhK8V6zCj6X_O3o7G3_5R6T-mU6n-9f_8R3n-v_8" alt="Granny">
-            <div class="game-title">Granny</div>
-        </a>
-
-        <!-- Spiel 2: Basket Random -->
-        <a href="https://basket-random.github.io/" class="card">
+        <!-- Basket Random mit deinem GitLab Link -->
+        <a href="https://basketballrandom.gitlab.io/" class="card">
             <img src="https://play-lh.googleusercontent.com/I6P9S9X1vD2zQ7z_Xp6hY9Y9Q-W6zCj6X_O3o7G3_5R6T-mU6n-9f_8R3n-v_8" alt="Basket Random">
             <div class="game-title">Basket Random</div>
         </a>
 
-        <!-- Spiel 3: Snow Rider 3D -->
-        <a href="https://snowrider3d.github.io/" class="card">
-            <img src="https://snow-rider-3d.com/logo.png" alt="Snow Rider">
-            <div class="game-title">Snow Rider 3D</div>
+        <!-- Granny (Platzhalter - schick mir gerne noch einen Link dafür!) -->
+        <a href="https://webglmath.github.io/granny/" class="card">
+            <img src="https://play-lh.googleusercontent.com/6X9k7aHhK8V6zCj6X_O3o7G3_5R6T-mU6n-9f_8R3n-v_8" alt="Granny">
+            <div class="game-title">Granny</div>
         </a>
 
     </div>
