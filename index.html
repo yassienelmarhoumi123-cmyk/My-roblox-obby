@@ -1,11 +1,56 @@
-<!-- Granny Kachel -->
-<div class="card" onclick="openGame('https://top-unblocked-games.github.io/granny/')">
-    <img src="https://play-lh.googleusercontent.com/6X9k7aHhK8V6zCj6X_O3o7G3_5R6T-mU6n-9f_8R3n-v_8">
-    <p>Granny</p>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classroom Resources</title>
+    <style>
+        body { background-color: #4b0082; color: white; font-family: sans-serif; text-align: center; margin: 0; padding: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; padding: 20px; }
+        .card { background: rgba(255,255,255,0.1); border-radius: 15px; padding: 15px; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); }
+        .card img { width: 100%; border-radius: 10px; aspect-ratio: 1/1; object-fit: cover; }
+        #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 1000; }
+        iframe { width: 100%; height: 100%; border: none; }
+        .btn-close { position: absolute; top: 10px; right: 10px; background: red; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div id="overlay">
+    <button class="btn-close" onclick="closeGame()">X SCHLIESSEN</button>
+    <iframe id="game-frame" src=""></iframe>
 </div>
 
-<!-- Basketball Stars / Basket Random Kachel -->
-<div class="card" onclick="openGame('https://twoplayergames.org/embed/basket-random')">
-    <img src="https://play-lh.googleusercontent.com/67Clicker-Icon-Hier-Ersatz">
-    <p>Basket Random</p>
+<h1>Classroom Resources</h1>
+
+<div class="grid">
+    <!-- Granny -->
+    <div class="card" onclick="openGame('https://top-unblocked-games.github.io/granny/')">
+        <img src="https://www.呼呼.com/static/images/games/granny.jpg" onerror="this.src='https://via.placeholder.com/150?text=Granny'">
+        <p>Granny</p>
+    </div>
+
+    <!-- Basket Random -->
+    <div class="card" onclick="openGame('https://twoplayergames.org/embed/basket-random')">
+        <img src="https://www.twoplayergames.org/files/image/images2/basket-random-new-thumb.jpg" onerror="this.src='https://via.placeholder.com/150?text=Basket+Random'">
+        <p>Basket Random</p>
+    </div>
 </div>
+
+<script>
+    function openGame(url) {
+        var frame = document.getElementById('game-frame');
+        var overlay = document.getElementById('overlay');
+        frame.src = url;
+        overlay.style.display = 'block';
+    }
+    function closeGame() {
+        var frame = document.getElementById('game-frame');
+        var overlay = document.getElementById('overlay');
+        overlay.style.display = 'none';
+        frame.src = '';
+    }
+</script>
+
+</body>
+</html>
