@@ -2,69 +2,74 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Classroom Resources</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Halal Classroom Games</title>
     <style>
-        /* Grunddesign der Seite */
         body { 
-            background-color: #8a2be2; 
+            background: radial-gradient(circle, #4b0082, #000000); 
             color: white; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
             text-align: center; 
             margin: 0; 
-            padding: 20px; 
+            padding: 20px;
+            min-height: 100vh;
         }
 
         h1 { 
-            margin-bottom: 30px; 
-            font-size: 2.5em; 
-            text-shadow: 2px 2px 10px rgba(0,0,0,0.5); 
+            margin-bottom: 40px; 
+            font-size: 3em; 
+            text-shadow: 0 0 20px rgba(138, 43, 226, 0.8);
+            letter-spacing: 2px;
         }
 
-        /* Layout für die Spiele-Karten */
         .grid { 
             display: flex; 
             justify-content: center; 
-            gap: 25px; 
+            gap: 30px; 
             flex-wrap: wrap; 
-            max-width: 1000px; 
+            max-width: 1200px; 
             margin: 0 auto; 
         }
 
-        /* Design der einzelnen Karte */
         .card { 
-            background: rgba(0, 0, 0, 0.4); 
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px; 
-            padding: 15px; 
-            width: 220px; 
+            background: rgba(255, 255, 255, 0.05); 
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 30px; 
+            padding: 20px; 
+            width: 250px; 
             cursor: pointer; 
-            transition: transform 0.3s ease, background 0.3s ease; 
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
         }
 
         .card:hover { 
-            transform: translateY(-10px); 
-            background: rgba(255, 255, 255, 0.1); 
-            border-color: white;
+            transform: translateY(-15px) scale(1.05); 
+            background: rgba(255, 255, 255, 0.15); 
+            border-color: #8a2be2;
+            box-shadow: 0 20px 40px rgba(138, 43, 226, 0.4);
         }
 
         .card img { 
             width: 100%; 
             aspect-ratio: 1/1; 
             object-fit: cover; 
-            border-radius: 15px; 
-            display: block; 
+            border-radius: 20px; 
+            margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
 
         .game-title { 
-            padding-top: 15px; 
-            font-size: 1.1em; 
-            font-weight: bold; 
+            font-size: 1.3em; 
+            font-weight: 800; 
             text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        /* Overlay für das Spiel */
+        /* Spezial-Effekt für Granny */
+        .granny-card { border-color: rgba(255, 0, 0, 0.3); }
+        .granny-card:hover { border-color: #ff0000; box-shadow: 0 20px 40px rgba(255, 0, 0, 0.4); }
+
         #game-overlay { 
             display: none; 
             position: fixed; 
@@ -73,56 +78,51 @@
             width: 100%; 
             height: 100%; 
             background: black; 
-            z-index: 1000; 
+            z-index: 9999; 
         }
 
-        iframe { 
-            width: 100%; 
-            height: 100%; 
-            border: none; 
-        }
+        iframe { width: 100%; height: 100%; border: none; }
 
-        /* Schließen-Button im Spiel */
         .close-btn { 
             position: absolute; 
-            top: 15px; 
-            right: 15px; 
+            top: 20px; 
+            right: 20px; 
             background: #ff0000; 
             color: white; 
-            border: 2px solid white; 
-            padding: 10px 20px; 
-            border-radius: 8px; 
-            font-weight: bold; 
+            border: 3px solid white; 
+            padding: 15px 30px; 
+            border-radius: 15px; 
+            font-weight: 900; 
             cursor: pointer; 
-            z-index: 1001;
+            font-size: 1.2em;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
         }
     </style>
 </head>
 <body>
 
-    <!-- Overlay Container -->
     <div id="game-overlay">
-        <button class="close-btn" onclick="closeGame()">X SCHLIESSEN</button>
+        <button class="close-btn" onclick="closeGame()">✖ SCHLIESSEN</button>
         <iframe id="game-frame" src=""></iframe>
     </div>
 
-    <h1>Classroom Resources</h1>
+    <h1>HALAL GAMES PORTAL</h1>
 
     <div class="grid">
         <!-- Basket Random -->
         <div class="card" onclick="openGame('https://basketballrandom.gitlab.io/')">
-            <img src="basket.png" alt="Halal Basket Random">
-            <div class="game-title">Halal Basket Random</div>
+            <img src="basket.png" alt="Basket Random">
+            <div class="game-title">Basket Random</div>
         </div>
 
         <!-- Wordle Deutsch -->
         <div class="card" onclick="openGame('https://wordledeutsch.org/')">
             <img src="wordle.png" alt="Halal Wordle">
-            <div class="game-title">Halal Wordle</div>
+            <div class="game-title" style="color: #4CAF50;">Halal Wordle</div>
         </div>
 
-        <!-- Halal Granny 2 -->
-        <div class="card" onclick="openGame('https://horrorgamesfree.com/granny2')">
+        <!-- Granny 2 -->
+        <div class="card granny-card" onclick="openGame('https://horrorgamesfree.com/granny2')">
             <img src="halalgranny.png" alt="Halal Granny 2">
             <div class="game-title" style="color: #ff4444;">Halal Granny 2</div>
         </div>
@@ -130,9 +130,10 @@
 
     <script>
         function openGame(url) {
-            document.getElementById('game-frame').src = url;
+            const frame = document.getElementById('game-frame');
+            frame.src = url;
             document.getElementById('game-overlay').style.display = 'block';
-            document.body.style.overflow = 'hidden'; // Verhindert Scrollen der Hauptseite
+            document.body.style.overflow = 'hidden';
         }
 
         function closeGame() {
