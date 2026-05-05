@@ -5,119 +5,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Classroom Resources</title>
     <style>
-        body { 
-            background-color: #8a2be2; 
-            color: white; 
-            font-family: sans-serif; 
-            text-align: center; 
-            margin: 0; 
-            padding: 20px; 
-        }
-        h1 { margin-bottom: 30px; font-size: 2.5em; text-shadow: 2px 2px 10px rgba(0,0,0,0.5); }
-
-        .grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
-            gap: 25px; 
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        .card { 
-            background: rgba(0, 0, 0, 0.4); 
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px; 
-            padding: 15px; 
-            cursor: pointer;
-            transition: all 0.3s ease;
-            overflow: hidden;
-        }
-        .card:hover { transform: translateY(-5px); background: rgba(0, 0, 0, 0.6); border-color: white; }
+        body { background-color: #8a2be2; color: white; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; padding: 20px; }
+        h1 { margin-bottom: 30px; font-size: 2.8em; text-shadow: 2px 2px 5px rgba(0,0,0,0.4); }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 25px; max-width: 950px; margin: 0 auto; }
         
-        .card img { 
-            width: 100%; 
-            aspect-ratio: 1/1; 
-            object-fit: cover;
-            display: block;
-            border-radius: 15px;
+        /* Fröhlicherer Kachel-Style */
+        .card { 
+            background: rgba(255, 255, 255, 0.1); /* Helles, transparentes Weiß */
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 25px; 
+            padding: 15px; 
+            cursor: pointer; 
+            transition: all 0.3s ease; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); 
+        }
+        .card:hover { transform: translateY(-10px); border-color: rgba(255,255,255,1); background: rgba(255, 255, 255, 0.2); }
+        .card img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 18px; display: block; }
+        
+        .game-title { 
+            padding-top: 15px; 
+            font-size: 1.2em; 
+            font-weight: 700; 
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
         }
 
-        .game-title {
-            padding: 10px;
-            font-weight: bold;
-            font-size: 1.1em;
-        }
-
-        /* Fullscreen Overlay für die Spiele */
-        #game-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: black;
-            z-index: 9999;
-        }
-
+        #game-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: black; z-index: 9999; }
         iframe { width: 100%; height: 100%; border: none; }
-
-        .close-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: #ff0000;
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
-            font-weight: bold;
-            z-index: 10000;
-            cursor: pointer;
-            box-shadow: 0 0 15px rgba(255,0,0,0.5);
-        }
+        .close-btn { position: absolute; top: 15px; right: 15px; background: #ff0000; color: white; border: 2px solid white; padding: 12px 25px; border-radius: 10px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
-
-    <!-- Das Fenster, in dem das Spiel geladen wird -->
-    <div id="game-overlay">
-        <button class="close-btn" onclick="closeGame()">X SCHLIESSEN</button>
-        <iframe id="game-frame" src=""></iframe>
-    </div>
-
+    <div id="game-overlay"><button class="close-btn" onclick="closeGame()">X SCHLIESSEN</button><iframe id="game-frame" src=""></iframe></div>
     <h1>Classroom Resources</h1>
-
     <div class="grid">
-        <!-- Kachel für Basket Random -->
+        <!-- Basket Random -->
         <div class="card" onclick="openGame('https://basketballrandom.gitlab.io/')">
-            <img src="https://play-lh.googleusercontent.com/I6P9S9X1vD2zQ7z_Xp6hY9Y9Q-W6zCj6X_O3o7G3_5R6T-mU6n-9f_8R3n-v_8" alt="Basket Random">
-            <div class="game-title">Basket Random</div>
+            <img src="basket.png" alt="Halal Basket Random">
+            <div class="game-title">Halal Basket Random</div>
         </div>
-
-        <!-- Kachel für Halal Granny 2 -->
+        <!-- Halal Granny 2 -->
         <div class="card" onclick="openGame('https://horrorgamesfree.com/granny2')">
-            <!-- Greift auf dein hochgeladenes Bild 'halalgranny.png' zu -->
             <img src="halalgranny.png" alt="Halal Granny 2">
-            <div class="game-title" style="color: #bc0000; text-shadow: 1px 1px 2px black;">HALAL GRANNY 2</div>
+            <div class="game-title" style="color: #bc0000; font-weight: 900;">HALAL GRANNY 2</div>
         </div>
     </div>
-
     <script>
-        // Funktion zum Öffnen des Spiels im Vollbild
-        function openGame(url) {
-            document.getElementById('game-frame').src = url;
-            document.getElementById('game-overlay').style.display = 'block';
-            document.body.style.overflow = 'hidden';
-        }
-
-        // Funktion zum Schließen des Spiels
-        function closeGame() {
-            document.getElementById('game-overlay').style.display = 'none';
-            document.getElementById('game-frame').src = '';
-            document.body.style.overflow = 'auto';
-        }
+        function openGame(url) { document.getElementById('game-frame').src = url; document.getElementById('game-overlay').style.display = 'block'; document.body.style.overflow = 'hidden'; }
+        function closeGame() { document.getElementById('game-overlay').style.display = 'none'; document.getElementById('game-frame').src = ''; document.body.style.overflow = 'auto'; }
     </script>
-
 </body>
 </html>
