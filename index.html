@@ -16,38 +16,41 @@
         h1 { 
             margin-bottom: 30px; 
             font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
         }
         .grid { 
             display: grid; 
             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
-            gap: 20px; 
+            gap: 25px; 
             max-width: 900px;
             margin: 0 auto;
         }
         .card { 
-            background: rgba(0, 0, 0, 0.3); 
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            border-radius: 15px; 
+            background: rgba(0, 0, 0, 0.4); 
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px; 
             padding: 15px; 
             text-decoration: none; 
             color: white; 
             display: block; 
-            transition: transform 0.2s, background 0.2s;
+            transition: all 0.3s ease;
         }
         .card:hover { 
-            transform: scale(1.05); 
-            background: rgba(0, 0, 0, 0.5);
+            transform: translateY(-10px); 
+            background: rgba(0, 0, 0, 0.6);
+            border-color: #fff;
         }
         .card img { 
             width: 100%; 
-            border-radius: 10px; 
+            border-radius: 15px; 
             aspect-ratio: 1/1; 
             object-fit: cover; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
         .game-title { 
-            margin-top: 10px; 
+            margin-top: 12px; 
             font-weight: bold; 
-            font-size: 1.1em; 
+            font-size: 1.2em; 
         }
     </style>
 </head>
@@ -57,16 +60,16 @@
 
     <div class="grid">
         
-        <!-- Basket Random mit deinem GitLab Link -->
-        <a href="https://basketballrandom.gitlab.io/" class="card">
+        <!-- Basket Random (GitLab Link) -->
+        <a href="https://basketballrandom.gitlab.io/" class="card" target="_blank">
             <img src="https://play-lh.googleusercontent.com/I6P9S9X1vD2zQ7z_Xp6hY9Y9Q-W6zCj6X_O3o7G3_5R6T-mU6n-9f_8R3n-v_8" alt="Basket Random">
             <div class="game-title">Basket Random</div>
         </a>
 
-        <!-- Granny (Platzhalter - schick mir gerne noch einen Link dafür!) -->
-        <a href="https://webglmath.github.io/granny/" class="card">
-            <img src="https://play-lh.googleusercontent.com/6X9k7aHhK8V6zCj6X_O3o7G3_5R6T-mU6n-9f_8R3n-v_8" alt="Granny">
-            <div class="game-title">Granny</div>
+        <!-- Granny 2 (HorrorGamesFree Link) -->
+        <a href="https://horrorgamesfree.com/granny2" class="card" target="_blank">
+            <img src="https://play-lh.googleusercontent.com/6X9k7aHhK8V6zCj6X_O3o7G3_5R6T-mU6n-9f_8R3n-v_8" alt="Granny 2">
+            <div class="game-title">Granny 2</div>
         </a>
 
     </div>
