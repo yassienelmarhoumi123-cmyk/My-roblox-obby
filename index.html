@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Halal Classroom Games</title>
+    <title>Halal Games Portal</title>
     <style>
         body { 
-            background: radial-gradient(circle, #4b0082, #000000); 
+            background: radial-gradient(circle, #2a0050, #000000); 
             color: white; 
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
             text-align: center; 
@@ -17,59 +17,54 @@
 
         h1 { 
             margin-bottom: 40px; 
-            font-size: 3em; 
-            text-shadow: 0 0 20px rgba(138, 43, 226, 0.8);
-            letter-spacing: 2px;
+            font-size: 2.8em; 
+            text-shadow: 0 0 15px rgba(138, 43, 226, 0.7);
+            letter-spacing: 1px;
         }
 
         .grid { 
             display: flex; 
             justify-content: center; 
-            gap: 30px; 
+            gap: 25px; 
             flex-wrap: wrap; 
-            max-width: 1200px; 
+            max-width: 1100px; 
             margin: 0 auto; 
         }
 
         .card { 
-            background: rgba(255, 255, 255, 0.05); 
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 30px; 
-            padding: 20px; 
-            width: 250px; 
+            background: rgba(255, 255, 255, 0.07); 
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 25px; 
+            padding: 15px; 
+            width: 220px; 
             cursor: pointer; 
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
-            backdrop-filter: blur(10px);
+            transition: all 0.3s ease-out; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            backdrop-filter: blur(8px);
         }
 
         .card:hover { 
-            transform: translateY(-15px) scale(1.05); 
-            background: rgba(255, 255, 255, 0.15); 
+            transform: translateY(-10px); 
+            background: rgba(255, 255, 255, 0.12); 
             border-color: #8a2be2;
-            box-shadow: 0 20px 40px rgba(138, 43, 226, 0.4);
+            box-shadow: 0 15px 30px rgba(138, 43, 226, 0.3);
         }
 
         .card img { 
             width: 100%; 
             aspect-ratio: 1/1; 
             object-fit: cover; 
-            border-radius: 20px; 
-            margin-bottom: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            border-radius: 18px; 
+            margin-bottom: 12px;
         }
 
         .game-title { 
-            font-size: 1.3em; 
-            font-weight: 800; 
+            font-size: 1.1em; 
+            font-weight: 700; 
             text-transform: uppercase;
-            letter-spacing: 1px;
         }
 
-        /* Spezial-Effekt für Granny */
-        .granny-card { border-color: rgba(255, 0, 0, 0.3); }
-        .granny-card:hover { border-color: #ff0000; box-shadow: 0 20px 40px rgba(255, 0, 0, 0.4); }
-
+        /* Overlay für das Spielfenster */
         #game-overlay { 
             display: none; 
             position: fixed; 
@@ -85,17 +80,16 @@
 
         .close-btn { 
             position: absolute; 
-            top: 20px; 
-            right: 20px; 
-            background: #ff0000; 
+            top: 15px; 
+            right: 15px; 
+            background: #e60000; 
             color: white; 
-            border: 3px solid white; 
-            padding: 15px 30px; 
-            border-radius: 15px; 
-            font-weight: 900; 
+            border: 2px solid white; 
+            padding: 12px 24px; 
+            border-radius: 12px; 
+            font-weight: bold; 
             cursor: pointer; 
-            font-size: 1.2em;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+            z-index: 10000;
         }
     </style>
 </head>
@@ -109,20 +103,22 @@
     <h1>HALAL GAMES PORTAL</h1>
 
     <div class="grid">
-        <!-- Basket Random -->
         <div class="card" onclick="openGame('https://basketballrandom.gitlab.io/')">
             <img src="basket.png" alt="Basket Random">
             <div class="game-title">Basket Random</div>
         </div>
 
-        <!-- Wordle Deutsch -->
         <div class="card" onclick="openGame('https://wordledeutsch.org/')">
             <img src="wordle.png" alt="Halal Wordle">
             <div class="game-title" style="color: #4CAF50;">Halal Wordle</div>
         </div>
 
-        <!-- Granny 2 -->
-        <div class="card granny-card" onclick="openGame('https://horrorgamesfree.com/granny2')">
+        <div class="card" onclick="openGame('https://www.geo-fs.com/geofs.php')">
+            <img src="https://www.geo-fs.com/images/logo_geofs.png" alt="Flight Sim">
+            <div class="game-title" style="color: #00d4ff;">Halal Flight Sim</div>
+        </div>
+
+        <div class="card" onclick="openGame('https://horrorgamesfree.com/granny2')">
             <img src="halalgranny.png" alt="Halal Granny 2">
             <div class="game-title" style="color: #ff4444;">Halal Granny 2</div>
         </div>
