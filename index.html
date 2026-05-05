@@ -1,48 +1,11 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <style>
-        body { background: #4b0082; color: white; font-family: sans-serif; text-align: center; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 20px; padding: 20px; }
-        .card { background: rgba(0,0,0,0.5); border-radius: 12px; padding: 15px; cursor: pointer; }
-        .card img { width: 100%; border-radius: 8px; }
-        /* Das Fenster für das Spiel */
-        #game-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 100; }
-        iframe { width: 100%; height: 100%; border: none; }
-        .close-btn { position: absolute; top: 10px; right: 10px; background: red; color: white; padding: 10px; cursor: pointer; border-radius: 5px; z-index: 101; }
-    </style>
-</head>
-<body>
-
-<div id="game-overlay">
-    <div class="close-btn" onclick="closeGame()">X Schließen</div>
-    <iframe id="game-frame" src=""></iframe>
+<!-- Granny Kachel -->
+<div class="card" onclick="openGame('https://top-unblocked-games.github.io/granny/')">
+    <img src="https://play-lh.googleusercontent.com/6X9k7aHhK8V6zCj6X_O3o7G3_5R6T-mU6n-9f_8R3n-v_8">
+    <p>Granny</p>
 </div>
 
-<h1>Top Unblocked Games</h1>
-<div class="grid">
-    <!-- Granny -->
-    <div class="card" onclick="openGame('https://top-unblocked-games.github.io/granny/')">
-        <img src="https://play-lh.googleusercontent.com/6X9k7aHhK8V6zCj6X_O3o7G3_5R6T-mU6n-9f_8R3n-v_8">
-        <p>Granny</p>
-    </div>
-    <!-- Basket Random -->
-    <div class="card" onclick="openGame('https://twoplayergames.org/embed/basket-random')">
-        <img src="https://play-lh.googleusercontent.com/I6P9S9X1vD2zQ7z_Xp6hY9Y9Q-W6zCj6X_O3o7G3_5R6T-mU6n-9f_8R3n-v_8">
-        <p>Basket Random</p>
-    </div>
+<!-- Basketball Stars / Basket Random Kachel -->
+<div class="card" onclick="openGame('https://twoplayergames.org/embed/basket-random')">
+    <img src="https://play-lh.googleusercontent.com/67Clicker-Icon-Hier-Ersatz">
+    <p>Basket Random</p>
 </div>
-
-<script>
-    function openGame(url) {
-        document.getElementById('game-frame').src = url;
-        document.getElementById('game-overlay').style.display = 'block';
-    }
-    function closeGame() {
-        document.getElementById('game-overlay').style.display = 'none';
-        document.getElementById('game-frame').src = '';
-    }
-</script>
-
-</body>
-</html>
