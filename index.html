@@ -5,52 +5,80 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Classroom Resources</title>
     <style>
-        body { background-color: #4b0082; color: white; font-family: sans-serif; text-align: center; margin: 0; padding: 20px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; padding: 20px; }
-        .card { background: rgba(255,255,255,0.1); border-radius: 15px; padding: 15px; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); }
-        .card img { width: 100%; border-radius: 10px; aspect-ratio: 1/1; object-fit: cover; }
-        #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 1000; }
-        iframe { width: 100%; height: 100%; border: none; }
-        .btn-close { position: absolute; top: 10px; right: 10px; background: red; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        /* Hintergrund und Schrift wie in deinem Wunsch-Design */
+        body { 
+            background-color: #8a2be2; 
+            color: white; 
+            font-family: sans-serif; 
+            text-align: center; 
+            margin: 0; 
+            padding: 20px; 
+        }
+
+        h1 { margin-bottom: 30px; }
+
+        /* Das Raster für die Spiele-Kacheln */
+        .grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
+            gap: 20px; 
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Die einzelnen Karten */
+        .card { 
+            background: rgba(0, 0, 0, 0.3); 
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 15px; 
+            padding: 15px; 
+            text-decoration: none; 
+            color: white; 
+            display: block; 
+            transition: transform 0.2s;
+        }
+
+        .card:hover { transform: scale(1.05); }
+
+        .card img { 
+            width: 100%; 
+            border-radius: 10px; 
+            aspect-ratio: 1/1; 
+            object-fit: cover; 
+        }
+
+        .game-title { 
+            margin-top: 10px; 
+            font-weight: bold; 
+            font-size: 1.1em; 
+        }
     </style>
 </head>
 <body>
 
-<div id="overlay">
-    <button class="btn-close" onclick="closeGame()">X SCHLIESSEN</button>
-    <iframe id="game-frame" src=""></iframe>
-</div>
+    <h1>Classroom Resources</h1>
 
-<h1>Classroom Resources</h1>
+    <div class="grid">
+        
+        <!-- Spiel 1: Granny -->
+        <a href="https://webglmath.github.io/granny/" class="card">
+            <img src="https://play-lh.googleusercontent.com/6X9k7aHhK8V6zCj6X_O3o7G3_5R6T-mU6n-9f_8R3n-v_8" alt="Granny">
+            <div class="game-title">Granny</div>
+        </a>
 
-<div class="grid">
-    <!-- Granny -->
-    <div class="card" onclick="openGame('https://top-unblocked-games.github.io/granny/')">
-        <img src="https://www.呼呼.com/static/images/games/granny.jpg" onerror="this.src='https://via.placeholder.com/150?text=Granny'">
-        <p>Granny</p>
+        <!-- Spiel 2: Basket Random -->
+        <a href="https://basket-random.github.io/" class="card">
+            <img src="https://play-lh.googleusercontent.com/I6P9S9X1vD2zQ7z_Xp6hY9Y9Q-W6zCj6X_O3o7G3_5R6T-mU6n-9f_8R3n-v_8" alt="Basket Random">
+            <div class="game-title">Basket Random</div>
+        </a>
+
+        <!-- Spiel 3: Snow Rider 3D -->
+        <a href="https://snowrider3d.github.io/" class="card">
+            <img src="https://snow-rider-3d.com/logo.png" alt="Snow Rider">
+            <div class="game-title">Snow Rider 3D</div>
+        </a>
+
     </div>
-
-    <!-- Basket Random -->
-    <div class="card" onclick="openGame('https://twoplayergames.org/embed/basket-random')">
-        <img src="https://www.twoplayergames.org/files/image/images2/basket-random-new-thumb.jpg" onerror="this.src='https://via.placeholder.com/150?text=Basket+Random'">
-        <p>Basket Random</p>
-    </div>
-</div>
-
-<script>
-    function openGame(url) {
-        var frame = document.getElementById('game-frame');
-        var overlay = document.getElementById('overlay');
-        frame.src = url;
-        overlay.style.display = 'block';
-    }
-    function closeGame() {
-        var frame = document.getElementById('game-frame');
-        var overlay = document.getElementById('overlay');
-        overlay.style.display = 'none';
-        frame.src = '';
-    }
-</script>
 
 </body>
 </html>
