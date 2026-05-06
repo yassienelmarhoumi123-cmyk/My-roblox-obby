@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Halal Games Portal</title>
+    <title>Halal Games & Chat Portal</title>
     <style>
         body { 
             background: radial-gradient(circle, #1a0033, #000000); 
@@ -18,12 +18,13 @@
             font-size: 3em; 
             margin-bottom: 50px; 
             text-shadow: 0 0 20px rgba(138, 43, 226, 0.8);
+            letter-spacing: 2px;
         }
 
         .grid { 
             display: flex; 
             justify-content: center; 
-            gap: 30px; 
+            gap: 25px; 
             flex-wrap: wrap; 
             max-width: 1200px; 
             margin: 0 auto; 
@@ -34,15 +35,28 @@
             border: 2px solid rgba(255, 255, 255, 0.1);
             border-radius: 25px; 
             padding: 15px; 
-            width: 220px; 
+            width: 200px; 
             cursor: pointer; 
             transition: all 0.4s ease; 
             backdrop-filter: blur(10px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
         }
 
-        .card:hover { transform: translateY(-10px); border-color: #8a2be2; }
+        .card:hover { 
+            transform: translateY(-10px); 
+            background: rgba(255, 255, 255, 0.12); 
+            border-color: #8a2be2; 
+        }
 
-        .card img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 20px; margin-bottom: 15px; }
+        .card img { 
+            width: 100%; 
+            aspect-ratio: 1/1; 
+            object-fit: cover; 
+            border-radius: 20px; 
+            margin-bottom: 15px; 
+        }
+
+        .game-title { font-size: 1em; font-weight: bold; text-transform: uppercase; }
 
         /* Overlay & Controls */
         #game-overlay { 
@@ -57,6 +71,7 @@
         .controls {
             position: absolute; top: 0; width: 100%; height: 60px;
             background: #111; display: flex; justify-content: space-around; align-items: center;
+            border-bottom: 1px solid #333;
         }
 
         iframe { width: 100%; height: calc(100% - 60px); border: none; margin-top: 60px; }
@@ -79,20 +94,37 @@
         <iframe id="game-frame" src=""></iframe>
     </div>
 
-    <h1>HALAL GAMES PORTAL</h1>
+    <h1>HALAL PORTAL</h1>
 
     <div class="grid">
+        <!-- Basket Random -->
         <div class="card" onclick="openGame('https://basketballrandom.gitlab.io/')">
-            <img src="basket.png"><div class="game-title">Basket Random</div>
+            <img src="basket.png">
+            <div class="game-title">Basket Random</div>
         </div>
+
+        <!-- Wordle -->
         <div class="card" onclick="openGame('https://wordledeutsch.org/')">
-            <img src="wordle.png"><div class="game-title" style="color: #4CAF50;">Halal Wordle</div>
+            <img src="wordle.png">
+            <div class="game-title" style="color: #4CAF50;">Halal Wordle</div>
         </div>
+
+        <!-- Ommogle -->
+        <div class="card" onclick="openGame('https://ommogle.com/')">
+            <img src="https://ommogle.com/assets/img/logo.png" alt="Ommogle">
+            <div class="game-title" style="color: #00d4ff;">Halal Chat (Ommogle)</div>
+        </div>
+
+        <!-- DTA 6 -->
         <div class="card" onclick="openGame('https://gamulo.com/game/dta-6-unblocked/')">
-            <img src="dta6.png"><div class="game-title" style="color: #ffaa00;">Halal DTA 6</div>
+            <img src="dta6.png">
+            <div class="game-title" style="color: #ffaa00;">Halal DTA 6</div>
         </div>
+
+        <!-- Granny 2 -->
         <div class="card" onclick="openGame('https://horrorgamesfree.com/granny2')">
-            <img src="halalgranny.png"><div class="game-title" style="color: #ff4444;">Halal Granny 2</div>
+            <img src="halalgranny.png">
+            <div class="game-title" style="color: #ff4444;">Halal Granny 2</div>
         </div>
     </div>
 
