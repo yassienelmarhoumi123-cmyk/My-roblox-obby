@@ -91,7 +91,8 @@
             <button class="btn btn-tab" onclick="openExternal()">🌐 Falls Screen schwarz: Hier klicken</button>
             <button class="btn btn-close" onclick="closeGame()">✖ SCHLIESSEN</button>
         </div>
-        <iframe id="game-frame" src=""></iframe>
+        <!-- WICHTIG: allow Attribut für Kamera-Zugriff hinzugefügt -->
+        <iframe id="game-frame" src="" allow="camera; microphone; display-capture"></iframe>
     </div>
 
     <h1>HALAL PORTAL</h1>
@@ -109,7 +110,7 @@
             <div class="game-title" style="color: #4CAF50;">Halal Wordle</div>
         </div>
 
-        <!-- Ommogle mit dem neuen Halal Profilbild -->
+        <!-- Ommogle mit Halal Profilbild -->
         <div class="card" onclick="openGame('https://ommogle.com/')">
             <img src="halal-chat.png" alt="Halal Chat">
             <div class="game-title" style="color: #00d4ff;">Halal Chat</div>
