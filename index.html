@@ -10,152 +10,171 @@
             color: white; 
             font-family: 'Segoe UI', sans-serif; 
             text-align: center; 
-            margin: 0; 
-            padding: 20px; 
+            margin: 0; padding: 20px; 
             min-height: 100vh;
         }
 
-        h1 { 
-            font-size: 2.5em; 
-            text-shadow: 0 0 15px #8a2be2; 
-            margin-top: 20px; 
-            margin-bottom: 30px; 
+        /* WARTUNGS-SCREEN */
+        #m-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000;
+            z-index: 9000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
         }
 
+        #unlock-btn {
+            margin-top: 20px;
+            padding: 15px 30px;
+            background: #8a2be2;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.4);
+        }
+
+        /* SPIELE GRID */
         .grid { 
             display: flex; 
             justify-content: center; 
-            gap: 20px; 
+            gap: 15px; 
             flex-wrap: wrap; 
-            max-width: 1200px; 
-            margin: 0 auto; 
+            margin-top: 30px; 
+            margin-bottom: 100px;
         }
 
         .card { 
             background: rgba(255,255,255,0.05); 
-            border-radius: 25px; 
-            padding: 15px; 
-            width: 160px; 
+            border-radius: 20px; 
+            padding: 12px; 
+            width: 140px; 
             border: 1px solid rgba(255,255,255,0.1);
-            transition: transform 0.2s;
-            cursor: pointer;
         }
 
-        .card:active {
-            transform: scale(0.95);
-        }
-        
         .card img { 
             width: 100%; 
             aspect-ratio: 1/1; 
             object-fit: cover; 
-            border-radius: 18px; 
-            margin-bottom: 10px;
+            border-radius: 15px; 
+            margin-bottom: 8px;
         }
 
-        .game-title { 
-            font-size: 0.9em; 
-            font-weight: bold; 
-            text-transform: uppercase; 
-        }
+        .game-title { font-size: 0.8em; font-weight: bold; }
 
-        /* GAME OVERLAY */
-        #game-view { 
-            display: none; 
-            position: fixed; 
-            top: 0; left: 0; width: 100%; height: 100%; 
-            background: #000; 
-            z-index: 5000; 
-        }
-        
-        iframe { 
-            width: 100%; 
-            height: calc(100% - 60px); 
-            border: none; 
-        }
-
-        .btn-close { 
-            background: #ff0000; 
-            color: white; 
-            border: none; 
-            padding: 12px 25px; 
-            border-radius: 12px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            margin: 10px;
-        }
+        /* OVERLAYS */
+        #game-view { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9500; }
+        iframe { width: 100%; height: calc(100% - 60px); border: none; }
+        .btn-ui { background: #8a2be2; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; }
     </style>
 </head>
-<body>
+<body onload="checkStatus()">
 
-    <div id="game-view">
-        <div style="height: 60px; display: flex; justify-content: center; align-items: center; background: #111;">
-            <button class="btn-close" onclick="closeGame()">✖ SCHLIESSEN</button>
-        </div>
-        <iframe id="game-frame" src="" allow="camera; microphone; display-capture"></iframe>
+    <!-- WARTUNGS-MODUS (Wird durch Script gesteuert) -->
+    <div id="m-overlay">
+        <h1 style="color: #ff4444; font-size: 2.5em;">⚠️ WARTUNG</h1>
+        <p>Dieses Portal ist zurzeit privat gesperrt.</p>
+        <button id="unlock-btn" onclick="askAdmin()">Admin Code eingeben</button>
     </div>
 
-    <h1>HALAL PORTAL</h1>
-    
-    <div class="grid">
-        <!-- Messenger -->
-        <div class="card" onclick="launchGame('https://my.cbox.ws/Yassien')">
-            <img src="https://cdn-icons-png.flaticon.com/512/134/134937.png">
-            <div class="game-title" style="color: #25D366;">Messenger</div>
+    <!-- GAME OVERLAY -->
+    <div id="game-view">
+        <div style="height: 60px; display: flex; justify-content: center; align-items: center; background: #111;">
+            <button class="btn-ui" style="background: #ff0000;" onclick="closeG()">✖ SCHLIESSEN</button>
         </div>
+        <iframe id="game-frame" allow="camera; microphone; display-capture"></iframe>
+    </div>
 
-        <!-- Murder -->
-        <div class="card" onclick="launchGame('https://murder-unblocked.github.io/')">
-            <img src="Murder.png">
-            <div class="game-title" style="color: #ff4444;">Murder</div>
-        </div>
+    <!-- HAUPTINHALT -->
+    <div id="content">
+        <h1>HALAL PORTAL</h1>
+        <div class="grid">
+            
+            <!-- Messenger -->
+            <div class="card" onclick="play('https://my.cbox.ws/Yassien')">
+                <img src="https://cdn-icons-png.flaticon.com/512/134/134937.png">
+                <div class="game-title" style="color: #25D366;">Messenger</div>
+            </div>
 
-        <!-- Drive Mad -->
-        <div class="card" onclick="launchGame('https://ducky443747.github.io/games/DriveMad/')">
-            <img src="https://play-lh.googleusercontent.com/Anm2S-MvTuxPzD4lqP7kH0H8uC_o7YvF1O7jB_9Gz9V0M9f6I8P6j1g_3p8P0w">
-            <div class="game-title" style="color: #ffde00;">Drive Mad</div>
-        </div>
+            <!-- Murder -->
+            <div class="card" onclick="play('https://murder-unblocked.github.io/')">
+                <img src="Murder.png">
+                <div class="game-title" style="color: #ff4444;">Murder</div>
+            </div>
 
-        <!-- Basket Random -->
-        <div class="card" onclick="launchGame('https://basketballrandom.gitlab.io/')">
-            <img src="basket.png">
-            <div class="game-title">Basket Random</div>
-        </div>
+            <!-- Drive Mad -->
+            <div class="card" onclick="play('https://ducky443747.github.io/games/DriveMad/')">
+                <img src="https://play-lh.googleusercontent.com/Anm2S-MvTuxPzD4lqP7kH0H8uC_o7YvF1O7jB_9Gz9V0M9f6I8P6j1g_3p8P0w">
+                <div class="game-title" style="color: #ffde00;">Drive Mad</div>
+            </div>
 
-        <!-- Wordle -->
-        <div class="card" onclick="launchGame('https://wordledeutsch.org/')">
-            <img src="wordle.png">
-            <div class="game-title" style="color: #4CAF50;">Wordle</div>
-        </div>
+            <!-- Basket Random -->
+            <div class="card" onclick="play('https://basketballrandom.gitlab.io/')">
+                <img src="basket.png">
+                <div class="game-title">Basket Random</div>
+            </div>
 
-        <!-- Halal Chat -->
-        <div class="card" onclick="launchGame('https://ommogle.com/')">
-            <img src="halal-chat.png">
-            <div class="game-title" style="color: #00d4ff;">Chat</div>
-        </div>
+            <!-- Wordle -->
+            <div class="card" onclick="play('https://wordledeutsch.org/')">
+                <img src="wordle.png">
+                <div class="game-title" style="color: #4CAF50;">Wordle</div>
+            </div>
 
-        <!-- Highway Racer -->
-        <div class="card" onclick="launchGame('https://crazygames-unblocked.github.io/play/highway-racer-3d.html')">
-            <img src="halal-racer.png">
-            <div class="game-title" style="color: #00ff88;">Racer</div>
+            <!-- Halal Chat -->
+            <div class="card" onclick="play('https://ommogle.com/')">
+                <img src="halal-chat.png">
+                <div class="game-title" style="color: #00d4ff;">Chat</div>
+            </div>
+
+            <!-- Highway Racer -->
+            <div class="card" onclick="play('https://crazygames-unblocked.github.io/play/highway-racer-3d.html')">
+                <img src="halal-racer.png">
+                <div class="game-title" style="color: #00ff88;">Racer</div>
+            </div>
+
         </div>
     </div>
 
     <script>
-        const PASSWORT = "6767";
+        // --- DEINE EINSTELLUNGEN ---
+        const MASTER = "9999"; 
+        const PASS = "6767";
+        
+        // HIER ÄNDERN: true = Wartung AN / false = Wartung AUS
+        const isLocked = true; 
+        // ---------------------------
 
-        function launchGame(url) {
-            const eingabe = prompt("Passwort eingeben:");
-            if (eingabe === PASSWORT) {
-                document.getElementById('game-frame').src = url;
-                document.getElementById('game-view').style.display = 'block';
-                document.body.style.overflow = 'hidden';
-            } else if (eingabe !== null) {
-                alert("Falsches Passwort!");
+        function checkStatus() {
+            const hasAccess = sessionStorage.getItem("admin_session") === "true";
+            const overlay = document.getElementById('m-overlay');
+            
+            if (isLocked && !hasAccess) {
+                overlay.style.display = 'flex';
+            } else {
+                overlay.style.display = 'none';
             }
         }
 
-        function closeGame() {
+        function askAdmin() {
+            if (prompt("Admin Code:") === MASTER) {
+                sessionStorage.setItem("admin_session", "true");
+                location.reload();
+            }
+        }
+
+        function play(u) {
+            if (prompt("Passwort?") === PASS) {
+                document.getElementById('game-frame').src = u;
+                document.getElementById('game-view').style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeG() {
             document.getElementById('game-view').style.display = 'none';
             document.getElementById('game-frame').src = "";
             document.body.style.overflow = 'auto';
