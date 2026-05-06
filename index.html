@@ -21,207 +21,148 @@
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: #000;
-            z-index: 9999;
+            z-index: 9000; /* Etwas niedriger als der Schalter */
             justify-content: center;
             align-items: center;
             flex-direction: column;
         }
 
-        /* ONLINE STUFE ANZEIGE (Unten Rechts) */
-        #status-indicator {
+        /* DER SCHALTER (Immer ganz oben!) */
+        #admin-switch-container {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            border: 1px solid #8a2be2;
-            padding: 12px 18px;
+            z-index: 10000; /* Höchster Wert, damit er immer sichtbar ist */
+            background: rgba(20, 20, 20, 0.9);
+            padding: 10px 15px;
             border-radius: 50px;
-            cursor: pointer;
-            z-index: 10000;
             display: flex;
             align-items: center;
             gap: 10px;
-            font-weight: bold;
-            font-size: 14px;
-            box-shadow: 0 0 15px rgba(138, 43, 226, 0.3);
+            border: 1px solid #8a2be2;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.4);
             -webkit-tap-highlight-color: transparent;
         }
-        
-        .dot {
-            width: 12px;
-            height: 12px;
-            background: #00ff00;
-            border-radius: 50%;
-            box-shadow: 0 0 10px #00ff00;
+
+        .switch-text { font-size: 12px; font-weight: bold; color: #fff; }
+
+        .toggle-bg {
+            width: 50px;
+            height: 24px;
+            background: #444;
+            border-radius: 20px;
+            position: relative;
+            transition: 0.3s;
         }
+
+        .toggle-circle {
+            width: 18px;
+            height: 18px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            transition: 0.3s;
+        }
+
+        /* Status-Farben */
+        .is-on .toggle-bg { background: #ff4444; } /* Wartung Aktiv */
+        .is-on .toggle-circle { left: 29px; }
+        .is-off .toggle-bg { background: #25D366; } /* Online */
 
         /* GAME VIEW */
-        #game-view { 
-            display: none; 
-            position: fixed; 
-            top: 0; left: 0; width: 100%; height: 100%; 
-            background: #000; z-index: 5000; 
-        }
-        
+        #game-view { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9500; }
         iframe { width: 100%; height: calc(100% - 60px); border: none; }
 
-        /* DESIGN ELEMENTE */
-        h1 { font-size: 2.5em; text-shadow: 0 0 15px #8a2be2; margin-top: 20px; margin-bottom: 30px; }
-        
-        .grid { 
-            display: flex; 
-            justify-content: center; 
-            gap: 20px; 
-            flex-wrap: wrap; 
-            max-width: 1200px; 
-            margin: 0 auto 100px auto; 
-        }
-
-        .card { 
-            background: rgba(255,255,255,0.05); 
-            border-radius: 25px; 
-            padding: 15px; 
-            width: 160px; 
-            border: 1px solid rgba(255,255,255,0.1);
-            transition: transform 0.2s;
-        }
-        
-        .card img { 
-            width: 100%; 
-            aspect-ratio: 1/1; 
-            object-fit: cover; 
-            border-radius: 18px; 
-            margin-bottom: 10px;
-        }
-
-        .game-title { font-size: 0.9em; font-weight: bold; text-transform: uppercase; }
-
-        .btn-ui { background: #8a2be2; color: white; border: none; padding: 12px 25px; border-radius: 12px; font-weight: bold; cursor: pointer; }
+        /* DESIGN */
+        h1 { font-size: 2.2em; text-shadow: 0 0 15px #8a2be2; }
+        .grid { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-bottom: 100px; }
+        .card { background: rgba(255,255,255,0.05); border-radius: 20px; padding: 12px; width: 140px; border: 1px solid rgba(255,255,255,0.1); }
+        .card img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 15px; }
+        .btn-ui { background: #8a2be2; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: bold; }
     </style>
 </head>
 <body onload="checkStatus()">
 
     <!-- WARTUNGS-SCREEN -->
     <div id="maintenance-overlay">
-        <h1 style="color: red; font-size: 3em;">OFFLINE</h1>
-        <p style="font-size: 1.2em;">Wartungsarbeiten aktiv.</p>
-        <p>Zugriff nur für Admins.</p>
+        <h1 style="color: #ff4444;">WARTUNGSARBEITEN</h1>
+        <p>Die Seite ist aktuell offline.</p>
+        <p>Wir sind bald wieder für euch da!</p>
     </div>
 
-    <!-- ONLINE STUFE BUTTON -->
-    <div id="status-indicator" onclick="adminPrompt()">
-        <div class="dot" id="status-dot"></div>
-        <span id="status-text">Online Stufe</span>
+    <!-- ADMIN SCHALTER (Bleibt immer sichtbar) -->
+    <div id="admin-switch-container" onclick="toggleMaint()">
+        <span class="switch-text">Wartungszeiten</span>
+        <div id="toggle-visual" class="toggle-bg">
+            <div class="toggle-circle"></div>
+        </div>
     </div>
 
-    <!-- GAME OVERLAY -->
     <div id="game-view">
         <div style="height: 60px; display: flex; justify-content: center; align-items: center; background: #111;">
             <button class="btn-ui" style="background: #ff0000;" onclick="closeGame()">✖ SCHLIESSEN</button>
         </div>
-        <iframe id="game-frame" src="" allow="camera; microphone; display-capture"></iframe>
+        <iframe id="game-frame"></iframe>
     </div>
 
-    <!-- HAUPTINHALT -->
     <div id="content">
         <h1>HALAL PORTAL</h1>
-        
         <div class="grid">
-            <!-- Messenger -->
-            <div class="card" onclick="launchGame('https://my.cbox.ws/Yassien')">
-                <img src="https://cdn-icons-png.flaticon.com/512/134/134937.png">
-                <div class="game-title" style="color: #25D366;">Messenger</div>
-            </div>
-
-            <!-- Murder -->
-            <div class="card" onclick="launchGame('https://murder-unblocked.github.io/')">
+            <div class="card" onclick="play('https://murder-unblocked.github.io/')">
                 <img src="Murder.png">
-                <div class="game-title" style="color: #ff4444;">Murder</div>
+                <div style="color: #ff4444; font-weight: bold;">Murder</div>
             </div>
-
-            <!-- Drive Mad -->
-            <div class="card" onclick="launchGame('https://ducky443747.github.io/games/DriveMad/')">
-                <img src="https://play-lh.googleusercontent.com/Anm2S-MvTuxPzD4lqP7kH0H8uC_o7YvF1O7jB_9Gz9V0M9f6I8P6j1g_3p8P0w">
-                <div class="game-title" style="color: #ffde00;">Drive Mad</div>
+            <div class="card" onclick="play('https://my.cbox.ws/Yassien')">
+                <img src="https://cdn-icons-png.flaticon.com/512/134/134937.png">
+                <div style="color: #25D366; font-weight: bold;">Messenger</div>
             </div>
-
-            <!-- Basket Random -->
-            <div class="card" onclick="launchGame('https://basketballrandom.gitlab.io/')">
-                <img src="basket.png">
-                <div class="game-title">Basket Random</div>
-            </div>
-
-            <!-- Wordle -->
-            <div class="card" onclick="launchGame('https://wordledeutsch.org/')">
-                <img src="wordle.png">
-                <div class="game-title" style="color: #4CAF50;">Wordle</div>
-            </div>
-
-            <!-- Halal Chat -->
-            <div class="card" onclick="launchGame('https://ommogle.com/')">
-                <img src="halal-chat.png">
-                <div class="game-title" style="color: #00d4ff;">Chat</div>
-            </div>
-
-            <!-- Highway Racer -->
-            <div class="card" onclick="launchGame('https://crazygames-unblocked.github.io/play/highway-racer-3d.html')">
-                <img src="halal-racer.png">
-                <div class="game-title" style="color: #00ff88;">Racer</div>
-            </div>
+            <!-- Hier kannst du die anderen Karten wieder einfügen -->
         </div>
     </div>
 
     <script>
-        const ADMIN_CODE = "9999";
-        const USER_CODE = "6767";
+        const ADMIN = "9999";
+        const USER = "6767";
 
         function checkStatus() {
-            const isMaint = localStorage.getItem("maint_mode") === "true";
-            const dot = document.getElementById('status-dot');
+            const active = localStorage.getItem("maint_active") === "true";
             const overlay = document.getElementById('maintenance-overlay');
-            const content = document.getElementById('content');
+            const toggle = document.getElementById('toggle-visual');
 
-            if (isMaint) {
+            if (active) {
                 overlay.style.display = 'flex';
-                content.style.display = 'none';
-                dot.style.background = '#ff0000';
-                dot.style.boxShadow = '0 0 15px #ff0000';
+                toggle.parentElement.className = "is-on";
             } else {
                 overlay.style.display = 'none';
-                content.style.display = 'block';
-                dot.style.background = '#00ff00';
-                dot.style.boxShadow = '0 0 15px #00ff00';
+                toggle.parentElement.className = "is-off";
             }
         }
 
-        function adminPrompt() {
-            const code = prompt("Admin-Code eingeben:");
-            if (code === ADMIN_CODE) {
-                const isMaint = localStorage.getItem("maint_mode") === "true";
-                localStorage.setItem("maint_mode", !isMaint);
+        function toggleMaint() {
+            const val = prompt("Admin Code:");
+            if (val === ADMIN) {
+                const current = localStorage.getItem("maint_active") === "true";
+                localStorage.setItem("maint_active", !current);
                 location.reload();
-            } else if (code !== null) {
-                alert("Falscher Code!");
+            } else if (val !== null) {
+                alert("Falsch!");
             }
         }
 
-        function launchGame(url) {
-            if (localStorage.getItem("maint_mode") === "true") return;
-            
-            const code = prompt("Passwort eingeben:");
-            if (code === USER_CODE) {
+        function play(url) {
+            if (localStorage.getItem("maint_active") === "true") return;
+            if (prompt("Passwort?") === USER) {
                 document.getElementById('game-frame').src = url;
                 document.getElementById('game-view').style.display = 'block';
-                document.body.style.overflow = 'hidden';
-            } else if (code !== null) {
-                alert("Falsches Passwort!");
             }
         }
 
         function closeGame() {
             document.getElementById('game-view').style.display = 'none';
             document.getElementById('game-frame').src = "";
-            document.body.style.overflow = 'auto';
         }
     </script>
 </body>
