@@ -2,165 +2,168 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Halal Games & Chat Portal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Halal Games Portal</title>
     <style>
         body { 
             background: radial-gradient(circle, #1a0033, #000000); 
             color: white; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            font-family: 'Segoe UI', sans-serif; 
             text-align: center; 
             margin: 0; 
-            padding: 40px 20px; 
-            overflow-x: hidden;
+            padding: 20px; 
+            min-height: 100vh;
         }
 
-        /* DER SPERRBILDSCHIRM (Wartungsmodus) */
+        /* WARTUNGS-SCREEN */
         #maintenance-overlay {
-            display: none; /* Wird per JS auf 'flex' gesetzt */
+            display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: #000;
-            z-index: 99999; /* Über allem anderen */
+            z-index: 9999;
             justify-content: center;
             align-items: center;
             flex-direction: column;
         }
 
-        .m-box {
-            padding: 40px;
-            border: 2px solid #ff0000;
-            border-radius: 30px;
-            background: rgba(20, 0, 0, 0.9);
-            box-shadow: 0 0 50px rgba(255, 0, 0, 0.2);
-        }
-
-        /* ADMIN PANEL UNTEN */
-        #admin-bar {
+        /* ONLINE STUFE ANZEIGE (Unten Rechts) */
+        #status-indicator {
             position: fixed;
-            bottom: 0; left: 50%;
-            transform: translateX(-50%);
-            background: rgba(30, 30, 30, 0.9);
-            padding: 10px 20px;
-            border-radius: 15px 15px 0 0;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
             border: 1px solid #8a2be2;
-            z-index: 100000; /* Muss sogar über dem Sperrbildschirm liegen! */
+            padding: 10px 15px;
+            border-radius: 50px;
+            cursor: pointer;
+            z-index: 10000;
             display: flex;
-            gap: 10px;
             align-items: center;
-            opacity: 0.1; /* Fast unsichtbar */
-            transition: opacity 0.3s;
+            gap: 8px;
+            font-weight: bold;
+            font-size: 14px;
+            transition: transform 0.2s;
+            -webkit-tap-highlight-color: transparent;
         }
-        #admin-bar:hover { opacity: 1; }
-
-        #admin-input {
-            background: #111;
-            border: 1px solid #8a2be2;
-            color: #00ff00;
-            padding: 8px;
-            border-radius: 8px;
-            outline: none;
-            width: 100px;
+        #status-indicator:active { transform: scale(0.9); }
+        
+        .dot {
+            width: 10px;
+            height: 10px;
+            background: #00ff00;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #00ff00;
         }
 
-        /* RESTLICHES DESIGN */
-        h1 { font-size: 3em; text-shadow: 0 0 20px #8a2be2; margin-bottom: 40px; }
-        .grid { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; max-width: 1000px; margin: 0 auto; }
-        .card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 15px; width: 180px; cursor: pointer; transition: 0.3s; }
-        .card:hover { transform: translateY(-5px); border-color: #8a2be2; }
+        /* GAME VIEW */
+        #game-view { 
+            display: none; 
+            position: fixed; 
+            top: 0; left: 0; width: 100%; height: 100%; 
+            background: #000; z-index: 5000; 
+        }
+        
+        iframe { width: 100%; height: calc(100% - 60px); border: none; }
+
+        /* DESIGN ELEMENTE */
+        h1 { font-size: 2.5em; text-shadow: 0 0 15px #8a2be2; margin-top: 40px; }
+        .grid { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-top: 20px; }
+        .card { 
+            background: rgba(255,255,255,0.05); 
+            border-radius: 20px; 
+            padding: 10px; 
+            width: 150px; 
+            border: 1px solid rgba(255,255,255,0.1);
+        }
         .card img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 15px; }
-        
-        .btn-admin { background: #8a2be2; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        
-        /* Overlay für Spiele */
-        #game-view { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 1000; }
-        .close-bar { height: 50px; background: #111; display: flex; justify-content: center; align-items: center; }
-        iframe { width: 100%; height: calc(100% - 50px); border: none; }
+        .btn-ui { background: #8a2be2; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; }
     </style>
 </head>
-<body onload="initCheck()">
+<body onload="checkStatus()">
 
-    <!-- WARTUNGS-MODUS SCREEN -->
+    <!-- WARTUNGS-SCREEN -->
     <div id="maintenance-overlay">
-        <div class="m-box">
-            <h1 style="color: #ff0000; margin: 0;">OFFLINE</h1>
-            <p style="font-size: 1.2em;">Wartungsarbeiten aktiv. Zugriff verweigert.</p>
-        </div>
+        <h1 style="color: red;">WARTUNG</h1>
+        <p>Dieses Portal ist momentan im Wartungsmodus.</p>
+        <p>Bitte versuche es später erneut.</p>
     </div>
 
-    <!-- ADMIN PANEL (Immer oben auf, damit du entsperren kannst) -->
-    <div id="admin-bar">
-        <span style="font-size: 12px; color: #888;">Admin:</span>
-        <input type="password" id="admin-input" placeholder="Code...">
-        <button class="btn-admin" onclick="toggleStatus()">OK</button>
+    <!-- ONLINE STUFE BUTTON -->
+    <div id="status-indicator" onclick="adminPrompt()">
+        <div class="dot" id="status-dot"></div>
+        <span id="status-text">Online Stufe</span>
     </div>
 
-    <!-- SPIEL-ANZEIGE -->
+    <!-- GAME OVERLAY -->
     <div id="game-view">
-        <div class="close-bar">
-            <button class="btn-admin" style="background: #ff0000;" onclick="closeGame()">✖ SCHLIESSEN</button>
+        <div style="height: 60px; display: flex; justify-content: center; align-items: center;">
+            <button class="btn-ui" style="background: red;" onclick="closeGame()">✖ SCHLIESSEN</button>
         </div>
         <iframe id="game-frame" src=""></iframe>
     </div>
 
     <!-- HAUPTINHALT -->
-    <div id="main-content">
+    <div id="content">
         <h1>HALAL PORTAL</h1>
         <div class="grid">
             <!-- Murder Spiel -->
-            <div class="card" onclick="openGame('https://murder-unblocked.github.io/')">
+            <div class="card" onclick="launchGame('https://murder-unblocked.github.io/')">
                 <img src="Murder.png" alt="Murder">
                 <p style="color: #ff4444; font-weight: bold;">MURDER</p>
             </div>
             
             <!-- Halal Chat -->
-            <div class="card" onclick="openGame('https://ommogle.com/')">
+            <div class="card" onclick="launchGame('https://ommogle.com/')">
                 <img src="halal-chat.png" alt="Chat">
-                <p style="color: #00d4ff; font-weight: bold;">HALAL CHAT</p>
+                <p style="color: #00d4ff; font-weight: bold;">CHAT</p>
             </div>
-            
-            <!-- Weitere Karten hier einfügen... -->
         </div>
     </div>
 
     <script>
-        const ADMIN_CODE = "9999"; // Dein Code zum Umschalten
-        const USER_CODE = "6767";  // Dein Code für die Spiele
+        const ADMIN_CODE = "9999";
+        const USER_CODE = "6767";
 
-        // Prüfen beim Laden
-        function initCheck() {
-            const isLocked = localStorage.getItem("site_locked") === "true";
-            if (isLocked) {
-                document.getElementById('maintenance-overlay').style.display = 'flex';
-                document.getElementById('main-content').style.opacity = '0';
-            }
-        }
+        function checkStatus() {
+            const isMaint = localStorage.getItem("maint_mode") === "true";
+            const dot = document.getElementById('status-dot');
+            const overlay = document.getElementById('maintenance-overlay');
+            const content = document.getElementById('content');
 
-        // Wartungsmodus an/aus
-        function toggleStatus() {
-            const val = document.getElementById('admin-input').value;
-            if (val === ADMIN_CODE) {
-                const currentState = localStorage.getItem("site_locked") === "true";
-                localStorage.setItem("site_locked", !currentState);
-                alert(!currentState ? "MODUS: Wartung AKTIVIERT" : "MODUS: Wartung DEAKTIVIERT");
-                location.reload();
+            if (isMaint) {
+                overlay.style.display = 'flex';
+                content.style.display = 'none';
+                dot.style.background = '#ff0000';
+                dot.style.boxShadow = '0 0 10px #ff0000';
             } else {
-                alert("Falscher Admin-Code!");
+                overlay.style.display = 'none';
+                content.style.display = 'block';
+                dot.style.background = '#00ff00';
+                dot.style.boxShadow = '0 0 10px #00ff00';
             }
-            document.getElementById('admin-input').value = "";
         }
 
-        // Spiel öffnen
-        function openGame(url) {
-            // Wenn Wartung aktiv, passiert gar nichts
-            if (localStorage.getItem("site_locked") === "true") return;
+        function adminPrompt() {
+            const code = prompt("Admin-Code eingeben:");
+            if (code === ADMIN_CODE) {
+                const isMaint = localStorage.getItem("maint_mode") === "true";
+                localStorage.setItem("maint_mode", !isMaint);
+                location.reload();
+            } else if (code !== null) {
+                alert("Falscher Code!");
+            }
+        }
 
-            const code = prompt("Bitte Geheimcode eingeben:");
+        function launchGame(url) {
+            if (localStorage.getItem("maint_mode") === "true") return;
+            
+            const code = prompt("Geheimcode für Spiele:");
             if (code === USER_CODE) {
                 document.getElementById('game-frame').src = url;
                 document.getElementById('game-view').style.display = 'block';
                 document.body.style.overflow = 'hidden';
-            } else {
+            } else if (code !== null) {
                 alert("Zugriff verweigert!");
             }
         }
