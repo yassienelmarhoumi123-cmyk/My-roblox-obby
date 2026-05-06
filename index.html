@@ -32,25 +32,24 @@
             position: fixed;
             bottom: 20px;
             right: 20px;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.8);
             border: 1px solid #8a2be2;
-            padding: 10px 15px;
+            padding: 12px 18px;
             border-radius: 50px;
             cursor: pointer;
             z-index: 10000;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             font-weight: bold;
             font-size: 14px;
-            transition: transform 0.2s;
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.3);
             -webkit-tap-highlight-color: transparent;
         }
-        #status-indicator:active { transform: scale(0.9); }
         
         .dot {
-            width: 10px;
-            height: 10px;
+            width: 12px;
+            height: 12px;
             background: #00ff00;
             border-radius: 50%;
             box-shadow: 0 0 10px #00ff00;
@@ -67,26 +66,46 @@
         iframe { width: 100%; height: calc(100% - 60px); border: none; }
 
         /* DESIGN ELEMENTE */
-        h1 { font-size: 2.5em; text-shadow: 0 0 15px #8a2be2; margin-top: 40px; }
-        .grid { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-top: 20px; }
+        h1 { font-size: 2.5em; text-shadow: 0 0 15px #8a2be2; margin-top: 20px; margin-bottom: 30px; }
+        
+        .grid { 
+            display: flex; 
+            justify-content: center; 
+            gap: 20px; 
+            flex-wrap: wrap; 
+            max-width: 1200px; 
+            margin: 0 auto 100px auto; 
+        }
+
         .card { 
             background: rgba(255,255,255,0.05); 
-            border-radius: 20px; 
-            padding: 10px; 
-            width: 150px; 
+            border-radius: 25px; 
+            padding: 15px; 
+            width: 160px; 
             border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.2s;
         }
-        .card img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 15px; }
-        .btn-ui { background: #8a2be2; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; }
+        
+        .card img { 
+            width: 100%; 
+            aspect-ratio: 1/1; 
+            object-fit: cover; 
+            border-radius: 18px; 
+            margin-bottom: 10px;
+        }
+
+        .game-title { font-size: 0.9em; font-weight: bold; text-transform: uppercase; }
+
+        .btn-ui { background: #8a2be2; color: white; border: none; padding: 12px 25px; border-radius: 12px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body onload="checkStatus()">
 
     <!-- WARTUNGS-SCREEN -->
     <div id="maintenance-overlay">
-        <h1 style="color: red;">WARTUNG</h1>
-        <p>Dieses Portal ist momentan im Wartungsmodus.</p>
-        <p>Bitte versuche es später erneut.</p>
+        <h1 style="color: red; font-size: 3em;">OFFLINE</h1>
+        <p style="font-size: 1.2em;">Wartungsarbeiten aktiv.</p>
+        <p>Zugriff nur für Admins.</p>
     </div>
 
     <!-- ONLINE STUFE BUTTON -->
@@ -97,26 +116,57 @@
 
     <!-- GAME OVERLAY -->
     <div id="game-view">
-        <div style="height: 60px; display: flex; justify-content: center; align-items: center;">
-            <button class="btn-ui" style="background: red;" onclick="closeGame()">✖ SCHLIESSEN</button>
+        <div style="height: 60px; display: flex; justify-content: center; align-items: center; background: #111;">
+            <button class="btn-ui" style="background: #ff0000;" onclick="closeGame()">✖ SCHLIESSEN</button>
         </div>
-        <iframe id="game-frame" src=""></iframe>
+        <iframe id="game-frame" src="" allow="camera; microphone; display-capture"></iframe>
     </div>
 
     <!-- HAUPTINHALT -->
     <div id="content">
         <h1>HALAL PORTAL</h1>
+        
         <div class="grid">
-            <!-- Murder Spiel -->
-            <div class="card" onclick="launchGame('https://murder-unblocked.github.io/')">
-                <img src="Murder.png" alt="Murder">
-                <p style="color: #ff4444; font-weight: bold;">MURDER</p>
+            <!-- Messenger -->
+            <div class="card" onclick="launchGame('https://my.cbox.ws/Yassien')">
+                <img src="https://cdn-icons-png.flaticon.com/512/134/134937.png">
+                <div class="game-title" style="color: #25D366;">Messenger</div>
             </div>
-            
+
+            <!-- Murder -->
+            <div class="card" onclick="launchGame('https://murder-unblocked.github.io/')">
+                <img src="Murder.png">
+                <div class="game-title" style="color: #ff4444;">Murder</div>
+            </div>
+
+            <!-- Drive Mad -->
+            <div class="card" onclick="launchGame('https://ducky443747.github.io/games/DriveMad/')">
+                <img src="https://play-lh.googleusercontent.com/Anm2S-MvTuxPzD4lqP7kH0H8uC_o7YvF1O7jB_9Gz9V0M9f6I8P6j1g_3p8P0w">
+                <div class="game-title" style="color: #ffde00;">Drive Mad</div>
+            </div>
+
+            <!-- Basket Random -->
+            <div class="card" onclick="launchGame('https://basketballrandom.gitlab.io/')">
+                <img src="basket.png">
+                <div class="game-title">Basket Random</div>
+            </div>
+
+            <!-- Wordle -->
+            <div class="card" onclick="launchGame('https://wordledeutsch.org/')">
+                <img src="wordle.png">
+                <div class="game-title" style="color: #4CAF50;">Wordle</div>
+            </div>
+
             <!-- Halal Chat -->
             <div class="card" onclick="launchGame('https://ommogle.com/')">
-                <img src="halal-chat.png" alt="Chat">
-                <p style="color: #00d4ff; font-weight: bold;">CHAT</p>
+                <img src="halal-chat.png">
+                <div class="game-title" style="color: #00d4ff;">Chat</div>
+            </div>
+
+            <!-- Highway Racer -->
+            <div class="card" onclick="launchGame('https://crazygames-unblocked.github.io/play/highway-racer-3d.html')">
+                <img src="halal-racer.png">
+                <div class="game-title" style="color: #00ff88;">Racer</div>
             </div>
         </div>
     </div>
@@ -135,12 +185,12 @@
                 overlay.style.display = 'flex';
                 content.style.display = 'none';
                 dot.style.background = '#ff0000';
-                dot.style.boxShadow = '0 0 10px #ff0000';
+                dot.style.boxShadow = '0 0 15px #ff0000';
             } else {
                 overlay.style.display = 'none';
                 content.style.display = 'block';
                 dot.style.background = '#00ff00';
-                dot.style.boxShadow = '0 0 10px #00ff00';
+                dot.style.boxShadow = '0 0 15px #00ff00';
             }
         }
 
@@ -158,13 +208,13 @@
         function launchGame(url) {
             if (localStorage.getItem("maint_mode") === "true") return;
             
-            const code = prompt("Geheimcode für Spiele:");
+            const code = prompt("Passwort eingeben:");
             if (code === USER_CODE) {
                 document.getElementById('game-frame').src = url;
                 document.getElementById('game-view').style.display = 'block';
                 document.body.style.overflow = 'hidden';
             } else if (code !== null) {
-                alert("Zugriff verweigert!");
+                alert("Falsches Passwort!");
             }
         }
 
