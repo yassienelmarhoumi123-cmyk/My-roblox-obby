@@ -15,7 +15,7 @@
         }
 
         /* WARTUNGS-SCREEN */
-        #maintenance-overlay {
+        #m-overlay {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -26,43 +26,17 @@
             flex-direction: column;
         }
 
-        #admin-unlock-btn {
+        #unlock-btn {
             margin-top: 20px;
             padding: 15px 30px;
             background: #8a2be2;
             color: white;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             font-weight: bold;
             cursor: pointer;
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.4);
         }
-
-        /* SCHALTER UNTEN RECHTS */
-        #maint-toggle-container {
-            position: fixed;
-            bottom: 20px; right: 20px;
-            z-index: 10000;
-            background: rgba(20, 20, 20, 0.9);
-            padding: 10px 15px;
-            border-radius: 50px;
-            display: flex; align-items: center; gap: 10px;
-            border: 1px solid #8a2be2;
-            cursor: pointer;
-        }
-
-        .toggle-bg {
-            width: 50px; height: 24px; background: #444;
-            border-radius: 20px; position: relative; transition: 0.3s;
-        }
-
-        .toggle-circle {
-            width: 18px; height: 18px; background: white;
-            border-radius: 50%; position: absolute; top: 3px; left: 3px; transition: 0.3s;
-        }
-
-        .is-on .toggle-bg { background: #ff4444; }
-        .is-on .toggle-circle { left: 29px; }
-        .is-off .toggle-bg { background: #25D366; }
 
         /* SPIELE GRID */
         .grid { 
@@ -98,66 +72,65 @@
         .btn-ui { background: #8a2be2; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; }
     </style>
 </head>
-<body onload="initApp()">
+<body onload="checkStatus()">
 
-    <!-- WARTUNGS-MODUS -->
-    <div id="maintenance-overlay">
-        <h1 style="color: #ff4444;">WARTUNGSARBEITEN</h1>
-        <p>Die Seite ist aktuell privat.</p>
-        <button id="admin-unlock-btn" onclick="tryAccess()">Admin Code eingeben</button>
-    </div>
-
-    <!-- SCHALTER UNTEN RECHTS -->
-    <div id="maint-toggle-container" onclick="setGlobalMaint()">
-        <span style="font-size: 12px; font-weight: bold;">Wartungszeiten</span>
-        <div id="toggle-visual" class="toggle-bg">
-            <div class="toggle-circle"></div>
-        </div>
+    <!-- WARTUNGS-MODUS (Wird durch Script gesteuert) -->
+    <div id="m-overlay">
+        <h1 style="color: #ff4444; font-size: 2.5em;">⚠️ WARTUNG</h1>
+        <p>Dieses Portal ist zurzeit privat gesperrt.</p>
+        <button id="unlock-btn" onclick="askAdmin()">Admin Code eingeben</button>
     </div>
 
     <!-- GAME OVERLAY -->
     <div id="game-view">
         <div style="height: 60px; display: flex; justify-content: center; align-items: center; background: #111;">
-            <button class="btn-ui" style="background: red;" onclick="closeGame()">✖ SCHLIESSEN</button>
+            <button class="btn-ui" style="background: #ff0000;" onclick="closeG()">✖ SCHLIESSEN</button>
         </div>
-        <iframe id="game-frame"></iframe>
+        <iframe id="game-frame" allow="camera; microphone; display-capture"></iframe>
     </div>
 
-    <!-- INHALT -->
-    <div id="main-content">
+    <!-- HAUPTINHALT -->
+    <div id="content">
         <h1>HALAL PORTAL</h1>
         <div class="grid">
             
+            <!-- Messenger -->
             <div class="card" onclick="play('https://my.cbox.ws/Yassien')">
                 <img src="https://cdn-icons-png.flaticon.com/512/134/134937.png">
                 <div class="game-title" style="color: #25D366;">Messenger</div>
             </div>
 
+            <!-- Murder -->
             <div class="card" onclick="play('https://murder-unblocked.github.io/')">
                 <img src="Murder.png">
                 <div class="game-title" style="color: #ff4444;">Murder</div>
             </div>
 
+            <!-- Drive Mad -->
             <div class="card" onclick="play('https://ducky443747.github.io/games/DriveMad/')">
                 <img src="https://play-lh.googleusercontent.com/Anm2S-MvTuxPzD4lqP7kH0H8uC_o7YvF1O7jB_9Gz9V0M9f6I8P6j1g_3p8P0w">
                 <div class="game-title" style="color: #ffde00;">Drive Mad</div>
             </div>
 
+            <!-- Basket Random -->
             <div class="card" onclick="play('https://basketballrandom.gitlab.io/')">
                 <img src="basket.png">
                 <div class="game-title">Basket Random</div>
             </div>
 
+            <!-- Wordle -->
             <div class="card" onclick="play('https://wordledeutsch.org/')">
                 <img src="wordle.png">
                 <div class="game-title" style="color: #4CAF50;">Wordle</div>
             </div>
 
+            <!-- Halal Chat -->
             <div class="card" onclick="play('https://ommogle.com/')">
                 <img src="halal-chat.png">
                 <div class="game-title" style="color: #00d4ff;">Chat</div>
             </div>
 
+            <!-- Highway Racer -->
             <div class="card" onclick="play('https://crazygames-unblocked.github.io/play/highway-racer-3d.html')">
                 <img src="halal-racer.png">
                 <div class="game-title" style="color: #00ff88;">Racer</div>
@@ -167,53 +140,44 @@
     </div>
 
     <script>
-        const MASTER_CODE = "9999"; 
-        const GAME_CODE = "6767";
+        // --- DEINE EINSTELLUNGEN ---
+        const MASTER = "9999"; 
+        const PASS = "6767";
+        
+        // HIER ÄNDERN: true = Wartung AN / false = Wartung AUS
+        const isLocked = true; 
+        // ---------------------------
 
-        function initApp() {
-            const userHasAccess = sessionStorage.getItem("temp_access") === "true";
-            const globalMaint = localStorage.getItem("global_maint") === "true";
-            const overlay = document.getElementById('maintenance-overlay');
-            const toggle = document.getElementById('maint-toggle-container');
-
-            if (globalMaint && !userHasAccess) {
+        function checkStatus() {
+            const hasAccess = sessionStorage.getItem("admin_session") === "true";
+            const overlay = document.getElementById('m-overlay');
+            
+            if (isLocked && !hasAccess) {
                 overlay.style.display = 'flex';
-                toggle.className = "is-on";
-            } else if (globalMaint && userHasAccess) {
-                overlay.style.display = 'none';
-                toggle.className = "is-on";
             } else {
                 overlay.style.display = 'none';
-                toggle.className = "is-off";
             }
         }
 
-        function tryAccess() {
-            if (prompt("Admin Code:") === MASTER_CODE) {
-                sessionStorage.setItem("temp_access", "true");
+        function askAdmin() {
+            if (prompt("Admin Code:") === MASTER) {
+                sessionStorage.setItem("admin_session", "true");
                 location.reload();
             }
         }
 
-        function setGlobalMaint() {
-            if (prompt("Bestätigung:") === MASTER_CODE) {
-                const current = localStorage.getItem("global_maint") === "true";
-                localStorage.setItem("global_maint", !current);
-                if (current) sessionStorage.removeItem("temp_access");
-                location.reload();
-            }
-        }
-
-        function play(url) {
-            if (prompt("Passwort?") === GAME_CODE) {
-                document.getElementById('game-frame').src = url;
+        function play(u) {
+            if (prompt("Passwort?") === PASS) {
+                document.getElementById('game-frame').src = u;
                 document.getElementById('game-view').style.display = 'block';
+                document.body.style.overflow = 'hidden';
             }
         }
 
-        function closeGame() {
+        function closeG() {
             document.getElementById('game-view').style.display = 'none';
             document.getElementById('game-frame').src = "";
+            document.body.style.overflow = 'auto';
         }
     </script>
 </body>
