@@ -97,38 +97,38 @@
     <h1>HALAL PORTAL</h1>
 
     <div class="grid">
-        <!-- Dein Messenger -->
-        <div class="card" onclick="openGame('https://my.cbox.ws/Yassien')">
+        <!-- Messenger -->
+        <div class="card" onclick="checkCode('https://my.cbox.ws/Yassien')">
             <img src="https://cdn-icons-png.flaticon.com/512/134/134937.png" alt="Messenger">
             <div class="game-title" style="color: #25D366;">Halal Messenger</div>
         </div>
 
         <!-- Basket Random -->
-        <div class="card" onclick="openGame('https://basketballrandom.gitlab.io/')">
+        <div class="card" onclick="checkCode('https://basketballrandom.gitlab.io/')">
             <img src="basket.png">
             <div class="game-title">Basket Random</div>
         </div>
 
         <!-- Wordle -->
-        <div class="card" onclick="openGame('https://wordledeutsch.org/')">
+        <div class="card" onclick="checkCode('https://wordledeutsch.org/')">
             <img src="wordle.png">
             <div class="game-title" style="color: #4CAF50;">Halal Wordle</div>
         </div>
 
         <!-- Ommogle -->
-        <div class="card" onclick="openGame('https://ommogle.com/')">
+        <div class="card" onclick="checkCode('https://ommogle.com/')">
             <img src="halal-chat.png" alt="Halal Chat">
             <div class="game-title" style="color: #00d4ff;">Halal Chat</div>
         </div>
 
         <!-- DTA 6 -->
-        <div class="card" onclick="openGame('https://gamulo.com/game/dta-6-unblocked/')">
+        <div class="card" onclick="checkCode('https://gamulo.com/game/dta-6-unblocked/')">
             <img src="dta6.png">
             <div class="game-title" style="color: #ffaa00;">Halal DTA 6</div>
         </div>
 
         <!-- Highway Racer -->
-        <div class="card" onclick="openGame('https://crazygames-unblocked.github.io/play/highway-racer-3d.html')">
+        <div class="card" onclick="checkCode('https://crazygames-unblocked.github.io/play/highway-racer-3d.html')">
             <img src="https://images.crazygames.com/highway-racer-3d/20231010162021/highway-racer-3d-cover?auto=format,compress&q=75&cs=strip&ch=DPR&w=1200&h=630&fit=crop">
             <div class="game-title" style="color: #00ff88;">Halal Racer</div>
         </div>
@@ -136,17 +136,32 @@
 
     <script>
         let lastUrl = "";
+        
+        // HIER IST DEIN NEUER CODE
+        const passwort = "6767";
+
+        function checkCode(url) {
+            const eingabe = prompt("Bitte gib den Geheimcode ein:");
+            if (eingabe === passwort) {
+                openGame(url);
+            } else {
+                alert("Falscher Code! Zugriff verweigert.");
+            }
+        }
+
         function openGame(url) {
             lastUrl = url;
             document.getElementById('game-frame').src = url;
             document.getElementById('game-overlay').style.display = 'block';
             document.body.style.overflow = 'hidden';
         }
+
         function closeGame() {
             document.getElementById('game-overlay').style.display = 'none';
             document.getElementById('game-frame').src = '';
             document.body.style.overflow = 'auto';
         }
+
         function openExternal() {
             window.open(lastUrl, '_blank');
         }
