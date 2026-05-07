@@ -59,6 +59,7 @@
             text-transform: uppercase; 
         }
 
+        /* GAME OVERLAY */
         #game-view { 
             display: none; 
             position: fixed; 
@@ -91,7 +92,7 @@
         <div style="height: 60px; display: flex; justify-content: center; align-items: center; background: #111;">
             <button class="btn-close" onclick="closeGame()">✖ SCHLIESSEN</button>
         </div>
-        <iframe id="game-frame" src="" allow="camera; microphone; display-capture"></iframe>
+        <iframe id="game-frame" src="" allow="camera; microphone; display-capture; fullscreen"></iframe>
     </div>
 
     <h1>HALAL PORTAL</h1>
@@ -100,6 +101,11 @@
         <div class="card" onclick="launchGame('https://gamulo.com/game/dta-6-unblocked/', true)">
             <img src="gta.png">
             <div class="game-title" style="color: #ffde00;">DTA 6</div>
+        </div>
+
+        <div class="card" onclick="launchGame('https://horrorgamesfree.com/granny2', false)">
+            <img src="granny.png">
+            <div class="game-title" style="color: #888;">Granny</div>
         </div>
 
         <div class="card" onclick="launchGame('https://my.cbox.ws/Yassien', false)">
@@ -145,10 +151,10 @@
             const eingabe = prompt("Passwort eingeben:");
             if (eingabe === PASSWORT) {
                 if (newTab) {
-                    // Öffnet in neuem Tab
+                    // Öffnet DTA 6 in einem neuen Tab
                     window.open(url, '_blank');
                 } else {
-                    // Öffnet im Portal-Overlay
+                    // Öffnet alle anderen Spiele im Overlay
                     document.getElementById('game-frame').src = url;
                     document.getElementById('game-view').style.display = 'block';
                     document.body.style.overflow = 'hidden';
