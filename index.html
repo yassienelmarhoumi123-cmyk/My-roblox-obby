@@ -97,7 +97,7 @@
     <h1>HALAL PORTAL</h1>
     
     <div class="grid">
-        <div class="card" onclick="launchGame('https://gamulo.com/doge-miner-2/', true)">
+        <div class="card" onclick="launchGame('https://gamulo.com/game/dta-6-unblocked/', true)">
             <img src="gta.png">
             <div class="game-title" style="color: #ffde00;">DTA 6</div>
         </div>
@@ -145,8 +145,10 @@
             const eingabe = prompt("Passwort eingeben:");
             if (eingabe === PASSWORT) {
                 if (newTab) {
+                    // Öffnet in neuem Tab
                     window.open(url, '_blank');
                 } else {
+                    // Öffnet im Portal-Overlay
                     document.getElementById('game-frame').src = url;
                     document.getElementById('game-view').style.display = 'block';
                     document.body.style.overflow = 'hidden';
