@@ -5,85 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Halal Games Portal</title>
     <style>
-        body { 
-            background: radial-gradient(circle, #1a0033, #000000); 
-            color: white; 
-            font-family: 'Segoe UI', sans-serif; 
-            text-align: center; 
-            margin: 0; 
-            padding: 20px; 
-            min-height: 100vh;
-        }
-
-        h1 { 
-            font-size: 2.5em; 
-            text-shadow: 0 0 15px #8a2be2; 
-            margin-top: 20px; 
-            margin-bottom: 30px; 
-        }
-
-        .grid { 
-            display: flex; 
-            justify-content: center; 
-            gap: 20px; 
-            flex-wrap: wrap; 
-            max-width: 1200px; 
-            margin: 0 auto; 
-        }
-
-        .card { 
-            background: rgba(255,255,255,0.05); 
-            border-radius: 25px; 
-            padding: 15px; 
-            width: 160px; 
-            border: 1px solid rgba(255,255,255,0.1);
-            transition: transform 0.2s;
-            cursor: pointer;
-        }
-
-        .card:active {
-            transform: scale(0.95);
-        }
-        
-        .card img { 
-            width: 100%; 
-            aspect-ratio: 1/1; 
-            object-fit: cover; 
-            border-radius: 18px; 
-            margin-bottom: 10px;
-        }
-
-        .game-title { 
-            font-size: 0.9em; 
-            font-weight: bold; 
-            text-transform: uppercase; 
-        }
-
-        /* GAME OVERLAY */
-        #game-view { 
-            display: none; 
-            position: fixed; 
-            top: 0; left: 0; width: 100%; height: 100%; 
-            background: #000; 
-            z-index: 5000; 
-        }
-        
-        iframe { 
-            width: 100%; 
-            height: calc(100% - 60px); 
-            border: none; 
-        }
-
-        .btn-close { 
-            background: #ff0000; 
-            color: white; 
-            border: none; 
-            padding: 12px 25px; 
-            border-radius: 12px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            margin: 10px;
-        }
+        body { background: radial-gradient(circle, #1a0033, #000000); color: white; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; padding: 20px; min-height: 100vh; }
+        h1 { font-size: 2.5em; text-shadow: 0 0 15px #8a2be2; margin-top: 20px; margin-bottom: 30px; }
+        .grid { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; max-width: 1200px; margin: 0 auto; }
+        .card { background: rgba(255,255,255,0.05); border-radius: 25px; padding: 15px; width: 160px; border: 1px solid rgba(255,255,255,0.1); transition: transform 0.2s; cursor: pointer; }
+        .card:active { transform: scale(0.95); }
+        .card img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 18px; margin-bottom: 10px; }
+        .game-title { font-size: 0.9em; font-weight: bold; text-transform: uppercase; }
+        #game-view { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 5000; }
+        iframe { width: 100%; height: calc(100% - 60px); border: none; }
+        .btn-close { background: #ff0000; color: white; border: none; padding: 12px 25px; border-radius: 12px; font-weight: bold; cursor: pointer; margin: 10px; }
     </style>
 </head>
 <body>
@@ -123,7 +54,7 @@
             <div class="game-title" style="color: #4CAF50;">Wordle</div>
         </div>
 
-        <div class="card" onclick="launchGame('https://omoggle.com/')">
+        <div class="card" onclick="openDirect('https://omoggle.com/')">
             <img src="halal-chat.png">
             <div class="game-title" style="color: #00d4ff;">Chat</div>
         </div>
@@ -143,8 +74,13 @@
                 document.getElementById('game-frame').src = url;
                 document.getElementById('game-view').style.display = 'block';
                 document.body.style.overflow = 'hidden';
-            } else if (eingabe !== null) {
-                alert("Falsches Passwort!");
+            }
+        }
+
+        function openDirect(url) {
+            const eingabe = prompt("Passwort eingeben:");
+            if (eingabe === PASSWORT) {
+                window.open(url, '_blank');
             }
         }
 
