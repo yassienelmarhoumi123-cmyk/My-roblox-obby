@@ -108,6 +108,11 @@
             <div class="game-title" style="color: #00d4ff;">Chat</div>
         </div>
 
+        <div class="card" onclick="launchGame('https://meet.no42.org/join/02436SingleBread', false)">
+            <img src="https://cdn-icons-png.flaticon.com/512/3214/3214734.png">
+            <div class="game-title" style="color: #FF5722;">Video-Call</div>
+        </div>
+
         <div class="card" onclick="launchGame('https://horrorgamesfree.com/granny2', false)">
             <img src="halalgranny.png">
             <div class="game-title" style="color: #888;">Granny</div>
@@ -151,10 +156,8 @@
             const eingabe = prompt("Passwort eingeben:");
             if (eingabe === PASSWORT) {
                 if (newTab) {
-                    // Öffnet Link in einem neuen Tab
                     window.open(url, '_blank');
                 } else {
-                    // Öffnet Link im Overlay
                     document.getElementById('game-frame').src = url;
                     document.getElementById('game-view').style.display = 'block';
                     document.body.style.overflow = 'hidden';
