@@ -59,7 +59,6 @@
             text-transform: uppercase; 
         }
 
-        /* GAME OVERLAY */
         #game-view { 
             display: none; 
             position: fixed; 
@@ -98,9 +97,9 @@
     <h1>HALAL PORTAL</h1>
     
     <div class="grid">
-        <div class="card" onclick="launchGame('https://dogeminer2.com/play/', true)">
+        <div class="card" onclick="launchGame('https://gamulo.com/doge-miner-2/', true)">
             <img src="gta.png">
-            <div class="game-title" style="color: #ffde00;">GTA 6</div>
+            <div class="game-title" style="color: #ffde00;">DTA 6</div>
         </div>
 
         <div class="card" onclick="launchGame('https://my.cbox.ws/Yassien', false)">
@@ -146,10 +145,8 @@
             const eingabe = prompt("Passwort eingeben:");
             if (eingabe === PASSWORT) {
                 if (newTab) {
-                    // Öffnet GTA 6 in einem neuen Tab
                     window.open(url, '_blank');
                 } else {
-                    // Öffnet alle anderen Spiele im Overlay
                     document.getElementById('game-frame').src = url;
                     document.getElementById('game-view').style.display = 'block';
                     document.body.style.overflow = 'hidden';
