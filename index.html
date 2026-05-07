@@ -99,12 +99,12 @@
     
     <div class="grid">
         <div class="card" onclick="launchGame('https://gamulo.com/game/dta-6-unblocked/', true)">
-            <img src="gta.png">
+            <img src="dta6.png">
             <div class="game-title" style="color: #ffde00;">DTA 6</div>
         </div>
 
         <div class="card" onclick="launchGame('https://horrorgamesfree.com/granny2', false)">
-            <img src="granny.png">
+            <img src="halalgranny.png">
             <div class="game-title" style="color: #888;">Granny</div>
         </div>
 
@@ -151,10 +151,8 @@
             const eingabe = prompt("Passwort eingeben:");
             if (eingabe === PASSWORT) {
                 if (newTab) {
-                    // Öffnet DTA 6 in einem neuen Tab
                     window.open(url, '_blank');
                 } else {
-                    // Öffnet alle anderen Spiele im Overlay
                     document.getElementById('game-frame').src = url;
                     document.getElementById('game-view').style.display = 'block';
                     document.body.style.overflow = 'hidden';
