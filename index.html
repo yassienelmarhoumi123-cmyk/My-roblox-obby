@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Halal Games Portal</title>
     <style>
+        /* DESIGN & HINTERGRUND */
         body { 
             background: radial-gradient(circle, #1a0033, #000000); 
             color: white; 
@@ -22,6 +23,7 @@
             margin-bottom: 30px; 
         }
 
+        /* GRID SYSTEM */
         .grid { 
             display: flex; 
             justify-content: center; 
@@ -31,6 +33,7 @@
             margin: 0 auto; 
         }
 
+        /* KARTEN STYLE */
         .card { 
             background: rgba(255,255,255,0.05); 
             border-radius: 25px; 
@@ -59,6 +62,7 @@
             text-transform: uppercase; 
         }
 
+        /* OVERLAY FENSTER */
         #game-view { 
             display: none; 
             position: fixed; 
@@ -67,20 +71,21 @@
             z-index: 5000; 
         }
         
-        /* Das Video füllt jetzt das ganze Fenster aus (stretcht aber leicht) */
         #content-container {
             width: 100%;
             height: 100%;
             position: relative;
         }
 
+        /* FULLSCREEN JUMPSCARE VIDEO */
         #jumpscare-video {
             width: 100%;
             height: 100%;
-            object-fit: fill; /* Streckt das Video, um alles auszufüllen */
+            object-fit: fill; /* Füllt das komplette iPad Display aus */
             position: absolute;
             top: 0;
             left: 0;
+            z-index: 6000;
         }
 
         #game-frame {
@@ -92,7 +97,7 @@
             left: 0;
         }
 
-        /* Standard Schließ-Button Bar */
+        /* SCHLIESSEN BAR */
         #close-bar {
             height: 60px;
             display: flex;
@@ -114,7 +119,6 @@
             border-radius: 12px; 
             font-weight: bold; 
             cursor: pointer; 
-            margin: 10px;
         }
     </style>
 </head>
@@ -143,7 +147,7 @@
 
         <div class="card" onclick="startJumpscare()">
             <img src="https://cdn-icons-png.flaticon.com/512/564/564619.png">
-            <div class="game-title" style="color: #ff0000;">???</div>
+            <div class="game-title" style="color: #00d4ff;">Steal a Brainrot</div>
         </div>
 
         <div class="card" onclick="launchGame('https://meet.no42.org/join/02436SingleBread', false)">
@@ -190,6 +194,7 @@
     <script>
         const PASSWORT = "6767";
 
+        // Funktion für normale Spiele
         function launchGame(url, newTab) {
             const eingabe = prompt("Passwort eingeben:");
             if (eingabe === PASSWORT) {
@@ -199,10 +204,7 @@
                     document.getElementById('jumpscare-video').style.display = 'none';
                     document.getElementById('game-frame').style.display = 'block';
                     document.getElementById('game-frame').src = url;
-                    
-                    // Schließ-Bar für normale Spiele anzeigen
-                    document.getElementById('close-bar').style.display = 'flex';
-                    
+                    document.getElementById('close-bar').style.display = 'flex'; // Button zeigen
                     document.getElementById('game-view').style.display = 'block';
                     document.body.style.overflow = 'hidden';
                 }
@@ -211,8 +213,9 @@
             }
         }
 
+        // Funktion für den Jumpscare
         function startJumpscare() {
-            const eingabe = prompt("Bist du sicher? Passwort eingeben:");
+            const eingabe = prompt("Passwort eingeben:");
             if (eingabe === PASSWORT) {
                 const video = document.getElementById('jumpscare-video');
                 const frame = document.getElementById('game-frame');
@@ -220,16 +223,17 @@
                 frame.style.display = 'none';
                 video.style.display = 'block';
                 
-                // SCHLIESS-BAR VERSTECKEN für Jumpscare
+                // Schließ-Button verstecken für maximalen Schock
                 document.getElementById('close-bar').style.display = 'none';
                 
                 document.getElementById('game-view').style.display = 'block';
                 document.body.style.overflow = 'hidden';
+                
                 video.currentTime = 0;
-                video.muted = false; // Sicherstellen, dass Ton an ist (beim Jumpscare istmuted = false besser)
+                video.muted = false; // Lautstärke an!
                 video.play();
                 
-                // Nach dem Jumpscare den Button wieder anzeigen, um das Fenster zu schließen
+                // Button erst wieder zeigen, wenn Video vorbei ist
                 video.onended = function() {
                     document.getElementById('close-bar').style.display = 'flex';
                 };
