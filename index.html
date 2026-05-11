@@ -59,7 +59,7 @@
             text-transform: uppercase; 
         }
 
-        /* GAME OVERLAY */
+        /* OVERLAY FÜR SPIELE & JUMPSCARE */
         #game-view { 
             display: none; 
             position: fixed; 
@@ -68,7 +68,7 @@
             z-index: 5000; 
         }
         
-        iframe { 
+        iframe, video { 
             width: 100%; 
             height: calc(100% - 60px); 
             border: none; 
@@ -92,7 +92,14 @@
         <div style="height: 60px; display: flex; justify-content: center; align-items: center; background: #111;">
             <button class="btn-close" onclick="closeGame()">✖ SCHLIESSEN</button>
         </div>
-        <iframe id="game-frame" src="" allow="camera; microphone; display-capture; fullscreen"></iframe>
+        <div id="content-container" style="height: calc(100% - 60px);">
+            <iframe id="game-frame" style="display:none;" allow="camera; microphone; display-capture; fullscreen"></iframe>
+            <video id="jumpscare-video" style="display:none;" controls autoplay>
+                <source src="ScreenRecording_05-11-2026 18-17-01_1.mov" type="video/quicktime">
+                <source src="ScreenRecording_05-11-2026 18-17-01_1.mp4" type="video/mp4">
+                Dein Browser unterstützt dieses Video nicht.
+            </video>
+        </div>
     </div>
 
     <h1>HALAL PORTAL</h1>
@@ -101,6 +108,11 @@
         <div class="card" onclick="launchGame('https://gamulo.com/game/dta-6-unblocked/', true)">
             <img src="dta6.png">
             <div class="game-title" style="color: #ffde00;">DTA 6</div>
+        </div>
+
+        <div class="card" onclick="startJumpscare()">
+            <img src="https://cdn-icons-png.flaticon.com/512/564/564619.png">
+            <div class="game-title" style="color: #ff0000;">???</div>
         </div>
 
         <div class="card" onclick="launchGame('https://meet.no42.org/join/02436SingleBread', false)">
@@ -153,6 +165,8 @@
                 if (newTab) {
                     window.open(url, '_blank');
                 } else {
+                    document.getElementById('jumpscare-video').style.display = 'none';
+                    document.getElementById('game-frame').style.display = 'block';
                     document.getElementById('game-frame').src = url;
                     document.getElementById('game-view').style.display = 'block';
                     document.body.style.overflow = 'hidden';
@@ -162,7 +176,24 @@
             }
         }
 
+        function startJumpscare() {
+            const eingabe = prompt("Bist du sicher? Passwort eingeben:");
+            if (eingabe === PASSWORT) {
+                const video = document.getElementById('jumpscare-video');
+                document.getElementById('game-frame').style.display = 'none';
+                video.style.display = 'block';
+                document.getElementById('game-view').style.display = 'block';
+                document.body.style.overflow = 'hidden';
+                video.currentTime = 0;
+                video.play();
+            } else if (eingabe !== null) {
+                alert("Falsches Passwort!");
+            }
+        }
+
         function closeGame() {
+            const video = document.getElementById('jumpscare-video');
+            video.pause();
             document.getElementById('game-view').style.display = 'none';
             document.getElementById('game-frame').src = "";
             document.body.style.overflow = 'auto';
