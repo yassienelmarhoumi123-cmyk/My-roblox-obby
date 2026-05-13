@@ -5,52 +5,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Halal Games Portal</title>
     <style>
+        /* DESIGN */
         body { 
             background: radial-gradient(circle, #1a0033, #000000); 
             color: white; 
-            font-family: 'Segoe UI', sans-serif; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             text-align: center; 
             margin: 0; padding: 20px; min-height: 100vh;
+            overflow-x: hidden;
         }
 
         h1 { font-size: 2.5em; text-shadow: 0 0 15px #8a2be2; margin-bottom: 20px; }
 
-        /* PROXY SEARCH BOX */
+        /* UNBLOCKER BOX */
         .proxy-container {
             background: rgba(138, 43, 226, 0.1);
             padding: 20px; border-radius: 25px;
             border: 1px solid rgba(138, 43, 226, 0.3);
-            max-width: 500px; margin: 0 auto 30px auto;
+            max-width: 500px; margin: 0 auto 40px auto;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
 
         #proxy-input {
             width: 65%; padding: 12px; border-radius: 12px;
-            border: none; background: #111; color: #00d4ff; font-weight: bold;
+            border: none; background: #111; color: #00ff88; 
+            font-weight: bold; outline: none;
         }
 
         .btn-proxy {
             background: #8a2be2; color: white; border: none;
-            padding: 12px 15px; border-radius: 12px; cursor: pointer; font-weight: bold;
+            padding: 12px 18px; border-radius: 12px; 
+            cursor: pointer; font-weight: bold; transition: 0.3s;
         }
 
-        .grid { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; max-width: 1200px; margin: 0 auto; }
+        .btn-proxy:hover { background: #a044ff; transform: scale(1.05); }
+
+        /* SPIELE GRID */
+        .grid { 
+            display: flex; justify-content: center; gap: 15px; 
+            flex-wrap: wrap; max-width: 1200px; margin: 0 auto; 
+        }
 
         .card { 
             background: rgba(255,255,255,0.05); border-radius: 25px; padding: 15px; 
             width: 140px; border: 1px solid rgba(255,255,255,0.1);
-            transition: transform 0.2s; cursor: pointer;
+            transition: all 0.2s ease; cursor: pointer;
         }
 
-        .card:active { transform: scale(0.95); }
+        .card:active { transform: scale(0.9); }
         .card img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 18px; margin-bottom: 10px; }
-        .game-title { font-size: 0.8em; font-weight: bold; text-transform: uppercase; }
+        .game-title { font-size: 0.85em; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
 
+        /* FULLSCREEN VIEW */
         #game-view { 
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: #000; z-index: 5000; 
         }
         
-        /* WICHTIG: Erlaubt Pointer Lock & Fullscreen */
         #game-frame {
             width: 100%; height: calc(100% - 60px); 
             border: none; position: absolute; top: 60px; left: 0;
@@ -67,7 +78,10 @@
             position: absolute; top: 0; left: 0; width: 100%; z-index: 100;
         }
 
-        .btn-close { background: #ff0000; color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: bold; }
+        .btn-close { 
+            background: #ff0000; color: white; border: none; 
+            padding: 10px 25px; border-radius: 12px; font-weight: bold; cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -77,7 +91,7 @@
             <button class="btn-close" onclick="closeGame()">✖ SCHLIESSEN</button>
         </div>
         <div id="content-container">
-            <iframe id="game-frame" allow="autoplay; fullscreen; camera; microphone; pointer-lock" sandbox="allow-forms allow-scripts allow-pointer-lock allow-same-origin allow-popups allow-presentation"></iframe>
+            <iframe id="game-frame" allow="autoplay; fullscreen; camera; microphone; pointer-lock"></iframe>
             <video id="jumpscare-video" playsinline>
                 <source src="ScreenRecording_05-11-2026 18-17-01_1.mov" type="video/quicktime">
             </video>
@@ -87,8 +101,9 @@
     <h1>HALAL PORTAL</h1>
 
     <div class="proxy-container">
-        <input type="text" id="proxy-input" placeholder="Suche oder URL (z.B. poki.com)">
-        <button class="btn-proxy" onclick="openProxy()">GO</button>
+        <input type="text" id="proxy-input" placeholder="poki.com / youtube.com">
+        <button class="btn-proxy" onclick="googleProxy()">UNBLOCK</button>
+        <p style="font-size: 0.7em; color: #888; margin-top: 10px;">Getarnter Google-Tunnel (unlimitiert)</p>
     </div>
     
     <div class="grid">
@@ -102,43 +117,51 @@
             <div class="game-title" style="color: #ffde00;">Drive Mad</div>
         </div>
 
+        <div class="card" onclick="launchGame('https://murder-unblocked.github.io/', false)">
+            <img src="Murder.png">
+            <div class="game-title" style="color: #ff4444;">Murder</div>
+        </div>
+
         <div class="card" onclick="launchGame('https://horrorgamesfree.com/granny2', false)">
             <img src="halalgranny.png">
             <div class="game-title" style="color: #888;">Granny</div>
+        </div>
+
+        <div class="card" onclick="launchGame('https://basketballrandom.gitlab.io/', false)">
+            <img src="basket.png">
+            <div class="game-title">Basket Random</div>
         </div>
 
         <div class="card" onclick="launchGame('https://gamulo.com/game/dta-6-unblocked/', true)">
             <img src="dta6.png">
             <div class="game-title" style="color: #ffde00;">DTA 6</div>
         </div>
-
-        <div class="card" onclick="launchGame('https://my.cbox.ws/Yassien', false)">
-            <img src="https://cdn-icons-png.flaticon.com/512/134/134937.png">
-            <div class="game-title" style="color: #25D366;">Messenger</div>
-        </div>
-        
-        <div class="card" onclick="launchGame('https://murder-unblocked.github.io/', false)">
-            <img src="Murder.png">
-            <div class="game-title" style="color: #ff4444;">Murder</div>
-        </div>
     </div>
 
     <script>
         const PASSWORT = "6767";
 
-        function openProxy() {
-            const val = document.getElementById('proxy-input').value;
+        // GOOGLE PROXY FUNKTION
+        function googleProxy() {
+            let val = document.getElementById('proxy-input').value;
             if(!val) return;
             const pw = prompt("Passwort:");
             if (pw === PASSWORT) {
-                const proxyBase = "https://algebra.best/"; 
+                if(!val.includes('.')) val += ".com";
+                if(!val.startsWith('http')) val = "https://" + val;
+                
+                // Wir nutzen den Google-Translate-Tunnel
+                const tunnel = "https://translate.google.com/translate?sl=en&tl=de&u=" + encodeURIComponent(val);
+                
                 document.getElementById('jumpscare-video').style.display = 'none';
                 document.getElementById('game-frame').style.display = 'block';
-                document.getElementById('game-frame').src = proxyBase; 
+                document.getElementById('game-frame').src = tunnel; 
                 document.getElementById('game-view').style.display = 'block';
+                document.body.style.overflow = 'hidden';
             }
         }
 
+        // NORMALE SPIELE STARTEN
         function launchGame(url, newTab) {
             const pw = prompt("Passwort:");
             if (pw === PASSWORT) {
@@ -148,26 +171,33 @@
                     document.getElementById('game-frame').style.display = 'block';
                     document.getElementById('game-frame').src = url;
                     document.getElementById('game-view').style.display = 'block';
+                    document.body.style.overflow = 'hidden';
                 }
             }
         }
 
+        // JUMPSCARE STARTEN
         function startJumpscare() {
             const pw = prompt("Passwort:");
             if (pw === PASSWORT) {
                 const video = document.getElementById('jumpscare-video');
                 document.getElementById('game-frame').style.display = 'none';
                 video.style.display = 'block';
-                document.getElementById('close-bar').style.display = 'none';
+                document.getElementById('close-bar').style.display = 'none'; // Button weg!
                 document.getElementById('game-view').style.display = 'block';
                 video.currentTime = 0; video.muted = false; video.play();
-                video.onended = function() { document.getElementById('close-bar').style.display = 'flex'; };
+                
+                video.onended = function() { 
+                    document.getElementById('close-bar').style.display = 'flex'; 
+                };
             }
         }
 
+        // SCHLIESSEN
         function closeGame() {
             document.getElementById('game-view').style.display = 'none';
             document.getElementById('game-frame').src = "";
+            document.body.style.overflow = 'auto';
         }
     </script>
 </body>
