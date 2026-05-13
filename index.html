@@ -7,42 +7,27 @@
     <style>
         body { 
             background: radial-gradient(circle, #1a0033, #000000); 
-            color: white; font-family: sans-serif; text-align: center; 
-            margin: 0; padding: 20px; min-height: 100vh;
+            color: white; font-family: 'Segoe UI', sans-serif; text-align: center; 
+            margin: 0; padding: 20px;
         }
 
-        h1 { font-size: 2.5em; text-shadow: 0 0 15px #8a2be2; margin-bottom: 20px; }
+        h1 { font-size: 2.5em; text-shadow: 0 0 15px #8a2be2; margin-bottom: 40px; }
 
-        /* SEARCH BOX */
-        .search-container {
-            background: rgba(138, 43, 226, 0.15);
-            padding: 15px; border-radius: 20px;
-            border: 1px solid rgba(138, 43, 226, 0.4);
-            max-width: 450px; margin: 0 auto 30px auto;
-        }
-
-        #proxy-input {
-            width: 60%; padding: 12px; border-radius: 10px;
-            border: none; background: #111; color: #00ff88; font-weight: bold;
-        }
-
-        .btn-go {
-            background: #8a2be2; color: white; border: none;
-            padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: bold;
-        }
-
-        /* GRID */
-        .grid { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+        /* GRID SYSTEM */
+        .grid { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; max-width: 1000px; margin: 0 auto; }
 
         .card { 
-            background: rgba(255,255,255,0.05); border-radius: 20px; padding: 12px; 
-            width: 130px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer;
+            background: rgba(255,255,255,0.05); border-radius: 25px; padding: 15px; 
+            width: 150px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer;
+            transition: 0.3s;
         }
 
-        .card img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 15px; }
-        .game-title { font-size: 0.8em; font-weight: bold; margin-top: 8px; text-transform: uppercase; }
+        .card:hover { transform: translateY(-5px); border-color: #8a2be2; }
+        .card:active { transform: scale(0.9); }
+        .card img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 18px; margin-bottom: 10px; }
+        .game-title { font-size: 0.9em; font-weight: bold; text-transform: uppercase; }
 
-        /* OVERLAY */
+        /* FULLSCREEN VIEW */
         #game-view { 
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: #000; z-index: 9999; 
@@ -61,7 +46,7 @@
             position: absolute; top: 0; left: 0; width: 100%;
         }
 
-        .btn-close { background: #ff0000; color: white; border: none; padding: 10px 25px; border-radius: 8px; font-weight: bold; }
+        .btn-close { background: #ff0000; color: white; border: none; padding: 10px 25px; border-radius: 10px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -70,86 +55,76 @@
         <div id="close-bar">
             <button class="btn-close" onclick="closeGame()">✖ SCHLIESSEN</button>
         </div>
-        <iframe id="game-frame"></iframe>
+        <iframe id="game-frame" allow="autoplay; fullscreen; pointer-lock"></iframe>
         <video id="jumpscare-video" playsinline>
             <source src="ScreenRecording_05-11-2026 18-17-01_1.mov" type="video/quicktime">
         </video>
     </div>
 
-    <h1>HALAL PORTAL</h1>
+    <h1>HALAL GAMES</h1>
 
-    <div class="search-container">
-        <input type="text" id="proxy-input" placeholder="poki.com oder url...">
-        <button class="btn-go" onclick="startProxy()">GO</button>
-    </div>
-    
     <div class="grid">
-        <div class="card" onclick="triggerJumpscare()">
-            <img src="https://cdn-icons-png.flaticon.com/512/564/564619.png">
-            <div class="game-title" style="color: #00d4ff;">Steal a Brainrot</div>
+        <div class="card" onclick="openGame('https://sosa.centromariapolis.cl/')">
+            <img src="https://cdn-icons-png.flaticon.com/512/287/287226.png">
+            <div class="game-title" style="color: #00ff88;">Sosa Unblocker</div>
         </div>
 
-        <div class="card" onclick="openLink('https://ducky443747.github.io/games/DriveMad/')">
+        <div class="card" onclick="openGame('https://ducky443747.github.io/games/DriveMad/')">
             <img src="https://play-lh.googleusercontent.com/Anm2S-MvTuxPzD4lqP7kH0H8uC_o7YvF1O7jB_9Gz9V0M9f6I8P6j1g_3p8P0w">
             <div class="game-title">Drive Mad</div>
         </div>
 
-        <div class="card" onclick="openLink('https://murder-unblocked.github.io/')">
+        <div class="card" onclick="openGame('https://murder-unblocked.github.io/')">
             <img src="Murder.png">
             <div class="game-title">Murder</div>
+        </div>
+
+        <div class="card" onclick="triggerJumpscare()">
+            <img src="https://cdn-icons-png.flaticon.com/512/564/564619.png">
+            <div class="game-title" style="color: #ff00ff;">Secret Level</div>
         </div>
     </div>
 
     <script>
-        const PW = "6767";
+        const PIN = "6767";
 
-        function checkPW() {
-            return prompt("Passwort:") === PW;
-        }
-
-        function startProxy() {
-            let val = document.getElementById('proxy-input').value;
-            if(!val) return;
-            if(checkPW()) {
-                if(!val.startsWith('http')) val = "https://" + (val.includes('.') ? val : val + ".com");
-                const tunnel = "https://translate.google.com/translate?sl=en&tl=de&u=" + encodeURIComponent(val);
-                showView(tunnel, false);
+        function openGame(url) {
+            const pw = prompt("Sicherheits-Code:");
+            if (pw === PIN) {
+                const view = document.getElementById('game-view');
+                const frame = document.getElementById('game-frame');
+                const video = document.getElementById('jumpscare-video');
+                
+                video.style.display = 'none';
+                frame.style.display = 'block';
+                document.getElementById('close-bar').style.display = 'flex';
+                frame.src = url;
+                view.style.display = 'block';
             }
         }
 
-        function openLink(url) {
-            if(checkPW()) showView(url, false);
-        }
-
         function triggerJumpscare() {
-            if(checkPW()) showView('', true);
-        }
-
-        function showView(url, isJumpscare) {
-            const view = document.getElementById('game-view');
-            const frame = document.getElementById('game-frame');
-            const video = document.getElementById('jumpscare-video');
-            const closeBar = document.getElementById('close-bar');
-
-            view.style.display = 'block';
-            
-            if(isJumpscare) {
+            const pw = prompt("Sicherheits-Code:");
+            if (pw === PIN) {
+                const view = document.getElementById('game-view');
+                const video = document.getElementById('jumpscare-video');
+                const frame = document.getElementById('game-frame');
+                
                 frame.style.display = 'none';
-                closeBar.style.display = 'none';
+                document.getElementById('close-bar').style.display = 'none';
                 video.style.display = 'block';
+                view.style.display = 'block';
+                
                 video.muted = false;
                 video.currentTime = 0;
                 video.play().catch(() => {
-                    // Falls iPad Autoplay blockt:
-                    alert("Klicke OK für das Spiel");
+                    alert("Click OK to Start Game");
                     video.play();
                 });
-                video.onended = () => { closeBar.style.display = 'flex'; };
-            } else {
-                video.style.display = 'none';
-                frame.style.display = 'block';
-                closeBar.style.display = 'flex';
-                frame.src = url;
+
+                video.onended = () => { 
+                    document.getElementById('close-bar').style.display = 'flex'; 
+                };
             }
         }
 
