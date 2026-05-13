@@ -3,120 +3,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Halal Hub v6</title>
+    <title>Halal Games Portal</title>
     <style>
         body { 
-            background: radial-gradient(circle, #0f001a, #000000); 
+            background: radial-gradient(circle, #1a0033, #000000); 
             color: white; font-family: 'Segoe UI', sans-serif; text-align: center; 
             margin: 0; padding: 20px; min-height: 100vh;
         }
 
-        h1 { font-size: 2.2em; text-shadow: 0 0 15px #00ff88; margin: 20px 0 40px 0; }
+        h1 { 
+            font-size: 2.5em; text-shadow: 0 0 15px #8a2be2; 
+            margin-top: 20px; margin-bottom: 30px; 
+        }
 
         .grid { 
-            display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; 
-            max-width: 1000px; margin: 0 auto; 
+            display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; 
+            max-width: 1200px; margin: 0 auto; 
         }
 
         .card { 
             background: rgba(255,255,255,0.05); border-radius: 25px; padding: 15px; 
-            width: 125px; border: 1px solid rgba(0, 255, 136, 0.2); cursor: pointer;
-            transition: 0.3s ease;
+            width: 150px; border: 1px solid rgba(255,255,255,0.1); transition: 0.2s; cursor: pointer;
         }
 
-        .card:active { transform: scale(0.9); border-color: #00ff88; }
+        .card:active { transform: scale(0.95); border-color: #8a2be2; }
         
         .card img { 
             width: 100%; aspect-ratio: 1/1; object-fit: cover; 
-            border-radius: 18px; margin-bottom: 10px; 
+            border-radius: 18px; margin-bottom: 10px;
         }
 
-        .title { font-size: 0.75em; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        .game-title { font-size: 0.9em; font-weight: bold; text-transform: uppercase; }
 
-        #jumpscare-overlay { 
+        /* SOSA SPEZIAL LOOK */
+        .sosa-card { border: 2px solid #00ff88 !important; background: rgba(0, 255, 136, 0.05) !important; }
+
+        /* GAME OVERLAY (Für die Iframe-Spiele) */
+        #game-view { 
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: #000; z-index: 10000; 
+            background: #000; z-index: 5000; 
         }
-        #jumpscare-video { width: 100%; height: 100%; object-fit: fill; }
+        
+        iframe { width: 100%; height: calc(100% - 60px); border: none; }
+
+        .btn-close { 
+            background: #ff0000; color: white; border: none; padding: 12px 25px; 
+            border-radius: 12px; font-weight: bold; cursor: pointer; margin: 10px;
+        }
     </style>
 </head>
 <body>
 
-    <div id="jumpscare-overlay">
-        <video id="jumpscare-video" playsinline>
-            <source src="ScreenRecording_05-11-2026 18-17-01_1.mov" type="video/quicktime">
-        </video>
+    <div id="game-view">
+        <div style="height: 60px; display: flex; justify-content: center; align-items: center; background: #111;">
+            <button class="btn-close" onclick="closeGame()">✖ SCHLIESSEN</button>
+        </div>
+        <iframe id="game-frame" src="" allow="fullscreen; pointer-lock"></iframe>
     </div>
 
-    <h1>HALAL HUB</h1>
-
+    <h1>HALAL PORTAL</h1>
+    
     <div class="grid">
-        <div class="card" onclick="start('https://sosa.centromariapolis.cl/')">
+        <div class="card sosa-card" onclick="launchDirect('https://sosa.centromariapolis.cl/')">
             <img src="https://cdn-icons-png.flaticon.com/512/287/287226.png">
-            <div class="title" style="color: #00ff88;">Sosa Proxy</div>
+            <div class="game-title" style="color: #00ff88;">Sosa Proxy</div>
         </div>
 
-        <div class="card" onclick="start('https://web.whatsapp.com')">
-            <img src="https://cdn-icons-png.flaticon.com/512/733/733585.png">
-            <div class="title">Messenger</div>
-        </div>
-
-        <div class="card" onclick="start('https://sosa.centromariapolis.cl/main/https://chathub.cam')">
-            <img src="https://cdn-icons-png.flaticon.com/512/11104/11104193.png">
-            <div class="title">Video Chat</div>
-        </div>
-
-        <div class="card" onclick="start('https://sosa.centromariapolis.cl/main/https://www.emeraldchat.com')">
-            <img src="https://cdn-icons-png.flaticon.com/512/3662/3662817.png">
-            <div class="title">Ommogle</div>
-        </div>
-
-        <div class="card" onclick="start('https://sosa.centromariapolis.cl/main/https://gamulo.com/game/dta-6')">
+        <div class="card" onclick="launchDirect('https://gamulo.com/game/dta-6')">
             <img src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png">
-            <div class="title" style="color: #ffaa00;">DTA 6</div>
+            <div class="game-title" style="color: #ffaa00;">DTA 6</div>
         </div>
 
-        <div class="card" onclick="start('https://horrorgamesfree.com/granny2')">
-            <img src="halalgranny.png">
-            <div class="title">Granny 2</div>
+        <div class="card" onclick="launchDirect('https://ommogle.com/')">
+            <img src="halal-chat.png">
+            <div class="game-title" style="color: #00d4ff;">Ommogle</div>
         </div>
 
-        <div class="card" onclick="start('https://ducky443747.github.io/games/DriveMad/')">
-            <img src="https://play-lh.googleusercontent.com/Anm2S-MvTuxPzD4lqP7kH0H8uC_o7YvF1O7jB_9Gz9V0M9f6I8P6j1g_3p8P0w">
-            <div class="title">Drive Mad</div>
+        <div class="card" onclick="launchIframe('https://my.cbox.ws/Yassien')">
+            <img src="https://cdn-icons-png.flaticon.com/512/134/134937.png">
+            <div class="game-title" style="color: #25D366;">Messenger</div>
         </div>
 
-        <div class="card" onclick="start('https://murder-unblocked.github.io/')">
+        <div class="card" onclick="launchIframe('https://murder-unblocked.github.io/')">
             <img src="Murder.png">
-            <div class="title">Murder</div>
+            <div class="game-title" style="color: #ff4444;">Murder</div>
         </div>
 
-        <div class="card" onclick="triggerScare()">
-            <img src="https://cdn-icons-png.flaticon.com/512/564/564619.png">
-            <div class="title" style="color: #ff00ff;">Halal Video</div>
+        <div class="card" onclick="launchIframe('https://ducky443747.github.io/games/DriveMad/')">
+            <img src="https://play-lh.googleusercontent.com/Anm2S-MvTuxPzD4lqP7kH0H8uC_o7YvF1O7jB_9Gz9V0M9f6I8P6j1g_3p8P0w">
+            <div class="game-title" style="color: #ffde00;">Drive Mad</div>
+        </div>
+
+        <div class="card" onclick="launchIframe('https://horrorgamesfree.com/granny2')">
+            <img src="halalgranny.png">
+            <div class="game-title">Granny 2</div>
+        </div>
+
+        <div class="card" onclick="launchIframe('https://basketballrandom.gitlab.io/')">
+            <img src="basket.png">
+            <div class="game-title">Basket Random</div>
+        </div>
+
+        <div class="card" onclick="launchIframe('https://wordledeutsch.org/')">
+            <img src="wordle.png">
+            <div class="game-title" style="color: #4CAF50;">Wordle</div>
+        </div>
+
+        <div class="card" onclick="launchIframe('https://crazygames-unblocked.github.io/play/highway-racer-3d.html')">
+            <img src="halal-racer.png">
+            <div class="game-title" style="color: #00ff88;">Racer</div>
         </div>
     </div>
 
     <script>
-        const PIN = "6767";
+        const PASSWORT = "6767";
 
-        function start(url) {
-            if (prompt("PIN:") === PIN) {
+        // Funktion für Direkt-Links (DTA 6, Ommogle, Sosa)
+        function launchDirect(url) {
+            const eingabe = prompt("Passwort eingeben:");
+            if (eingabe === PASSWORT) {
                 window.location.href = url;
+            } else if (eingabe !== null) {
+                alert("Falsches Passwort!");
             }
         }
 
-        function triggerScare() {
-            if (prompt("PIN:") === PIN) {
-                const overlay = document.getElementById('jumpscare-overlay');
-                const video = document.getElementById('jumpscare-video');
-                overlay.style.display = 'block';
-                video.play().catch(() => {
-                    alert("Video startet...");
-                    video.play();
-                });
-                video.onended = () => { overlay.style.display = 'none'; };
+        // Funktion für Iframe-Spiele (Messenger, Murder, etc.)
+        function launchIframe(url) {
+            const eingabe = prompt("Passwort eingeben:");
+            if (eingabe === PASSWORT) {
+                document.getElementById('game-frame').src = url;
+                document.getElementById('game-view').style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            } else if (eingabe !== null) {
+                alert("Falsches Passwort!");
             }
+        }
+
+        function closeGame() {
+            document.getElementById('game-view').style.display = 'none';
+            document.getElementById('game-frame').src = "";
+            document.body.style.overflow = 'auto';
         }
     </script>
 </body>
