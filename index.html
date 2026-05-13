@@ -3,111 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Halal Games Portal</title>
+    <title>Halal Hub v6</title>
     <style>
         body { 
             background: radial-gradient(circle, #0f001a, #000000); 
-            color: white; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; padding: 20px;
+            color: white; font-family: 'Segoe UI', sans-serif; text-align: center; 
+            margin: 0; padding: 20px; min-height: 100vh;
         }
 
-        h1 { font-size: 2.2em; text-shadow: 0 0 15px #8a2be2; margin-bottom: 30px; }
+        h1 { font-size: 2.2em; text-shadow: 0 0 15px #00ff88; margin: 20px 0 40px 0; }
 
-        .grid { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+        .grid { 
+            display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; 
+            max-width: 1000px; margin: 0 auto; 
+        }
 
         .card { 
-            background: rgba(255,255,255,0.05); border-radius: 20px; padding: 12px; 
-            width: 140px; border: 1px solid rgba(138, 43, 226, 0.2); cursor: pointer;
-            transition: 0.3s;
+            background: rgba(255,255,255,0.05); border-radius: 25px; padding: 15px; 
+            width: 125px; border: 1px solid rgba(0, 255, 136, 0.2); cursor: pointer;
+            transition: 0.3s ease;
         }
 
         .card:active { transform: scale(0.9); border-color: #00ff88; }
-        .card img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 15px; }
-        .game-title { font-size: 0.85em; font-weight: bold; margin-top: 8px; }
-
-        #game-view { 
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: #000; z-index: 9999; 
-        }
         
-        #game-frame { width: 100%; height: calc(100% - 60px); border: none; margin-top: 60px; }
-
-        #close-bar {
-            height: 60px; display: flex; justify-content: center; 
-            align-items: center; background: #111; position: absolute; top: 0; left: 0; width: 100%;
+        .card img { 
+            width: 100%; aspect-ratio: 1/1; object-fit: cover; 
+            border-radius: 18px; margin-bottom: 10px; 
         }
 
-        .btn-close { background: #ff0000; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; }
+        .title { font-size: 0.75em; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
 
-        #jumpscare-video {
-            width: 100%; height: 100%; object-fit: fill; 
-            position: absolute; top: 0; left: 0; display: none;
+        #jumpscare-overlay { 
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: #000; z-index: 10000; 
         }
+        #jumpscare-video { width: 100%; height: 100%; object-fit: fill; }
     </style>
 </head>
 <body>
 
-    <div id="game-view">
-        <div id="close-bar">
-            <button class="btn-close" onclick="closeGame()">✖ ZURÜCK ZUM PORTAL</button>
-        </div>
-        <iframe id="game-frame" allow="autoplay; fullscreen; pointer-lock"></iframe>
+    <div id="jumpscare-overlay">
         <video id="jumpscare-video" playsinline>
             <source src="ScreenRecording_05-11-2026 18-17-01_1.mov" type="video/quicktime">
         </video>
     </div>
 
-    <h1>HALAL PORTAL</h1>
+    <h1>HALAL HUB</h1>
 
     <div class="grid">
-        <div class="card" onclick="openGame('https://sosa.centromariapolis.cl/main/https://x.bluestacks.com')">
-            <img src="https://cdn-icons-png.flaticon.com/512/889/889102.png">
-            <div class="game-title" style="color: #00d4ff;">Roblox (BlueStacks)</div>
+        <div class="card" onclick="start('https://sosa.centromariapolis.cl/')">
+            <img src="https://cdn-icons-png.flaticon.com/512/287/287226.png">
+            <div class="title" style="color: #00ff88;">Sosa Proxy</div>
         </div>
 
-        <div class="card" onclick="openGame('https://geometryspot.com/roblox/')">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/3/3a/Roblox_player_icon_black.svg">
-            <div class="game-title" style="color: #ff4444;">Roblox (Clean)</div>
+        <div class="card" onclick="start('https://web.whatsapp.com')">
+            <img src="https://cdn-icons-png.flaticon.com/512/733/733585.png">
+            <div class="title">Messenger</div>
         </div>
 
-        <div class="card" onclick="triggerJumpscare()">
+        <div class="card" onclick="start('https://sosa.centromariapolis.cl/main/https://chathub.cam')">
+            <img src="https://cdn-icons-png.flaticon.com/512/11104/11104193.png">
+            <div class="title">Video Chat</div>
+        </div>
+
+        <div class="card" onclick="start('https://sosa.centromariapolis.cl/main/https://www.emeraldchat.com')">
+            <img src="https://cdn-icons-png.flaticon.com/512/3662/3662817.png">
+            <div class="title">Ommogle</div>
+        </div>
+
+        <div class="card" onclick="start('https://sosa.centromariapolis.cl/main/https://gamulo.com/game/dta-6')">
+            <img src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png">
+            <div class="title" style="color: #ffaa00;">DTA 6</div>
+        </div>
+
+        <div class="card" onclick="start('https://horrorgamesfree.com/granny2')">
+            <img src="halalgranny.png">
+            <div class="title">Granny 2</div>
+        </div>
+
+        <div class="card" onclick="start('https://ducky443747.github.io/games/DriveMad/')">
+            <img src="https://play-lh.googleusercontent.com/Anm2S-MvTuxPzD4lqP7kH0H8uC_o7YvF1O7jB_9Gz9V0M9f6I8P6j1g_3p8P0w">
+            <div class="title">Drive Mad</div>
+        </div>
+
+        <div class="card" onclick="start('https://murder-unblocked.github.io/')">
+            <img src="Murder.png">
+            <div class="title">Murder</div>
+        </div>
+
+        <div class="card" onclick="triggerScare()">
             <img src="https://cdn-icons-png.flaticon.com/512/564/564619.png">
-            <div class="game-title">Secret Level</div>
+            <div class="title" style="color: #ff00ff;">Halal Video</div>
         </div>
     </div>
 
     <script>
         const PIN = "6767";
 
-        function openGame(url) {
-            const pw = prompt("PIN:");
-            if (pw === PIN) {
-                const view = document.getElementById('game-view');
-                const frame = document.getElementById('game-frame');
-                document.getElementById('jumpscare-video').style.display = 'none';
-                frame.style.display = 'block';
-                frame.src = url;
-                view.style.display = 'block';
+        function start(url) {
+            if (prompt("PIN:") === PIN) {
+                window.location.href = url;
             }
         }
 
-        function triggerJumpscare() {
-            const pw = prompt("PIN:");
-            if (pw === PIN) {
-                const view = document.getElementById('game-view');
+        function triggerScare() {
+            if (prompt("PIN:") === PIN) {
+                const overlay = document.getElementById('jumpscare-overlay');
                 const video = document.getElementById('jumpscare-video');
-                document.getElementById('game-frame').style.display = 'none';
-                video.style.display = 'block';
-                view.style.display = 'block';
-                video.muted = false;
-                video.play().catch(() => { alert("Tippe auf den Screen!"); video.play(); });
-                video.onended = () => { closeGame(); };
+                overlay.style.display = 'block';
+                video.play().catch(() => {
+                    alert("Video startet...");
+                    video.play();
+                });
+                video.onended = () => { overlay.style.display = 'none'; };
             }
-        }
-
-        function closeGame() {
-            document.getElementById('game-view').style.display = 'none';
-            document.getElementById('game-frame').src = "";
-            document.getElementById('jumpscare-video').pause();
         }
     </script>
 </body>
