@@ -1,150 +1,65 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Halal Games Portal</title>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="apple-touch-icon" href="/images/icon.jpeg" />
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
+    <title>Discord</title>
     <style>
-        body { 
-            background: radial-gradient(circle, #1a0033, #000000); 
-            color: white; font-family: 'Segoe UI', sans-serif; text-align: center; 
-            margin: 0; padding: 20px; min-height: 100vh;
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100%;
+            background-color: #222327;
         }
-
-        h1 { 
-            font-size: 2.5em; text-shadow: 0 0 15px #8a2be2; 
-            margin-top: 20px; margin-bottom: 30px; 
+        .roboto-medium {
+            font-family: "Roboto", sans-serif;
+            font-weight: 500;
+            font-style: normal;
         }
-
-        .grid { 
-            display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; 
-            max-width: 1200px; margin: 0 auto; 
+        .roboto-medium-italic {
+            font-family: "Roboto", sans-serif;
+            font-weight: 500;
+            font-style: italic;
         }
-
-        .card { 
-            background: rgba(255,255,255,0.05); border-radius: 25px; padding: 15px; 
-            width: 150px; border: 1px solid rgba(255,255,255,0.1); transition: 0.2s; cursor: pointer;
+        #header {
+            background-image: url('images/header.jpeg');
+            background-size: cover;
+            background-position: center;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding-left: 20px;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
         }
-
-        .card:active { transform: scale(0.95); border-color: #8a2be2; }
-        
-        .card img { 
-            width: 100%; aspect-ratio: 1/1; object-fit: cover; 
-            border-radius: 18px; margin-bottom: 10px;
-        }
-
-        .game-title { font-size: 0.9em; font-weight: bold; text-transform: uppercase; }
-
-        /* SOSA SPEZIAL LOOK */
-        .sosa-card { border: 2px solid #00ff88 !important; background: rgba(0, 255, 136, 0.05) !important; }
-
-        /* GAME OVERLAY (Für die Iframe-Spiele) */
-        #game-view { 
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: #000; z-index: 5000; 
-        }
-        
-        iframe { width: 100%; height: calc(100% - 60px); border: none; }
-
-        .btn-close { 
-            background: #ff0000; color: white; border: none; padding: 12px 25px; 
-            border-radius: 12px; font-weight: bold; cursor: pointer; margin: 10px;
+        #content {
+            height: calc(100% - 70px); /* Subtract header height */
         }
     </style>
 </head>
 <body>
-
-    <div id="game-view">
-        <div style="height: 60px; display: flex; justify-content: center; align-items: center; background: #111;">
-            <button class="btn-close" onclick="closeGame()">✖ SCHLIESSEN</button>
-        </div>
-        <iframe id="game-frame" src="" allow="fullscreen; pointer-lock"></iframe>
+    <div id="header" class="roboto-medium">Discord</div>
+    <div id="content">
+        <widgetbot
+          server="1206981618556731483"
+          channel="1206981619198595136"
+          width="130vh"
+          height="calc(85vh - 70px)"
+          style="position: absolute; left: 50%; top: calc(50% + 25px); transform: translate(-50%, -50%);"
+        ></widgetbot>
+        <script src="https://cdn.jsdelivr.net/npm/@widgetbot/html-embed"></script>
     </div>
-
-    <h1>HALAL PORTAL</h1>
-    
-    <div class="grid">
-        <div class="card sosa-card" onclick="launchDirect('https://sosa.centromariapolis.cl/')">
-            <img src="https://cdn-icons-png.flaticon.com/512/287/287226.png">
-            <div class="game-title" style="color: #00ff88;">Sosa Proxy</div>
-        </div>
-
-        <div class="card" onclick="launchDirect('https://gamulo.com/game/dta-6')">
-            <img src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png">
-            <div class="game-title" style="color: #ffaa00;">DTA 6</div>
-        </div>
-
-        <div class="card" onclick="launchDirect('https://ommogle.com/')">
-            <img src="halal-chat.png">
-            <div class="game-title" style="color: #00d4ff;">Ommogle</div>
-        </div>
-
-        <div class="card" onclick="launchIframe('https://my.cbox.ws/Yassien')">
-            <img src="https://cdn-icons-png.flaticon.com/512/134/134937.png">
-            <div class="game-title" style="color: #25D366;">Messenger</div>
-        </div>
-
-        <div class="card" onclick="launchIframe('https://murder-unblocked.github.io/')">
-            <img src="Murder.png">
-            <div class="game-title" style="color: #ff4444;">Murder</div>
-        </div>
-
-        <div class="card" onclick="launchIframe('https://ducky443747.github.io/games/DriveMad/')">
-            <img src="https://play-lh.googleusercontent.com/Anm2S-MvTuxPzD4lqP7kH0H8uC_o7YvF1O7jB_9Gz9V0M9f6I8P6j1g_3p8P0w">
-            <div class="game-title" style="color: #ffde00;">Drive Mad</div>
-        </div>
-
-        <div class="card" onclick="launchIframe('https://horrorgamesfree.com/granny2')">
-            <img src="halalgranny.png">
-            <div class="game-title">Granny 2</div>
-        </div>
-
-        <div class="card" onclick="launchIframe('https://basketballrandom.gitlab.io/')">
-            <img src="basket.png">
-            <div class="game-title">Basket Random</div>
-        </div>
-
-        <div class="card" onclick="launchIframe('https://wordledeutsch.org/')">
-            <img src="wordle.png">
-            <div class="game-title" style="color: #4CAF50;">Wordle</div>
-        </div>
-
-        <div class="card" onclick="launchIframe('https://crazygames-unblocked.github.io/play/highway-racer-3d.html')">
-            <img src="halal-racer.png">
-            <div class="game-title" style="color: #00ff88;">Racer</div>
-        </div>
-    </div>
-
-    <script>
-        const PASSWORT = "6767";
-
-        // Funktion für Direkt-Links (DTA 6, Ommogle, Sosa)
-        function launchDirect(url) {
-            const eingabe = prompt("Passwort eingeben:");
-            if (eingabe === PASSWORT) {
-                window.location.href = url;
-            } else if (eingabe !== null) {
-                alert("Falsches Passwort!");
-            }
-        }
-
-        // Funktion für Iframe-Spiele (Messenger, Murder, etc.)
-        function launchIframe(url) {
-            const eingabe = prompt("Passwort eingeben:");
-            if (eingabe === PASSWORT) {
-                document.getElementById('game-frame').src = url;
-                document.getElementById('game-view').style.display = 'block';
-                document.body.style.overflow = 'hidden';
-            } else if (eingabe !== null) {
-                alert("Falsches Passwort!");
-            }
-        }
-
-        function closeGame() {
-            document.getElementById('game-view').style.display = 'none';
-            document.getElementById('game-frame').src = "";
-            document.body.style.overflow = 'auto';
-        }
-    </script>
 </body>
 </html>
