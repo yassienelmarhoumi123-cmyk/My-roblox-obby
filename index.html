@@ -1,65 +1,121 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height" />
-    <link rel="manifest" href="manifest.json" />
-    <link rel="apple-touch-icon" href="/images/icon.jpeg" />
-    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
-    <title>Discord</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Halal Games & Chat</title>
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            height: 100%;
-            background-color: #222327;
+        body { 
+            background: radial-gradient(circle, #0f001a, #000000); 
+            color: white; font-family: 'Segoe UI', sans-serif; text-align: center; 
+            margin: 0; padding: 20px; min-height: 100vh;
         }
-        .roboto-medium {
-            font-family: "Roboto", sans-serif;
-            font-weight: 500;
-            font-style: normal;
+
+        h1 { font-size: 2.2em; text-shadow: 0 0 15px #00ff88; margin: 20px 0 40px 0; }
+
+        .grid { 
+            display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; 
+            max-width: 1000px; margin: 0 auto; 
         }
-        .roboto-medium-italic {
-            font-family: "Roboto", sans-serif;
-            font-weight: 500;
-            font-style: italic;
+
+        .card { 
+            background: rgba(255,255,255,0.05); border-radius: 25px; padding: 15px; 
+            width: 130px; border: 1px solid rgba(0, 255, 136, 0.2); cursor: pointer;
+            transition: 0.3s ease;
         }
-        #header {
-            background-image: url('images/header.jpeg');
-            background-size: cover;
-            background-position: center;
-            height: 70px;
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            padding-left: 20px;
-            color: white;
-            font-size: 24px;
-            font-weight: bold;
+
+        .card:active { transform: scale(0.9); border-color: #00ff88; }
+        
+        .card img { 
+            width: 100%; aspect-ratio: 1/1; object-fit: cover; 
+            border-radius: 18px; margin-bottom: 10px; 
         }
-        #content {
-            height: calc(100% - 70px); /* Subtract header height */
+
+        .title { font-size: 0.8em; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Jumpscare Overlay */
+        #jumpscare-overlay { 
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: #000; z-index: 10000; 
         }
+        #jumpscare-video { width: 100%; height: 100%; object-fit: fill; }
     </style>
 </head>
 <body>
-    <div id="header" class="roboto-medium">Discord</div>
-    <div id="content">
-        <widgetbot
-          server="1206981618556731483"
-          channel="1206981619198595136"
-          width="130vh"
-          height="calc(85vh - 70px)"
-          style="position: absolute; left: 50%; top: calc(50% + 25px); transform: translate(-50%, -50%);"
-        ></widgetbot>
-        <script src="https://cdn.jsdelivr.net/npm/@widgetbot/html-embed"></script>
+
+    <div id="jumpscare-overlay">
+        <video id="jumpscare-video" playsinline>
+            <source src="ScreenRecording_05-11-2026 18-17-01_1.mov" type="video/quicktime">
+        </video>
     </div>
+
+    <h1>HALAL HUB</h1>
+
+    <div class="grid">
+        <div class="card" onclick="start('https://sosa.centromariapolis.cl/')">
+            <img src="https://cdn-icons-png.flaticon.com/512/287/287226.png">
+            <div class="title" style="color: #00ff88;">Sosa Proxy</div>
+        </div>
+
+        <div class="card" onclick="start('https://web.whatsapp.com')">
+            <img src="https://cdn-icons-png.flaticon.com/512/733/733585.png">
+            <div class="title">Messenger</div>
+        </div>
+
+        <div class="card" onclick="start('https://sosa.centromariapolis.cl/main/https://chathub.cam')">
+            <img src="https://cdn-icons-png.flaticon.com/512/11104/11104193.png">
+            <div class="title">Video Chat</div>
+        </div>
+
+        <div class="card" onclick="start('https://sosa.centromariapolis.cl/main/https://www.emeraldchat.com')">
+            <img src="https://cdn-icons-png.flaticon.com/512/3662/3662817.png">
+            <div class="title">Ommogle</div>
+        </div>
+
+        <div class="card" onclick="start('https://sosa.centromariapolis.cl/main/https://gamulo.com/game/dta-6')">
+            <img src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png">
+            <div class="title" style="color: #ffaa00;">DTA 6 (Gamulo)</div>
+        </div>
+
+        <div class="card" onclick="start('https://ducky443747.github.io/games/DriveMad/')">
+            <img src="https://play-lh.googleusercontent.com/Anm2S-MvTuxPzD4lqP7kH0H8uC_o7YvF1O7jB_9Gz9V0M9f6I8P6j1g_3p8P0w">
+            <div class="title">Drive Mad</div>
+        </div>
+
+        <div class="card" onclick="start('https://murder-unblocked.github.io/')">
+            <img src="Murder.png">
+            <div class="title">Murder</div>
+        </div>
+
+        <div class="card" onclick="triggerScare()">
+            <img src="https://cdn-icons-png.flaticon.com/512/564/564619.png">
+            <div class="title" style="color: #ff00ff;">Halal Video</div>
+        </div>
+    </div>
+
+    <script>
+        const PIN = "6767";
+
+        function start(url) {
+            const eingabe = prompt("PIN:");
+            if (eingabe === PIN) {
+                window.location.href = url;
+            }
+        }
+
+        function triggerScare() {
+            const eingabe = prompt("PIN:");
+            if (eingabe === PIN) {
+                const overlay = document.getElementById('jumpscare-overlay');
+                const video = document.getElementById('jumpscare-video');
+                overlay.style.display = 'block';
+                video.play().catch(() => {
+                    alert("Halal Video wird geladen...");
+                    video.play();
+                });
+                video.onended = () => { overlay.style.display = 'none'; };
+            }
+        }
+    </script>
 </body>
 </html>
