@@ -3,119 +3,217 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Halal Games & Chat</title>
+    <title>Halal Bomb Tag</title>
     <style>
-        body { 
-            background: radial-gradient(circle, #0f001a, #000000); 
-            color: white; font-family: 'Segoe UI', sans-serif; text-align: center; 
-            margin: 0; padding: 20px; min-height: 100vh;
+        body {
+            margin: 0;
+            padding: 0;
+            background: #1a1a2e;
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            text-align: center;
+            overflow: hidden;
+            user-select: none;
         }
-
-        h1 { font-size: 2.2em; text-shadow: 0 0 15px #00ff88; margin: 20px 0 40px 0; }
-
-        .grid { 
-            display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; 
-            max-width: 1000px; margin: 0 auto; 
+        #lobby {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            padding: 30px;
+            border-radius: 20px;
+            border: 2px solid #00f588;
+            z-index: 10;
         }
-
-        .card { 
-            background: rgba(255,255,255,0.05); border-radius: 25px; padding: 15px; 
-            width: 130px; border: 1px solid rgba(0, 255, 136, 0.2); cursor: pointer;
-            transition: 0.3s ease;
+        button {
+            background: #00f588;
+            border: none;
+            padding: 12px 25px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 15px;
         }
-
-        .card:active { transform: scale(0.9); border-color: #00ff88; }
-        
-        .card img { 
-            width: 100%; aspect-ratio: 1/1; object-fit: cover; 
-            border-radius: 18px; margin-bottom: 10px; 
+        #gameCanvas {
+            background: #161625;
+            display: none;
+            border: 4px solid #333;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            margin: 10px auto;
         }
-
-        .title { font-size: 0.8em; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
-
-        /* Jumpscare Overlay */
-        #jumpscare-overlay { 
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: #000; z-index: 10000; 
+        #status {
+            font-size: 24px;
+            margin-top: 10px;
+            font-weight: bold;
         }
-        #jumpscare-video { width: 100%; height: 100%; object-fit: fill; }
     </style>
 </head>
 <body>
 
-    <div id="jumpscare-overlay">
-        <video id="jumpscare-video" playsinline>
-            <source src="ScreenRecording_05-11-2026 18-17-01_1.mov" type="video/quicktime">
-        </video>
+    <div id="lobby">
+        <h2>💣 Halal Bomb Tag 💣</h2>
+        <p>Gib eine 4-stellige Raum-Nummer ein:</p>
+        <input type="number" id="roomInput" placeholder="6767" style="font-size: 20px; width: 100px; text-align: center; padding: 5px; border-radius: 5px;"><br>
+        <button onclick="joinRoom()">Spiel beitreten / erstellen</button>
     </div>
 
-    <h1>HALAL HUB</h1>
+    <div id="status">Warte auf Spieler...</div>
+    <canvas id="gameCanvas" width="600" height="400"></canvas>
+    <p>Bewege deinen Kreis mit dem Finger auf dem Bildschirm!</p>
 
-    <div class="grid">
-        <div class="card" onclick="start('https://sosa.centromariapolis.cl/')">
-            <img src="https://cdn-icons-png.flaticon.com/512/287/287226.png">
-            <div class="title" style="color: #00ff88;">Sosa Proxy</div>
-        </div>
-
-        <div class="card" onclick="start('https://web.whatsapp.com')">
-            <img src="https://cdn-icons-png.flaticon.com/512/733/733585.png">
-            <div class="title">Messenger</div>
-        </div>
-
-        <div class="card" onclick="start('https://sosa.centromariapolis.cl/main/https://chathub.cam')">
-            <img src="https://cdn-icons-png.flaticon.com/512/11104/11104193.png">
-            <div class="title">Video Chat</div>
-        </div>
-
-        <div class="card" onclick="start('https://sosa.centromariapolis.cl/main/https://www.emeraldchat.com')">
-            <img src="https://cdn-icons-png.flaticon.com/512/3662/3662817.png">
-            <div class="title">Ommogle</div>
-        </div>
-
-        <div class="card" onclick="start('https://sosa.centromariapolis.cl/main/https://gamulo.com/game/dta-6')">
-            <img src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png">
-            <div class="title" style="color: #ffaa00;">DTA 6 (Gamulo)</div>
-        </div>
-
-        <div class="card" onclick="start('https://ducky443747.github.io/games/DriveMad/')">
-            <img src="https://play-lh.googleusercontent.com/Anm2S-MvTuxPzD4lqP7kH0H8uC_o7YvF1O7jB_9Gz9V0M9f6I8P6j1g_3p8P0w">
-            <div class="title">Drive Mad</div>
-        </div>
-
-        <div class="card" onclick="start('https://murder-unblocked.github.io/')">
-            <img src="Murder.png">
-            <div class="title">Murder</div>
-        </div>
-
-        <div class="card" onclick="triggerScare()">
-            <img src="https://cdn-icons-png.flaticon.com/512/564/564619.png">
-            <div class="title" style="color: #ff00ff;">Halal Video</div>
-        </div>
-    </div>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <script>
-        const PIN = "6767";
+        // DEINE ECHTEN FIREBASE DATEN SIND JETZT HIER EINGEBAUT:
+        const firebaseConfig = {
+            apiKey: "AIzaSyDVCk8f0nhfJLLwycEZJN0-zJ05KURuGSQ",
+            authDomain: "halal-bomben-spiel.firebaseapp.com",
+            databaseURL: "https://halal-bomben-spiel-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "halal-bomben-spiel",
+            storageBucket: "halal-bomben-spiel.firebasestorage.app",
+            messagingSenderId: "709287849072",
+            appId: "1:709287849072:web:0a477d52580b2cd3d598b5"
+        };
 
-        function start(url) {
-            const eingabe = prompt("PIN:");
-            if (eingabe === PIN) {
-                window.location.href = url;
-            }
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        let roomId = "";
+        let playerId = "";
+        let players = {};
+        let gameState = { timer: 20, bombHolder: "" };
+        let isGameOver = false;
+
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        let myX = Math.random() * 500 + 50;
+        let myY = Math.random() * 300 + 50;
+        const radius = 20;
+
+        function joinRoom() {
+            const input = document.getElementById("roomInput").value;
+            if(input.length < 4) { alert("Bitte 4 Zahlen eingeben!"); return; }
+            roomId = "room_" + input;
+            playerId = "player_" + Math.floor(Math.random() * 100000);
+
+            document.getElementById("lobby").style.display = "none";
+            canvas.style.display = "block";
+
+            // Spieler in DB eintragen
+            database.ref(roomId + "/players/" + playerId).set({
+                x: myX, y: myY, id: playerId, color: 'hsl(' + Math.random() * 360 + ', 100%, 50%)'
+            });
+
+            // Wenn man der erste im Raum ist, kriegt man die Bombe
+            database.ref(roomId + "/players").once("value", snapshot => {
+                if(Object.keys(snapshot.val() || {}).length === 1) {
+                    database.ref(roomId + "/gameState").set({
+                        bombHolder: playerId,
+                        timer: 20,
+                        active: true
+                    });
+                }
+            });
+
+            // Datenbank-Updates empfangen
+            database.ref(roomId + "/players").on("value", snapshot => {
+                players = snapshot.val() || {};
+            });
+
+            database.ref(roomId + "/gameState").on("value", snapshot => {
+                if(!snapshot.val()) return;
+                gameState = snapshot.val();
+                document.getElementById("status").innerText = "Zeit bis BOOM: " + Math.ceil(gameState.timer) + "s";
+                
+                if(gameState.timer <= 0 && !isGameOver) {
+                    isGameOver = true;
+                    if(gameState.bombHolder === playerId) {
+                        document.getElementById("status").innerText = "💥 BOOM! DU BIST EXPLODIERT! 💥";
+                    } else {
+                        document.getElementById("status").innerText = "👑 GEWONNEN! Du hast überlebt! 👑";
+                    }
+                }
+            });
+
+            // Game Loop starten
+            setInterval(updateGame, 30);
+            
+            // Timer runterzählen (nur der Bombenbesitzer berechnet die Zeit)
+            setInterval(() => {
+                if(gameState.bombHolder === playerId && gameState.timer > 0) {
+                    database.ref(roomId + "/gameState/timer").set(gameState.timer - 1);
+                }
+            }, 1000);
         }
 
-        function triggerScare() {
-            const eingabe = prompt("PIN:");
-            if (eingabe === PIN) {
-                const overlay = document.getElementById('jumpscare-overlay');
-                const video = document.getElementById('jumpscare-video');
-                overlay.style.display = 'block';
-                video.play().catch(() => {
-                    alert("Halal Video wird geladen...");
-                    video.play();
+        // Steuerung für iPad (Touch)
+        canvas.addEventListener("touchmove", (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            myX = e.touches[0].clientX - rect.left;
+            myY = e.touches[0].clientY - rect.top;
+
+            if(myX < radius) myX = radius;
+            if(myX > canvas.width - radius) myX = canvas.width - radius;
+            if(myY < radius) myY = radius;
+            if(myY > canvas.height - radius) myY = canvas.height - radius;
+
+            if(roomId) {
+                database.ref(roomId + "/players/" + playerId).update({ x: myX, y: myY });
+            }
+        }, {passive: false});
+
+        function updateGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if(isGameOver) return;
+
+            let playerIds = Object.keys(players);
+
+            // Alle Spieler zeichnen
+            playerIds.forEach(id => {
+                let p = players[id];
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.fill();
+                ctx.closePath();
+
+                // Bombe zeichnen
+                if(gameState.bombHolder === id) {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y - 30, 10, 0, Math.PI * 2);
+                    ctx.fillStyle = "black";
+                    ctx.fill();
+                    ctx.fillStyle = "red";
+                    ctx.font = "12px Arial";
+                    ctx.fillText("💣", p.x - 7, p.y - 26);
+                    ctx.closePath();
+                }
+            });
+
+            // Kollision prüfen (Nur wenn ich die Bombe habe)
+            if(gameState.bombHolder === playerId && playerIds.length > 1) {
+                playerIds.forEach(id => {
+                    if(id !== playerId) {
+                        let other = players[id];
+                        let dist = Math.sqrt((myX - other.x)**2 + (myY - other.y)**2);
+                        if(dist < radius * 2) {
+                            // Bombe weitergeben!
+                            database.ref(roomId + "/gameState/bombHolder").set(id);
+                        }
+                    }
                 });
-                video.onended = () => { overlay.style.display = 'none'; };
             }
         }
+
+        window.onbeforeunload = function() {
+            if(roomId && playerId) {
+                database.ref(roomId + "/players/" + playerId).remove();
+            }
+        };
     </script>
 </body>
 </html>
