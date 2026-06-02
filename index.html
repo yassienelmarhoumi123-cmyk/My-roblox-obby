@@ -3,76 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Wer ist der Verräter?</title>
+    <title>Slither.io Klassen-Edition</title>
     <style>
         body {
             margin: 0; padding: 0;
-            background: #0f172a; color: white;
+            background: #0b0f19; color: white;
             font-family: 'Segoe UI', sans-serif;
             text-align: center; overflow: hidden; user-select: none;
         }
-        #lobby, #roleScreen, #discussionScreen {
+        #lobby {
             position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(15, 23, 42, 0.95);
+            background: rgba(11, 15, 25, 0.95);
             padding: 30px; border-radius: 20px;
-            border: 3px solid #3b82f6; z-index: 20; width: 80%; max-width: 400px;
+            border: 2px solid #00f588; z-index: 20; width: 80%; max-width: 350px;
+            box-shadow: 0 0 30px rgba(0, 245, 136, 0.2);
         }
-        #roleScreen { display: none; border-color: #ef4444; }
-        #discussionScreen { display: none; border-color: #eab308; }
         button {
-            background: #3b82f6; border: none; padding: 12px 25px;
-            font-size: 18px; font-weight: bold; color: white;
+            background: #00f588; border: none; padding: 12px 25px;
+            font-size: 18px; font-weight: bold; color: #0b0f19;
             border-radius: 10px; cursor: pointer; margin-top: 15px;
+            width: 100%;
         }
-        .kill-btn { background: #ef4444; display: none; position: absolute; bottom: 20px; right: 20px; padding: 20px; border-radius: 50%; font-size: 20px; }
-        .task-btn { background: #10b981; position: absolute; bottom: 20px; left: 20px; padding: 15px; border-radius: 10px; }
-        #gameCanvas { background: #1e293b; display: none; border: 4px solid #475569; margin: 10px auto; box-shadow: 0 0 20px rgba(0,0,0,0.6); }
-        #progressBarContainer { width: 80%; background: #334155; height: 20px; margin: 10px auto; border-radius: 10px; display: none; overflow: hidden; border: 2px solid #475569; }
-        #progressBar { width: 0%; background: #10b981; height: 100%; transition: width 0.3s; }
-        #status { font-size: 20px; font-weight: bold; margin-top: 10px; }
+        #gameCanvas {
+            background: #111827; display: none;
+            border: 2px solid #1f2937; margin: 0 auto;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+        }
+        #scoreBoard {
+            position: absolute; top: 10px; right: 10px;
+            background: rgba(0,0,0,0.6); padding: 10px 15px;
+            border-radius: 8px; text-align: right; font-size: 14px;
+            display: none; pointer-events: none; max-width: 200px;
+        }
     </style>
 </head>
 <body>
 
+    <!-- LOBBY -->
     <div id="lobby">
-        <h2>🕵️‍♂️ Wer ist der Verräter? 🕵️‍♂️</h2>
-        <p>Gib den 4-stelligen Klassen-Code ein:</p>
-        <input type="number" id="roomInput" placeholder="4444" style="font-size: 24px; width: 120px; text-align: center; padding: 5px; border-radius: 5px; border: none;"><br>
-        <button onclick="joinRoom()">Spiel beitreten</button>
-        <div id="startArea" style="display:none; margin-top:15px;">
-            <p>Du bist der Host!</p>
-            <button onclick="startGame()" style="background:#10b981;">Runde starten 🚀</button>
-        </div>
+        <h2>🐍 Slither.io Live 🐍</h2>
+        <p>Gib den 4-stelligen Raum-Code ein:</p>
+        <input type="number" id="roomInput" placeholder="2026" style="font-size: 24px; width: 100%; text-align: center; padding: 8px; border-radius: 8px; border: 1px solid #374151; background: #1f2937; color: white;"><br>
+        <button onclick="joinRoom()">In die Arena beitreten 🚀</button>
     </div>
 
-    <div id="roleScreen">
-        <h1 id="roleTitle">DEINE ROLLE</h1>
-        <p id="roleDesc">Lade Aufgaben...</p>
-        <button onclick="closeRoleScreen()">Verstanden</button>
+    <!-- LEADERBOARD -->
+    <div id="scoreBoard" id="scoreBoard">
+        <b style="color: #00f588;">TOP SCHLANGEN:</b>
+        <div id="leaderboardList"></div>
     </div>
 
-    <div id="discussionScreen">
-        <h2>📢 MEETING / ALARM! 📢</h2>
-        <p>Diskutiert jetzt in der Klasse! Jemand hat den Alarm ausgelöst oder eine Leiche gefunden.</p>
-        <p>Stimmt euch ab, wer fliegt.</p>
-        <button onclick="skipVote()" style="background:#64748b;">Diskussion beenden</button>
-    </div>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
 
-    <div id="status">Warte auf Spieler...</div>
-    <div id="progressBarContainer"><div id="progressBar"></div></div>
-
-    <canvas id="gameCanvas" width="600" height="400"></canvas>
-
-    <button class="kill-btn" id="killBtn" onclick="triggerKill()">🔪 SABOTAGE</button>
-    <button class="task-btn" id="taskBtn" style="display:none;" onclick="doTask()">🛠️ AUFGABE LÖSEN</button>
-    <button id="alarmBtn" style="display:none; position:absolute; top:10px; right:10px; background:#eab308; padding:8px 15px; font-size:14px;" onclick="triggerAlarm()">🚨 ALARM</button>
-
+    <!-- Firebase laden -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <script>
-        // DEINE ECHTEN BELGIEN-SERVER DATEN SIND EINGEBAUT:
+        // DEIN BELGIEN-SERVER IST AN ERSTER STELLE EINGEBAUT:
         const firebaseConfig = {
             apiKey: "AIzaSyDVCk8f0nhfJLLwycEZJN0-zJ05KURuGSQ",
             authDomain: "halal-bomben-spiel.firebaseapp.com",
@@ -86,200 +75,184 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        let roomId = "", playerId = "", myRole = "Bürger", isAlive = true, isHost = false;
-        let players = {}, gameState = { status: "lobby", tasksProgress: 0 };
+        let roomId = "", playerId = "";
+        let snakes = {}, foods = {};
+        let myLength = 5;
+        let myTail = [];
+        let alive = true;
+
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
-        let myX = Math.random() * 500 + 50, myY = Math.random() * 300 + 50;
-        const radius = 15;
+        
+        let myX = Math.random() * 700 + 50;
+        let myY = Math.random() * 500 + 50;
+        let angle = Math.random() * Math.PI * 2;
+        let speed = 4;
 
         function joinRoom() {
             const input = document.getElementById("roomInput").value;
             if(input.length < 4) { alert("Bitte 4 Zahlen eingeben!"); return; }
-            roomId = "among_" + input;
-            playerId = "p_" + Math.floor(Math.random() * 100000);
+            roomId = "snake_" + input;
+            playerId = "snake_" + Math.floor(Math.random() * 100000);
 
             document.getElementById("lobby").style.display = "none";
             canvas.style.display = "block";
-            document.getElementById("progressBarContainer").style.display = "block";
-            document.getElementById("alarmBtn").style.display = "block";
+            document.getElementById("scoreBoard").style.display = "block";
 
-            // In DB eintragen
-            database.ref(roomId + "/players/" + playerId).set({
-                x: myX, y: myY, id: playerId, role: "Bürger", alive: true, color: 'hsl(' + Math.random() * 360 + ', 100%, 50%)'
-            });
-
-            // Prüfen ob Host
-            database.ref(roomId + "/players").once("value", snapshot => {
-                if(Object.keys(snapshot.val() || {}).length === 1) {
-                    isHost = true;
-                    document.getElementById("lobby").style.display = "block";
-                    document.getElementById("startArea").style.display = "block";
-                }
-            });
-
-            // Synchronisation
-            database.ref(roomId + "/players").on("value", snapshot => {
-                players = snapshot.val() || {};
-                if(players[playerId]) {
-                    myRole = players[playerId].role;
-                    isAlive = players[playerId].alive;
-                }
-                checkKillRange();
-            });
-
-            database.ref(roomId + "/gameState").on("value", snapshot => {
-                gameState = snapshot.val() || { status: "lobby", tasksProgress: 0 };
-                document.getElementById("progressBar").style.width = (gameState.tasksProgress || 0) + "%";
-                
-                if(gameState.status === "ingame") {
-                    document.getElementById("discussionScreen").style.display = "none";
-                    document.getElementById("status").innerText = myRole === "Verräter" ? "😈 Sabotiere alle unbemerkt!" : "🛠️ Erledige deine Aufgaben!";
-                    if(myRole === "Bürger" && isAlive) document.getElementById("taskBtn").style.display = "block";
-                } else if(gameState.status === "discussion") {
-                    document.getElementById("discussionScreen").style.display = "block";
-                    document.getElementById("taskBtn").style.display = "none";
-                    document.getElementById("killBtn").style.display = "none";
-                } else if(gameState.status === "buerger_win") {
-                    document.getElementById("status").innerText = "👑 GEWONNEN! Die Bürger haben alle Aufgaben erledigt!";
-                    document.getElementById("taskBtn").style.display = "none";
-                } else if(gameState.status === "verraeter_win") {
-                    document.getElementById("status").innerText = "💥 GEWONNEN! Der Verräter hat die Klasse ausgelöscht!";
-                    document.getElementById("killBtn").style.display = "none";
-                }
-            });
-
-            database.ref(roomId + "/gameEvent").on("value", snapshot => {
-                let ev = snapshot.val();
-                if(ev && ev.type === "role_reveal") {
-                    document.getElementById("lobby").style.display = "none";
-                    document.getElementById("roleScreen").style.display = "block";
-                    const title = document.getElementById("roleTitle");
-                    const desc = document.getElementById("roleDesc");
-                    if(myRole === "Verräter") {
-                        title.innerText = "😈 VERRÄTER 😈"; title.style.color = "#ef4444";
-                        desc.innerText = "Laufe nah an deine Mitschüler heran und schalte sie mit dem roten Button unbemerkt aus!";
-                    } else {
-                        title.innerText = "😇 BÜRGER 😇"; title.style.color = "#10b981";
-                        desc.innerText = "Erledige deine Aufgaben über den grünen Button und finde heraus, wer der Verräter ist!";
+            // Futter generieren (falls noch keins da ist)
+            database.ref(roomId + "/food").once("value", snapshot => {
+                if(!snapshot.val()) {
+                    let initialFood = {};
+                    for(let i=0; i<40; i++) {
+                        let fId = "f_" + i;
+                        initialFood[fId] = { x: Math.random() * 780 + 10, y: Math.random() * 580 + 10, color: 'hsl(' + Math.random() * 360 + ', 100%, 60%)' };
                     }
+                    database.ref(roomId + "/food").set(initialFood);
                 }
             });
 
-            setInterval(drawGame, 30);
+            // Live-Updates
+            database.ref(roomId + "/snakes").on("value", snapshot => { snakes = snapshot.val() || {}; });
+            database.ref(roomId + "/food").on("value", snapshot => { foods = snapshot.val() || {}; });
+
+            // Spiel-Loop starten
+            setInterval(gameLoop, 1000 / 45);
         }
 
-        function startGame() {
-            let keys = Object.keys(players);
-            if(keys.length < 2) { alert("Ihr müsst mindestens zu zweit sein!"); return; }
-            
-            // Zufälligen Verräter wählen
-            let impostorId = keys[Math.floor(Math.random() * keys.length)];
-            keys.forEach(id => {
-                database.ref(roomId + "/players/" + id + "/role").set(id === impostorId ? "Verräter" : "Bürger");
-                database.ref(roomId + "/players/" + id + "/alive").set(true);
-            });
-
-            database.ref(roomId + "/gameState").set({ status: "ingame", tasksProgress: 0 });
-            database.ref(roomId + "/gameEvent").set({ type: "role_reveal", time: Date.now() });
-        }
-
-        function closeRoleScreen() { document.getElementById("roleScreen").style.display = "none"; }
-        function triggerAlarm() { database.ref(roomId + "/gameState/status").set("discussion"); }
-        function skipVote() { database.ref(roomId + "/gameState/status").set("ingame"); }
-
-        function doTask() {
-            if(!isAlive || myRole !== "Bürger") return;
-            let currentProg = gameState.tasksProgress || 0;
-            let newProg = currentProg + 5;
-            if(newProg >= 100) {
-                newProg = 100;
-                database.ref(roomId + "/gameState/status").set("buerger_win");
-            }
-            database.ref(roomId + "/gameState/tasksProgress").set(newProg);
-        }
-
-        function checkKillRange() {
-            if(!isAlive || myRole !== "Verräter") { document.getElementById("killBtn").style.display = "none"; return; }
-            let showKill = false;
-            Object.keys(players).forEach(id => {
-                if(id !== playerId && players[id].alive) {
-                    let dist = Math.sqrt((myX - players[id].x)**2 + (myY - players[id].y)**2);
-                    if(dist < 45) showKill = true; // Nah genug dran
-                }
-            });
-            document.getElementById("killBtn").style.display = showKill && gameState.status === "ingame" ? "block" : "none";
-        }
-
-        function triggerKill() {
-            Object.keys(players).forEach(id => {
-                if(id !== playerId && players[id].alive) {
-                    let dist = Math.sqrt((myX - players[id].x)**2 + (myY - players[id].y)**2);
-                    if(dist < 45) {
-                        database.ref(roomId + "/players/" + id + "/alive").set(false);
-                    }
-                }
-            });
-            // Prüfen ob Verräter gewonnen hat (wenn lebende Bürger <= Verräter)
-            setTimeout(() => {
-                let aliveBuerger = 0;
-                Object.keys(players).forEach(id => {
-                    if(players[id].role === "Bürger" && players[id].alive) aliveBuerger++;
-                });
-                if(aliveBuerger === 0) {
-                    database.ref(roomId + "/gameState/status").set("verraeter_win");
-                }
-            }, 500);
-        }
-
-        // IPAD TOUCH STEUERUNG
+        // Steuerung für das iPad (Wischen steuert die Richtung)
         canvas.addEventListener("touchmove", (e) => {
             e.preventDefault();
-            if(gameState.status !== "ingame") return;
+            if(!alive) return;
             const rect = canvas.getBoundingClientRect();
-            myX = e.touches[0].clientX - rect.left;
-            myY = e.touches[0].clientY - rect.top;
-
-            if(myX < radius) myX = radius; if(myX > canvas.width - radius) myX = canvas.width - radius;
-            if(myY < radius) myY = radius; if(myY > canvas.height - radius) myY = canvas.height - radius;
-
-            if(roomId) {
-                database.ref(roomId + "/players/" + playerId).update({ x: myX, y: myY });
-                checkKillRange();
-            }
+            let touchX = e.touches[0].clientX - rect.left;
+            let touchY = e.touches[0].clientY - rect.top;
+            
+            // Winkel berechnen, in den die Schlange guckt
+            angle = Math.atan2(touchY - myY, touchX - myX);
         }, {passive: false});
 
-        function drawGame() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            Object.keys(players).forEach(id => {
-                let p = players[id];
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
-                
-                if(!p.alive) {
-                    // Toter Spieler / Geist wird transparent gezeichnet
-                    ctx.fillStyle = "rgba(255,255,255,0.2)";
-                    ctx.fill();
-                    ctx.fillStyle = "white";
-                    ctx.font = "14px Arial";
-                    ctx.fillText("👻", p.x - 7, p.y + 5);
-                } else {
-                    ctx.fillStyle = p.color;
-                    ctx.fill();
-                    // Eigenen Spieler markieren
-                    if(id === playerId) {
-                        ctx.strokeStyle = "white";
-                        ctx.lineWidth = 3;
-                        ctx.stroke();
-                    }
+        function gameLoop() {
+            if (alive) {
+                // Kopf bewegen
+                myX += Math.cos(angle) * speed;
+                myY += Math.sin(angle) * speed;
+
+                // Spielfeldrand-Kollision (Teleport zur anderen Seite wie bei Pacman)
+                if(myX < 0) myX = canvas.width; if(myX > canvas.width) myX = 0;
+                if(myY < 0) myY = canvas.height; if(myY > canvas.height) myY = 0;
+
+                // Schweif updaten (Wir merken uns die alten Positionen des Kopfes)
+                myTail.unshift({x: myX, y: myY});
+                if(myTail.length > myLength * 3) {
+                    myTail.pop();
                 }
+
+                // Daten hochladen
+                database.ref(roomId + "/snakes/" + playerId).set({
+                    id: playerId,
+                    x: myX, y: myY,
+                    tail: myTail,
+                    length: myLength,
+                    color: 'hsl(' + (parseInt(playerId.replace("snake_", "")) % 360) + ', 100%, 50%)',
+                    alive: true
+                });
+
+                // Futter fressen prüfen
+                Object.keys(foods).forEach(fId => {
+                    let f = foods[fId];
+                    let dist = Math.sqrt((myX - f.x)**2 + (myY - f.y)**2);
+                    if(dist < 15) { // Gefressen!
+                        myLength += 1;
+                        // Neues Futter an zufälliger Stelle spawnen
+                        database.ref(roomId + "/food/" + fId).set({
+                            x: Math.random() * 780 + 10,
+                            y: Math.random() * 580 + 10,
+                            color: 'hsl(' + Math.random() * 360 + ', 100%, 60%)'
+                        });
+                    }
+                });
+
+                // Crash in andere Schlangen prüfen
+                Object.keys(snakes).forEach(sId => {
+                    if(sId !== playerId && snakes[sId].alive) {
+                        let other = snakes[sId];
+                        let otherTail = other.tail || [];
+                        
+                        // Wir prüfen ab dem 5. Schweif-Glied, um Fehl-Crashes zu vermeiden
+                        for(let i = 5; i < otherTail.length; i += 2) {
+                            let segment = otherTail[i];
+                            let distToBody = Math.sqrt((myX - segment.x)**2 + (myY - segment.y)**2);
+                            if(distToBody < 12) {
+                                // BUMM! Du bist gecrasht und tot.
+                                alive = false;
+                                database.ref(roomId + "/snakes/" + playerId).update({ alive: false });
+                                alert("💥 GECRASHT! Deine Schlange ist explodiert! Lade die Seite neu für eine neue Runde.");
+                            }
+                        }
+                    }
+                });
+            }
+
+            drawArena();
+        }
+
+        function drawArena() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Raster-Hintergrund zeichnen für besseren Speed-Effekt
+            ctx.strokeStyle = "#1f2937"; ctx.lineWidth = 1;
+            for(let x=0; x<canvas.width; x+=40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke(); }
+            for(let y=0; y<canvas.height; y+=40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke(); }
+
+            // Futter zeichnen
+            Object.keys(foods).forEach(fId => {
+                let f = foods[fId];
+                ctx.beginPath();
+                ctx.arc(f.x, f.y, 4, 0, Math.PI * 2);
+                ctx.fillStyle = f.color;
+                ctx.shadowBlur = 10; ctx.shadowColor = f.color; // Leuchteffekt
+                ctx.fill();
                 ctx.closePath();
             });
+            ctx.shadowBlur = 0; // Leuchten für Schlangen ausmachen (spart Performance)
+
+            // Alle Schlangen zeichnen
+            let list = [];
+            Object.keys(snakes).forEach(sId => {
+                let s = snakes[sId];
+                if(!s.alive) return;
+
+                list.push({id: s.id, score: s.length});
+                let t = s.tail || [];
+                
+                // Schweif von hinten nach vorne zeichnen
+                for(let i = t.length - 1; i >= 0; i -= 2) {
+                    ctx.beginPath();
+                    ctx.arc(t[i].x, t[i].y, 8 + (i/t.length)*2, 0, Math.PI * 2);
+                    ctx.fillStyle = s.color;
+                    ctx.fill();
+                    ctx.closePath();
+                }
+
+                // Kopf zeichnen
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, 11, 0, Math.PI * 2);
+                ctx.fillStyle = "white";
+                ctx.fill();
+                ctx.closePath();
+            });
+
+            // Leaderboard updaten
+            list.sort((a,b) => b.score - a.score);
+            let html = "";
+            list.slice(0, 5).forEach((player, index) => {
+                html += `<div>${index+1}. ${player.id === playerId ? "<b>DU</b>" : "Gegner"} (${player.score})</div>`;
+            });
+            document.getElementById("leaderboardList").innerHTML = html;
         }
 
         window.onbeforeunload = function() {
-            if(roomId && playerId) database.ref(roomId + "/players/" + playerId).remove();
+            if(roomId && playerId) database.ref(roomId + "/snakes/" + playerId).remove();
         };
     </script>
 </body>
