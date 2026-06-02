@@ -20,7 +20,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.9);
             padding: 30px;
             border-radius: 20px;
             border: 2px solid #00f588;
@@ -67,7 +67,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <script>
-        // DEINE ECHTEN FIREBASE DATEN SIND JETZT HIER EINGEBAUT:
+        // Eingerichtet für deinen Belgien-Server
         const firebaseConfig = {
             apiKey: "AIzaSyDVCk8f0nhfJLLwycEZJN0-zJ05KURuGSQ",
             authDomain: "halal-bomben-spiel.firebaseapp.com",
@@ -102,12 +102,12 @@
             document.getElementById("lobby").style.display = "none";
             canvas.style.display = "block";
 
-            // Spieler in DB eintragen
+            // Spieler in Datenbank setzen
             database.ref(roomId + "/players/" + playerId).set({
                 x: myX, y: myY, id: playerId, color: 'hsl(' + Math.random() * 360 + ', 100%, 50%)'
             });
 
-            // Wenn man der erste im Raum ist, kriegt man die Bombe
+            // Erster Spieler bekommt die Bombe
             database.ref(roomId + "/players").once("value", snapshot => {
                 if(Object.keys(snapshot.val() || {}).length === 1) {
                     database.ref(roomId + "/gameState").set({
@@ -118,7 +118,7 @@
                 }
             });
 
-            // Datenbank-Updates empfangen
+            // Updates empfangen
             database.ref(roomId + "/players").on("value", snapshot => {
                 players = snapshot.val() || {};
             });
@@ -138,10 +138,9 @@
                 }
             });
 
-            // Game Loop starten
             setInterval(updateGame, 30);
             
-            // Timer runterzählen (nur der Bombenbesitzer berechnet die Zeit)
+            // Timer verringern (nur durch den Bombenbesitzer synchronisiert)
             setInterval(() => {
                 if(gameState.bombHolder === playerId && gameState.timer > 0) {
                     database.ref(roomId + "/gameState/timer").set(gameState.timer - 1);
@@ -149,7 +148,7 @@
             }, 1000);
         }
 
-        // Steuerung für iPad (Touch)
+        // Touch-Events für iPad-Wischen
         canvas.addEventListener("touchmove", (e) => {
             e.preventDefault();
             const rect = canvas.getBoundingClientRect();
@@ -172,7 +171,7 @@
 
             let playerIds = Object.keys(players);
 
-            // Alle Spieler zeichnen
+            // Alle Kreise zeichnen
             playerIds.forEach(id => {
                 let p = players[id];
                 ctx.beginPath();
@@ -181,27 +180,26 @@
                 ctx.fill();
                 ctx.closePath();
 
-                // Bombe zeichnen
+                // Bombe anzeigen
                 if(gameState.bombHolder === id) {
                     ctx.beginPath();
                     ctx.arc(p.x, p.y - 30, 10, 0, Math.PI * 2);
                     ctx.fillStyle = "black";
                     ctx.fill();
                     ctx.fillStyle = "red";
-                    ctx.font = "12px Arial";
-                    ctx.fillText("💣", p.x - 7, p.y - 26);
+                    ctx.font = "14px Arial";
+                    ctx.fillText("💣", p.x - 7, p.y - 25);
                     ctx.closePath();
                 }
             });
 
-            // Kollision prüfen (Nur wenn ich die Bombe habe)
+            // Berührung/Übergabe prüfen
             if(gameState.bombHolder === playerId && playerIds.length > 1) {
                 playerIds.forEach(id => {
                     if(id !== playerId) {
                         let other = players[id];
                         let dist = Math.sqrt((myX - other.x)**2 + (myY - other.y)**2);
                         if(dist < radius * 2) {
-                            // Bombe weitergeben!
                             database.ref(roomId + "/gameState/bombHolder").set(id);
                         }
                     }
