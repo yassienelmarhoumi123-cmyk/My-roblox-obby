@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Slither.io Klassen-Edition</title>
+    <title>Slither.io PRO Klassen-Edition</title>
     <style>
         body {
             margin: 0; padding: 0;
@@ -22,19 +22,30 @@
         button {
             background: #00f588; border: none; padding: 12px 25px;
             font-size: 18px; font-weight: bold; color: #0b0f19;
-            border-radius: 10px; cursor: pointer; margin-top: 15px;
-            width: 100%;
+            border-radius: 10px; cursor: pointer; margin-top: 15px; width: 100%;
         }
         #gameCanvas {
             background: #111827; display: none;
-            border: 2px solid #1f2937; margin: 0 auto;
-            box-shadow: 0 0 20px rgba(0,0,0,0.8);
         }
         #scoreBoard {
             position: absolute; top: 10px; right: 10px;
-            background: rgba(0,0,0,0.6); padding: 10px 15px;
+            background: rgba(0,0,0,0.7); padding: 10px 15px;
             border-radius: 8px; text-align: right; font-size: 14px;
-            display: none; pointer-events: none; max-width: 200px;
+            display: none; pointer-events: none; max-width: 200px; z-index: 10;
+        }
+        /* CHAT STYLE */
+        #chatBox {
+            position: absolute; bottom: 10px; left: 10px;
+            width: 280px; height: 180px; background: rgba(15, 23, 42, 0.8);
+            border-radius: 10px; border: 1px solid #374151;
+            display: none; flex-direction: column; text-align: left; z-index: 10;
+        }
+        #chatMessages {
+            flex: 1; padding: 8px; overflow-y: auto; font-size: 12px; color: #e5e7eb;
+        }
+        #chatInput {
+            border: none; padding: 8px; background: #1f2937; color: white;
+            border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; font-size: 13px;
         }
     </style>
 </head>
@@ -42,26 +53,32 @@
 
     <!-- LOBBY -->
     <div id="lobby">
-        <h2>🐍 Slither.io Live 🐍</h2>
+        <h2>🐍 Slither.io PRO 🐍</h2>
         <p>Gib den 4-stelligen Raum-Code ein:</p>
         <input type="number" id="roomInput" placeholder="2026" style="font-size: 24px; width: 100%; text-align: center; padding: 8px; border-radius: 8px; border: 1px solid #374151; background: #1f2937; color: white;"><br>
-        <button onclick="joinRoom()">In die Arena beitreten 🚀</button>
+        <button onclick="joinRoom()">Ab in die Riesen-Arena! 🚀</button>
     </div>
 
     <!-- LEADERBOARD -->
-    <div id="scoreBoard" id="scoreBoard">
+    <div id="scoreBoard">
         <b style="color: #00f588;">TOP SCHLANGEN:</b>
         <div id="leaderboardList"></div>
     </div>
 
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <!-- LIVE CHAT -->
+    <div id="chatBox">
+        <div id="chatMessages"></div>
+        <input type="text" id="chatInput" placeholder="Sende Nachricht an die Klasse..." onkeydown="sendChatMessage(event)">
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
 
     <!-- Firebase laden -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <script>
-        // DEIN BELGIEN-SERVER IST AN ERSTER STELLE EINGEBAUT:
+        // BELGIEN-SERVER:
         const firebaseConfig = {
             apiKey: "AIzaSyDVCk8f0nhfJLLwycEZJN0-zJ05KURuGSQ",
             authDomain: "halal-bomben-spiel.firebaseapp.com",
@@ -77,49 +94,76 @@
 
         let roomId = "", playerId = "";
         let snakes = {}, foods = {};
-        let myLength = 5;
+        
+        // RIESIGE MAP DIMENSIONEN
+        const MAP_WIDTH = 2400;
+        const MAP_HEIGHT = 1800;
+
+        let myLength = 6;
         let myTail = [];
         let alive = true;
+        let myColor = "";
 
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
         
-        let myX = Math.random() * 700 + 50;
-        let myY = Math.random() * 500 + 50;
+        let myX = Math.random() * (MAP_WIDTH - 200) + 100;
+        let myY = Math.random() * (MAP_HEIGHT - 200) + 100;
         let angle = Math.random() * Math.PI * 2;
-        let speed = 4;
+        let baseSpeed = 4;
+        let currentSpeed = 4;
+        let isBoosting = false;
 
         function joinRoom() {
             const input = document.getElementById("roomInput").value;
             if(input.length < 4) { alert("Bitte 4 Zahlen eingeben!"); return; }
             roomId = "snake_" + input;
-            playerId = "snake_" + Math.floor(Math.random() * 100000);
+            playerId = "Spieler_" + Math.floor(Math.random() * 1000);
+            myColor = 'hsl(' + Math.random() * 360 + ', 100%, 50%)';
+
+            // Canvas Größe an iPad-Bildschirm anpassen
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
 
             document.getElementById("lobby").style.display = "none";
             canvas.style.display = "block";
             document.getElementById("scoreBoard").style.display = "block";
+            document.getElementById("chatBox").style.display = "flex";
 
-            // Futter generieren (falls noch keins da ist)
+            // Viel Futter generieren für die Riesen-Map
             database.ref(roomId + "/food").once("value", snapshot => {
                 if(!snapshot.val()) {
                     let initialFood = {};
-                    for(let i=0; i<40; i++) {
+                    for(let i=0; i<150; i++) {
                         let fId = "f_" + i;
-                        initialFood[fId] = { x: Math.random() * 780 + 10, y: Math.random() * 580 + 10, color: 'hsl(' + Math.random() * 360 + ', 100%, 60%)' };
+                        initialFood[fId] = { x: Math.random() * (MAP_WIDTH-20) + 10, y: Math.random() * (MAP_HEIGHT-20) + 10, color: 'hsl(' + Math.random() * 360 + ', 100%, 60%)' };
                     }
                     database.ref(roomId + "/food").set(initialFood);
                 }
             });
 
-            // Live-Updates
+            // Live-Updates empfangen
             database.ref(roomId + "/snakes").on("value", snapshot => { snakes = snapshot.val() || {}; });
             database.ref(roomId + "/food").on("value", snapshot => { foods = snapshot.val() || {}; });
+            
+            // Chat Synchronisation
+            database.ref(roomId + "/chat").limitToLast(15).on("value", snapshot => {
+                let chatDiv = document.getElementById("chatMessages");
+                chatDiv.innerHTML = "";
+                snapshot.forEach(child => {
+                    let msg = child.val();
+                    chatDiv.innerHTML += `<div><span style="color:${msg.color}; font-weight:bold;">${msg.user}:</span> ${msg.text}</div>`;
+                });
+                chatDiv.scrollTop = chatDiv.scrollHeight;
+            });
 
-            // Spiel-Loop starten
+            // Loops starten
             setInterval(gameLoop, 1000 / 45);
+            setInterval(boostDrainLoop, 600); // Längenverlust bei Boost alle 0.6 Sek
         }
 
-        // Steuerung für das iPad (Wischen steuert die Richtung)
+        // --- STEUERUNGEN ---
+        // 1. iPad Touch (Wischen steuert Richtung, zweiter Finger = Boost)
         canvas.addEventListener("touchmove", (e) => {
             e.preventDefault();
             if(!alive) return;
@@ -127,66 +171,120 @@
             let touchX = e.touches[0].clientX - rect.left;
             let touchY = e.touches[0].clientY - rect.top;
             
-            // Winkel berechnen, in den die Schlange guckt
-            angle = Math.atan2(touchY - myY, touchX - myX);
+            // Richtung relativ zur Mitte des Bildschirms berechnen (da Kamera zentriert ist)
+            let screenCenterX = canvas.width / 2;
+            let screenCenterY = canvas.height / 2;
+            angle = Math.atan2(touchY - screenCenterY, touchX - screenCenterX);
+            
+            // Wenn 2 Finger auf dem iPad liegen -> Boost an!
+            isBoosting = (e.touches.length > 1);
         }, {passive: false});
 
+        canvas.addEventListener("touchend", () => { isBoosting = false; });
+
+        // 2. Tastatur-Steuerung (WASD / Pfeiltasten / Leertaste für Boost)
+        window.addEventListener("keydown", (e) => {
+            if(!alive) return;
+            if(document.activeElement === document.getElementById("chatInput")) return; // Nicht steuern wenn man chattet
+
+            if (e.key === "ArrowUp" || e.key.toLowerCase() === "w") angle = -Math.PI / 2;
+            if (e.key === "ArrowDown" || e.key.toLowerCase() === "s") angle = Math.PI / 2;
+            if (e.key === "ArrowLeft" || e.key.toLowerCase() === "a") angle = Math.PI;
+            if (e.key === "ArrowRight" || e.key.toLowerCase() === "d") angle = 0;
+            if (e.key === " ") isBoosting = true; // Leertaste gedrückt halten
+        });
+        window.addEventListener("keyup", (e) => { if (e.key === " ") isBoosting = false; });
+
+        // --- CHAT FUNKTION ---
+        function sendChatMessage(e) {
+            if(e.key === "Enter") {
+                let input = document.getElementById("chatInput");
+                if(input.value.trim() === "") return;
+                database.ref(roomId + "/chat").push({
+                    user: playerId,
+                    text: input.value,
+                    color: myColor
+                });
+                input.value = "";
+                input.blur(); // Tastatur einklappen
+            }
+        }
+
+        // Längenabzug beim Boosten
+        function boostDrainLoop() {
+            if(alive && isBoosting && myLength > 4) {
+                myLength--;
+            }
+        }
+
+        // --- RESPAWN FUNKTION ---
+        function respawn() {
+            myX = Math.random() * (MAP_WIDTH - 200) + 100;
+            myY = Math.random() * (MAP_HEIGHT - 200) + 100;
+            myLength = 6;
+            myTail = [];
+            alive = true;
+        }
+
+        // --- HAUPT GAME LOOP ---
         function gameLoop() {
             if (alive) {
-                // Kopf bewegen
-                myX += Math.cos(angle) * speed;
-                myY += Math.sin(angle) * speed;
+                // Boost-Speed setzen
+                currentSpeed = (isBoosting && myLength > 4) ? baseSpeed * 1.8 : baseSpeed;
 
-                // Spielfeldrand-Kollision (Teleport zur anderen Seite wie bei Pacman)
-                if(myX < 0) myX = canvas.width; if(myX > canvas.width) myX = 0;
-                if(myY < 0) myY = canvas.height; if(myY > canvas.height) myY = 0;
+                // Position berechnen
+                myX += Math.cos(angle) * currentSpeed;
+                myY += Math.sin(angle) * currentSpeed;
 
-                // Schweif updaten (Wir merken uns die alten Positionen des Kopfes)
+                // Map-Grenzen abfangen
+                if(myX < 0) myX = MAP_WIDTH; if(myX > MAP_WIDTH) myX = 0;
+                if(myY < 0) myY = MAP_HEIGHT; if(myY > MAP_HEIGHT) myY = 0;
+
+                // Schweif updaten
                 myTail.unshift({x: myX, y: myY});
                 if(myTail.length > myLength * 3) {
                     myTail.pop();
                 }
 
-                // Daten hochladen
+                // Eigene Daten hochladen
                 database.ref(roomId + "/snakes/" + playerId).set({
-                    id: playerId,
-                    x: myX, y: myY,
-                    tail: myTail,
-                    length: myLength,
-                    color: 'hsl(' + (parseInt(playerId.replace("snake_", "")) % 360) + ', 100%, 50%)',
-                    alive: true
+                    id: playerId, x: myX, y: myY, tail: myTail, length: myLength, color: myColor, alive: true
                 });
 
                 // Futter fressen prüfen
                 Object.keys(foods).forEach(fId => {
                     let f = foods[fId];
                     let dist = Math.sqrt((myX - f.x)**2 + (myY - f.y)**2);
-                    if(dist < 15) { // Gefressen!
+                    if(dist < 15) {
                         myLength += 1;
-                        // Neues Futter an zufälliger Stelle spawnen
+                        // Neues Futter auf der Riesen-Map platzieren
                         database.ref(roomId + "/food/" + fId).set({
-                            x: Math.random() * 780 + 10,
-                            y: Math.random() * 580 + 10,
+                            x: Math.random() * (MAP_WIDTH-20) + 10,
+                            y: Math.random() * (MAP_HEIGHT-20) + 10,
                             color: 'hsl(' + Math.random() * 360 + ', 100%, 60%)'
                         });
                     }
                 });
 
-                // Crash in andere Schlangen prüfen
+                // Kollision / Crash in andere Schlangen
                 Object.keys(snakes).forEach(sId => {
                     if(sId !== playerId && snakes[sId].alive) {
                         let other = snakes[sId];
                         let otherTail = other.tail || [];
                         
-                        // Wir prüfen ab dem 5. Schweif-Glied, um Fehl-Crashes zu vermeiden
-                        for(let i = 5; i < otherTail.length; i += 2) {
+                        for(let i = 4; i < otherTail.length; i += 2) {
                             let segment = otherTail[i];
                             let distToBody = Math.sqrt((myX - segment.x)**2 + (myY - segment.y)**2);
-                            if(distToBody < 12) {
-                                // BUMM! Du bist gecrasht und tot.
+                            if(distToBody < 14) {
+                                // CRASH! Du bist tot.
                                 alive = false;
                                 database.ref(roomId + "/snakes/" + playerId).update({ alive: false });
-                                alert("💥 GECRASHT! Deine Schlange ist explodiert! Lade die Seite neu für eine neue Runde.");
+                                
+                                // Nachricht im Chat für alle anzeigen
+                                database.ref(roomId + "/chat").push({ user: "📢 SERVER", text: `${playerId} ist zerschellt!`, color: "#ef4444" });
+                                
+                                // Automatisch als kleine Schlange neu spawnen nach 1 Sekunde
+                                setTimeout(respawn, 1000);
                             }
                         }
                     }
@@ -196,27 +294,35 @@
             drawArena();
         }
 
+        // --- ZEICHNEN MIT KAMERA VERFOLGUNG ---
         function drawArena() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Raster-Hintergrund zeichnen für besseren Speed-Effekt
-            ctx.strokeStyle = "#1f2937"; ctx.lineWidth = 1;
-            for(let x=0; x<canvas.width; x+=40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke(); }
-            for(let y=0; y<canvas.height; y+=40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke(); }
+            // Kamera-Fokus berechnen (Zentriert auf meine Schlange)
+            let camX = myX - canvas.width / 2;
+            let camY = myY - canvas.height / 2;
 
-            // Futter zeichnen
+            // Kamera an den absoluten Map-Rändern stoppen (optional, für sauberen Look)
+            ctx.save();
+            ctx.translate(-camX, -camY); // Schiebt das Spielfeld passend zur Bewegung
+
+            // 1. Spielfeldrand-Barriere zeichnen
+            ctx.strokeStyle = "#ef4444"; ctx.lineWidth = 5;
+            ctx.strokeRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
+
+            // 2. Kachel-Hintergrundmuster im Grid-Look
+            ctx.strokeStyle = "#1f2937"; ctx.lineWidth = 1;
+            for(let x=0; x<MAP_WIDTH; x+=50) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, MAP_HEIGHT); ctx.stroke(); }
+            for(let y=0; y<MAP_HEIGHT; y+=50) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(MAP_WIDTH, y); ctx.stroke(); }
+
+            // 3. Futter zeichnen
             Object.keys(foods).forEach(fId => {
                 let f = foods[fId];
-                ctx.beginPath();
-                ctx.arc(f.x, f.y, 4, 0, Math.PI * 2);
-                ctx.fillStyle = f.color;
-                ctx.shadowBlur = 10; ctx.shadowColor = f.color; // Leuchteffekt
-                ctx.fill();
-                ctx.closePath();
+                ctx.beginPath(); ctx.arc(f.x, f.y, 5, 0, Math.PI * 2);
+                ctx.fillStyle = f.color; ctx.fill(); ctx.closePath();
             });
-            ctx.shadowBlur = 0; // Leuchten für Schlangen ausmachen (spart Performance)
 
-            // Alle Schlangen zeichnen
+            // 4. Alle Schlangen im Raum live zeichnen
             let list = [];
             Object.keys(snakes).forEach(sId => {
                 let s = snakes[sId];
@@ -225,31 +331,35 @@
                 list.push({id: s.id, score: s.length});
                 let t = s.tail || [];
                 
-                // Schweif von hinten nach vorne zeichnen
+                // Schlangenkörper gliedern
                 for(let i = t.length - 1; i >= 0; i -= 2) {
                     ctx.beginPath();
-                    ctx.arc(t[i].x, t[i].y, 8 + (i/t.length)*2, 0, Math.PI * 2);
-                    ctx.fillStyle = s.color;
-                    ctx.fill();
-                    ctx.closePath();
+                    ctx.arc(t[i].x, t[i].y, 10 + (i/t.length)*3, 0, Math.PI * 2);
+                    ctx.fillStyle = s.color; ctx.fill(); ctx.closePath();
                 }
 
-                // Kopf zeichnen
-                ctx.beginPath();
-                ctx.arc(s.x, s.y, 11, 0, Math.PI * 2);
-                ctx.fillStyle = "white";
-                ctx.fill();
-                ctx.closePath();
+                // Kopf der Schlange zeichnen
+                ctx.beginPath(); ctx.arc(s.x, s.y, 13, 0, Math.PI * 2);
+                ctx.fillStyle = "white"; ctx.fill(); ctx.closePath();
+                
+                // Namens-Tag über der Schlange anzeigen
+                ctx.fillStyle = "rgba(255,255,255,0.7)"; ctx.font = "12px sans-serif";
+                ctx.fillText(s.id, s.x - 20, s.y - 20);
             });
 
-            // Leaderboard updaten
+            ctx.restore(); // Kamera-Verschiebung zurücksetzen für UI-Elemente
+
+            // 5. Leaderboard Text aktualisieren
             list.sort((a,b) => b.score - a.score);
             let html = "";
             list.slice(0, 5).forEach((player, index) => {
-                html += `<div>${index+1}. ${player.id === playerId ? "<b>DU</b>" : "Gegner"} (${player.score})</div>`;
+                html += `<div>${index+1}. ${player.id === playerId ? "<b>DU</b>" : player.id} (${player.score})</div>`;
             });
             document.getElementById("leaderboardList").innerHTML = html;
         }
+
+        // Fenster-Größenänderung abfangen (falls iPad gedreht wird)
+        window.addEventListener("resize", () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
 
         window.onbeforeunload = function() {
             if(roomId && playerId) database.ref(roomId + "/snakes/" + playerId).remove();
