@@ -3,44 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>State.io Ultra Multiplayer</title>
+    <title>AeroCombat.io - Jet Showdown</title>
     <style>
         body {
             margin: 0; padding: 0;
-            background: #1e1e24; color: white;
+            background: #0b0f19; color: white;
             font-family: 'Segoe UI', sans-serif;
             overflow: hidden; user-select: none;
             touch-action: none;
         }
         #lobby {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: rgba(30, 30, 36, 0.95); padding: 30px; border-radius: 15px;
-            border: 3px solid #3b82f6; z-index: 20; width: 85%; max-width: 340px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5); text-align: center;
+            background: rgba(15, 23, 42, 0.95); padding: 30px; border-radius: 15px;
+            border: 2px solid #38bdf8; z-index: 20; width: 85%; max-width: 320px;
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.3); text-align: center;
         }
-        input, button { font-size: 18px; padding: 12px; width: 100%; border-radius: 8px; margin-top: 12px; box-sizing: border-box; }
-        input { border: 2px solid #4b5563; background: #2d2d35; color: white; text-align: center; }
-        button { background: #3b82f6; border: none; font-weight: bold; color: white; cursor: pointer; }
-        #gameCanvas { background: #25252b; display: none; width: 100vw; height: 100vh; }
+        input, button { font-size: 18px; padding: 12px; width: 100%; border-radius: 8px; margin-top: 10px; box-sizing: border-box; }
+        input { border: 1px solid #334155; background: #1e293b; color: white; text-align: center; }
+        button { background: #38bdf8; border: none; font-weight: bold; color: #0f172a; cursor: pointer; }
+        #gameCanvas { background: #0f172a; display: none; width: 100vw; height: 100vh; }
         #scoreBoard {
             position: absolute; top: 15px; right: 15px;
-            background: rgba(30, 30, 36, 0.85); padding: 12px 18px;
-            border-radius: 10px; font-size: 14px; display: none; pointer-events: none; z-index: 10;
-            border: 1px solid #4b5563;
+            background: rgba(15, 23, 42, 0.85); padding: 10px 15px;
+            border-radius: 8px; font-size: 14px; display: none; pointer-events: none; z-index: 10;
+            border: 1px solid #334155;
         }
     </style>
 </head>
 <body>
 
     <div id="lobby">
-        <h2 style="color: #3b82f6; margin-top: 0; font-size: 26px;">🗺️ STATE.IO ONLINE</h2>
-        <p style="font-size: 14px; color: #9ca3af;">Verbinde deine Basen und erobere die ganze Map!</p>
+        <h2 style="color: #38bdf8; margin-top: 0;">✈️ AEROCOMBAT.IO</h2>
+        <p style="font-size: 14px; color: #94a3b8;">Fliege mit dem Finger und schieße deine Klasse ab!</p>
         <input type="number" id="roomInput" placeholder="Raum-Nummer (4-stellig)">
-        <button onclick="joinRoom()">Server beitreten ⚔️</button>
+        <button onclick="joinRoom()">Abheben! 🚀</button>
     </div>
 
     <div id="scoreBoard">
-        <b style="color: #3b82f6; font-size: 16px;">TERRITORIEN:</b>
+        <b style="color: #38bdf8;">TOP PILOTEN:</b>
         <div id="leaderboard" style="margin-top: 5px;"></div>
     </div>
 
@@ -64,292 +64,191 @@
         const database = firebase.database();
 
         let roomId = "", playerId = "";
-        let myColor = 'hsl(' + Math.random() * 360 + ', 85%, 55%)';
+        let myColor = 'hsl(' + Math.random() * 360 + ', 90%, 55%)';
         
-        let bases = [];
-        let troops = []; 
+        let players = {};
+        let myBullets = [];
         
+        let myX = Math.random() * 600 + 100;
+        let myY = Math.random() * 600 + 100;
+        let myAngle = 0;
+        let myKills = 0;
+        let alive = true;
+
+        let targetX = myX;
+        let targetY = myY;
+        let isTouching = false;
+
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
-
-        // Virtuelles Koordinatensystem (1000x1000) sorgt für absolute Gleichheit auf allen iPads!
-        const V_WIDTH = 1000;
-        const V_HEIGHT = 1000;
-
-        let activeBase = null; 
-        let currentMouseX = 0, currentMouseY = 0;
-        let isDragging = false;
 
         function joinRoom() {
             const input = document.getElementById("roomInput").value;
             if(input.length < 4) { alert("Bitte 4 Zahlen eingeben!"); return; }
-            roomId = "statev2_" + input;
-            playerId = "General_" + Math.floor(Math.random() * 900 + 100);
+            roomId = "aero_" + input;
+            playerId = "Pilot_" + Math.floor(Math.random() * 900 + 100);
 
-            resizeCanvas();
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
 
             document.getElementById("lobby").style.display = "none";
             canvas.style.display = "block";
             document.getElementById("scoreBoard").style.display = "block";
 
-            database.ref(roomId + "/bases").once("value", snapshot => {
-                if(!snapshot.val()) {
-                    let initialBases = [];
-                    // Fest definierte, virtuelle Punkte (egal wie groß das iPad ist)
-                    let positions = [
-                        {x: 250, y: 200}, {x: 500, y: 150}, {x: 750, y: 200},
-                        {x: 200, y: 500}, {x: 500, y: 500}, {x: 800, y: 500},
-                        {x: 250, y: 800}, {x: 500, y: 850}, {x: 750, y: 800}
-                    ];
+            // Bei Verbindungsabbruch löschen
+            database.ref(roomId + "/players/" + playerId).onDisconnect().remove();
 
-                    positions.forEach((pos, idx) => {
-                        initialBases.push({
-                            id: idx,
-                            x: pos.x,
-                            y: pos.y,
-                            size: 35, 
-                            count: 10, 
-                            owner: "neutral",
-                            color: "#9ca3af"
-                        });
-                    });
-
-                    // Startbasis zuweisen
-                    initialBases[0].owner = playerId;
-                    initialBases[0].color = myColor;
-                    initialBases[0].count = 25;
-
-                    database.ref(roomId + "/bases").set(initialBases);
-                } else {
-                    database.ref(roomId + "/bases").once("value", snap => {
-                        let currentBases = snap.val();
-                        let freeBase = currentBases.find(b => b.owner === "neutral");
-                        if(freeBase) {
-                            currentBases[freeBase.id].owner = playerId;
-                            currentBases[freeBase.id].color = myColor;
-                            currentBases[freeBase.id].count = 25;
-                            database.ref(roomId + "/bases").set(currentBases);
-                        }
-                    });
+            // Synchronisation der Spieler
+            database.ref(roomId + "/players").on("value", snapshot => {
+                players = snapshot.val() || {};
+                if (players[playerId] && players[playerId].kills !== undefined) {
+                    myKills = players[playerId].kills;
                 }
             });
 
-            database.ref(roomId + "/bases").on("value", snapshot => { bases = snapshot.val() || []; });
-
-            database.ref(roomId + "/attacks").on("child_added", snapshot => {
-                let atk = snapshot.val();
-                if(atk && atk.sender !== playerId) {
-                    spawnVisualTroops(atk.fromId, atk.toId, atk.amount, atk.color, atk.sender);
+            // Signal-Empfänger für feindliche Raketen (Trefferschutz)
+            database.ref(roomId + "/bullets").on("child_added", snapshot => {
+                let b = snapshot.val();
+                if(b && b.owner !== playerId && alive) {
+                    let dist = Math.hypot(myX - b.x, myY - b.y);
+                    if(dist < 22) { // Radius-Treffer-Check
+                        triggerDeath();
+                        // Dem Schützen den Kill geben
+                        database.ref(roomId + "/players/" + b.owner + "/kills").set(firebase.database.ServerValue.increment(1));
+                    }
                 }
                 snapshot.ref.remove();
             });
 
-            window.onbeforeunload = function() {
-                bases.forEach(b => {
-                    if(b.owner === playerId) database.ref(roomId + "/bases/" + b.id).update({ owner: "neutral", color: "#9ca3af" });
-                });
+            // Touch-Events fürs iPad
+            canvas.addEventListener("pointerdown", e => { isTouching = true; updateTarget(e); });
+            canvas.addEventListener("pointermove", e => { if(isTouching) updateTarget(e); });
+            canvas.addEventListener("pointerup", () => { isTouching = false; });
+
+            // Loops starten
+            setInterval(gameLoop, 1000 / 50); // Bewegung (50 FPS)
+            setInterval(shootLoop, 350); // Automatischer Schuss alle 0,35 Sekunden
+        }
+
+        function updateTarget(e) {
+            targetX = e.clientX;
+            targetY = e.clientY;
+        }
+
+        function shootLoop() {
+            if(!alive) return;
+
+            let bullet = {
+                owner: playerId,
+                x: myX + Math.cos(myAngle) * 20,
+                y: myY + Math.sin(myAngle) * 20,
+                vx: Math.cos(myAngle) * 11,
+                vy: Math.sin(myAngle) * 11,
+                life: 50
             };
 
-            canvas.addEventListener("pointerdown", onPointerDown);
-            canvas.addEventListener("pointermove", onPointerMove);
-            canvas.addEventListener("pointerup", onPointerUp);
-
-            setInterval(productionLoop, 1000); 
-            setInterval(updatePhysics, 1000 / 50); 
+            myBullets.push(bullet);
+            database.ref(roomId + "/bullets").push(bullet);
         }
 
-        // Rechnet Bildschirm-X in virtuelle X-Koordinate um
-        function toVirtualX(screenX) { return (screenX / canvas.width) * V_WIDTH; }
-        function toVirtualY(screenY) { return (screenY / canvas.height) * V_HEIGHT; }
-        // Rechnet virtuelle Koordinate in echte Bildschirm-Pixel fürs iPad um
-        function toScreenX(vX) { return (vX / V_WIDTH) * canvas.width; }
-        function toScreenY(vY) { return (vY / V_HEIGHT) * canvas.height; }
-
-        function onPointerDown(e) {
-            let vX = toVirtualX(e.clientX);
-            let vY = toVirtualY(e.clientY);
-            let base = getBaseAt(vX, vY, 40); // 40 Pixel Toleranz beim Antippen
-            
-            if(base && base.owner === playerId) {
-                activeBase = base;
-                isDragging = true;
-                currentMouseX = e.clientX;
-                currentMouseY = e.clientY;
-            }
+        function triggerDeath() {
+            alive = false;
+            database.ref(roomId + "/players/" + playerId).remove();
+            setTimeout(() => {
+                myX = Math.random() * (canvas.width - 100) + 50;
+                myY = Math.random() * (canvas.height - 100) + 50;
+                targetX = myX; targetY = myY;
+                alive = true;
+            }, 2500); // 2,5 Sekunden Respawn-Zeit
         }
 
-        function onPointerMove(e) {
-            if(!isDragging) return;
-            currentMouseX = e.clientX;
-            currentMouseY = e.clientY;
-        }
+        function gameLoop() {
+            if(alive) {
+                // Wenn der Finger das Display berührt, fliege sanft in die Richtung
+                if (isTouching) {
+                    let dx = targetX - myX;
+                    let dy = targetY - myY;
+                    let dist = Math.hypot(dx, dy);
 
-        function onPointerUp(e) {
-            if(!isDragging) return;
-            isDragging = false;
-
-            let vX = toVirtualX(e.clientX);
-            let vY = toVirtualY(e.clientY);
-            
-            // 🔥 MASSIVER MAGNET-EFFEKT: Großer Radius (100 virtuelle Pixel) beim Loslassen!
-            let targetBase = getBaseAt(vX, vY, 100); 
-            
-            if(targetBase && targetBase.id !== activeBase.id) {
-                sendTroops(activeBase.id, targetBase.id);
-            }
-            activeBase = null;
-        }
-
-        function getBaseAt(vX, vY, tolerance) {
-            return bases.find(b => Math.hypot(b.x - vX, b.y - vY) < b.size + tolerance);
-        }
-
-        function sendTroops(fromId, toId) {
-            let fromBase = bases[fromId];
-            if(fromBase.count < 2) return;
-
-            // 🔥 Es kommen JETZT ALLE raus (nur 1 bleibt als Schutz zurück)
-            let sendAmount = fromBase.count - 1; 
-            database.ref(roomId + "/bases/" + fromId).update({ count: 1 });
-
-            database.ref(roomId + "/attacks").push({
-                sender: playerId, fromId: fromId, toId: toId, amount: sendAmount, color: myColor
-            });
-
-            spawnVisualTroops(fromId, toId, sendAmount, myColor, playerId);
-        }
-
-        function spawnVisualTroops(fromId, toId, amount, color, senderId) {
-            let from = bases[fromId];
-            let to = bases[toId];
-            if(!from || !to) return;
-
-            for(let i = 0; i < amount; i++) {
-                setTimeout(() => {
-                    if (!bases[fromId]) return;
-                    troops.push({
-                        x: from.x, 
-                        y: from.y,
-                        targetId: toId,
-                        color: color,
-                        sender: senderId,
-                        speed: 5.5 // Etwas schneller für besseres Gameplay
-                    });
-                }, i * 100); 
-            }
-        }
-
-        function productionLoop() {
-            bases.forEach(b => {
-                if(b.owner !== "neutral" && b.count < 60) {
-                    database.ref(roomId + "/bases/" + b.id).update({ count: b.count + 1 });
+                    if (dist > 10) {
+                        myAngle = Math.atan2(dy, dx);
+                        myX += Math.cos(myAngle) * 5.5; // Fluggeschwindigkeit des Jets
+                        myY += Math.sin(myAngle) * 5.5;
+                    }
                 }
-            });
-        }
 
-        function updatePhysics() {
-            for (let i = troops.length - 1; i >= 0; i--) {
-                let t = troops[i];
-                let target = bases[t.targetId];
+                // Bildschirmgrenzen einhalten
+                myX = Math.max(20, Math.min(canvas.width - 20, myX));
+                myY = Math.max(20, Math.min(canvas.height - 20, myY));
 
-                if (!target) { troops.splice(i, 1); continue; }
-
-                let dx = target.x - t.x;
-                let dy = target.y - t.y;
-                let dist = Math.hypot(dx, dy);
-
-                if (dist < target.size - 2) {
-                    handleBaseImpact(t);
-                    troops.splice(i, 1);
-                } else {
-                    t.x += (dx / dist) * t.speed;
-                    t.y += (dy / dist) * t.speed;
-                }
+                // Daten hochladen
+                database.ref(roomId + "/players/" + playerId).set({
+                    id: playerId, x: myX, y: myY, angle: myAngle, color: myColor, kills: myKills
+                });
             }
+
+            // Eigene Kugeln fliegen lassen
+            for (let i = myBullets.length - 1; i >= 0; i--) {
+                let b = myBullets[i];
+                b.x += b.vx;
+                b.y += b.vy;
+                b.life--;
+                if(b.life <= 0) myBullets.splice(i, 1);
+            }
+
             draw();
-        }
-
-        function handleBaseImpact(troop) {
-            if (troop.sender !== playerId) return; 
-
-            let target = bases[troop.targetId];
-            if (!target) return;
-
-            if (target.owner === troop.sender) {
-                database.ref(roomId + "/bases/" + target.id).update({ count: target.count + 1 });
-            } else {
-                let newCount = target.count - 1;
-                if (newCount < 0) {
-                    database.ref(roomId + "/bases/" + target.id).set({
-                        id: target.id, x: target.x, y: target.y, size: target.size,
-                        count: 1, owner: troop.sender, color: troop.color
-                    });
-                } else {
-                    database.ref(roomId + "/bases/" + target.id).update({ count: newCount });
-                }
-            }
         }
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Zieh-Linie zeichnen
-            if (isDragging && activeBase) {
-                ctx.strokeStyle = myColor; ctx.lineWidth = 5;
-                ctx.setLineDash([8, 6]);
-                ctx.beginPath();
-                ctx.moveTo(toScreenX(activeBase.x), toScreenY(activeBase.y));
-                ctx.lineTo(currentMouseX, currentMouseY);
-                ctx.stroke();
-                ctx.setLineDash([]);
+            // Hintergrund-Sterne/Gitter für Geschwindigkeitsgefühl
+            ctx.strokeStyle = "#1e293b"; ctx.lineWidth = 1;
+            for(let i=0; i<canvas.width; i+=80) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); ctx.stroke(); }
+            for(let i=0; i<canvas.height; i+=80) { ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(canvas.width,i); ctx.stroke(); }
 
-                ctx.beginPath(); ctx.arc(currentMouseX, currentMouseY, 8, 0, Math.PI * 2);
-                ctx.fillStyle = myColor; ctx.fill();
+            // Eigene Raketen zeichnen
+            ctx.fillStyle = "#facc15";
+            myBullets.forEach(b => {
+                ctx.beginPath(); ctx.arc(b.x, b.y, 4, 0, Math.PI * 2); ctx.fill();
+            });
+
+            // Alle Spieler zeichnen (Aussehen wie kleine Kampfjets / Dreiecke)
+            let leaderboardList = [];
+            Object.keys(players).forEach(pId => {
+                let p = players[pId];
+                leaderboardList.push({ id: p.id, kills: p.kills || 0 });
+
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.angle);
+
+                // Jet-Körper zeichnen (Dreieck)
+                ctx.beginPath();
+                ctx.moveTo(22, 0);     // Die Nase vorn
+                ctx.lineTo(-14, -14);  // Linker Flügel hinten
+                ctx.lineTo(-8, 0);     // Mitte hinten
+                ctx.lineTo(-14, 14);   // Rechter Flügel hinten
+                ctx.closePath();
+                
+                ctx.fillStyle = p.color; ctx.fill();
+                ctx.strokeStyle = "#ffffff"; ctx.lineWidth = p.id === playerId ? 2.5 : 1; ctx.stroke();
+
+                ctx.restore();
+
+                // Name über dem Jet anzeigen
+                ctx.fillStyle = "rgba(255,255,255,0.7)"; ctx.font = "12px sans-serif"; ctx.textAlign = "center";
+                ctx.fillText(p.id, p.x, p.y - 24);
+            });
+
+            if(!alive) {
+                ctx.fillStyle = "rgba(239, 68, 68, 0.2)"; ctx.fillRect(0,0,canvas.width,canvas.height);
+                ctx.fillStyle = "#ef4444"; ctx.font = "bold 28px sans-serif"; ctx.textAlign = "center";
+                ctx.fillText("ABGESCHOSSEN! 💥", canvas.width/2, canvas.height/2);
             }
 
-            // Basen zeichnen
-            let stats = {};
-            bases.forEach(b => {
-                stats[b.owner] = (stats[b.owner] || 0) + 1;
-
-                let sX = toScreenX(b.x);
-                let sY = toScreenY(b.y);
-
-                if (isDragging && activeBase && b.id === activeBase.id) {
-                    ctx.beginPath(); ctx.arc(sX, sY, b.size + 15, 0, Math.PI * 2);
-                    ctx.fillStyle = "rgba(255,255,255,0.15)"; ctx.fill();
-                }
-
-                ctx.beginPath(); ctx.arc(sX, sY, b.size, 0, Math.PI * 2);
-                ctx.fillStyle = b.color; ctx.fill();
-                ctx.strokeStyle = "#ffffff"; ctx.lineWidth = b.owner === playerId ? 4 : 1; ctx.stroke();
-
-                ctx.fillStyle = "white"; ctx.font = "bold 18px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-                ctx.fillText(b.count, sX, sY);
-            });
-
-            // Truppen zeichnen
-            troops.forEach(t => {
-                ctx.beginPath(); ctx.arc(toScreenX(t.x), toScreenY(t.y), 6, 0, Math.PI * 2);
-                ctx.fillStyle = t.color; ctx.fill();
-                ctx.strokeStyle = "rgba(0,0,0,0.3)"; ctx.lineWidth = 1; ctx.stroke();
-            });
-
-            // Rangliste
+            // Bestenliste updaten
+            leaderboardList.sort((a,b) => b.kills - a.kills);
             let lbHtml = "";
-            Object.keys(stats).forEach(owner => {
-                if(owner !== "neutral") {
-                    lbHtml += `<div>${owner === playerId ? "<b>DU</b>" : owner}: <span style="font-weight:bold;">${stats[owner]}</span></div>`;
-                }
-            });
-            document.getElementById("leaderboard").innerHTML = lbHtml;
-        }
-
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        window.addEventListener("resize", resizeCanvas);
-    </script>
-</body>
-</html>
+            leaderboardList.slice(0, 4).forEach((p, i) => {
+                lbHtml += `<div>${i+1}. ${p.id === playerId ?
