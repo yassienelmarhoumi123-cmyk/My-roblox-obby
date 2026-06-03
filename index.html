@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>3D Bugatti Simulator</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #a0a0a0; font-family: sans-serif; user-select: none; }
+        body { margin: 0; overflow: hidden; background: #6b7280; font-family: sans-serif; user-select: none; }
         #info {
             position: absolute; top: 15px; left: 15px;
-            color: white; background: rgba(15, 23, 42, 0.85);
+            color: white; background: rgba(15, 23, 42, 0.9);
             padding: 15px; border-radius: 8px; font-size: 16px;
             pointer-events: none; line-height: 1.5;
-            border: 1px solid #38bdf8; z-index: 10;
+            border: 2px solid #38bdf8; z-index: 10;
         }
         #status { color: #38bdf8; font-weight: bold; }
     </style>
@@ -21,7 +21,7 @@
     <div id="info">
         <b>⚙️ STEUERUNG:</b><br>
         Laufen / Fahren: <span style="color:#facc15">W, A, S, D</span><br>
-        Einsteigen: <span style="color:#34d399">E</span> (Nahe am Auto stehen)<br>
+        Einsteigen: <span style="color:#34d399">E</span> (Beim Auto stehen)<br>
         Aussteigen: <span style="color:#ef4444">F</span><br><br>
         Status: <span id="status">Zu Fuß</span>
     </div>
@@ -30,41 +30,44 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 
     <script>
-        // 1. 3D-Szene, Kamera und Renderer erstellen
+        // 1. Szene, Kamera und Renderer
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xd1d5db); // Hellgrauer Himmel
-        scene.fog = new THREE.Fog(0xd1d5db, 20, 100);
+        scene.background = new THREE.Color(0x9ca3af); // Hellerer Hintergrund
+        scene.fog = new THREE.Fog(0x9ca3af, 30, 150);
 
         const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
         renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.shadowMap.enabled = true;
         document.body.appendChild(renderer.domElement);
 
-        // 2. Beleuchtung für schöne Schatten und Reflexionen
-        const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
-        hemiLight.position.set(0, 20, 0);
-        scene.add(hemiLight);
+        // 2. STARKES LICHT (Damit das Modell nicht unsichtbar/schwarz ist)
+        const ambientLight = new THREE.AmbientLight(0xffffff, 1.5); // Sehr helles Grundlicht
+        scene.add(ambientLight);
 
-        const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
-        dirLight.position.set(10, 20, 10);
-        dirLight.castShadow = true;
-        scene.add(dirLight);
+        const dirLight1 = new THREE.DirectionalLight(0xffffff, 1.5);
+        dirLight1.position.set(20, 40, 20);
+        dirLight1.castShadow = true;
+        scene.add(dirLight1);
 
-        // 3. Glatter Boden (Graue Testfläche)
+        const dirLight2 = new THREE.DirectionalLight(0x38bdf8, 0.5); // Leicht bläuliches Gegenlicht für Reflexioneffekte
+        dirLight2.position.set(-20, 20, -20);
+        scene.add(dirLight2);
+
+        // 3. Bodenplattform
         const floorGeo = new THREE.PlaneGeometry(1000, 1000);
-        const floorMat = new THREE.MeshStandardMaterial({ color: 0x374151, roughness: 0.5 });
+        const floorMat = new THREE.MeshStandardMaterial({ color: 0x1f2937, roughness: 0.6 });
         const floor = new THREE.Mesh(floorGeo, floorMat);
         floor.rotation.x = -Math.PI / 2;
         floor.receiveShadow = true;
         scene.add(floor);
 
-        // Ein sichtbares Gitter auf dem glatten Boden zur Orientierung
-        const grid = new THREE.GridHelper(1000, 200, 0x111827, 0x4b5563);
-        grid.position.y = 0.01;
+        const grid = new THREE.GridHelper(1000, 150, 0x111827, 0x4b5563);
+        grid.position.y = 0.02;
         scene.add(grid);
 
-        // 4. Logik-Variablen
+        // 4. Variablen
         let carModel = null;
         let inCar = false;
 
@@ -73,35 +76,30 @@
         let carSpeed = 0;
         let carAngle = 0;
 
-        // Tuning-Werte für das Fahrverhalten des Bugattis
-        const maxSpeed = 0.6;
+        const maxSpeed = 0.7;
         const acceleration = 0.015;
         const friction = 0.006;
         const turnSpeed = 0.035;
 
         const keys = { w: false, a: false, s: false, d: false };
 
-        // Tastatur abfragen
         window.addEventListener('keydown', (e) => {
             const key = e.key.toLowerCase();
             if (key in keys) keys[key] = true;
 
-            // E-Taste gedrückt: Einsteigen
             if (key === 'e' && !inCar) {
                 let distance = Math.hypot(playerPos.x - carPos.x, playerPos.z - carPos.z);
-                if (distance < 5) { // Wenn du nah genug dran bist
+                if (distance < 6) {
                     inCar = true;
                     document.getElementById("status").innerText = "Im Bugatti";
                     document.getElementById("status").style.color = "#34d399";
                 }
             }
 
-            // F-Taste gedrückt: Aussteigen
             if (key === 'f' && inCar) {
                 inCar = false;
-                // Setzt den Spieler ein kleines Stück links neben dem Auto ab
-                playerPos.x = carPos.x - Math.cos(carAngle) * 2.5;
-                playerPos.z = carPos.z + Math.sin(carAngle) * 2.5;
+                playerPos.x = carPos.x - Math.cos(carAngle) * 3;
+                playerPos.z = carPos.z + Math.sin(carAngle) * 3;
                 document.getElementById("status").innerText = "Zu Fuß";
                 document.getElementById("status").style.color = "#38bdf8";
             }
@@ -112,78 +110,86 @@
             if (key in keys) keys[key] = false;
         });
 
-        // 5. DEIN BUGATTI MODELL LADEN
+        // 5. BUGATTI MODELL MIT SICHERHEITS-MATERIALIEN LADEN
         const loader = new THREE.GLTFLoader();
         
-        // Nutzt genau den Dateinamen aus deinem GitHub-Upload
         loader.load('2016_bugatti_chiron.glb', function (gltf) {
             carModel = gltf.scene;
             carModel.position.set(carPos.x, 0, carPos.z);
             
-            // Schattenwurf für das Auto aktivieren
+            // Gehe durch alle Teile des Modells und stelle sicher, dass sie sichtbar sind
             carModel.traverse(function (child) {
                 if (child.isMesh) {
                     child.castShadow = true;
                     child.receiveShadow = true;
+                    
+                    // Falls das Material des Autos unsichtbar/schwarz geladen wird, erzwingen wir ein sichtbares Material
+                    if (!child.material || child.material.color.getHex() === 0x000000) {
+                        child.material = new THREE.MeshStandardMaterial({
+                            color: 0xd1d5db, // Schönes Silber/Weiß
+                            roughness: 0.2,
+                            metalness: 0.8
+                        });
+                    }
                 }
             });
 
+            // Automatische Größenanpassung: Falls das Modell winzig im Code ist, wird es hier sichtbar groß gemacht
+            const box = new THREE.Box3().setFromObject(carModel);
+            const size = box.getSize(new THREE.Vector3());
+            if(size.length() < 1) {
+                carModel.scale.set(5, 5, 5); // Vergrößern falls zu klein
+            }
+
             scene.add(carModel);
-            console.log("Bugatti Chiron geladen!");
+            console.log("Bugatti Chiron erfolgreich geladen und sichtbar gemacht!");
         }, undefined, function (error) {
             console.error("Fehler beim Laden des 3D-Modells:", error);
         });
 
-        // 6. Game-Loop (wird ca. 60 Mal pro Sekunde ausgeführt)
+        // 6. Game-Loop
         function animate() {
             requestAnimationFrame(animate);
 
             if (inCar) {
-                // --- AUTO-MODUS ---
                 if (keys.w) {
-                    carSpeed = Math.min(carSpeed + acceleration, maxSpeed); // Vorwärtsgas
+                    carSpeed = Math.min(carSpeed + acceleration, maxSpeed);
                 } else if (keys.s) {
-                    carSpeed = Math.max(carSpeed - acceleration, -maxSpeed / 2); // Rückwärtsgas / Bremse
+                    carSpeed = Math.max(carSpeed - acceleration, -maxSpeed / 2);
                 } else {
-                    // Automatisches Ausrollen durch Reibung
                     if (carSpeed > 0) carSpeed = Math.max(0, carSpeed - friction);
                     if (carSpeed < 0) carSpeed = Math.min(0, carSpeed + friction);
                 }
 
-                // Lenken nur, wenn sich das Auto auch bewegt
                 if (Math.abs(carSpeed) > 0.01) {
                     const currentTurn = turnSpeed * (carSpeed / maxSpeed + 0.3);
                     if (keys.a) carAngle += carSpeed > 0 ? currentTurn : -currentTurn;
                     if (keys.d) carAngle -= carSpeed > 0 ? currentTurn : -currentTurn;
                 }
 
-                // Neue Position berechnen (Z-Achse und X-Achse im 3D-Raum)
                 carPos.x += Math.sin(carAngle) * carSpeed;
                 carPos.z += Math.cos(carAngle) * carSpeed;
 
-                // Modell bewegen und rotieren
                 if (carModel) {
                     carModel.position.set(carPos.x, 0, carPos.z);
                     carModel.rotation.y = carAngle;
                 }
 
-                // Dritte-Person-Kamera schräg hinter dem Auto positionieren
+                // Kameraverfolgung optimiert
                 camera.position.set(
-                    carPos.x - Math.sin(carAngle) * 9,
-                    4,
-                    carPos.z - Math.cos(carAngle) * 9
+                    carPos.x - Math.sin(carAngle) * 10,
+                    4.5,
+                    carPos.z - Math.cos(carAngle) * 10
                 );
                 camera.lookAt(carPos.x, 1, carPos.z);
 
             } else {
-                // --- ZU FUSS MODUS ---
                 const moveSpeed = 0.15;
                 if (keys.w) playerPos.z -= moveSpeed;
                 if (keys.s) playerPos.z += moveSpeed;
                 if (keys.a) playerPos.x -= moveSpeed;
                 if (keys.d) playerPos.x += moveSpeed;
 
-                // Kamera folgt der Position des Spielers zu Fuß
                 camera.position.set(playerPos.x, 6, playerPos.z + 12);
                 camera.lookAt(playerPos.x, 0, playerPos.z);
             }
@@ -191,14 +197,12 @@
             renderer.render(scene, camera);
         }
 
-        // Unterstützung bei Größenänderung des Fensters
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        // Spielschleife starten
         animate();
     </script>
 </body>
