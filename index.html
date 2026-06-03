@@ -34,10 +34,10 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 
     <script>
-        // 1. 3D-Setup
+        // 1. 3D-Szene einrichten
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x9ca3af);
-        scene.fog = new THREE.Fog(0x9ca3af, 40, 180);
+        scene.fog = new THREE.Fog(0x9ca3af, 50, 250);
 
         const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -46,48 +46,48 @@
         renderer.shadowMap.enabled = true;
         document.body.appendChild(renderer.domElement);
 
-        // Lichtquellen optimieren
+        // Beleuchtung
         const ambientLight = new THREE.AmbientLight(0xffffff, 1.6);
         scene.add(ambientLight);
 
-        const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
-        dirLight.position.set(30, 50, 30);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1.4);
+        dirLight.position.set(40, 70, 40);
         dirLight.castShadow = true;
         scene.add(dirLight);
 
-        // Bodenebene
-        const floorGeo = new THREE.PlaneGeometry(1000, 1000);
+        // Großer grauer Boden
+        const floorGeo = new THREE.PlaneGeometry(2000, 2000);
         const floorMat = new THREE.MeshStandardMaterial({ color: 0x1f2937, roughness: 0.5 });
         const floor = new THREE.Mesh(floorGeo, floorMat);
         floor.rotation.x = -Math.PI / 2;
         floor.receiveShadow = true;
         scene.add(floor);
 
-        const grid = new THREE.GridHelper(1000, 120, 0x0f172a, 0x4b5563);
+        const grid = new THREE.GridHelper(2000, 150, 0x0f172a, 0x4b5563);
         grid.position.y = 0.01;
         scene.add(grid);
 
-        // Logik-Variablen
+        // Variablen für Steuerung und Zustand
         let carModel = null;
         let inCar = false;
 
-        let playerPos = { x: 0, z: 15 };
+        let playerPos = { x: 0, z: 25 };
         let carPos = { x: 0, z: 0 };
         let carSpeed = 0;
         let carAngle = 0;
 
-        // Kamera-Modus Variable (0 = Hinten, 1 = Oben, 2 = Von Innen / Cockpit)
+        // 0 = Normal Hinten, 1 = Weit weg, 2 = Tief/Action
         let cameraMode = 0;
 
-        // Tuning-Werte fürs Fahren
-        const maxSpeed = 0.8;
-        const acceleration = 0.02;
-        const friction = 0.008;
-        const turnSpeed = 0.04;
+        // Fahrphysik
+        const maxSpeed = 1.2;      // Etwas schneller gemacht für das große Modell
+        const acceleration = 0.025;
+        const friction = 0.01;
+        const turnSpeed = 0.038;
 
         const keys = { w: false, a: false, s: false, d: false };
 
-        // 2. Tastatur-Abfragen
+        // 2. Tasten-Events
         window.addEventListener('keydown', (e) => {
             const key = e.key.toLowerCase();
             if (key in keys) keys[key] = true;
@@ -97,7 +97,8 @@
                 if (!carModel) return;
                 let distance = Math.hypot(playerPos.x - carPos.x, playerPos.z - carPos.z);
                 
-                if (distance < 20) {
+                // Radius vergrößert, da das Auto jetzt viel größer ist
+                if (distance < 35) {
                     inCar = true;
                     document.getElementById("status").innerText = "Im Bugatti";
                     document.getElementById("status").style.color = "#10b981";
@@ -107,15 +108,16 @@
             // F - Aussteigen
             if (key === 'f' && inCar) {
                 inCar = false;
-                playerPos.x = carPos.x - Math.cos(carAngle) * 8;
-                playerPos.z = carPos.z + Math.sin(carAngle) * 8;
+                // Setzt den Spieler mit genügend Abstand neben dem großen Auto ab
+                playerPos.x = carPos.x - Math.cos(carAngle) * 15;
+                playerPos.z = carPos.z + Math.sin(carAngle) * 15;
                 document.getElementById("status").innerText = "Zu Fuß";
                 document.getElementById("status").style.color = "#38bdf8";
             }
 
-            // C - Kamera wechseln
+            // C - Kamera-Modus wechseln
             if (key === 'c' && inCar) {
-                cameraMode = (cameraMode + 1) % 3; // Schaltet durch 0, 1, 2
+                cameraMode = (cameraMode + 1) % 3; // Wechselt zwischen 0, 1 und 2
             }
         });
 
@@ -124,27 +126,29 @@
             if (key in keys) keys[key] = false;
         });
 
-        // 3. BUGATTI MODELL MIT SKALIERUNG LADEN
+        // 3. BUGATTI MODELL MIT ERHÖHTER SKALIERUNG
         const loader = new THREE.GLTFLoader();
         
         loader.load('2016_bugatti_chiron.glb', function (gltf) {
             carModel = gltf.scene;
             carModel.position.set(carPos.x, 0, carPos.z);
-            carModel.scale.set(250, 250, 250);
+            
+            // 🔥 Erhöht von 250 auf 450 – Jetzt ist der Bugatti richtig groß und wuchtig!
+            carModel.scale.set(450, 450, 450);
 
             carModel.traverse(function (child) {
                 if (child.isMesh) {
                     child.castShadow = true;
                     child.receiveShadow = true;
                     if(child.material) {
-                        child.material.roughness = 0.1;
-                        child.material.metalness = 0.8;
+                        child.material.roughness = 0.15;
+                        child.material.metalness = 0.85;
                     }
                 }
             });
 
             scene.add(carModel);
-            console.log("Bugatti Chiron einsatzbereit!");
+            console.log("Großer Bugatti Chiron geladen!");
         }, undefined, function (error) {
             console.error("Fehler beim Laden:", error);
         });
@@ -154,7 +158,7 @@
             requestAnimationFrame(animate);
 
             if (inCar) {
-                // --- AUTO MODUS (WASD) ---
+                // --- AUTO FAHREN (WASD) ---
                 if (keys.w) {
                     carSpeed = Math.min(carSpeed + acceleration, maxSpeed);
                 } else if (keys.s) {
@@ -177,46 +181,49 @@
                     carModel.rotation.y = carAngle;
                 }
 
-                // --- KAMERA LOGIK (Wechseln mit C) ---
+                // --- OPTIMIERTE KAMERA PERSPEKTIVEN ---
                 if (cameraMode === 0) {
-                    // Modus 1: Klassisch von hinten oben folgend
+                    // Normal: Schräg von hinten oben
                     camera.position.set(
-                        carPos.x - Math.sin(carAngle) * 28,
-                        12,
-                        carPos.z - Math.cos(carAngle) * 28
+                        carPos.x - Math.sin(carAngle) * 45,
+                        18,
+                        carPos.z - Math.cos(carAngle) * 45
                     );
-                    camera.lookAt(carPos.x, 3, carPos.z);
+                    camera.lookAt(carPos.x, 4, carPos.z);
                 } 
                 else if (cameraMode === 1) {
-                    // Modus 2: Vogelperspektive (Direkt von oben)
-                    camera.position.set(carPos.x, 45, carPos.z);
-                    camera.lookAt(carPos.x, 0, carPos.z);
+                    // Weit weg: Drohnen-Ansicht von weiter oben hinten
+                    camera.position.set(
+                        carPos.x - Math.sin(carAngle) * 75,
+                        32,
+                        carPos.z - Math.cos(carAngle) * 75
+                    );
+                    camera.lookAt(carPos.x, 2, carPos.z);
                 } 
                 else if (cameraMode === 2) {
-                    // 🔥 Modus 3: INNENANSICHT (Cockpit / Ego-Perspektive)
-                    // Setzt die Kamera genau ins Innere des skalierten Autos
+                    // Tiefe Action-Cam: Ganz nah am Heck (wie im Screenshot-Rennspiel)
                     camera.position.set(
-                        carPos.x + Math.sin(carAngle) * 0.5, 
-                        2.8, // Höhe des Fahrersitzes
-                        carPos.z + Math.cos(carAngle) * 0.5
+                        carPos.x - Math.sin(carAngle) * 32,
+                        8, 
+                        carPos.z - Math.cos(carAngle) * 32
                     );
-                    // Die Kamera blickt geradeaus nach vorne durch die Windschutzscheibe
                     camera.lookAt(
-                        carPos.x + Math.sin(carAngle) * 50,
-                        2.5,
-                        carPos.z + Math.cos(carAngle) * 50
+                        carPos.x + Math.sin(carAngle) * 20,
+                        5,
+                        carPos.z + Math.cos(carAngle) * 20
                     );
                 }
 
             } else {
-                // --- ZU FUSS MODUS (WASD) ---
-                const moveSpeed = 0.2;
+                // --- ZU FUSS GEHEN (WASD) ---
+                const moveSpeed = 0.3;
                 if (keys.w) playerPos.z -= moveSpeed;
                 if (keys.s) playerPos.z += moveSpeed;
                 if (keys.a) playerPos.x -= moveSpeed;
                 if (keys.d) playerPos.x += moveSpeed;
 
-                camera.position.set(playerPos.x, 15, playerPos.z + 25);
+                // Kamera folgt dem Spieler zu Fuß mit passendem Abstand zum Riesen-Auto
+                camera.position.set(playerPos.x, 25, playerPos.z + 45);
                 camera.lookAt(playerPos.x, 0, playerPos.z);
             }
 
