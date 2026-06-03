@@ -3,168 +3,254 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>3D Bugatti Simulator</title>
+    <title>3D Bugatti Chiron Simulator</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #6b7280; font-family: sans-serif; user-select: none; }
+        body { margin: 0; overflow: hidden; background: #9ca3af; font-family: 'Segoe UI', sans-serif; user-select: none; touch-action: none; }
+        
+        /* Infobox oben links */
         #info {
             position: absolute; top: 15px; left: 15px;
-            color: white; background: rgba(15, 23, 42, 0.9);
-            padding: 15px; border-radius: 8px; font-size: 16px;
-            pointer-events: none; line-height: 1.5;
-            border: 2px solid #38bdf8; z-index: 10;
+            color: white; background: rgba(15, 23, 42, 0.85);
+            padding: 12px 20px; border-radius: 12px; font-size: 16px;
+            pointer-events: none; border: 2px solid #38bdf8; z-index: 10;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
         #status { color: #38bdf8; font-weight: bold; }
+
+        /* Touch-Aktions-Buttons für das iPad */
+        .btn {
+            position: absolute; bottom: 30px; right: 30px;
+            padding: 18px 28px; font-size: 18px; font-weight: bold;
+            color: white; border: none; border-radius: 50px;
+            cursor: pointer; z-index: 10; box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+            display: none; transition: transform 0.1s;
+        }
+        .btn:active { transform: scale(0.95); }
+        #btnEnter { background: #10b981; border: 2px solid #34d399; }
+        #btnExit { background: #ef4444; border: 2px solid #f87171; }
+
+        /* Digitaler Joystick zum Lenken und Fahren */
+        #joystickContainer {
+            position: absolute; bottom: 40px; left: 40px;
+            width: 120px; height: 120px; background: rgba(255,255,255,0.1);
+            border: 3px solid rgba(255,255,255,0.3); border-radius: 50%;
+            z-index: 10; display: block; touch-action: none;
+        }
+        #joystickKnob {
+            position: absolute; top: 35px; left: 35px;
+            width: 50px; height: 50px; background: #38bdf8;
+            border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            touch-action: none;
+        }
     </style>
 </head>
 <body>
 
     <div id="info">
-        <b>⚙️ STEUERUNG:</b><br>
-        Laufen / Fahren: <span style="color:#facc15">W, A, S, D</span><br>
-        Einsteigen: <span style="color:#34d399">E</span> (Beim Auto stehen)<br>
-        Aussteigen: <span style="color:#ef4444">F</span><br><br>
+        🏎️ <b>BUGATTI SIMULATOR</b><br>
         Status: <span id="status">Zu Fuß</span>
+    </div>
+
+    <button id="btnEnter" class="btn" onclick="enterCar()">Einsteigen 🚗</button>
+    <button id="btnExit" class="btn" onclick="exitCar()">Aussteigen 🏃</button>
+
+    <div id="joystickContainer">
+        <div id="joystickKnob"></div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 
     <script>
-        // 1. Szene, Kamera und Renderer
+        // 1. 3D-Setup
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x9ca3af); // Hellerer Hintergrund
-        scene.fog = new THREE.Fog(0x9ca3af, 30, 150);
+        scene.background = new THREE.Color(0x9ca3af);
+        scene.fog = new THREE.Fog(0x9ca3af, 40, 180);
 
         const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.shadowMap.enabled = true;
         document.body.appendChild(renderer.domElement);
 
-        // 2. STARKES LICHT (Damit das Modell nicht unsichtbar/schwarz ist)
-        const ambientLight = new THREE.AmbientLight(0xffffff, 1.5); // Sehr helles Grundlicht
+        // Lichtquellen optimieren
+        const ambientLight = new THREE.AmbientLight(0xffffff, 1.6);
         scene.add(ambientLight);
 
-        const dirLight1 = new THREE.DirectionalLight(0xffffff, 1.5);
-        dirLight1.position.set(20, 40, 20);
-        dirLight1.castShadow = true;
-        scene.add(dirLight1);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+        dirLight.position.set(30, 50, 30);
+        dirLight.castShadow = true;
+        scene.add(dirLight);
 
-        const dirLight2 = new THREE.DirectionalLight(0x38bdf8, 0.5); // Leicht bläuliches Gegenlicht für Reflexioneffekte
-        dirLight2.position.set(-20, 20, -20);
-        scene.add(dirLight2);
-
-        // 3. Bodenplattform
+        // Bodenebene
         const floorGeo = new THREE.PlaneGeometry(1000, 1000);
-        const floorMat = new THREE.MeshStandardMaterial({ color: 0x1f2937, roughness: 0.6 });
+        const floorMat = new THREE.MeshStandardMaterial({ color: 0x1f2937, roughness: 0.5 });
         const floor = new THREE.Mesh(floorGeo, floorMat);
         floor.rotation.x = -Math.PI / 2;
         floor.receiveShadow = true;
         scene.add(floor);
 
-        const grid = new THREE.GridHelper(1000, 150, 0x111827, 0x4b5563);
-        grid.position.y = 0.02;
+        const grid = new THREE.GridHelper(1000, 120, 0x0f172a, 0x4b5563);
+        grid.position.y = 0.01;
         scene.add(grid);
 
-        // 4. Variablen
+        // Variables
         let carModel = null;
         let inCar = false;
 
-        let playerPos = { x: 0, z: 8 };
+        let playerPos = { x: 0, z: 15 };
         let carPos = { x: 0, z: 0 };
         let carSpeed = 0;
         let carAngle = 0;
 
-        const maxSpeed = 0.7;
-        const acceleration = 0.015;
-        const friction = 0.006;
-        const turnSpeed = 0.035;
+        const maxSpeed = 0.8;
+        const acceleration = 0.02;
+        const friction = 0.008;
+        const turnSpeed = 0.04;
 
-        const keys = { w: false, a: false, s: false, d: false };
+        // Joystick-Variablen für Touch-Berechnung
+        let joystickActive = false;
+        let joystickMove = { x: 0, y: 0 }; // Werte von -1 bis 1
 
-        window.addEventListener('keydown', (e) => {
-            const key = e.key.toLowerCase();
-            if (key in keys) keys[key] = true;
-
-            if (key === 'e' && !inCar) {
-                let distance = Math.hypot(playerPos.x - carPos.x, playerPos.z - carPos.z);
-                if (distance < 6) {
-                    inCar = true;
-                    document.getElementById("status").innerText = "Im Bugatti";
-                    document.getElementById("status").style.color = "#34d399";
-                }
-            }
-
-            if (key === 'f' && inCar) {
-                inCar = false;
-                playerPos.x = carPos.x - Math.cos(carAngle) * 3;
-                playerPos.z = carPos.z + Math.sin(carAngle) * 3;
-                document.getElementById("status").innerText = "Zu Fuß";
-                document.getElementById("status").style.color = "#38bdf8";
-            }
-        });
-
-        window.addEventListener('keyup', (e) => {
-            const key = e.key.toLowerCase();
-            if (key in keys) keys[key] = false;
-        });
-
-        // 5. BUGATTI MODELL MIT SICHERHEITS-MATERIALIEN LADEN
+        // 2. BUGATTI MODELL MIT AUTO-SKALIERUNG LADEN
         const loader = new THREE.GLTFLoader();
         
         loader.load('2016_bugatti_chiron.glb', function (gltf) {
             carModel = gltf.scene;
             carModel.position.set(carPos.x, 0, carPos.z);
             
-            // Gehe durch alle Teile des Modells und stelle sicher, dass sie sichtbar sind
+            // 🔥 FEHLERBEHEBUNG: Modell massiv vergrößern (Faktor 250), damit er nicht winzig ist!
+            carModel.scale.set(250, 250, 250);
+
             carModel.traverse(function (child) {
                 if (child.isMesh) {
                     child.castShadow = true;
                     child.receiveShadow = true;
-                    
-                    // Falls das Material des Autos unsichtbar/schwarz geladen wird, erzwingen wir ein sichtbares Material
-                    if (!child.material || child.material.color.getHex() === 0x000000) {
-                        child.material = new THREE.MeshStandardMaterial({
-                            color: 0xd1d5db, // Schönes Silber/Weiß
-                            roughness: 0.2,
-                            metalness: 0.8
-                        });
+                    // Spiegelnder Autolack-Effekt erzwingen
+                    if(child.material) {
+                        child.material.roughness = 0.1;
+                        child.material.metalness = 0.8;
                     }
                 }
             });
 
-            // Automatische Größenanpassung: Falls das Modell winzig im Code ist, wird es hier sichtbar groß gemacht
-            const box = new THREE.Box3().setFromObject(carModel);
-            const size = box.getSize(new THREE.Vector3());
-            if(size.length() < 1) {
-                carModel.scale.set(5, 5, 5); // Vergrößern falls zu klein
-            }
-
             scene.add(carModel);
-            console.log("Bugatti Chiron erfolgreich geladen und sichtbar gemacht!");
+            document.getElementById("btnEnter").style.display = "block"; // Button anzeigen wenn geladen
         }, undefined, function (error) {
-            console.error("Fehler beim Laden des 3D-Modells:", error);
+            console.error("Fehler beim Laden des Bugattis:", error);
         });
 
-        // 6. Game-Loop
+        // 3. Ein- und Aussteigfunktionen (für Buttons)
+        function enterCar() {
+            if (!carModel) return;
+            let distance = Math.hypot(playerPos.x - carPos.x, playerPos.z - carPos.z);
+            
+            // Wenn der Spieler nah genug am skalierten Auto ist
+            if (distance < 20) {
+                inCar = true;
+                document.getElementById("status").innerText = "Im Bugatti";
+                document.getElementById("status").style.color = "#34d399";
+                document.getElementById("btnEnter").style.display = "none";
+                document.getElementById("btnExit").style.display = "block";
+            } else {
+                alert("Du bist noch zu weit vom Bugatti entfernt! Tippe auf den Boden, um heranzulaufen.");
+            }
+        }
+
+        function exitCar() {
+            inCar = false;
+            playerPos.x = carPos.x - Math.cos(carAngle) * 8;
+            playerPos.z = carPos.z + Math.sin(carAngle) * 8;
+            document.getElementById("status").innerText = "Zu Fuß";
+            document.getElementById("status").style.color = "#38bdf8";
+            document.getElementById("btnExit").style.display = "none";
+            document.getElementById("btnEnter").style.display = "block";
+        }
+
+        // 4. Touch-Bodensteuerung (Zu Fuß herumlaufen)
+        window.addEventListener('pointerdown', (e) => {
+            // Ignorieren, wenn man auf UI-Elemente drückt
+            if (e.clientX < 200 && e.clientY > window.innerHeight - 200) return; // Joystick-Bereich
+            if (e.target.tagName === 'BUTTON') return;
+
+            if (!inCar) {
+                // Klick auf dem Bildschirm in 3D-Weltkoordinaten umrechnen
+                let mouse = new THREE.Vector2(
+                    (e.clientX / window.innerWidth) * 2 - 1,
+                    -(e.clientY / window.innerHeight) * 2 + 1
+                );
+                let raycaster = new THREE.Raycaster();
+                raycaster.setFromCamera(mouse, camera);
+                let intersects = raycaster.intersectObject(floor);
+
+                if (intersects.length > 0) {
+                    // Spieler geht dorthin, wo du hingetippt hast
+                    playerPos.x = intersects[0].point.x;
+                    playerPos.z = intersects[0].point.z;
+                }
+            }
+        });
+
+        // 5. Joystick-Logik fürs iPad
+        const joystickContainer = document.getElementById("joystickContainer");
+        const joystickKnob = document.getElementById("joystickKnob");
+
+        joystickContainer.addEventListener("pointerdown", (e) => {
+            joystickActive = true;
+            moveJoystick(e);
+        });
+
+        window.addEventListener("pointermove", (e) => {
+            if (joystickActive) moveJoystick(e);
+        });
+
+        window.addEventListener("pointerup", () => {
+            joystickActive = false;
+            joystickKnob.style.transform = `translate(0px, 0px)`;
+            joystickMove = { x: 0, y: 0 };
+        });
+
+        function moveJoystick(e) {
+            const rect = joystickContainer.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            let deltaX = e.clientX - centerX;
+            let deltaY = e.clientY - centerY;
+            let distance = Math.hypot(deltaX, deltaY);
+            const maxRadius = 40;
+
+            if (distance > maxRadius) {
+                deltaX = (deltaX / distance) * maxRadius;
+                deltaY = (deltaY / distance) * maxRadius;
+            }
+
+            joystickKnob.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+            
+            // Werte normalisieren (-1 bis 1)
+            joystickMove.x = deltaX / maxRadius;
+            joystickMove.y = -deltaY / maxRadius; // Invertieren für Vorwärtssteuerung
+        }
+
+        // 6. Game-Loop Animation
         function animate() {
             requestAnimationFrame(animate);
 
             if (inCar) {
-                if (keys.w) {
-                    carSpeed = Math.min(carSpeed + acceleration, maxSpeed);
-                } else if (keys.s) {
-                    carSpeed = Math.max(carSpeed - acceleration, -maxSpeed / 2);
+                // --- AUTO FAHREN MIT JOYSTICK ---
+                if (joystickMove.y > 0.1) {
+                    carSpeed = Math.min(carSpeed + acceleration * joystickMove.y, maxSpeed);
+                } else if (joystickMove.y < -0.1) {
+                    carSpeed = Math.max(carSpeed + acceleration * joystickMove.y, -maxSpeed / 2);
                 } else {
                     if (carSpeed > 0) carSpeed = Math.max(0, carSpeed - friction);
                     if (carSpeed < 0) carSpeed = Math.min(0, carSpeed + friction);
                 }
 
-                if (Math.abs(carSpeed) > 0.01) {
-                    const currentTurn = turnSpeed * (carSpeed / maxSpeed + 0.3);
-                    if (keys.a) carAngle += carSpeed > 0 ? currentTurn : -currentTurn;
-                    if (keys.d) carAngle -= carSpeed > 0 ? currentTurn : -currentTurn;
+                if (Math.abs(carSpeed) > 0.05) {
+                    // Lenken basierend auf Joystick X-Achse
+                    carAngle -= turnSpeed * joystickMove.x * (carSpeed > 0 ? 1 : -1);
                 }
 
                 carPos.x += Math.sin(carAngle) * carSpeed;
@@ -175,22 +261,18 @@
                     carModel.rotation.y = carAngle;
                 }
 
-                // Kameraverfolgung optimiert
+                // Kamera-Verfolgung hinter dem großen Auto
                 camera.position.set(
-                    carPos.x - Math.sin(carAngle) * 10,
-                    4.5,
-                    carPos.z - Math.cos(carAngle) * 10
+                    carPos.x - Math.sin(carAngle) * 28,
+                    12,
+                    carPos.z - Math.cos(carAngle) * 28
                 );
-                camera.lookAt(carPos.x, 1, carPos.z);
+                camera.lookAt(carPos.x, 3, carPos.z);
 
             } else {
-                const moveSpeed = 0.15;
-                if (keys.w) playerPos.z -= moveSpeed;
-                if (keys.s) playerPos.z += moveSpeed;
-                if (keys.a) playerPos.x -= moveSpeed;
-                if (keys.d) playerPos.x += moveSpeed;
-
-                camera.position.set(playerPos.x, 6, playerPos.z + 12);
+                // --- ZU FUSS MODUS ---
+                // Kamera schaut flach auf die Map, damit man sieht wohin man tippt
+                camera.position.set(playerPos.x, 22, playerPos.z + 35);
                 camera.lookAt(playerPos.x, 0, playerPos.z);
             }
 
