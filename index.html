@@ -58,7 +58,6 @@
         road.receiveShadow = true;
         scene.add(road);
 
-        // Fahrbahnmarkierungen (3 Spuren)
         function createLine(width, length, color, xPos, isDashed = false) {
             const lineGeo = new THREE.PlaneGeometry(width, isDashed ? 8 : length);
             const lineMat = new THREE.MeshBasicMaterial({ color: color });
@@ -69,16 +68,11 @@
                 scene.add(line);
             }
         }
-        // Außenlinien
         createLine(0.5, roadLength, 0xffffff, -roadWidth/2 + 1);
         createLine(0.5, roadLength, 0xffffff, roadWidth/2 - 1);
-        // Mittlere gestrichelte Linien für 3 Spuren
         createLine(0.3, roadLength, 0xffffff, -roadWidth/6, true);
         createLine(0.3, roadLength, 0xffffff, roadWidth/6, true);
 
-        // ... (Der Rest des Codes bleibt gleich für die Logik) ...
-        
-        // Variablen & Steuerung
         let carModel = null;
         let inCar = false;
         let playerPos = { x: 5, z: 20 };
@@ -114,7 +108,7 @@
 
         function animate() {
             requestAnimationFrame(animate);
-            if (inCar) {
+            if (inCar && carModel) {
                 if (keys.w) carSpeed = Math.min(carSpeed + 0.03, 2.5);
                 else if (keys.s) carSpeed = Math.max(carSpeed - 0.03, -1.2);
                 else carSpeed *= 0.98;
@@ -127,7 +121,6 @@
                 carModel.position.set(carPos.x, 0, carPos.z);
                 carModel.rotation.y = carAngle;
 
-                // Kamera-Modi
                 if (cameraMode === 0) camera.position.set(carPos.x - Math.sin(carAngle) * 60, 25, carPos.z - Math.cos(carAngle) * 60);
                 else if (cameraMode === 1) camera.position.set(carPos.x - Math.sin(carAngle) * 100, 50, carPos.z - Math.cos(carAngle) * 100);
                 else camera.position.set(carPos.x - Math.sin(carAngle) * 40, 10, carPos.z - Math.cos(carAngle) * 40);
