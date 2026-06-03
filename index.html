@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Slither.io - Anti-AFK Edition</title>
+    <title>Slither.io - Absolute Anti-Ghost Edition</title>
     <style>
         body {
             margin: 0; padding: 0;
@@ -43,9 +43,9 @@
 <body>
 
     <div id="lobby">
-        <h3>🐍 Slither.io Anti-AFK <h3>
+        <h3>🐍 Slither.io FIXED <h3>
         <input type="number" id="roomInput" placeholder="Raum-Nummer (4-stellig)" style="font-size: 20px; width: 100%; text-align: center; padding: 6px; border-radius: 6px; border: 1px solid #1f2937; background: #111827; color: white;"><br>
-        <button onclick="joinRoom()">In die Arena! 🚀</button>
+        <button onclick="joinRoom()">Fehlerfrei zocken! 🚀</button>
     </div>
 
     <div id="scoreBoard"><b style="color: #00f588;">BESTENLISTE:</b><div id="leaderboardList"></div></div>
@@ -61,7 +61,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <script>
-        // BELGIEN-SERVER AKTIV
         const firebaseConfig = {
             apiKey: "AIzaSyDVCk8f0nhfJLLwycEZJN0-zJ05KURuGSQ",
             authDomain: "halal-bomben-spiel.firebaseapp.com",
@@ -94,10 +93,6 @@
         let currentSpeed = 4;
         let isBoosting = false;
 
-        // AFK Variablen
-        let lastX = myX, lastY = myY;
-        let afkTimer = 0;
-
         function joinRoom() {
             const input = document.getElementById("roomInput").value;
             if(input.length < 4) { alert("Bitte 4 Zahlen eingeben!"); return; }
@@ -113,10 +108,10 @@
             document.getElementById("scoreBoard").style.display = "block";
             document.getElementById("chatBox").style.display = "flex";
 
-            // 🌟 TRICK 1: Wenn der Tab geschlossen wird, löscht die Datenbank uns SOFORT automatisch!
+            // Sofortiges Löschen bei Verbindungsabbruch
             database.ref(roomId + "/snakes/" + playerId).onDisconnect().remove();
 
-            // Futter initialisieren
+            // Futter erzeugen
             database.ref(roomId + "/food").once("value", snapshot => {
                 if(!snapshot.val()) {
                     let initialFood = {};
@@ -140,10 +135,7 @@
                 let eventData = snapshot.val();
                 if(eventData && eventData.triggerTime > Date.now() - 3000) {
                     if(eventData.killerId !== playerId && alive) {
-                        alive = false;
-                        dropPointsAsFood();
-                        database.ref(roomId + "/snakes/" + playerId).update({ alive: false });
-                        setTimeout(respawn, 2000);
+                        triggerDeath();
                     }
                 }
             });
@@ -151,9 +143,6 @@
             setInterval(physicsLoop, 1000 / 45);
             setInterval(uploadDataLoop, 70);
             setInterval(() => { if(alive && isBoosting && myLength > 5) myLength--; }, 500);
-
-            // 🌟 TRICK 2: Jede Sekunde prüfen, ob wir uns bewegt haben (AFK-Schutz)
-            setInterval(checkAFK, 1000);
         }
 
         canvas.addEventListener("touchmove", (e) => {
@@ -189,40 +178,29 @@
             }
         }
 
-        // AFK PRÜFUNG LOGIK
-        function checkAFK() {
-            if (!alive) return;
-            // Wenn die Differenz zum letzten Mal winzig ist, steht der Spieler still
-            if (Math.abs(myX - lastX) < 1 && Math.abs(myY - lastY) < 1) {
-                afkTimer++;
-                if (afkTimer >= 15) { // Nach 15 Sekunden Stillstand -> Autokill!
-                    alive = false;
-                    dropPointsAsFood();
-                    database.ref(roomId + "/snakes/" + playerId).update({ alive: false });
-                    database.ref(roomId + "/chat").push({ user: "🤖 AFK-BOT", text: `${playerId} ist wegen Inaktivität explodiert!`, color: "#ff9f43" });
-                    setTimeout(respawn, 2000);
-                }
-            } else {
-                afkTimer = 0; // Beweegt -> Timer zurücksetzen
-            }
-            lastX = myX;
-            lastY = myY;
-        }
-
-        function dropPointsAsFood() {
+        function triggerDeath() {
+            alive = false;
+            // Punkte droppen
             for (let i = 0; i < myTail.length; i += 3) {
                 let dropId = "drop_" + playerId + "_" + i + "_" + Math.floor(Math.random() * 1000);
-                database.ref(roomId + "/food/" + dropId).set({
-                    x: myTail[i].x + (Math.random() * 12 - 6),
-                    y: myTail[i].y + (Math.random() * 12 - 6),
-                    color: myColor
-                });
+                database.ref(roomId + "/food/" + dropId).set({ x: myTail[i].x + (Math.random() * 12 - 6), y: myTail[i].y + (Math.random() * 12 - 6), color: myColor });
+            }
+            database.ref(roomId + "/snakes/" + playerId).update({ alive: false });
+            setTimeout(respawn, 1000);
+        }
+
+        // Hilfsfunktion um Punkte einer ANDEREN toten AFK Schlange zu droppen
+        function dropOtherPlayerPoints(otherId, otherTail, otherColor) {
+            let t = otherTail || [];
+            for (let i = 0; i < t.length; i += 3) {
+                let dropId = "drop_" + otherId + "_" + i + "_" + Math.floor(Math.random() * 1000);
+                database.ref(roomId + "/food/" + dropId).set({ x: t[i].x + (Math.random() * 12 - 6), y: t[i].y + (Math.random() * 12 - 6), color: otherColor });
             }
         }
 
         function respawn() {
             myX = Math.random() * (MAP_WIDTH - 200) + 100; myY = Math.random() * (MAP_HEIGHT - 200) + 100;
-            myLength = 8; myTail = []; afkTimer = 0; alive = true;
+            myLength = 8; myTail = []; alive = true;
         }
 
         function physicsLoop() {
@@ -237,7 +215,7 @@
             myTail.unshift({x: myX, y: myY});
             if(myTail.length > myLength * 2.5) myTail.pop();
 
-            // Essen einsammeln
+            // Futter essen
             Object.keys(foods).forEach(fId => {
                 let f = foods[fId];
                 if(Math.abs(myX - f.x) < 15 && Math.abs(myY - f.y) < 15) {
@@ -250,17 +228,29 @@
                 }
             });
 
-            // Crash Test (Jetzt kann man auch stehende Schlangen rammen und killen!)
+            // 🔥 DIE NEUE ULTIMATIVE KOLLISIONS-ERKENNUNG (Zwei-Wege-Check)
             Object.keys(snakes).forEach(sId => {
                 if(sId !== playerId && snakes[sId].alive) {
-                    let otherTail = snakes[sId].tail || [];
-                    for(let i = 0; i < otherTail.length; i += 3) {
-                        if(Math.abs(myX - otherTail[i].x) < 14 && Math.abs(myY - otherTail[i].y) < 14) {
-                            alive = false;
-                            dropPointsAsFood();
-                            database.ref(roomId + "/snakes/" + playerId).update({ alive: false });
+                    let other = snakes[sId];
+                    let otherTail = other.tail || [];
+
+                    // 1. Check: Bin ICH in den Körper eines anderen gefahren? (Normaler Tod)
+                    for(let i = 4; i < otherTail.length; i += 3) {
+                        if(Math.abs(myX - otherTail[i].x) < 13 && Math.abs(myY - otherTail[i].y) < 13) {
                             database.ref(roomId + "/chat").push({ user: "🚨", text: `${playerId} wurde zerlegt!`, color: "#ef4444" });
-                            setTimeout(respawn, 1000);
+                            triggerDeath();
+                            return;
+                        }
+                    }
+
+                    // 2. Check: Ist der KOPF des Gegners in MEINEN Körper gefahren? 
+                    // Wenn der Gegner AFK ist, merkt er es nicht, also übernimmt MEIN iPad den Kill für ihn!
+                    for(let i = 0; i < myTail.length; i += 3) {
+                        if(Math.abs(other.x - myTail[i].x) < 14 && Math.abs(other.y - myTail[i].y) < 14) {
+                            // Kill den anderen Spieler in der Cloud!
+                            database.ref(roomId + "/snakes/" + sId).update({ alive: false });
+                            dropOtherPlayerPoints(sId, otherTail, other.color);
+                            database.ref(roomId + "/chat").push({ user: "🤖 ANTI-AFK", text: `${sId} wurde von ${playerId}s Körper zerstört!`, color: "#00f588" });
                         }
                     }
                 }
@@ -269,7 +259,7 @@
 
         function uploadDataLoop() {
             if(!alive) return;
-            database.ref(roomId + "/snakes/" + playerId).set({ id: playerId, x: myX, y: myY, tail: myTail, length: myLength, color: myColor, alive: true });
+            database.ref(roomId + "/snakes/" + playerId).set({ id: playerId, x: myX, y: myY, tail: myTail, length: myLength, color: myColor, alive: true, timestamp: Date.now() });
         }
 
         function drawArena() {
@@ -277,20 +267,24 @@
             ctx.save();
             ctx.translate(-(myX - canvas.width/2), -(myY - canvas.height/2));
 
-            // Map-Border
             ctx.strokeStyle = "#1f2937"; ctx.lineWidth = 4; ctx.strokeRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
 
-            // Futter zeichnen
             Object.keys(foods).forEach(fId => {
                 let f = foods[fId]; ctx.beginPath(); 
                 let size = fId.startsWith("drop_") ? 6 : 4;
                 ctx.arc(f.x, f.y, size, 0, Math.PI*2); ctx.fillStyle = f.color; ctx.fill();
             });
 
-            // Schlangen zeichnen
             let list = [];
             Object.keys(snakes).forEach(sId => {
-                let s = snakes[sId]; if(!s.alive) return;
+                let s = snakes[sId]; 
+                
+                // Extra-Sicherheit: Wenn eine Schlange seit mehr als 12 Sekunden keine Lebenszeichen (Timestamp) gesendet hat, ignorieren und löschen wir sie!
+                if(!s.alive || (s.timestamp && s.timestamp < Date.now() - 12000)) {
+                    if (sId !== playerId) database.ref(roomId + "/snakes/" + sId).remove();
+                    return;
+                }
+
                 list.push({id: s.id, score: s.length});
                 let t = s.tail || []; if(t.length < 2) return;
 
@@ -306,7 +300,6 @@
 
             ctx.restore();
 
-            // Bestenliste
             list.sort((a,b) => b.score - a.score); let html = "";
             list.slice(0, 4).forEach((p, i) => { html += `<div>${i+1}. ${p.id===playerId?"<b>DU</b>":p.id} (${p.score})</div>`; });
             document.getElementById("leaderboardList").innerHTML = html;
@@ -316,8 +309,6 @@
         requestAnimationFrame(drawArena);
 
         window.addEventListener("resize", () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
-        
-        // Beim Schließen der Seite sofort sauber aus der DB löschen
         window.onbeforeunload = function() { if(roomId && playerId) database.ref(roomId + "/snakes/" + playerId).remove(); };
     </script>
 </body>
