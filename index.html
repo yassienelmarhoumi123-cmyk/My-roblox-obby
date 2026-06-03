@@ -6,126 +6,83 @@
     <title>3D Bugatti Splitscreen-Rennen</title>
     <style>
         body { margin: 0; overflow: hidden; background: #9ca3af; font-family: 'Segoe UI', sans-serif; user-select: none; }
-        
         #info {
             position: absolute; top: 15px; left: 15px;
             color: white; background: rgba(15, 23, 42, 0.9);
             padding: 15px 22px; border-radius: 12px; font-size: 16px;
             pointer-events: none; border: 2px solid #38bdf8; z-index: 10;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            line-height: 1.6;
         }
     </style>
 </head>
 <body>
 
     <div id="info">
-        🏎️ <b>BUGATTI SPLITSCREEN-RENNEN</b><br>
-        Spieler 1: <span style="color:#facc15">W, A, S, D</span><br>
-        Spieler 2: <span style="color:#fbbf24">Pfeiltasten</span>
+        🏎️ <b>BUGATTI REAL-DRIVE SIMULATOR</b><br>
+        Spieler 1: W, A, S, D | Spieler 2: Pfeiltasten
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 
     <script>
-        // Szene einrichten
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x9ca3af);
-        scene.fog = new THREE.Fog(0x9ca3af, 60, 300);
+        scene.fog = new THREE.Fog(0x9ca3af, 60, 400);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.shadowMap.enabled = true;
         document.body.appendChild(renderer.domElement);
 
-        // Kameras für Splitscreen
         const camera1 = new THREE.PerspectiveCamera(60, (window.innerWidth / 2) / window.innerHeight, 0.1, 1000);
         const camera2 = new THREE.PerspectiveCamera(60, (window.innerWidth / 2) / window.innerHeight, 0.1, 1000);
 
-        // Licht
-        const ambientLight = new THREE.AmbientLight(0xffffff, 1.6);
-        scene.add(ambientLight);
-        const dirLight = new THREE.DirectionalLight(0xffffff, 1.4);
+        scene.add(new THREE.AmbientLight(0xffffff, 1.2));
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1);
         dirLight.position.set(40, 80, 40);
-        dirLight.castShadow = true;
         scene.add(dirLight);
 
-        // Straße bauen
-        const roadWidth = 24; 
-        const roadLength = 5000;
-        const roadGeo = new THREE.PlaneGeometry(roadWidth, roadLength);
-        const roadMat = new THREE.MeshStandardMaterial({ color: 0x262626, roughness: 0.7 });
-        const road = new THREE.Mesh(roadGeo, roadMat);
+        // Straße breiter gemacht (40 statt 24)
+        const roadWidth = 40; 
+        const roadLength = 10000;
+        const road = new THREE.Mesh(new THREE.PlaneGeometry(roadWidth, roadLength), new THREE.MeshStandardMaterial({ color: 0x1e1e1e }));
         road.rotation.x = -Math.PI / 2;
-        road.receiveShadow = true;
         scene.add(road);
 
-        // Linien erstellen
-        function createLine(width, length, color, xPos, zPos, isDashed = false) {
-            const lineGeo = new THREE.PlaneGeometry(width, length);
-            const lineMat = new THREE.MeshBasicMaterial({ color: color });
-            const lineMesh = new THREE.Mesh(lineGeo, lineMat);
-            lineMesh.rotation.x = -Math.PI / 2;
-            lineMesh.position.set(xPos, 0.02, zPos);
-            scene.add(lineMesh);
-        }
-        for (let i = -roadLength/2; i < roadLength/2; i += 15) {
-            createLine(0.3, 7, 0xffffff, 0, i + 3.5, true);
-        }
-
-        // Steuerung
         const keys = { w: false, a: false, s: false, d: false, arrowup: false, arrowdown: false, arrowleft: false, arrowright: false };
         
-        // Spieler-Daten
-        let car1 = { pos: {x: -5, z: 0}, speed: 0, angle: 0, model: null };
-        let car2 = { pos: {x: 5, z: 0}, speed: 0, angle: 0, model: null };
+        // Physik-Parameter
+        function createCar() {
+            return { pos: {x: 0, z: 0}, speed: 0, angle: 0, gear: 1, model: null };
+        }
+        let car1 = createCar(); car1.pos.x = -10;
+        let car2 = createCar(); car2.pos.x = 10;
 
-        window.addEventListener('keydown', (e) => {
-            const key = e.key.toLowerCase();
-            if (key === 'w') keys.w = true;
-            if (key === 'a') keys.a = true;
-            if (key === 's') keys.s = true;
-            if (key === 'd') keys.d = true;
-            if (key === 'arrowup') keys.arrowup = true;
-            if (key === 'arrowdown') keys.arrowdown = true;
-            if (key === 'arrowleft') keys.arrowleft = true;
-            if (key === 'arrowright') keys.arrowright = true;
-        });
+        window.addEventListener('keydown', (e) => { keys[e.key.toLowerCase()] = true; });
+        window.addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; });
 
-        window.addEventListener('keyup', (e) => {
-            const key = e.key.toLowerCase();
-            if (key === 'w') keys.w = false;
-            if (key === 'a') keys.a = false;
-            if (key === 's') keys.s = false;
-            if (key === 'd') keys.d = false;
-            if (key === 'arrowup') keys.arrowup = false;
-            if (key === 'arrowdown') keys.arrowdown = false;
-            if (key === 'arrowleft') keys.arrowleft = false;
-            if (key === 'arrowright') keys.arrowright = false;
-        });
-
-        // Modelle laden
         const loader = new THREE.GLTFLoader();
         loader.load('2016_bugatti_chiron.glb', (gltf) => {
-            car1.model = gltf.scene;
-            car1.model.scale.set(450, 450, 450);
-            scene.add(car1.model);
-
-            car2.model = gltf.scene.clone();
-            car2.model.scale.set(450, 450, 450);
-            scene.add(car2.model);
+            car1.model = gltf.scene.clone(); car1.model.scale.set(450, 450, 450); scene.add(car1.model);
+            car2.model = gltf.scene.clone(); car2.model.scale.set(450, 450, 450); scene.add(car2.model);
         });
 
-        function updateCar(car, forwardKey, backKey, leftKey, rightKey) {
-            if (keys[forwardKey]) car.speed = Math.min(car.speed + 0.035, 2.5);
-            else if (keys[backKey]) car.speed = Math.max(car.speed - 0.035, -1.2);
-            else car.speed *= 0.98;
+        function updatePhysics(car, f, b, l, r) {
+            // Realistische Beschleunigung & Gänge
+            if (keys[f]) {
+                let acc = 0.05 / (1 + car.speed * 0.2); // Weniger Beschleunigung bei hohem Tempo
+                car.speed = Math.min(car.speed + acc, 4.0);
+            } else if (keys[b]) {
+                car.speed = Math.max(car.speed - 0.08, -1.0); // Bremsen
+            } else {
+                car.speed *= 0.99; // Rollwiderstand
+            }
 
-            if (Math.abs(car.speed) > 0.01) {
-                if (keys[leftKey]) car.angle += 0.032;
-                if (keys[rightKey]) car.angle -= 0.032;
+            // Lenkung abhängig von Geschwindigkeit
+            if (Math.abs(car.speed) > 0.1) {
+                let steerFactor = 0.02 / (1 + car.speed * 0.1); 
+                if (keys[l]) car.angle += steerFactor;
+                if (keys[r]) car.angle -= steerFactor;
             }
 
             car.pos.x += Math.sin(car.angle) * car.speed;
@@ -137,33 +94,24 @@
             }
         }
 
-        // Animations-Loop
         function animate() {
             requestAnimationFrame(animate);
+            updatePhysics(car1, 'w', 's', 'a', 'd');
+            updatePhysics(car2, 'arrowup', 'arrowdown', 'arrowleft', 'arrowright');
 
-            updateCar(car1, 'w', 's', 'a', 'd');
-            updateCar(car2, 'arrowup', 'arrowdown', 'arrowleft', 'arrowright');
-
-            const width = window.innerWidth;
-            const height = window.innerHeight;
-
+            const w = window.innerWidth, h = window.innerHeight;
             renderer.setScissorTest(true);
 
-            // Spieler 1 (Links)
-            renderer.setViewport(0, 0, width / 2, height);
-            renderer.setScissor(0, 0, width / 2, height);
-            camera1.position.set(car1.pos.x - Math.sin(car1.angle) * 45, 18, car1.pos.z - Math.cos(car1.angle) * 45);
-            camera1.lookAt(car1.pos.x, 4, car1.pos.z);
+            renderer.setViewport(0, 0, w / 2, h); renderer.setScissor(0, 0, w / 2, h);
+            camera1.position.set(car1.pos.x - Math.sin(car1.angle) * 50, 20, car1.pos.z - Math.cos(car1.angle) * 50);
+            camera1.lookAt(car1.pos.x, 5, car1.pos.z);
             renderer.render(scene, camera1);
 
-            // Spieler 2 (Rechts)
-            renderer.setViewport(width / 2, 0, width / 2, height);
-            renderer.setScissor(width / 2, 0, width / 2, height);
-            camera2.position.set(car2.pos.x - Math.sin(car2.angle) * 45, 18, car2.pos.z - Math.cos(car2.angle) * 45);
-            camera2.lookAt(car2.pos.x, 4, car2.pos.z);
+            renderer.setViewport(w / 2, 0, w / 2, h); renderer.setScissor(w / 2, 0, w / 2, h);
+            camera2.position.set(car2.pos.x - Math.sin(car2.angle) * 50, 20, car2.pos.z - Math.cos(car2.angle) * 50);
+            camera2.lookAt(car2.pos.x, 5, car2.pos.z);
             renderer.render(scene, camera2);
         }
-
         animate();
     </script>
 </body>
