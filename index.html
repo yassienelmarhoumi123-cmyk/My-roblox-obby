@@ -21,7 +21,7 @@
         input, button { font-size: 18px; padding: 12px; width: 100%; border-radius: 8px; margin-top: 10px; box-sizing: border-box; }
         input { border: 1px solid #334155; background: #1e293b; color: white; text-align: center; }
         button { background: #38bdf8; border: none; font-weight: bold; color: #0f172a; cursor: pointer; }
-        #gameCanvas { background: #0f172a; display: none; width: 100vw; height: 100vh; }
+        #gameCanvas { background: #0f172a; display: none; width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; }
         #scoreBoard {
             position: absolute; top: 15px; right: 15px;
             background: rgba(15, 23, 42, 0.85); padding: 10px 15px;
@@ -35,7 +35,7 @@
     <div id="lobby">
         <h2 style="color: #38bdf8; margin-top: 0;">✈️ AEROCOMBAT.IO</h2>
         <p style="font-size: 14px; color: #94a3b8;">Fliege mit dem Finger und schieße deine Klasse ab!</p>
-        <input type="number" id="roomInput" placeholder="Raum-Nummer (4-stellig)">
+        <input type="number" id="roomInput" placeholder="Raum-Nummer (4-stellig)" value="1234">
         <button onclick="joinRoom()">Abheben! 🚀</button>
     </div>
 
@@ -60,8 +60,15 @@
             appId: "1:709287849072:web:0a477d52580b2cd3d598b5"
         };
 
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+        let database;
+        try {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            database = firebase.database();
+        } catch(e) {
+            alert("Firebase Fehler beim Laden: " + e.message);
+        }
 
         let roomId = "", playerId = "";
         let myColor = 'hsl(' + Math.random() * 360 + ', 90%, 55%)';
@@ -69,8 +76,8 @@
         let players = {};
         let myBullets = [];
         
-        let myX = Math.random() * 600 + 100;
-        let myY = Math.random() * 600 + 100;
+        let myX = window.innerWidth / 2;
+        let myY = window.innerHeight / 2;
         let myAngle = 0;
         let myKills = 0;
         let alive = true;
@@ -83,60 +90,83 @@
         const ctx = canvas.getContext("2d");
 
         function joinRoom() {
-            const input = document.getElementById("roomInput").value;
-            if(input.length < 4) { alert("Bitte 4 Zahlen eingeben!"); return; }
-            roomId = "aero_" + input;
-            playerId = "Pilot_" + Math.floor(Math.random() * 900 + 100);
+            try {
+                const input = document.getElementById("roomInput").value;
+                if(input.length < 4) { alert("Bitte eine 4-stellige Nummer eingeben!"); return; }
+                
+                roomId = "aero_" + input;
+                playerId = "Pilot_" + Math.floor(Math.random() * 900 + 100);
 
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+                // 🔥 ERZWINGE ZUERST DAS DESIGNSHIFT (Die Lobby MUSS sofort verschwinden)
+                document.getElementById("lobby").style.display = "none";
+                canvas.style.display = "block";
+                document.getElementById("scoreBoard").style.display = "block";
 
-            document.getElementById("lobby").style.display = "none";
-            canvas.style.display = "block";
-            document.getElementById("scoreBoard").style.display = "block";
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
 
-            // Bei Verbindungsabbruch löschen
-            database.ref(roomId + "/players/" + playerId).onDisconnect().remove();
+                // Position zurücksetzen, falls das iPad eine komische Auflösung meldet
+                myX = canvas.width / 2;
+                myY = canvas.height / 2;
+                targetX = myX; targetY = myY;
 
-            // Synchronisation der Spieler
-            database.ref(roomId + "/players").on("value", snapshot => {
-                players = snapshot.val() || {};
-                if (players[playerId] && players[playerId].kills !== undefined) {
-                    myKills = players[playerId].kills;
+                if (database) {
+                    // Bei Verbindungsabbruch Spieler entfernen
+                    database.ref(roomId + "/players/" + playerId).onDisconnect().remove();
+
+                    // Synchronisation der Spieler aus Firebase
+                    database.ref(roomId + "/players").on("value", snapshot => {
+                        players = snapshot.val() || {};
+                        if (players[playerId] && players[playerId].kills !== undefined) {
+                            myKills = players[playerId].kills;
+                        }
+                    });
+
+                    // Signal-Empfänger für Kugeln
+                    database.ref(roomId + "/bullets").on("child_added", snapshot => {
+                        let b = snapshot.val();
+                        if(b && b.owner !== playerId && alive) {
+                            let dist = Math.hypot(myX - b.x, myY - b.y);
+                            if(dist < 22) { 
+                                triggerDeath();
+                                database.ref(roomId + "/players/" + b.owner + "/kills").set(firebase.database.ServerValue.increment(1));
+                            }
+                        }
+                        snapshot.ref.remove();
+                    });
                 }
-            });
 
-            // Signal-Empfänger für feindliche Raketen (Trefferschutz)
-            database.ref(roomId + "/bullets").on("child_added", snapshot => {
-                let b = snapshot.val();
-                if(b && b.owner !== playerId && alive) {
-                    let dist = Math.hypot(myX - b.x, myY - b.y);
-                    if(dist < 22) { // Radius-Treffer-Check
-                        triggerDeath();
-                        // Dem Schützen den Kill geben
-                        database.ref(roomId + "/players/" + b.owner + "/kills").set(firebase.database.ServerValue.increment(1));
-                    }
-                }
-                snapshot.ref.remove();
-            });
+                // Pointer Events (für iPads)
+                canvas.addEventListener("pointerdown", e => { isTouching = true; updateTarget(e); });
+                canvas.addEventListener("pointermove", e => { if(isTouching) updateTarget(e); });
+                canvas.addEventListener("pointerup", () => { isTouching = false; });
 
-            // Touch-Events fürs iPad
-            canvas.addEventListener("pointerdown", e => { isTouching = true; updateTarget(e); });
-            canvas.addEventListener("pointermove", e => { if(isTouching) updateTarget(e); });
-            canvas.addEventListener("pointerup", () => { isTouching = false; });
+                // Maus-Backup
+                canvas.addEventListener("mousedown", e => { isTouching = true; updateTarget(e); });
+                canvas.addEventListener("mousemove", e => { if(isTouching) updateTarget(e); });
+                canvas.addEventListener("mouseup", () => { isTouching = false; });
 
-            // Loops starten
-            setInterval(gameLoop, 1000 / 50); // Bewegung (50 FPS)
-            setInterval(shootLoop, 350); // Automatischer Schuss alle 0,35 Sekunden
+                // Touch-Backup speziell für ältere iPads/Safari
+                canvas.addEventListener("touchstart", e => { isTouching = true; if(e.touches[0]) updateTarget(e.touches[0]); }, {passive: true});
+                canvas.addEventListener("touchmove", e => { if(isTouching && e.touches[0]) updateTarget(e.touches[0]); }, {passive: true});
+                canvas.addEventListener("touchend", () => { isTouching = false; });
+
+                // Spiel-Schleifen starten
+                setInterval(gameLoop, 1000 / 50); 
+                setInterval(shootLoop, 350); 
+
+            } catch(err) {
+                alert("Fehler beim Spielstart: " + err.message);
+            }
         }
 
         function updateTarget(e) {
-            targetX = e.clientX;
-            targetY = e.clientY;
+            targetX = e.clientX || e.pageX;
+            targetY = e.clientY || e.pageY;
         }
 
         function shootLoop() {
-            if(!alive) return;
+            if(!alive || !database) return;
 
             let bullet = {
                 owner: playerId,
@@ -153,18 +183,17 @@
 
         function triggerDeath() {
             alive = false;
-            database.ref(roomId + "/players/" + playerId).remove();
+            if(database) database.ref(roomId + "/players/" + playerId).remove();
             setTimeout(() => {
                 myX = Math.random() * (canvas.width - 100) + 50;
                 myY = Math.random() * (canvas.height - 100) + 50;
                 targetX = myX; targetY = myY;
                 alive = true;
-            }, 2500); // 2,5 Sekunden Respawn-Zeit
+            }, 2500); 
         }
 
         function gameLoop() {
             if(alive) {
-                // Wenn der Finger das Display berührt, fliege sanft in die Richtung
                 if (isTouching) {
                     let dx = targetX - myX;
                     let dy = targetY - myY;
@@ -172,22 +201,21 @@
 
                     if (dist > 10) {
                         myAngle = Math.atan2(dy, dx);
-                        myX += Math.cos(myAngle) * 5.5; // Fluggeschwindigkeit des Jets
-                        myY += Math.sin(myAngle) * 5.5;
+                        myX += Math.cos(myAngle) * 6; 
+                        myY += Math.sin(myAngle) * 6;
                     }
                 }
 
-                // Bildschirmgrenzen einhalten
                 myX = Math.max(20, Math.min(canvas.width - 20, myX));
                 myY = Math.max(20, Math.min(canvas.height - 20, myY));
 
-                // Daten hochladen
-                database.ref(roomId + "/players/" + playerId).set({
-                    id: playerId, x: myX, y: myY, angle: myAngle, color: myColor, kills: myKills
-                });
+                if(database) {
+                    database.ref(roomId + "/players/" + playerId).set({
+                        id: playerId, x: myX, y: myY, angle: myAngle, color: myColor, kills: myKills
+                    });
+                }
             }
 
-            // Eigene Kugeln fliegen lassen
             for (let i = myBullets.length - 1; i >= 0; i--) {
                 let b = myBullets[i];
                 b.x += b.vx;
@@ -202,18 +230,18 @@
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Hintergrund-Sterne/Gitter für Geschwindigkeitsgefühl
+            // Gitter-Hintergrund
             ctx.strokeStyle = "#1e293b"; ctx.lineWidth = 1;
             for(let i=0; i<canvas.width; i+=80) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); ctx.stroke(); }
             for(let i=0; i<canvas.height; i+=80) { ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(canvas.width,i); ctx.stroke(); }
 
-            // Eigene Raketen zeichnen
+            // Schüsse zeichnen
             ctx.fillStyle = "#facc15";
             myBullets.forEach(b => {
                 ctx.beginPath(); ctx.arc(b.x, b.y, 4, 0, Math.PI * 2); ctx.fill();
             });
 
-            // Alle Spieler zeichnen (Aussehen wie kleine Kampfjets / Dreiecke)
+            // Spieler zeichnen
             let leaderboardList = [];
             Object.keys(players).forEach(pId => {
                 let p = players[pId];
@@ -223,12 +251,12 @@
                 ctx.translate(p.x, p.y);
                 ctx.rotate(p.angle);
 
-                // Jet-Körper zeichnen (Dreieck)
+                // Jet-Form
                 ctx.beginPath();
-                ctx.moveTo(22, 0);     // Die Nase vorn
-                ctx.lineTo(-14, -14);  // Linker Flügel hinten
-                ctx.lineTo(-8, 0);     // Mitte hinten
-                ctx.lineTo(-14, 14);   // Rechter Flügel hinten
+                ctx.moveTo(22, 0);     
+                ctx.lineTo(-14, -14);  
+                ctx.lineTo(-8, 0);     
+                ctx.lineTo(-14, 14);   
                 ctx.closePath();
                 
                 ctx.fillStyle = p.color; ctx.fill();
@@ -236,7 +264,6 @@
 
                 ctx.restore();
 
-                // Name über dem Jet anzeigen
                 ctx.fillStyle = "rgba(255,255,255,0.7)"; ctx.font = "12px sans-serif"; ctx.textAlign = "center";
                 ctx.fillText(p.id, p.x, p.y - 24);
             });
@@ -247,8 +274,19 @@
                 ctx.fillText("ABGESCHOSSEN! 💥", canvas.width/2, canvas.height/2);
             }
 
-            // Bestenliste updaten
+            // Bestenliste
             leaderboardList.sort((a,b) => b.kills - a.kills);
             let lbHtml = "";
             leaderboardList.slice(0, 4).forEach((p, i) => {
-                lbHtml += `<div>${i+1}. ${p.id === playerId ?
+                lbHtml += `<div>${i+1}. ${p.id === playerId ? "<b>DU</b>" : p.id} (Kills: ${p.kills})</div>`;
+            });
+            document.getElementById("leaderboard").innerHTML = lbHtml;
+        }
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        }
+        window.addEventListener("resize", resizeCanvas);
+    </script>
+</body>
+</html>
