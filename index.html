@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>State.io Pro Multiplayer - Fixed</title>
+    <title>State.io Ultra Multiplayer</title>
     <style>
         body {
             margin: 0; padding: 0;
@@ -21,7 +21,7 @@
         input, button { font-size: 18px; padding: 12px; width: 100%; border-radius: 8px; margin-top: 12px; box-sizing: border-box; }
         input { border: 2px solid #4b5563; background: #2d2d35; color: white; text-align: center; }
         button { background: #3b82f6; border: none; font-weight: bold; color: white; cursor: pointer; }
-        #gameCanvas { background: #25252b; display: none; }
+        #gameCanvas { background: #25252b; display: none; width: 100vw; height: 100vh; }
         #scoreBoard {
             position: absolute; top: 15px; right: 15px;
             background: rgba(30, 30, 36, 0.85); padding: 12px 18px;
@@ -33,7 +33,7 @@
 <body>
 
     <div id="lobby">
-        <h2 style="color: #3b82f6; margin-top: 0; font-size: 26px;">🗺️ STATE.IO MULTIPLAYER</h2>
+        <h2 style="color: #3b82f6; margin-top: 0; font-size: 26px;">🗺️ STATE.IO ONLINE</h2>
         <p style="font-size: 14px; color: #9ca3af;">Verbinde deine Basen und erobere die ganze Map!</p>
         <input type="number" id="roomInput" placeholder="Raum-Nummer (4-stellig)">
         <button onclick="joinRoom()">Server beitreten ⚔️</button>
@@ -72,6 +72,10 @@
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
 
+        // Virtuelles Koordinatensystem (1000x1000) sorgt für absolute Gleichheit auf allen iPads!
+        const V_WIDTH = 1000;
+        const V_HEIGHT = 1000;
+
         let activeBase = null; 
         let currentMouseX = 0, currentMouseY = 0;
         let isDragging = false;
@@ -79,11 +83,10 @@
         function joinRoom() {
             const input = document.getElementById("roomInput").value;
             if(input.length < 4) { alert("Bitte 4 Zahlen eingeben!"); return; }
-            roomId = "statepro_" + input;
+            roomId = "statev2_" + input;
             playerId = "General_" + Math.floor(Math.random() * 900 + 100);
 
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            resizeCanvas();
 
             document.getElementById("lobby").style.display = "none";
             canvas.style.display = "block";
@@ -92,29 +95,29 @@
             database.ref(roomId + "/bases").once("value", snapshot => {
                 if(!snapshot.val()) {
                     let initialBases = [];
-                    // Präzise, vordefinierte Positionen wie im Video
+                    // Fest definierte, virtuelle Punkte (egal wie groß das iPad ist)
                     let positions = [
-                        {x: 0.25, y: 0.2}, {x: 0.5, y: 0.2}, {x: 0.75, y: 0.2},
-                        {x: 0.2, y: 0.5},  {x: 0.5, y: 0.5}, {x: 0.8, y: 0.5},
-                        {x: 0.25, y: 0.8}, {x: 0.5, y: 0.8}, {x: 0.75, y: 0.8}
+                        {x: 250, y: 200}, {x: 500, y: 150}, {x: 750, y: 200},
+                        {x: 200, y: 500}, {x: 500, y: 500}, {x: 800, y: 500},
+                        {x: 250, y: 800}, {x: 500, y: 850}, {x: 750, y: 800}
                     ];
 
                     positions.forEach((pos, idx) => {
                         initialBases.push({
                             id: idx,
-                            x: canvas.width * pos.x,
-                            y: canvas.height * pos.y,
-                            size: 28, 
+                            x: pos.x,
+                            y: pos.y,
+                            size: 35, 
                             count: 10, 
                             owner: "neutral",
                             color: "#9ca3af"
                         });
                     });
 
-                    // Startbasis grün/blau/zufällig für dich
-                    initialBases[1].owner = playerId;
-                    initialBases[1].color = myColor;
-                    initialBases[1].count = 25;
+                    // Startbasis zuweisen
+                    initialBases[0].owner = playerId;
+                    initialBases[0].color = myColor;
+                    initialBases[0].count = 25;
 
                     database.ref(roomId + "/bases").set(initialBases);
                 } else {
@@ -155,8 +158,18 @@
             setInterval(updatePhysics, 1000 / 50); 
         }
 
+        // Rechnet Bildschirm-X in virtuelle X-Koordinate um
+        function toVirtualX(screenX) { return (screenX / canvas.width) * V_WIDTH; }
+        function toVirtualY(screenY) { return (screenY / canvas.height) * V_HEIGHT; }
+        // Rechnet virtuelle Koordinate in echte Bildschirm-Pixel fürs iPad um
+        function toScreenX(vX) { return (vX / V_WIDTH) * canvas.width; }
+        function toScreenY(vY) { return (vY / V_HEIGHT) * canvas.height; }
+
         function onPointerDown(e) {
-            let base = getBaseAt(e.clientX, e.clientY, 30); // Kleiner Radius beim Anklicken für Genauigkeit
+            let vX = toVirtualX(e.clientX);
+            let vY = toVirtualY(e.clientY);
+            let base = getBaseAt(vX, vY, 40); // 40 Pixel Toleranz beim Antippen
+            
             if(base && base.owner === playerId) {
                 activeBase = base;
                 isDragging = true;
@@ -175,8 +188,11 @@
             if(!isDragging) return;
             isDragging = false;
 
-            // 🔥 MAGNET-EFFEKT: Großer Toleranz-Radius (65 Pixel) beim Loslassen auf dem iPad
-            let targetBase = getBaseAt(e.clientX, e.clientY, 65); 
+            let vX = toVirtualX(e.clientX);
+            let vY = toVirtualY(e.clientY);
+            
+            // 🔥 MASSIVER MAGNET-EFFEKT: Großer Radius (100 virtuelle Pixel) beim Loslassen!
+            let targetBase = getBaseAt(vX, vY, 100); 
             
             if(targetBase && targetBase.id !== activeBase.id) {
                 sendTroops(activeBase.id, targetBase.id);
@@ -184,16 +200,15 @@
             activeBase = null;
         }
 
-        // Radius-Erkennung flexibel anpassbar gemacht
-        function getBaseAt(x, y, tolerance) {
-            return bases.find(b => Math.hypot(b.x - x, b.y - y) < b.size + tolerance);
+        function getBaseAt(vX, vY, tolerance) {
+            return bases.find(b => Math.hypot(b.x - vX, b.y - vY) < b.size + tolerance);
         }
 
         function sendTroops(fromId, toId) {
             let fromBase = bases[fromId];
             if(fromBase.count < 2) return;
 
-            // Schicke fast alle Einheiten los, aber lass genau 1 zur Verteidigung drin
+            // 🔥 Es kommen JETZT ALLE raus (nur 1 bleibt als Schutz zurück)
             let sendAmount = fromBase.count - 1; 
             database.ref(roomId + "/bases/" + fromId).update({ count: 1 });
 
@@ -209,7 +224,6 @@
             let to = bases[toId];
             if(!from || !to) return;
 
-            // Truppen marschieren flüssig nacheinander aus dem Zentrum der Basis
             for(let i = 0; i < amount; i++) {
                 setTimeout(() => {
                     if (!bases[fromId]) return;
@@ -219,7 +233,7 @@
                         targetId: toId,
                         color: color,
                         sender: senderId,
-                        speed: 4.2 // Leicht erhöhte Geschwindigkeit für flüssigeres Gameplay
+                        speed: 5.5 // Etwas schneller für besseres Gameplay
                     });
                 }, i * 100); 
             }
@@ -227,7 +241,6 @@
 
         function productionLoop() {
             bases.forEach(b => {
-                // Nur aktive Spieler-Basen produzieren Truppen bis maximal 60
                 if(b.owner !== "neutral" && b.count < 60) {
                     database.ref(roomId + "/bases/" + b.id).update({ count: b.count + 1 });
                 }
@@ -245,8 +258,7 @@
                 let dy = target.y - t.y;
                 let dist = Math.hypot(dx, dy);
 
-                // Wenn der Punkt nah genug am Kreisrand ist, zieht er ab/erbert
-                if (dist < target.size) {
+                if (dist < target.size - 2) {
                     handleBaseImpact(t);
                     troops.splice(i, 1);
                 } else {
@@ -264,13 +276,10 @@
             if (!target) return;
 
             if (target.owner === troop.sender) {
-                // Gleiches Team -> Aufstocken
                 database.ref(roomId + "/bases/" + target.id).update({ count: target.count + 1 });
             } else {
-                // Gegner/Neutral -> Abziehen
                 let newCount = target.count - 1;
                 if (newCount < 0) {
-                    // EROBERUNG ERFOLGREICH!
                     database.ref(roomId + "/bases/" + target.id).set({
                         id: target.id, x: target.x, y: target.y, size: target.size,
                         count: 1, owner: troop.sender, color: troop.color
@@ -284,17 +293,16 @@
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Pfeil-Verbindungslinie beim Ziehen (Wird jetzt IMMER exakt angezeigt)
+            // Zieh-Linie zeichnen
             if (isDragging && activeBase) {
-                ctx.strokeStyle = myColor; ctx.lineWidth = 4;
-                ctx.setLineDash([6, 4]);
+                ctx.strokeStyle = myColor; ctx.lineWidth = 5;
+                ctx.setLineDash([8, 6]);
                 ctx.beginPath();
-                ctx.moveTo(activeBase.x, activeBase.y);
+                ctx.moveTo(toScreenX(activeBase.x), toScreenY(activeBase.y));
                 ctx.lineTo(currentMouseX, currentMouseY);
                 ctx.stroke();
                 ctx.setLineDash([]);
 
-                // Ziel-Indikator Punkt
                 ctx.beginPath(); ctx.arc(currentMouseX, currentMouseY, 8, 0, Math.PI * 2);
                 ctx.fillStyle = myColor; ctx.fill();
             }
@@ -304,24 +312,25 @@
             bases.forEach(b => {
                 stats[b.owner] = (stats[b.owner] || 0) + 1;
 
+                let sX = toScreenX(b.x);
+                let sY = toScreenY(b.y);
+
                 if (isDragging && activeBase && b.id === activeBase.id) {
-                    ctx.beginPath(); ctx.arc(b.x, b.y, b.size + 10, 0, Math.PI * 2);
-                    ctx.fillStyle = "rgba(255,255,255,0.12)"; ctx.fill();
+                    ctx.beginPath(); ctx.arc(sX, sY, b.size + 15, 0, Math.PI * 2);
+                    ctx.fillStyle = "rgba(255,255,255,0.15)"; ctx.fill();
                 }
 
-                // Basis Ring
-                ctx.beginPath(); ctx.arc(b.x, b.y, b.size, 0, Math.PI * 2);
+                ctx.beginPath(); ctx.arc(sX, sY, b.size, 0, Math.PI * 2);
                 ctx.fillStyle = b.color; ctx.fill();
-                ctx.strokeStyle = "#ffffff"; ctx.lineWidth = b.owner === playerId ? 3 : 1; ctx.stroke();
+                ctx.strokeStyle = "#ffffff"; ctx.lineWidth = b.owner === playerId ? 4 : 1; ctx.stroke();
 
-                // Zahl
-                ctx.fillStyle = "white"; ctx.font = "bold 16px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-                ctx.fillText(b.count, b.x, b.y);
+                ctx.fillStyle = "white"; ctx.font = "bold 18px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+                ctx.fillText(b.count, sX, sY);
             });
 
             // Truppen zeichnen
             troops.forEach(t => {
-                ctx.beginPath(); ctx.arc(t.x, t.y, 5, 0, Math.PI * 2);
+                ctx.beginPath(); ctx.arc(toScreenX(t.x), toScreenY(t.y), 6, 0, Math.PI * 2);
                 ctx.fillStyle = t.color; ctx.fill();
                 ctx.strokeStyle = "rgba(0,0,0,0.3)"; ctx.lineWidth = 1; ctx.stroke();
             });
@@ -336,9 +345,11 @@
             document.getElementById("leaderboard").innerHTML = lbHtml;
         }
 
-        window.addEventListener("resize", () => {
-            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        });
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener("resize", resizeCanvas);
     </script>
 </body>
 </html>
