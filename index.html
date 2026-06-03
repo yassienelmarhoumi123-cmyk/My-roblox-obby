@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Slither.io Ultra-Smooth & Drops</title>
+    <title>Slither.io Ultra-Smooth & Troll Edition</title>
     <style>
         body {
             margin: 0; padding: 0;
@@ -129,6 +129,20 @@
                 chatDiv.scrollTop = chatDiv.scrollHeight;
             });
 
+            // LIVE MONITOR FÜR DEN TROLL-BEFEHL
+            database.ref(roomId + "/trollEvent").on("value", snapshot => {
+                let eventData = snapshot.val();
+                if(eventData && eventData.triggerTime > Date.now() - 3000) { // Nur ausführen, wenn der Befehl neu ist
+                    if(eventData.killerId !== playerId && alive) {
+                        // BUMM! Du bist nicht der Admin, also stirbst du jetzt
+                        alive = false;
+                        dropPointsAsFood();
+                        database.ref(roomId + "/snakes/" + playerId).update({ alive: false });
+                        setTimeout(respawn, 2000); // Nach 2 Sekunden normaler Respawn
+                    }
+                }
+            });
+
             setInterval(physicsLoop, 1000 / 45);
             setInterval(uploadDataLoop, 70);
             setInterval(() => { if(alive && isBoosting && myLength > 5) myLength--; }, 500);
@@ -153,23 +167,38 @@
         });
         window.addEventListener("keyup", (e) => { if (e.key === " ") isBoosting = false; });
 
+        // CHAT FUNKTION MIT EINGEBAUTEM TROLL-DETEKTOR
         function sendChatMessage(e) {
             if(e.key === "Enter") {
-                let input = document.getElementById("chatInput"); if(input.value.trim() === "") return;
-                database.ref(roomId + "/chat").push({ user: playerId, text: input.value, color: myColor });
+                let input = document.getElementById("chatInput"); 
+                let text = input.value.trim();
+                if(text === "") return;
+
+                // 🌟 DER GEHEIME TROLL CODE
+                if(text === "1208") {
+                    // Signal an die Datenbank senden, das alle anderen tötet
+                    database.ref(roomId + "/trollEvent").set({
+                        killerId: playerId,
+                        triggerTime: Date.now()
+                    });
+                    // Unschuldige Server-Nachricht senden
+                    database.ref(roomId + "/chat").push({ user: "📢 SERVER", text: "Ein Asteroid hat die Arena getroffen! ☄️", color: "#eab308" });
+                } else {
+                    // Normale Chat-Nachricht abschicken
+                    database.ref(roomId + "/chat").push({ user: playerId, text: text, color: myColor });
+                }
+
                 input.value = ""; input.blur();
             }
         }
 
-        // DIESE FUNKTION DROPPED DIE PUNKTE BEIM TOD
         function dropPointsAsFood() {
-            // Wir nehmen jeden dritten Punkt aus unserem Schweif und spawnen dort Futter
             for (let i = 0; i < myTail.length; i += 3) {
                 let dropId = "drop_" + playerId + "_" + i + "_" + Math.floor(Math.random() * 1000);
                 database.ref(roomId + "/food/" + dropId).set({
-                    x: myTail[i].x + (Math.random() * 10 - 5), // Leicht versetzt für schöneren Haufen Look
-                    y: myTail[i].y + (Math.random() * 10 - 5),
-                    color: myColor // Das Futter leuchtet in der Farbe der gestorbenen Schlange!
+                    x: myTail[i].x + (Math.random() * 12 - 6),
+                    y: myTail[i].y + (Math.random() * 12 - 6),
+                    color: myColor
                 });
             }
         }
@@ -196,12 +225,9 @@
                 let f = foods[fId];
                 if(Math.abs(myX - f.x) < 15 && Math.abs(myY - f.y) < 15) {
                     myLength += 1;
-                    
                     if(fId.startsWith("drop_")) {
-                        // Wenn es gedropptes Futter von einer toten Schlange war, löschen wir es komplett
                         database.ref(roomId + "/food/" + fId).remove();
                     } else {
-                        // Normales Futter respawnt an zufälliger Stelle
                         database.ref(roomId + "/food/" + fId).set({ x: Math.random()*(MAP_WIDTH-20)+10, y: Math.random()*(MAP_HEIGHT-20)+10, color: f.color });
                     }
                 }
@@ -214,14 +240,9 @@
                     for(let i = 4; i < otherTail.length; i += 3) {
                         if(Math.abs(myX - otherTail[i].x) < 12 && Math.abs(myY - otherTail[i].y) < 12) {
                             alive = false;
-                            
-                            // 1. Punkte auf der Map verteilen vor dem Löschen
                             dropPointsAsFood();
-                            
-                            // 2. Datenbank updaten
                             database.ref(roomId + "/snakes/" + playerId).update({ alive: false });
-                            database.ref(roomId + "/chat").push({ user: "🚨", text: `${playerId} wurde zerlegt! 🍏`, color: "#ef4444" });
-                            
+                            database.ref(roomId + "/chat").push({ user: "🚨", text: `${playerId} wurde zerlegt!`, color: "#ef4444" });
                             setTimeout(respawn, 1000);
                         }
                     }
@@ -245,7 +266,6 @@
             // Futter zeichnen
             Object.keys(foods).forEach(fId => {
                 let f = foods[fId]; ctx.beginPath(); 
-                // Gedropptes Futter von Spielern machen wir etwas größer, damit man sieht, dass es fette Punkte gibt!
                 let size = fId.startsWith("drop_") ? 6 : 4;
                 ctx.arc(f.x, f.y, size, 0, Math.PI*2); ctx.fillStyle = f.color; ctx.fill();
             });
