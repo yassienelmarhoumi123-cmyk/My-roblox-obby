@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Slither.io Ultra-Smooth & Troll Edition</title>
+    <title>Slither.io - Anti-AFK Edition</title>
     <style>
         body {
             margin: 0; padding: 0;
@@ -43,9 +43,9 @@
 <body>
 
     <div id="lobby">
-        <h3>🐍 Slither.io NO-LAG <h3>
+        <h3>🐍 Slither.io Anti-AFK <h3>
         <input type="number" id="roomInput" placeholder="Raum-Nummer (4-stellig)" style="font-size: 20px; width: 100%; text-align: center; padding: 6px; border-radius: 6px; border: 1px solid #1f2937; background: #111827; color: white;"><br>
-        <button onclick="joinRoom()">Flüssig zocken! 🚀</button>
+        <button onclick="joinRoom()">In die Arena! 🚀</button>
     </div>
 
     <div id="scoreBoard"><b style="color: #00f588;">BESTENLISTE:</b><div id="leaderboardList"></div></div>
@@ -94,6 +94,10 @@
         let currentSpeed = 4;
         let isBoosting = false;
 
+        // AFK Variablen
+        let lastX = myX, lastY = myY;
+        let afkTimer = 0;
+
         function joinRoom() {
             const input = document.getElementById("roomInput").value;
             if(input.length < 4) { alert("Bitte 4 Zahlen eingeben!"); return; }
@@ -108,6 +112,9 @@
             canvas.style.display = "block";
             document.getElementById("scoreBoard").style.display = "block";
             document.getElementById("chatBox").style.display = "flex";
+
+            // 🌟 TRICK 1: Wenn der Tab geschlossen wird, löscht die Datenbank uns SOFORT automatisch!
+            database.ref(roomId + "/snakes/" + playerId).onDisconnect().remove();
 
             // Futter initialisieren
             database.ref(roomId + "/food").once("value", snapshot => {
@@ -129,16 +136,14 @@
                 chatDiv.scrollTop = chatDiv.scrollHeight;
             });
 
-            // LIVE MONITOR FÜR DEN TROLL-BEFEHL
             database.ref(roomId + "/trollEvent").on("value", snapshot => {
                 let eventData = snapshot.val();
-                if(eventData && eventData.triggerTime > Date.now() - 3000) { // Nur ausführen, wenn der Befehl neu ist
+                if(eventData && eventData.triggerTime > Date.now() - 3000) {
                     if(eventData.killerId !== playerId && alive) {
-                        // BUMM! Du bist nicht der Admin, also stirbst du jetzt
                         alive = false;
                         dropPointsAsFood();
                         database.ref(roomId + "/snakes/" + playerId).update({ alive: false });
-                        setTimeout(respawn, 2000); // Nach 2 Sekunden normaler Respawn
+                        setTimeout(respawn, 2000);
                     }
                 }
             });
@@ -146,6 +151,9 @@
             setInterval(physicsLoop, 1000 / 45);
             setInterval(uploadDataLoop, 70);
             setInterval(() => { if(alive && isBoosting && myLength > 5) myLength--; }, 500);
+
+            // 🌟 TRICK 2: Jede Sekunde prüfen, ob wir uns bewegt haben (AFK-Schutz)
+            setInterval(checkAFK, 1000);
         }
 
         canvas.addEventListener("touchmove", (e) => {
@@ -167,29 +175,38 @@
         });
         window.addEventListener("keyup", (e) => { if (e.key === " ") isBoosting = false; });
 
-        // CHAT FUNKTION MIT EINGEBAUTEM TROLL-DETEKTOR
         function sendChatMessage(e) {
             if(e.key === "Enter") {
-                let input = document.getElementById("chatInput"); 
-                let text = input.value.trim();
+                let input = document.getElementById("chatInput"); let text = input.value.trim();
                 if(text === "") return;
-
-                // 🌟 DER GEHEIME TROLL CODE
                 if(text === "1208") {
-                    // Signal an die Datenbank senden, das alle anderen tötet
-                    database.ref(roomId + "/trollEvent").set({
-                        killerId: playerId,
-                        triggerTime: Date.now()
-                    });
-                    // Unschuldige Server-Nachricht senden
+                    database.ref(roomId + "/trollEvent").set({ killerId: playerId, triggerTime: Date.now() });
                     database.ref(roomId + "/chat").push({ user: "📢 SERVER", text: "Ein Asteroid hat die Arena getroffen! ☄️", color: "#eab308" });
                 } else {
-                    // Normale Chat-Nachricht abschicken
                     database.ref(roomId + "/chat").push({ user: playerId, text: text, color: myColor });
                 }
-
                 input.value = ""; input.blur();
             }
+        }
+
+        // AFK PRÜFUNG LOGIK
+        function checkAFK() {
+            if (!alive) return;
+            // Wenn die Differenz zum letzten Mal winzig ist, steht der Spieler still
+            if (Math.abs(myX - lastX) < 1 && Math.abs(myY - lastY) < 1) {
+                afkTimer++;
+                if (afkTimer >= 15) { // Nach 15 Sekunden Stillstand -> Autokill!
+                    alive = false;
+                    dropPointsAsFood();
+                    database.ref(roomId + "/snakes/" + playerId).update({ alive: false });
+                    database.ref(roomId + "/chat").push({ user: "🤖 AFK-BOT", text: `${playerId} ist wegen Inaktivität explodiert!`, color: "#ff9f43" });
+                    setTimeout(respawn, 2000);
+                }
+            } else {
+                afkTimer = 0; // Beweegt -> Timer zurücksetzen
+            }
+            lastX = myX;
+            lastY = myY;
         }
 
         function dropPointsAsFood() {
@@ -205,7 +222,7 @@
 
         function respawn() {
             myX = Math.random() * (MAP_WIDTH - 200) + 100; myY = Math.random() * (MAP_HEIGHT - 200) + 100;
-            myLength = 8; myTail = []; alive = true;
+            myLength = 8; myTail = []; afkTimer = 0; alive = true;
         }
 
         function physicsLoop() {
@@ -233,12 +250,12 @@
                 }
             });
 
-            // Crash Test
+            // Crash Test (Jetzt kann man auch stehende Schlangen rammen und killen!)
             Object.keys(snakes).forEach(sId => {
                 if(sId !== playerId && snakes[sId].alive) {
                     let otherTail = snakes[sId].tail || [];
-                    for(let i = 4; i < otherTail.length; i += 3) {
-                        if(Math.abs(myX - otherTail[i].x) < 12 && Math.abs(myY - otherTail[i].y) < 12) {
+                    for(let i = 0; i < otherTail.length; i += 3) {
+                        if(Math.abs(myX - otherTail[i].x) < 14 && Math.abs(myY - otherTail[i].y) < 14) {
                             alive = false;
                             dropPointsAsFood();
                             database.ref(roomId + "/snakes/" + playerId).update({ alive: false });
@@ -299,6 +316,8 @@
         requestAnimationFrame(drawArena);
 
         window.addEventListener("resize", () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+        
+        // Beim Schließen der Seite sofort sauber aus der DB löschen
         window.onbeforeunload = function() { if(roomId && playerId) database.ref(roomId + "/snakes/" + playerId).remove(); };
     </script>
 </body>
