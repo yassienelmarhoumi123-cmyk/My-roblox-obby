@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>3D Bugatti Chiron Simulator mit Straße</title>
+    <title>3D Bugatti Splitscreen-Rennen</title>
     <style>
         body { margin: 0; overflow: hidden; background: #9ca3af; font-family: 'Segoe UI', sans-serif; user-select: none; }
         
-        /* Infobox oben links */
         #info {
             position: absolute; top: 15px; left: 15px;
             color: white; background: rgba(15, 23, 42, 0.9);
@@ -16,37 +15,36 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             line-height: 1.6;
         }
-        #status { color: #38bdf8; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div id="info">
-        🏎️ <b>BUGATTI STRASSEN-SIMULATOR</b><br>
-        Laufen / Fahren: <span style="color:#facc15">W, A, S, D</span><br>
-        Einsteigen: <span style="color:#10b981">E</span> (Beim Auto stehen)<br>
-        Aussteigen: <span style="color:#ef4444">F</span><br>
-        Kamera wechseln: <span style="color:#a855f7">C</span> (Im Auto)<br><br>
-        Status: <span id="status">Zu Fuß</span>
+        🏎️ <b>BUGATTI SPLITSCREEN-RENNEN</b><br>
+        Spieler 1: <span style="color:#facc15">W, A, S, D</span><br>
+        Spieler 2: <span style="color:#fbbf24">Pfeiltasten</span>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 
     <script>
-        // 1. 3D-Szene einrichten
+        // Szene einrichten
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x9ca3af);
         scene.fog = new THREE.Fog(0x9ca3af, 60, 300);
 
-        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.shadowMap.enabled = true;
         document.body.appendChild(renderer.domElement);
 
-        // Beleuchtung (Sonne und Umgebungslicht)
+        // Kameras für Splitscreen
+        const camera1 = new THREE.PerspectiveCamera(60, (window.innerWidth / 2) / window.innerHeight, 0.1, 1000);
+        const camera2 = new THREE.PerspectiveCamera(60, (window.innerWidth / 2) / window.innerHeight, 0.1, 1000);
+
+        // Licht
         const ambientLight = new THREE.AmbientLight(0xffffff, 1.6);
         scene.add(ambientLight);
         const dirLight = new THREE.DirectionalLight(0xffffff, 1.4);
@@ -54,228 +52,118 @@
         dirLight.castShadow = true;
         scene.add(dirLight);
 
-        // 2. DIE STRASSE BAUEN (Direkt per Code)
-        const roadWidth = 24; // Breite der Straße
-        const roadLength = 3000; // Extrem lange Straße zum Gasgeben
-
-        // Asphalt-Fläche
+        // Straße bauen
+        const roadWidth = 24; 
+        const roadLength = 5000;
         const roadGeo = new THREE.PlaneGeometry(roadWidth, roadLength);
-        const roadMat = new THREE.MeshStandardMaterial({ 
-            color: 0x262626, // Dunkler Asphalt-Ton
-            roughness: 0.7,  // Matte, raue Oberfläche
-            metalness: 0.1 
-        });
+        const roadMat = new THREE.MeshStandardMaterial({ color: 0x262626, roughness: 0.7 });
         const road = new THREE.Mesh(roadGeo, roadMat);
         road.rotation.x = -Math.PI / 2;
         road.receiveShadow = true;
         scene.add(road);
 
-        // Funktion für Fahrbahnmarkierungen erstellen
+        // Linien erstellen
         function createLine(width, length, color, xPos, zPos, isDashed = false) {
             const lineGeo = new THREE.PlaneGeometry(width, length);
-            let lineMat;
-            
-            if (isDashed) {
-                // Gestrichelte Linie für die Mitte
-                lineMat = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide });
-            } else {
-                // Durchgehende Linien für die Seiten
-                lineMat = new THREE.MeshBasicMaterial({ color: color });
-            }
-            
+            const lineMat = new THREE.MeshBasicMaterial({ color: color });
             const lineMesh = new THREE.Mesh(lineGeo, lineMat);
             lineMesh.rotation.x = -Math.PI / 2;
-            lineMesh.position.set(xPos, 0.02, zPos); // Minimal über der Straße, damit es nicht flackert
+            lineMesh.position.set(xPos, 0.02, zPos);
             scene.add(lineMesh);
         }
-
-        // Seitenlinien (Durchgehend weiß)
-        createLine(0.4, roadLength, 0xffffff, -roadWidth/2 + 0.8, 0); // Links
-        createLine(0.4, roadLength, 0xffffff, roadWidth/2 - 0.8, 0); // Rechts
-
-        // Mittellinie (Gestrichelt)
         for (let i = -roadLength/2; i < roadLength/2; i += 15) {
             createLine(0.3, 7, 0xffffff, 0, i + 3.5, true);
         }
 
-        // Grüner Rasen/Boden links und rechts neben der Straße
-        const grassGeo = new THREE.PlaneGeometry(2000, roadLength);
-        const grassMat = new THREE.MeshStandardMaterial({ color: 0x3f6212, roughness: 0.9 }); // Schönes Dunkelgrün
-        const leftGrass = new THREE.Mesh(grassGeo, grassMat);
-        leftGrass.rotation.x = -Math.PI / 2;
-        leftGrass.position.set(-1000 - roadWidth/2, -0.01, 0);
-        leftGrass.receiveShadow = true;
-        scene.add(leftGrass);
+        // Steuerung
+        const keys = { w: false, a: false, s: false, d: false, arrowup: false, arrowdown: false, arrowleft: false, arrowright: false };
+        
+        // Spieler-Daten
+        let car1 = { pos: {x: -5, z: 0}, speed: 0, angle: 0, model: null };
+        let car2 = { pos: {x: 5, z: 0}, speed: 0, angle: 0, model: null };
 
-        const rightGrass = leftGrass.clone();
-        rightGrass.position.x = 1000 + roadWidth/2;
-        scene.add(rightGrass);
-
-        // Variablen für Steuerung und Zustand
-        let carModel = null;
-        let inCar = false;
-
-        let playerPos = { x: 4, z: 20 }; // Spieler startet neben der Straße
-        let carPos = { x: 0, z: 0 }; // Auto startet genau auf der Straße
-        let carSpeed = 0;
-        let carAngle = 0; // Schaut geradeaus die Straße runter
-
-        // 0 = Normal Hinten, 1 = Weit weg, 2 = Tiefe Action-Cam
-        let cameraMode = 0;
-        // Fahrphysik
-        const maxSpeed = 2.5;       // Maximale Höchstgeschwindigkeit erhöht für die Straße!
-        const acceleration = 0.035; // Zieht schneller an
-        const friction = 0.015;
-        const turnSpeed = 0.032;    // Stabileres Lenken bei hoher Geschwindigkeit
-
-        const keys = { w: false, a: false, s: false, d: false };
-
-        // 3. Tasten-Events
         window.addEventListener('keydown', (e) => {
             const key = e.key.toLowerCase();
-            if (key in keys) keys[key] = true;
-
-            // E - Einsteigen
-            if (key === 'e' && !inCar) {
-                if (!carModel) return;
-   
-                let distance = Math.hypot(playerPos.x - carPos.x, playerPos.z - carPos.z);
-                
-                if (distance < 35) {
-                    inCar = true;
-                    document.getElementById("status").innerText = "Im Bugatti";
-                    document.getElementById("status").style.color = "#10b981";
-                }
-            }
-
-            // F - Aussteigen
-            if (key === 'f' && inCar) {
-               
-                inCar = false;
-                playerPos.x = carPos.x - Math.cos(carAngle) * 15;
-                playerPos.z = carPos.z + Math.sin(carAngle) * 15;
-                document.getElementById("status").innerText = "Zu Fuß";
-                document.getElementById("status").style.color = "#38bdf8";
-            }
-
-            // C - Kamera-Modus wechseln
-            if (key === 'c' && inCar) {
-                cameraMode = (cameraMode + 1) % 3;
-            }
+            if (key === 'w') keys.w = true;
+            if (key === 'a') keys.a = true;
+            if (key === 's') keys.s = true;
+            if (key === 'd') keys.d = true;
+            if (key === 'arrowup') keys.arrowup = true;
+            if (key === 'arrowdown') keys.arrowdown = true;
+            if (key === 'arrowleft') keys.arrowleft = true;
+            if (key === 'arrowright') keys.arrowright = true;
         });
 
         window.addEventListener('keyup', (e) => {
             const key = e.key.toLowerCase();
-            if (key in keys) keys[key] = false;
+            if (key === 'w') keys.w = false;
+            if (key === 'a') keys.a = false;
+            if (key === 's') keys.s = false;
+            if (key === 'd') keys.d = false;
+            if (key === 'arrowup') keys.arrowup = false;
+            if (key === 'arrowdown') keys.arrowdown = false;
+            if (key === 'arrowleft') keys.arrowleft = false;
+            if (key === 'arrowright') keys.arrowright = false;
         });
 
-        // 4. BUGATTI MODELL LADEN (Größe 450)
+        // Modelle laden
         const loader = new THREE.GLTFLoader();
-        loader.load('2016_bugatti_chiron.glb', function (gltf) {
-            carModel = gltf.scene;
-            carModel.position.set(carPos.x, 0, carPos.z);
-            carModel.scale.set(450, 450, 450);
+        loader.load('2016_bugatti_chiron.glb', (gltf) => {
+            car1.model = gltf.scene;
+            car1.model.scale.set(450, 450, 450);
+            scene.add(car1.model);
 
-            carModel.traverse(function (child) {
-                if (child.isMesh) {
-                    child.castShadow = true;
- 
-                    child.receiveShadow = true;
-                    if(child.material) {
-                        child.material.roughness = 0.15;
-                        child.material.metalness = 0.85;
-      
-                    }
-                }
-            });
-
-            scene.add(carModel);
-            console.log("Bugatti auf der Straße platziert!");
-        }, undefined, function (error) {
-            console.error("Fehler beim Laden:", error);
-   
+            car2.model = gltf.scene.clone();
+            car2.model.scale.set(450, 450, 450);
+            scene.add(car2.model);
         });
 
-        // 5. Game-Loop Animation
-        function animate() {
-            requestAnimationFrame(animate);
-            if (inCar) {
-                // --- AUTO FAHREN (WASD) ---
-                if (keys.w) {
-                    carSpeed = Math.min(carSpeed + acceleration, maxSpeed);
-                } else if (keys.s) {
-                    carSpeed = Math.max(carSpeed - acceleration, -maxSpeed / 2);
-                } else {
-                    if (carSpeed > 0) carSpeed = Math.max(0, carSpeed - friction);
-                    if (carSpeed < 0) carSpeed = Math.min(0, carSpeed + friction);
-                }
+        function updateCar(car, forwardKey, backKey, leftKey, rightKey) {
+            if (keys[forwardKey]) car.speed = Math.min(car.speed + 0.035, 2.5);
+            else if (keys[backKey]) car.speed = Math.max(car.speed - 0.035, -1.2);
+            else car.speed *= 0.98;
 
-                if (Math.abs(carSpeed) > 0.01) {
-                    if (keys.a) carAngle += carSpeed > 0 ? turnSpeed : -turnSpeed;
-                    if (keys.d) carAngle -= carSpeed > 0 ? turnSpeed : -turnSpeed;
-                }
-
-                // Vorwärtsbewegung berechnen (Da die Straße entlang der Z-Achse verläuft)
-                carPos.x += Math.sin(carAngle) * carSpeed;
-                carPos.z += Math.cos(carAngle) * carSpeed;
-
-                if (carModel) {
-                    carModel.position.set(carPos.x, 0, carPos.z);
-                    carModel.rotation.y = carAngle;
-                }
-
-                // --- KAMERA PERSPEKTIVEN ---
-                if (cameraMode === 0) {
-                    // Normal: Schräg von hinten oben
-                    camera.position.set(
-                        carPos.x - Math.sin(carAngle) * 45,
-                        18,
-                        carPos.z - Math.cos(carAngle) * 45
-                    );
-                    camera.lookAt(carPos.x, 4, carPos.z);
-                } 
-                else if (cameraMode === 1) {
-                    // Weit weg: Drohnen-Ansicht
-                    camera.position.set(
-                        carPos.x - Math.sin(carAngle) * 75,
-                        32,
-                        carPos.z - Math.cos(carAngle) * 75
-                    );
-                    camera.lookAt(carPos.x, 2, carPos.z);
-                } 
-                else if (cameraMode === 2) {
-                    // Tiefe Action-Cam (Wie Mr. Racer!)
-                    camera.position.set(
-                        carPos.x - Math.sin(carAngle) * 32,
-                        8, 
-                        carPos.z - Math.cos(carAngle) * 32
-                    );
-                    camera.lookAt(
-                        carPos.x + Math.sin(carAngle) * 20,
-                        5,
-                        carPos.z + Math.cos(carAngle) * 20
-                    );
-                }
-
-            } else {
-                // --- ZU FUSS GEHEN (WASD) ---
-                const moveSpeed = 0.3;
-                if (keys.w) playerPos.z -= moveSpeed;
-                if (keys.s) playerPos.z += 0.5;
-                if (keys.a) playerPos.x -= 0.5;
-                if (keys.d) playerPos.x += 0.5;
-                camera.position.set(playerPos.x, 25, playerPos.z + 45);
-                camera.lookAt(playerPos.x, 0, playerPos.z);
+            if (Math.abs(car.speed) > 0.01) {
+                if (keys[leftKey]) car.angle += 0.032;
+                if (keys[rightKey]) car.angle -= 0.032;
             }
 
-            renderer.render(scene, camera);
+            car.pos.x += Math.sin(car.angle) * car.speed;
+            car.pos.z += Math.cos(car.angle) * car.speed;
+
+            if (car.model) {
+                car.model.position.set(car.pos.x, 0, car.pos.z);
+                car.model.rotation.y = car.angle;
+            }
         }
 
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
+        // Animations-Loop
+        function animate() {
+            requestAnimationFrame(animate);
+
+            updateCar(car1, 'w', 's', 'a', 'd');
+            updateCar(car2, 'arrowup', 'arrowdown', 'arrowleft', 'arrowright');
+
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+
+            renderer.setScissorTest(true);
+
+            // Spieler 1 (Links)
+            renderer.setViewport(0, 0, width / 2, height);
+            renderer.setScissor(0, 0, width / 2, height);
+            camera1.position.set(car1.pos.x - Math.sin(car1.angle) * 45, 18, car1.pos.z - Math.cos(car1.angle) * 45);
+            camera1.lookAt(car1.pos.x, 4, car1.pos.z);
+            renderer.render(scene, camera1);
+
+            // Spieler 2 (Rechts)
+            renderer.setViewport(width / 2, 0, width / 2, height);
+            renderer.setScissor(width / 2, 0, width / 2, height);
+            camera2.position.set(car2.pos.x - Math.sin(car2.angle) * 45, 18, car2.pos.z - Math.cos(car2.angle) * 45);
+            camera2.lookAt(car2.pos.x, 4, car2.pos.z);
+            renderer.render(scene, camera2);
+        }
+
         animate();
     </script>
 </body>
