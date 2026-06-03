@@ -3,290 +3,203 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AeroCombat.io - Jet Showdown</title>
+    <title>3D Bugatti Simulator</title>
     <style>
-        body {
-            margin: 0; padding: 0;
-            background: #0b0f19; color: white;
-            font-family: 'Segoe UI', sans-serif;
-            overflow: hidden; user-select: none;
-            touch-action: none;
+        body { margin: 0; overflow: hidden; background: #a0a0a0; font-family: sans-serif; user-select: none; }
+        #info {
+            position: absolute; top: 15px; left: 15px;
+            color: white; background: rgba(15, 23, 42, 0.85);
+            padding: 15px; border-radius: 8px; font-size: 16px;
+            pointer-events: none; line-height: 1.5;
+            border: 1px solid #38bdf8; z-index: 10;
         }
-        #lobby {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: rgba(15, 23, 42, 0.95); padding: 30px; border-radius: 15px;
-            border: 2px solid #38bdf8; z-index: 20; width: 85%; max-width: 320px;
-            box-shadow: 0 0 20px rgba(56, 189, 248, 0.3); text-align: center;
-        }
-        input, button { font-size: 18px; padding: 12px; width: 100%; border-radius: 8px; margin-top: 10px; box-sizing: border-box; }
-        input { border: 1px solid #334155; background: #1e293b; color: white; text-align: center; }
-        button { background: #38bdf8; border: none; font-weight: bold; color: #0f172a; cursor: pointer; }
-        #gameCanvas { background: #0f172a; display: none; width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; }
-        #scoreBoard {
-            position: absolute; top: 15px; right: 15px;
-            background: rgba(15, 23, 42, 0.85); padding: 10px 15px;
-            border-radius: 8px; font-size: 14px; display: none; pointer-events: none; z-index: 10;
-            border: 1px solid #334155;
-        }
+        #status { color: #38bdf8; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div id="lobby">
-        <h2 style="color: #38bdf8; margin-top: 0;">✈️ AEROCOMBAT.IO</h2>
-        <p style="font-size: 14px; color: #94a3b8;">Fliege mit dem Finger und schieße deine Klasse ab!</p>
-        <input type="number" id="roomInput" placeholder="Raum-Nummer (4-stellig)" value="1234">
-        <button onclick="joinRoom()">Abheben! 🚀</button>
+    <div id="info">
+        <b>⚙️ STEUERUNG:</b><br>
+        Laufen / Fahren: <span style="color:#facc15">W, A, S, D</span><br>
+        Einsteigen: <span style="color:#34d399">E</span> (Nahe am Auto stehen)<br>
+        Aussteigen: <span style="color:#ef4444">F</span><br><br>
+        Status: <span id="status">Zu Fuß</span>
     </div>
 
-    <div id="scoreBoard">
-        <b style="color: #38bdf8;">TOP PILOTEN:</b>
-        <div id="leaderboard" style="margin-top: 5px;"></div>
-    </div>
-
-    <canvas id="gameCanvas"></canvas>
-
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyDVCk8f0nhfJLLwycEZJN0-zJ05KURuGSQ",
-            authDomain: "halal-bomben-spiel.firebaseapp.com",
-            databaseURL: "https://halal-bomben-spiel-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "halal-bomben-spiel",
-            storageBucket: "halal-bomben-spiel.firebasestorage.app",
-            messagingSenderId: "709287849072",
-            appId: "1:709287849072:web:0a477d52580b2cd3d598b5"
-        };
+        // 1. 3D-Szene, Kamera und Renderer erstellen
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xd1d5db); // Hellgrauer Himmel
+        scene.fog = new THREE.Fog(0xd1d5db, 20, 100);
 
-        let database;
-        try {
-            if (!firebase.apps.length) {
-                firebase.initializeApp(firebaseConfig);
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.body.appendChild(renderer.domElement);
+
+        // 2. Beleuchtung für schöne Schatten und Reflexionen
+        const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
+        hemiLight.position.set(0, 20, 0);
+        scene.add(hemiLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
+        dirLight.position.set(10, 20, 10);
+        dirLight.castShadow = true;
+        scene.add(dirLight);
+
+        // 3. Glatter Boden (Graue Testfläche)
+        const floorGeo = new THREE.PlaneGeometry(1000, 1000);
+        const floorMat = new THREE.MeshStandardMaterial({ color: 0x374151, roughness: 0.5 });
+        const floor = new THREE.Mesh(floorGeo, floorMat);
+        floor.rotation.x = -Math.PI / 2;
+        floor.receiveShadow = true;
+        scene.add(floor);
+
+        // Ein sichtbares Gitter auf dem glatten Boden zur Orientierung
+        const grid = new THREE.GridHelper(1000, 200, 0x111827, 0x4b5563);
+        grid.position.y = 0.01;
+        scene.add(grid);
+
+        // 4. Logik-Variablen
+        let carModel = null;
+        let inCar = false;
+
+        let playerPos = { x: 0, z: 8 };
+        let carPos = { x: 0, z: 0 };
+        let carSpeed = 0;
+        let carAngle = 0;
+
+        // Tuning-Werte für das Fahrverhalten des Bugattis
+        const maxSpeed = 0.6;
+        const acceleration = 0.015;
+        const friction = 0.006;
+        const turnSpeed = 0.035;
+
+        const keys = { w: false, a: false, s: false, d: false };
+
+        // Tastatur abfragen
+        window.addEventListener('keydown', (e) => {
+            const key = e.key.toLowerCase();
+            if (key in keys) keys[key] = true;
+
+            // E-Taste gedrückt: Einsteigen
+            if (key === 'e' && !inCar) {
+                let distance = Math.hypot(playerPos.x - carPos.x, playerPos.z - carPos.z);
+                if (distance < 5) { // Wenn du nah genug dran bist
+                    inCar = true;
+                    document.getElementById("status").innerText = "Im Bugatti";
+                    document.getElementById("status").style.color = "#34d399";
+                }
             }
-            database = firebase.database();
-        } catch(e) {
-            alert("Firebase Fehler beim Laden: " + e.message);
-        }
 
-        let roomId = "", playerId = "";
-        let myColor = 'hsl(' + Math.random() * 360 + ', 90%, 55%)';
+            // F-Taste gedrückt: Aussteigen
+            if (key === 'f' && inCar) {
+                inCar = false;
+                // Setzt den Spieler ein kleines Stück links neben dem Auto ab
+                playerPos.x = carPos.x - Math.cos(carAngle) * 2.5;
+                playerPos.z = carPos.z + Math.sin(carAngle) * 2.5;
+                document.getElementById("status").innerText = "Zu Fuß";
+                document.getElementById("status").style.color = "#38bdf8";
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            const key = e.key.toLowerCase();
+            if (key in keys) keys[key] = false;
+        });
+
+        // 5. DEIN BUGATTI MODELL LADEN
+        const loader = new THREE.GLTFLoader();
         
-        let players = {};
-        let myBullets = [];
-        
-        let myX = window.innerWidth / 2;
-        let myY = window.innerHeight / 2;
-        let myAngle = 0;
-        let myKills = 0;
-        let alive = true;
-
-        let targetX = myX;
-        let targetY = myY;
-        let isTouching = false;
-
-        const canvas = document.getElementById("gameCanvas");
-        const ctx = canvas.getContext("2d");
-
-        function joinRoom() {
-            try {
-                const input = document.getElementById("roomInput").value;
-                if(input.length < 4) { alert("Bitte eine 4-stellige Nummer eingeben!"); return; }
-                
-                roomId = "aero_" + input;
-                playerId = "Pilot_" + Math.floor(Math.random() * 900 + 100);
-
-                // 🔥 ERZWINGE ZUERST DAS DESIGNSHIFT (Die Lobby MUSS sofort verschwinden)
-                document.getElementById("lobby").style.display = "none";
-                canvas.style.display = "block";
-                document.getElementById("scoreBoard").style.display = "block";
-
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-
-                // Position zurücksetzen, falls das iPad eine komische Auflösung meldet
-                myX = canvas.width / 2;
-                myY = canvas.height / 2;
-                targetX = myX; targetY = myY;
-
-                if (database) {
-                    // Bei Verbindungsabbruch Spieler entfernen
-                    database.ref(roomId + "/players/" + playerId).onDisconnect().remove();
-
-                    // Synchronisation der Spieler aus Firebase
-                    database.ref(roomId + "/players").on("value", snapshot => {
-                        players = snapshot.val() || {};
-                        if (players[playerId] && players[playerId].kills !== undefined) {
-                            myKills = players[playerId].kills;
-                        }
-                    });
-
-                    // Signal-Empfänger für Kugeln
-                    database.ref(roomId + "/bullets").on("child_added", snapshot => {
-                        let b = snapshot.val();
-                        if(b && b.owner !== playerId && alive) {
-                            let dist = Math.hypot(myX - b.x, myY - b.y);
-                            if(dist < 22) { 
-                                triggerDeath();
-                                database.ref(roomId + "/players/" + b.owner + "/kills").set(firebase.database.ServerValue.increment(1));
-                            }
-                        }
-                        snapshot.ref.remove();
-                    });
+        // Nutzt genau den Dateinamen aus deinem GitHub-Upload
+        loader.load('2016_bugatti_chiron.glb', function (gltf) {
+            carModel = gltf.scene;
+            carModel.position.set(carPos.x, 0, carPos.z);
+            
+            // Schattenwurf für das Auto aktivieren
+            carModel.traverse(function (child) {
+                if (child.isMesh) {
+                    child.castShadow = true;
+                    child.receiveShadow = true;
                 }
-
-                // Pointer Events (für iPads)
-                canvas.addEventListener("pointerdown", e => { isTouching = true; updateTarget(e); });
-                canvas.addEventListener("pointermove", e => { if(isTouching) updateTarget(e); });
-                canvas.addEventListener("pointerup", () => { isTouching = false; });
-
-                // Maus-Backup
-                canvas.addEventListener("mousedown", e => { isTouching = true; updateTarget(e); });
-                canvas.addEventListener("mousemove", e => { if(isTouching) updateTarget(e); });
-                canvas.addEventListener("mouseup", () => { isTouching = false; });
-
-                // Touch-Backup speziell für ältere iPads/Safari
-                canvas.addEventListener("touchstart", e => { isTouching = true; if(e.touches[0]) updateTarget(e.touches[0]); }, {passive: true});
-                canvas.addEventListener("touchmove", e => { if(isTouching && e.touches[0]) updateTarget(e.touches[0]); }, {passive: true});
-                canvas.addEventListener("touchend", () => { isTouching = false; });
-
-                // Spiel-Schleifen starten
-                setInterval(gameLoop, 1000 / 50); 
-                setInterval(shootLoop, 350); 
-
-            } catch(err) {
-                alert("Fehler beim Spielstart: " + err.message);
-            }
-        }
-
-        function updateTarget(e) {
-            targetX = e.clientX || e.pageX;
-            targetY = e.clientY || e.pageY;
-        }
-
-        function shootLoop() {
-            if(!alive || !database) return;
-
-            let bullet = {
-                owner: playerId,
-                x: myX + Math.cos(myAngle) * 20,
-                y: myY + Math.sin(myAngle) * 20,
-                vx: Math.cos(myAngle) * 11,
-                vy: Math.sin(myAngle) * 11,
-                life: 50
-            };
-
-            myBullets.push(bullet);
-            database.ref(roomId + "/bullets").push(bullet);
-        }
-
-        function triggerDeath() {
-            alive = false;
-            if(database) database.ref(roomId + "/players/" + playerId).remove();
-            setTimeout(() => {
-                myX = Math.random() * (canvas.width - 100) + 50;
-                myY = Math.random() * (canvas.height - 100) + 50;
-                targetX = myX; targetY = myY;
-                alive = true;
-            }, 2500); 
-        }
-
-        function gameLoop() {
-            if(alive) {
-                if (isTouching) {
-                    let dx = targetX - myX;
-                    let dy = targetY - myY;
-                    let dist = Math.hypot(dx, dy);
-
-                    if (dist > 10) {
-                        myAngle = Math.atan2(dy, dx);
-                        myX += Math.cos(myAngle) * 6; 
-                        myY += Math.sin(myAngle) * 6;
-                    }
-                }
-
-                myX = Math.max(20, Math.min(canvas.width - 20, myX));
-                myY = Math.max(20, Math.min(canvas.height - 20, myY));
-
-                if(database) {
-                    database.ref(roomId + "/players/" + playerId).set({
-                        id: playerId, x: myX, y: myY, angle: myAngle, color: myColor, kills: myKills
-                    });
-                }
-            }
-
-            for (let i = myBullets.length - 1; i >= 0; i--) {
-                let b = myBullets[i];
-                b.x += b.vx;
-                b.y += b.vy;
-                b.life--;
-                if(b.life <= 0) myBullets.splice(i, 1);
-            }
-
-            draw();
-        }
-
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Gitter-Hintergrund
-            ctx.strokeStyle = "#1e293b"; ctx.lineWidth = 1;
-            for(let i=0; i<canvas.width; i+=80) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); ctx.stroke(); }
-            for(let i=0; i<canvas.height; i+=80) { ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(canvas.width,i); ctx.stroke(); }
-
-            // Schüsse zeichnen
-            ctx.fillStyle = "#facc15";
-            myBullets.forEach(b => {
-                ctx.beginPath(); ctx.arc(b.x, b.y, 4, 0, Math.PI * 2); ctx.fill();
             });
 
-            // Spieler zeichnen
-            let leaderboardList = [];
-            Object.keys(players).forEach(pId => {
-                let p = players[pId];
-                leaderboardList.push({ id: p.id, kills: p.kills || 0 });
+            scene.add(carModel);
+            console.log("Bugatti Chiron geladen!");
+        }, undefined, function (error) {
+            console.error("Fehler beim Laden des 3D-Modells:", error);
+        });
 
-                ctx.save();
-                ctx.translate(p.x, p.y);
-                ctx.rotate(p.angle);
+        // 6. Game-Loop (wird ca. 60 Mal pro Sekunde ausgeführt)
+        function animate() {
+            requestAnimationFrame(animate);
 
-                // Jet-Form
-                ctx.beginPath();
-                ctx.moveTo(22, 0);     
-                ctx.lineTo(-14, -14);  
-                ctx.lineTo(-8, 0);     
-                ctx.lineTo(-14, 14);   
-                ctx.closePath();
-                
-                ctx.fillStyle = p.color; ctx.fill();
-                ctx.strokeStyle = "#ffffff"; ctx.lineWidth = p.id === playerId ? 2.5 : 1; ctx.stroke();
+            if (inCar) {
+                // --- AUTO-MODUS ---
+                if (keys.w) {
+                    carSpeed = Math.min(carSpeed + acceleration, maxSpeed); // Vorwärtsgas
+                } else if (keys.s) {
+                    carSpeed = Math.max(carSpeed - acceleration, -maxSpeed / 2); // Rückwärtsgas / Bremse
+                } else {
+                    // Automatisches Ausrollen durch Reibung
+                    if (carSpeed > 0) carSpeed = Math.max(0, carSpeed - friction);
+                    if (carSpeed < 0) carSpeed = Math.min(0, carSpeed + friction);
+                }
 
-                ctx.restore();
+                // Lenken nur, wenn sich das Auto auch bewegt
+                if (Math.abs(carSpeed) > 0.01) {
+                    const currentTurn = turnSpeed * (carSpeed / maxSpeed + 0.3);
+                    if (keys.a) carAngle += carSpeed > 0 ? currentTurn : -currentTurn;
+                    if (keys.d) carAngle -= carSpeed > 0 ? currentTurn : -currentTurn;
+                }
 
-                ctx.fillStyle = "rgba(255,255,255,0.7)"; ctx.font = "12px sans-serif"; ctx.textAlign = "center";
-                ctx.fillText(p.id, p.x, p.y - 24);
-            });
+                // Neue Position berechnen (Z-Achse und X-Achse im 3D-Raum)
+                carPos.x += Math.sin(carAngle) * carSpeed;
+                carPos.z += Math.cos(carAngle) * carSpeed;
 
-            if(!alive) {
-                ctx.fillStyle = "rgba(239, 68, 68, 0.2)"; ctx.fillRect(0,0,canvas.width,canvas.height);
-                ctx.fillStyle = "#ef4444"; ctx.font = "bold 28px sans-serif"; ctx.textAlign = "center";
-                ctx.fillText("ABGESCHOSSEN! 💥", canvas.width/2, canvas.height/2);
+                // Modell bewegen und rotieren
+                if (carModel) {
+                    carModel.position.set(carPos.x, 0, carPos.z);
+                    carModel.rotation.y = carAngle;
+                }
+
+                // Dritte-Person-Kamera schräg hinter dem Auto positionieren
+                camera.position.set(
+                    carPos.x - Math.sin(carAngle) * 9,
+                    4,
+                    carPos.z - Math.cos(carAngle) * 9
+                );
+                camera.lookAt(carPos.x, 1, carPos.z);
+
+            } else {
+                // --- ZU FUSS MODUS ---
+                const moveSpeed = 0.15;
+                if (keys.w) playerPos.z -= moveSpeed;
+                if (keys.s) playerPos.z += moveSpeed;
+                if (keys.a) playerPos.x -= moveSpeed;
+                if (keys.d) playerPos.x += moveSpeed;
+
+                // Kamera folgt der Position des Spielers zu Fuß
+                camera.position.set(playerPos.x, 6, playerPos.z + 12);
+                camera.lookAt(playerPos.x, 0, playerPos.z);
             }
 
-            // Bestenliste
-            leaderboardList.sort((a,b) => b.kills - a.kills);
-            let lbHtml = "";
-            leaderboardList.slice(0, 4).forEach((p, i) => {
-                lbHtml += `<div>${i+1}. ${p.id === playerId ? "<b>DU</b>" : p.id} (Kills: ${p.kills})</div>`;
-            });
-            document.getElementById("leaderboard").innerHTML = lbHtml;
+            renderer.render(scene, camera);
         }
 
-        function resizeCanvas() {
-            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        }
-        window.addEventListener("resize", resizeCanvas);
+        // Unterstützung bei Größenänderung des Fensters
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Spielschleife starten
+        animate();
     </script>
 </body>
 </html>
