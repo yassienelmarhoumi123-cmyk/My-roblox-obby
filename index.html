@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>State.io Pro Multiplayer</title>
+    <title>State.io Pro Multiplayer - Fixed</title>
     <style>
         body {
             margin: 0; padding: 0;
@@ -72,7 +72,7 @@
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
 
-        let activeBase = null; // Basis, von der aus gezogen wird
+        let activeBase = null; 
         let currentMouseX = 0, currentMouseY = 0;
         let isDragging = false;
 
@@ -89,15 +89,14 @@
             canvas.style.display = "block";
             document.getElementById("scoreBoard").style.display = "block";
 
-            // Map-Layout erstellen (Wenn Raum neu ist)
             database.ref(roomId + "/bases").once("value", snapshot => {
                 if(!snapshot.val()) {
                     let initialBases = [];
-                    // Wir verteilen 8 Basen strategisch auf dem Bildschirm
+                    // Präzise, vordefinierte Positionen wie im Video
                     let positions = [
-                        {x: 0.2, y: 0.2}, {x: 0.5, y: 0.15}, {x: 0.8, y: 0.2},
-                        {x: 0.15, y: 0.5}, {x: 0.5, y: 0.5}, {x: 0.85, y: 0.5},
-                        {x: 0.2, y: 0.8}, {x: 0.5, y: 0.85}, {x: 0.8, y: 0.8}
+                        {x: 0.25, y: 0.2}, {x: 0.5, y: 0.2}, {x: 0.75, y: 0.2},
+                        {x: 0.2, y: 0.5},  {x: 0.5, y: 0.5}, {x: 0.8, y: 0.5},
+                        {x: 0.25, y: 0.8}, {x: 0.5, y: 0.8}, {x: 0.75, y: 0.8}
                     ];
 
                     positions.forEach((pos, idx) => {
@@ -105,35 +104,33 @@
                             id: idx,
                             x: canvas.width * pos.x,
                             y: canvas.height * pos.y,
-                            size: Math.floor(Math.random() * 8 + 26), 
+                            size: 28, 
                             count: 10, 
                             owner: "neutral",
                             color: "#9ca3af"
                         });
                     });
 
-                    // Erste Basis gehört dem Ersteller
-                    initialBases[0].owner = playerId;
-                    initialBases[0].color = myColor;
-                    initialBases[0].count = 20;
+                    // Startbasis grün/blau/zufällig für dich
+                    initialBases[1].owner = playerId;
+                    initialBases[1].color = myColor;
+                    initialBases[1].count = 25;
 
                     database.ref(roomId + "/bases").set(initialBases);
                 } else {
-                    // Bestehender Raum -> Eine freie Basis besetzen
                     database.ref(roomId + "/bases").once("value", snap => {
                         let currentBases = snap.val();
                         let freeBase = currentBases.find(b => b.owner === "neutral");
                         if(freeBase) {
                             currentBases[freeBase.id].owner = playerId;
                             currentBases[freeBase.id].color = myColor;
-                            currentBases[freeBase.id].count = 20;
+                            currentBases[freeBase.id].count = 25;
                             database.ref(roomId + "/bases").set(currentBases);
                         }
                     });
                 }
             });
 
-            // Synchronisation
             database.ref(roomId + "/bases").on("value", snapshot => { bases = snapshot.val() || []; });
 
             database.ref(roomId + "/attacks").on("child_added", snapshot => {
@@ -144,24 +141,22 @@
                 snapshot.ref.remove();
             });
 
-            // Beim Verlassen Basen freigeben
             window.onbeforeunload = function() {
                 bases.forEach(b => {
                     if(b.owner === playerId) database.ref(roomId + "/bases/" + b.id).update({ owner: "neutral", color: "#9ca3af" });
                 });
             };
 
-            // Touch / Maus Events fürs iPad registrieren
             canvas.addEventListener("pointerdown", onPointerDown);
             canvas.addEventListener("pointermove", onPointerMove);
             canvas.addEventListener("pointerup", onPointerUp);
 
-            setInterval(productionLoop, 1200); // Truppen-Wachstum
-            setInterval(updatePhysics, 1000 / 45); // Bewegung
+            setInterval(productionLoop, 1000); 
+            setInterval(updatePhysics, 1000 / 50); 
         }
 
         function onPointerDown(e) {
-            let base = getBaseAt(e.clientX, e.clientY);
+            let base = getBaseAt(e.clientX, e.clientY, 30); // Kleiner Radius beim Anklicken für Genauigkeit
             if(base && base.owner === playerId) {
                 activeBase = base;
                 isDragging = true;
@@ -180,24 +175,27 @@
             if(!isDragging) return;
             isDragging = false;
 
-            let targetBase = getBaseAt(e.clientX, e.clientY);
-            // Wenn wir über einer anderen Basis loslassen -> Angriff!
+            // 🔥 MAGNET-EFFEKT: Großer Toleranz-Radius (65 Pixel) beim Loslassen auf dem iPad
+            let targetBase = getBaseAt(e.clientX, e.clientY, 65); 
+            
             if(targetBase && targetBase.id !== activeBase.id) {
                 sendTroops(activeBase.id, targetBase.id);
             }
             activeBase = null;
         }
 
-        function getBaseAt(x, y) {
-            return bases.find(b => Math.hypot(b.x - x, b.y - y) < b.size + 20);
+        // Radius-Erkennung flexibel anpassbar gemacht
+        function getBaseAt(x, y, tolerance) {
+            return bases.find(b => Math.hypot(b.x - x, b.y - y) < b.size + tolerance);
         }
 
         function sendTroops(fromId, toId) {
             let fromBase = bases[fromId];
             if(fromBase.count < 2) return;
 
-            let sendAmount = Math.floor(fromBase.count / 2);
-            database.ref(roomId + "/bases/" + fromId).update({ count: fromBase.count - sendAmount });
+            // Schicke fast alle Einheiten los, aber lass genau 1 zur Verteidigung drin
+            let sendAmount = fromBase.count - 1; 
+            database.ref(roomId + "/bases/" + fromId).update({ count: 1 });
 
             database.ref(roomId + "/attacks").push({
                 sender: playerId, fromId: fromId, toId: toId, amount: sendAmount, color: myColor
@@ -211,26 +209,25 @@
             let to = bases[toId];
             if(!from || !to) return;
 
-            // Punkte hintereinander wie an einer Perlenschnur losjagen
+            // Truppen marschieren flüssig nacheinander aus dem Zentrum der Basis
             for(let i = 0; i < amount; i++) {
                 setTimeout(() => {
-                    let rAngle = Math.random() * Math.PI * 2;
-                    let startX = from.x + Math.cos(rAngle) * 8;
-                    let startY = from.y + Math.sin(rAngle) * 8;
-
+                    if (!bases[fromId]) return;
                     troops.push({
-                        x: startX, y: startY,
+                        x: from.x, 
+                        y: from.y,
                         targetId: toId,
                         color: color,
                         sender: senderId,
-                        speed: 3.5 + Math.random() * 1
+                        speed: 4.2 // Leicht erhöhte Geschwindigkeit für flüssigeres Gameplay
                     });
-                }, i * 120); // Abstand zwischen den Punkten
+                }, i * 100); 
             }
         }
 
         function productionLoop() {
             bases.forEach(b => {
+                // Nur aktive Spieler-Basen produzieren Truppen bis maximal 60
                 if(b.owner !== "neutral" && b.count < 60) {
                     database.ref(roomId + "/bases/" + b.id).update({ count: b.count + 1 });
                 }
@@ -248,7 +245,8 @@
                 let dy = target.y - t.y;
                 let dist = Math.hypot(dx, dy);
 
-                if (dist < target.size - 5) {
+                // Wenn der Punkt nah genug am Kreisrand ist, zieht er ab/erbert
+                if (dist < target.size) {
                     handleBaseImpact(t);
                     troops.splice(i, 1);
                 } else {
@@ -266,11 +264,13 @@
             if (!target) return;
 
             if (target.owner === troop.sender) {
+                // Gleiches Team -> Aufstocken
                 database.ref(roomId + "/bases/" + target.id).update({ count: target.count + 1 });
             } else {
+                // Gegner/Neutral -> Abziehen
                 let newCount = target.count - 1;
                 if (newCount < 0) {
-                    // Basis wurde komplett eingenommen!
+                    // EROBERUNG ERFOLGREICH!
                     database.ref(roomId + "/bases/" + target.id).set({
                         id: target.id, x: target.x, y: target.y, size: target.size,
                         count: 1, owner: troop.sender, color: troop.color
@@ -284,54 +284,49 @@
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Dynamische Linie beim Ziehen auf dem iPad zeichnen
+            // Pfeil-Verbindungslinie beim Ziehen (Wird jetzt IMMER exakt angezeigt)
             if (isDragging && activeBase) {
                 ctx.strokeStyle = myColor; ctx.lineWidth = 4;
-                ctx.setLineDash([8, 6]);
+                ctx.setLineDash([6, 4]);
                 ctx.beginPath();
                 ctx.moveTo(activeBase.x, activeBase.y);
                 ctx.lineTo(currentMouseX, currentMouseY);
                 ctx.stroke();
                 ctx.setLineDash([]);
 
-                // Vorschau-Kreis am Finger
-                ctx.beginPath(); ctx.arc(currentMouseX, currentMouseY, 6, 0, Math.PI * 2);
+                // Ziel-Indikator Punkt
+                ctx.beginPath(); ctx.arc(currentMouseX, currentMouseY, 8, 0, Math.PI * 2);
                 ctx.fillStyle = myColor; ctx.fill();
             }
 
-            // Alle Staaten (Basen) auf der Weltkarte zeichnen
+            // Basen zeichnen
             let stats = {};
             bases.forEach(b => {
                 stats[b.owner] = (stats[b.owner] || 0) + 1;
 
-                // Animierter Puls-Effekt für die aktuell ausgewählte Basis
                 if (isDragging && activeBase && b.id === activeBase.id) {
-                    ctx.beginPath(); ctx.arc(b.x, b.y, b.size + 12, 0, Math.PI * 2);
-                    ctx.fillStyle = "rgba(255,255,255,0.1)"; ctx.fill();
+                    ctx.beginPath(); ctx.arc(b.x, b.y, b.size + 10, 0, Math.PI * 2);
+                    ctx.fillStyle = "rgba(255,255,255,0.12)"; ctx.fill();
                 }
 
-                // Äußerer Schatten-Ring
-                ctx.beginPath(); ctx.arc(b.x, b.y, b.size + 3, 0, Math.PI * 2);
-                ctx.strokeStyle = "rgba(0,0,0,0.3)"; ctx.lineWidth = 4; ctx.stroke();
-
-                // Kern der Basis
+                // Basis Ring
                 ctx.beginPath(); ctx.arc(b.x, b.y, b.size, 0, Math.PI * 2);
                 ctx.fillStyle = b.color; ctx.fill();
                 ctx.strokeStyle = "#ffffff"; ctx.lineWidth = b.owner === playerId ? 3 : 1; ctx.stroke();
 
-                // Truppenstärke anzeigen
+                // Zahl
                 ctx.fillStyle = "white"; ctx.font = "bold 16px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
                 ctx.fillText(b.count, b.x, b.y);
             });
 
-            // Fliegende Armeen (Punkte) zeichnen
+            // Truppen zeichnen
             troops.forEach(t => {
-                ctx.beginPath(); ctx.arc(t.x, t.y, 4.5, 0, Math.PI * 2);
+                ctx.beginPath(); ctx.arc(t.x, t.y, 5, 0, Math.PI * 2);
                 ctx.fillStyle = t.color; ctx.fill();
-                ctx.strokeStyle = "rgba(0,0,0,0.2)"; ctx.lineWidth = 1; ctx.stroke();
+                ctx.strokeStyle = "rgba(0,0,0,0.3)"; ctx.lineWidth = 1; ctx.stroke();
             });
 
-            // Bestenliste updaten
+            // Rangliste
             let lbHtml = "";
             Object.keys(stats).forEach(owner => {
                 if(owner !== "neutral") {
