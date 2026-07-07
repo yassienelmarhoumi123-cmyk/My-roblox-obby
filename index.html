@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mein Browser Minecraft - iPad Keyboard Edition</title>
+    <title>Mein Browser Minecraft - Neustart</title>
     <style>
         body { margin: 0; overflow: hidden; background-color: #78a7ff; font-family: sans-serif; touch-action: none; }
         canvas { display: block; }
@@ -23,40 +23,44 @@
 <body>
 
     <div id="crosshair"></div>
-    <div id="info"><b>iPad Steuerung:</b><br>Laufen: WASD oder Pfeiltasten<br>Springen: LEERTASTE<br>Umsehen: Mit dem Finger wischen!</div>
+    <div id="info"><b>Schritt 1: Das Fundament läuft!</b><br>Laufen: WASD oder Pfeiltasten<br>Springen: LEERTASTE<br>Umsehen: Mit dem Finger wischen</div>
 
     <script>
-        // --- 1. SETUP ---
+        // --- 1. DAS 3D-FENSTER AUFSETZEN ---
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x78a7ff);
+        scene.background = new THREE.Color(0x78a7ff); // Blauer Himmel
         
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // Licht
+        // Licht hinzufügen, damit die Blöcke plastisch aussehen
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
         scene.add(ambientLight);
         const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
         directionalLight.position.set(10, 20, 15);
         scene.add(directionalLight);
 
-        // --- 2. BLÖCKE ---
+        // --- 2. DIE ERSTEN BLÖCKE ---
         const geometry = new THREE.BoxGeometry(1, 1, 1);
         const grassColor = new THREE.MeshLambertMaterial({color: 0x557a2b});
         const dirtColor = new THREE.MeshLambertMaterial({color: 0x866043});
         const materials = [dirtColor, dirtColor, grassColor, dirtColor, dirtColor, dirtColor];
 
+        // Der eine Block in der Mitte
         const block = new THREE.Mesh(geometry, materials);
+        block.position.set(0, 0, 0);
         scene.add(block);
 
+        // Die große grüne Bodenplatte, auf der wir laufen
         const floorGeometry = new THREE.BoxGeometry(20, 0.2, 20);
         const floorMaterial = new THREE.MeshLambertMaterial({color: 0x446622});
         const floor = new THREE.Mesh(floorGeometry, floorMaterial);
         floor.position.set(0, -0.6, 0);
         scene.add(floor);
 
+        // Startposition des Spielers (Augenhöhe über dem Boden)
         camera.position.set(0, 1.6, 5);
 
         // --- 3. TASTATUR-STEUERUNG (Laufen & Springen) ---
@@ -77,92 +81,4 @@
 
         window.addEventListener('keyup', (e) => {
             if (e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp') keys.forward = false;
-            if (e.key === 's' || e.key === 'S' || e.key === 'ArrowDown') keys.backward = false;
-            if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') keys.left = false;
-            if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') keys.right = false;
-            if (e.code === 'Space') keys.jump = false;
-        });
-
-        // --- 4. TOUCH-STEUERUNG (Umsehen per Wischen) ---
-        let pitch = 0; // Hoch/Runter
-        let yaw = 0;   // Links/Rechts
-        const lookSensitivity = 0.007;
-        let prevTouchX = 0;
-        let prevTouchY = 0;
-
-        window.addEventListener('touchstart', (e) => {
-            prevTouchX = e.touches[0].clientX;
-            prevTouchY = e.touches[0].clientY;
-        });
-
-        window.addEventListener('touchmove', (e) => {
-            e.preventDefault(); // Verhindert Scrollen der Website
-            
-            const touchX = e.touches[0].clientX;
-            const touchY = e.touches[0].clientY;
-            
-            const movementX = touchX - prevTouchX;
-            const movementY = touchY - prevTouchY;
-            
-            yaw -= movementX * lookSensitivity;
-            pitch -= movementY * lookSensitivity;
-            
-            // Begrenzung für oben/unten gucken
-            pitch = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, pitch));
-            
-            prevTouchX = touchX;
-            prevTouchY = touchY;
-        });
-
-        // --- 5. GAME LOOP ---
-        function animate() {
-            requestAnimationFrame(animate);
-
-            // 1. Kamera-Rotation anwenden
-            const quatYaw = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
-            const quatPitch = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), pitch);
-            camera.quaternion.multiplyQuaternions(quatYaw, quatPitch);
-
-            // 2. Tastatur-Bewegung berechnen
-            const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(quatYaw);
-            const right = new THREE.Vector3(1, 0, 0).applyQuaternion(quatYaw);
-            const moveDirection = new THREE.Vector3();
-
-            if (keys.forward) moveDirection.add(forward);
-            if (keys.backward) moveDirection.add(forward.clone().negate());
-            if (keys.right) moveDirection.add(right);
-            if (keys.left) moveDirection.add(right.clone().negate());
-
-            moveDirection.y = 0; // Verhindert Fliegen beim Vorwärtslaufen
-            if (moveDirection.lengthSq() > 0) {
-                moveDirection.normalize();
-                camera.position.add(moveDirection.multiplyScalar(speed));
-            }
-
-            // 3. Schwerkraft & Springen
-            velocityY += gravity;
-            camera.position.y += velocityY;
-
-            if (camera.position.y < 1.6) {
-                camera.position.y = 1.6;
-                velocityY = 0;
-                canJump = true;
-            }
-
-            if (keys.jump && canJump) {
-                velocityY = jumpStrength;
-                canJump = false;
-            }
-
-            renderer.render(scene, camera);
-        }
-        animate();
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-    </script>
-</body>
-</html>
+            if (e.key === 's' || e.key === 'S' || e.key === 'ArrowDown') keys.
