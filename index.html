@@ -1,32 +1,156 @@
-<div id="login-overlay">
-    <div class="login-box">
-        <h2>Einloggen</h2>
-        <input type="text" id="username" placeholder="Benutzername...">
-        <br>
-        <input type="password" id="password" placeholder="Passwort...">
-        <br>
-        <button onclick="login()">Spielen</button>
-    </div>
-</div>
+-- ==========================================
+-- ULTIMATIVES OBBY MASTER SYSTEM
+-- ==========================================
 
-<script>
-    function login() {
-        const user = document.getElementById('username').value;
-        const pass = document.getElementById('password').value;
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local TweenService = game:GetService("TweenService")
 
-        // Hier kannst du dein Passwort festlegen
-        const korrektesPasswort = "1234"; 
+-- === 1. LEADERSTATS & CHECKPOINTS ===
+Players.PlayerAdded:Connect(function(player)
+	-- Leaderboard erstellen
+	local leaderstats = Instance.new("Folder")
+	leaderstats.Name = "leaderstats"
+	leaderstats.Parent = player
+	
+	local stage = Instance.new("IntValue")
+	stage.Name = "Stage"
+	stage.Value = 0 -- Startlevel
+	stage.Parent = leaderstats
 
-        if(user.length > 2 && pass === korrektesPasswort) {
-            // Login erfolgreich
-            document.getElementById('login-overlay').style.display = 'none';
-            
-            // Speichert den Namen dauerhaft im Browser
-            localStorage.setItem("user", user);
-            
-            alert("Willkommen zurück, " + user + "!");
-        } else {
-            alert("Falsches Passwort oder Name zu kurz!");
-        }
-    }
-</script>
+	player.CharacterAdded:Connect(function(character)
+		local humanoid = character:WaitForChild("Humanoid")
+		local rootPart = character:WaitForChild("HumanoidRootPart")
+		
+		-- Visueller Effekt: Ein cooler Funken-Effekt für den Spieler
+		local particles = Instance.new("Sparkles")
+		particles.SparkleColor = Color3.new(0, 1, 1) -- Cyan Farbe
+		particles.Parent = rootPart
+		
+		-- Spieler zum richtigen Checkpoint teleportieren
+		task.wait(0.1) -- Kurz warten, bis der Charakter voll geladen ist
+		local checkpointsFolder = Workspace:FindFirstChild("Checkpoints")
+		if checkpointsFolder then
+			local currentStage = checkpointsFolder:FindFirstChild(tostring(stage.Value))
+			if currentStage then
+				character:PivotTo(currentStage.CFrame + Vector3.new(0, 4, 0))
+			end
+		end
+		
+		-- Wenn der Spieler stirbt, laden wir ihn automatisch neu
+		humanoid.Died:Connect(function()
+			task.wait(1.5)
+			player:LoadCharacter()
+		end)
+	end)
+end)
+
+-- Checkpoints berühren
+local checkpointsFolder = Workspace:WaitForChild("Checkpoints")
+for _, checkpoint in pairs(checkpointsFolder:GetChildren()) do
+	if checkpoint:IsA("BasePart") then
+		checkpoint.Touched:Connect(function(hit)
+			local character = hit.Parent
+			local player = Players:GetPlayerFromCharacter(character)
+			
+			if player then
+				local leaderstats = player:FindFirstChild("leaderstats")
+				if leaderstats then
+					local stageInfo = leaderstats:FindFirstChild("Stage")
+					local checkpointNumber = tonumber(checkpoint.Name)
+					
+					-- Nur updaten, wenn es ein neues, höheres Level ist
+					if checkpointNumber and checkpointNumber > stageInfo.Value then
+						stageInfo.Value = checkpointNumber
+						
+						-- Kleiner Sound & Effekt für Level Up
+						checkpoint.Color = Color3.fromRGB(50, 255, 50) -- Wird grün!
+						local sound = Instance.new("Sound")
+						sound.SoundId = "rbxassetid://12222253" -- Belohnungssound
+						sound.Parent = checkpoint
+						sound:Play()
+					end
+				end
+			end
+		end)
+	end
+end
+
+-- === 2. KILL PARTS (Lava, Laser) ===
+local killPartsFolder = Workspace:WaitForChild("KillParts")
+for _, part in pairs(killPartsFolder:GetChildren()) do
+	if part:IsA("BasePart") then
+		part.Touched:Connect(function(hit)
+			local humanoid = hit.Parent:FindFirstChild("Humanoid")
+			if humanoid and humanoid.Health > 0 then
+				humanoid.Health = 0 -- Spieler stirbt
+				
+				-- Explosions-Effekt (Ohne echten Schaden für die Map)
+				local explosion = Instance.new("Explosion")
+				explosion.Position = hit.Position
+				explosion.DestroyJointRadiusPercent = 0
+				explosion.BlastRadius = 0
+				explosion.Parent = Workspace
+			end
+		end)
+	end
+end
+
+-- === 3. FADING PARTS (Verschwindende Blöcke) ===
+local fadingPartsFolder = Workspace:WaitForChild("FadingParts")
+for _, part in pairs(fadingPartsFolder:GetChildren()) do
+	if part:IsA("BasePart") then
+		local isTriggered = false
+		
+		part.Touched:Connect(function(hit)
+			local humanoid = hit.Parent:FindFirstChild("Humanoid")
+			if humanoid and not isTriggered then
+				isTriggered = true
+				
+				-- Animation: Block wird langsam transparent
+				local tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Linear)
+				local transparentTween = TweenService:Create(part, tweenInfo, {Transparency = 1})
+				transparentTween:Play()
+				
+				task.wait(1)
+				part.CanCollide = false -- Man fällt durch
+				
+				-- Nach 3 Sekunden wieder erscheinen lassen
+				task.wait(3)
+				part.CanCollide = true
+				local solidTween = TweenService:Create(part, tweenInfo, {Transparency = 0})
+				solidTween:Play()
+				
+				task.wait(1)
+				isTriggered = false
+			end
+		end)
+	end
+end
+
+-- === 4. JUMP PADS (Trampoline) ===
+local jumpPadsFolder = Workspace:WaitForChild("JumpPads")
+for _, pad in pairs(jumpPadsFolder:GetChildren()) do
+	if pad:IsA("BasePart") then
+		local isBouncing = false
+		
+		pad.Touched:Connect(function(hit)
+			local rootPart = hit.Parent:FindFirstChild("HumanoidRootPart")
+			if rootPart and not isBouncing then
+				isBouncing = true
+				
+				-- Spieler in die Luft schleudern
+				rootPart.Velocity = Vector3.new(rootPart.Velocity.X, 150, rootPart.Velocity.Z)
+				
+				-- Pad-Animation (drückt sich kurz zusammen)
+				local originalSize = pad.Size
+				pad.Size = originalSize - Vector3.new(0, pad.Size.Y * 0.5, 0)
+				task.wait(0.1)
+				pad.Size = originalSize
+				
+				task.wait(0.5)
+				isBouncing = false
+			end
+		end)
+	end
+end
