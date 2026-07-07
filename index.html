@@ -1,22 +1,41 @@
 <title>Roblox.com</title>
--- Dieses LocalScript muss in deinen TextButton im GUI
-local player = game.Players.LocalPlayer
-local loginFrame = script.Parent.Parent -- Das Fenster, das verschwinden soll
-local nameInput = loginFrame:WaitForChild("TextBox") -- Name deiner TextBox
-local loginButton = script.Parent -- Der Button
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <style>
+        #login-overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.85); display: flex; align-items: center; 
+            justify-content: center; z-index: 1000; color: white;
+        }
+        .login-box { background: #333; padding: 20px; border-radius: 10px; text-align: center; }
+        input { padding: 10px; margin: 10px 0; border-radius: 5px; border: none; width: 200px; }
+        button { padding: 10px 20px; background: #55ff55; border: none; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
 
-loginButton.MouseButton1Click:Connect(function()
-	local enteredName = nameInput.Text
-	
-	if enteredName ~= "" and #enteredName > 2 then
-		print("Erfolgreich eingeloggt als: " .. enteredName)
-		
-		-- Hier: Login-Fenster ausblenden
-		loginFrame.Visible = false
-		
-		-- Hier: Maus wieder freigeben (falls du sie gesperrt hattest)
-		game.Players.LocalPlayer.PlayerGui.Enabled = true
-	else
-		nameInput.PlaceholderText = "Bitte Namen eingeben!"
-	end
-end)
+    <div id="login-overlay">
+        <div class="login-box">
+            <h2>Willkommen im Spiel</h2>
+            <input type="text" id="username" placeholder="Gib deinen Namen ein...">
+            <br>
+            <button onclick="login()">Einloggen</button>
+        </div>
+    </div>
+
+    <script>
+        function login() {
+            const user = document.getElementById('username').value;
+            if(user.length > 2) {
+                document.getElementById('login-overlay').style.display = 'none';
+                console.log("Eingeloggt als: " + user);
+                alert("Hallo " + user + "! Viel Spaß beim Spielen.");
+            } else {
+                alert("Bitte gib einen Namen mit mindestens 3 Buchstaben ein!");
+            }
+        }
+    </script>
+
+</body>
+</html>
