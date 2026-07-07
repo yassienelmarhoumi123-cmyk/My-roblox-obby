@@ -59,6 +59,16 @@
         scene.add(floor);
 
         /* --- HIER SCHRITT 2 WELT-SCHLEIFE EINSETZEN --- */
+        const worldSize = 16;
+        for (let x = 0; x < worldSize; x++) {
+            for (let z = 0; z < worldSize; z++) {
+                if(x - worldSize/2 === 0 && z - worldSize/2 === 0) continue; 
+                const newWorldBlock = new THREE.Mesh(geometry, defaultMaterials);
+                newWorldBlock.position.set(x - worldSize / 2, 0, z - worldSize / 2);
+                scene.add(newWorldBlock);
+                blocksArray.push(newWorldBlock);
+            }
+        }
 
         camera.position.set(0, 1.6, 5);
 
@@ -135,6 +145,7 @@
             // Bodenkollision
             let groundY = 1.6;
             /* --- HIER SCHRITT 2 ANPASSUNG BODENHÖHE EINSETZEN --- */
+            groundY = 2.1;
 
             if (camera.position.y < groundY) { camera.position.y = groundY; velocityY = 0; canJump = true; }
             if (keys.jump && canJump) { velocityY = jumpStrength; canJump = false; }
