@@ -1,156 +1,323 @@
--- ==========================================
--- ULTIMATIVES OBBY MASTER SYSTEM
--- ==========================================
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Meine 3D Web Obby</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #87CEEB; font-family: 'Arial', sans-serif; touch-action: none; user-select: none; }
+        canvas { display: block; }
+        
+        /* Fadenkreuz */
+        #crosshair { position: absolute; top: 50%; left: 50%; width: 12px; height: 12px; transform: translate(-50%, -50%); pointer-events: none; z-index: 10; }
+        #crosshair::before, #crosshair::after { content: ''; position: absolute; background: white; }
+        #crosshair::before { top: 5px; left: 0; width: 12px; height: 2px; }
+        #crosshair::after { top: 0; left: 5px; width: 2px; height: 12px; }
+        
+        /* Leaderboard / UI */
+        #ui-container { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.6); color: white; padding: 15px; border-radius: 8px; border: 2px solid white; z-index: 10; text-shadow: 1px 1px 2px black; font-size: 18px; font-weight: bold; }
+        .ui-text { margin: 5px 0; }
+        #stage-text { color: #55ff55; }
+        #death-text { color: #ff5555; }
 
-local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
-local TweenService = game:GetService("TweenService")
+        /* Mobile Controls */
+        #joystick-zone { position: absolute; bottom: 30px; left: 30px; width: 120px; height: 120px; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.4); border-radius: 50%; z-index: 9; touch-action: none; }
+        #joystick-knob { position: absolute; top: 35px; left: 35px; width: 50px; height: 50px; background: rgba(255,255,255,0.7); border-radius: 50%; pointer-events: none; }
+        #jump-btn { position: absolute; bottom: 40px; right: 40px; width: 80px; height: 80px; background: rgba(255,255,255,0.3); border: 2px solid rgba(255,255,255,0.5); border-radius: 50%; z-index: 9; display: flex; align-items: center; justify-content: center; color: white; font-size: 30px; font-weight: bold; }
+        
+        #start-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; z-index: 20; }
+        #start-screen h1 { font-size: 40px; color: #55ff55; text-shadow: 0 0 10px #55ff55; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
 
--- === 1. LEADERSTATS & CHECKPOINTS ===
-Players.PlayerAdded:Connect(function(player)
-	-- Leaderboard erstellen
-	local leaderstats = Instance.new("Folder")
-	leaderstats.Name = "leaderstats"
-	leaderstats.Parent = player
-	
-	local stage = Instance.new("IntValue")
-	stage.Name = "Stage"
-	stage.Value = 0 -- Startlevel
-	stage.Parent = leaderstats
+    <div id="start-screen">
+        <h1>Die Ultimative HTML Obby</h1>
+        <p>Klicke oder tippe um zu starten</p>
+        <p style="color: #ccc; font-size: 14px;">(Rote Blöcke = Tod | Grüne Blöcke = Checkpoint | Lila Blöcke = Trampolin)</p>
+    </div>
 
-	player.CharacterAdded:Connect(function(character)
-		local humanoid = character:WaitForChild("Humanoid")
-		local rootPart = character:WaitForChild("HumanoidRootPart")
-		
-		-- Visueller Effekt: Ein cooler Funken-Effekt für den Spieler
-		local particles = Instance.new("Sparkles")
-		particles.SparkleColor = Color3.new(0, 1, 1) -- Cyan Farbe
-		particles.Parent = rootPart
-		
-		-- Spieler zum richtigen Checkpoint teleportieren
-		task.wait(0.1) -- Kurz warten, bis der Charakter voll geladen ist
-		local checkpointsFolder = Workspace:FindFirstChild("Checkpoints")
-		if checkpointsFolder then
-			local currentStage = checkpointsFolder:FindFirstChild(tostring(stage.Value))
-			if currentStage then
-				character:PivotTo(currentStage.CFrame + Vector3.new(0, 4, 0))
-			end
-		end
-		
-		-- Wenn der Spieler stirbt, laden wir ihn automatisch neu
-		humanoid.Died:Connect(function()
-			task.wait(1.5)
-			player:LoadCharacter()
-		end)
-	end)
-end)
+    <div id="ui-container">
+        <div class="ui-text" id="stage-text">Stage: 0</div>
+        <div class="ui-text" id="death-text">Tode: 0</div>
+    </div>
 
--- Checkpoints berühren
-local checkpointsFolder = Workspace:WaitForChild("Checkpoints")
-for _, checkpoint in pairs(checkpointsFolder:GetChildren()) do
-	if checkpoint:IsA("BasePart") then
-		checkpoint.Touched:Connect(function(hit)
-			local character = hit.Parent
-			local player = Players:GetPlayerFromCharacter(character)
-			
-			if player then
-				local leaderstats = player:FindFirstChild("leaderstats")
-				if leaderstats then
-					local stageInfo = leaderstats:FindFirstChild("Stage")
-					local checkpointNumber = tonumber(checkpoint.Name)
-					
-					-- Nur updaten, wenn es ein neues, höheres Level ist
-					if checkpointNumber and checkpointNumber > stageInfo.Value then
-						stageInfo.Value = checkpointNumber
-						
-						-- Kleiner Sound & Effekt für Level Up
-						checkpoint.Color = Color3.fromRGB(50, 255, 50) -- Wird grün!
-						local sound = Instance.new("Sound")
-						sound.SoundId = "rbxassetid://12222253" -- Belohnungssound
-						sound.Parent = checkpoint
-						sound:Play()
-					end
-				end
-			end
-		end)
-	end
-end
+    <div id="crosshair"></div>
+    <div id="joystick-zone"><div id="joystick-knob"></div></div>
+    <div id="jump-btn">↑</div>
 
--- === 2. KILL PARTS (Lava, Laser) ===
-local killPartsFolder = Workspace:WaitForChild("KillParts")
-for _, part in pairs(killPartsFolder:GetChildren()) do
-	if part:IsA("BasePart") then
-		part.Touched:Connect(function(hit)
-			local humanoid = hit.Parent:FindFirstChild("Humanoid")
-			if humanoid and humanoid.Health > 0 then
-				humanoid.Health = 0 -- Spieler stirbt
-				
-				-- Explosions-Effekt (Ohne echten Schaden für die Map)
-				local explosion = Instance.new("Explosion")
-				explosion.Position = hit.Position
-				explosion.DestroyJointRadiusPercent = 0
-				explosion.BlastRadius = 0
-				explosion.Parent = Workspace
-			end
-		end)
-	end
-end
+    <script>
+        // --- 1. ENGINE SETUP ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x87CEEB); // Himmelblau
+        scene.fog = new THREE.Fog(0x87CEEB, 20, 100);
 
--- === 3. FADING PARTS (Verschwindende Blöcke) ===
-local fadingPartsFolder = Workspace:WaitForChild("FadingParts")
-for _, part in pairs(fadingPartsFolder:GetChildren()) do
-	if part:IsA("BasePart") then
-		local isTriggered = false
-		
-		part.Touched:Connect(function(hit)
-			local humanoid = hit.Parent:FindFirstChild("Humanoid")
-			if humanoid and not isTriggered then
-				isTriggered = true
-				
-				-- Animation: Block wird langsam transparent
-				local tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Linear)
-				local transparentTween = TweenService:Create(part, tweenInfo, {Transparency = 1})
-				transparentTween:Play()
-				
-				task.wait(1)
-				part.CanCollide = false -- Man fällt durch
-				
-				-- Nach 3 Sekunden wieder erscheinen lassen
-				task.wait(3)
-				part.CanCollide = true
-				local solidTween = TweenService:Create(part, tweenInfo, {Transparency = 0})
-				solidTween:Play()
-				
-				task.wait(1)
-				isTriggered = false
-			end
-		end)
-	end
-end
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
 
--- === 4. JUMP PADS (Trampoline) ===
-local jumpPadsFolder = Workspace:WaitForChild("JumpPads")
-for _, pad in pairs(jumpPadsFolder:GetChildren()) do
-	if pad:IsA("BasePart") then
-		local isBouncing = false
-		
-		pad.Touched:Connect(function(hit)
-			local rootPart = hit.Parent:FindFirstChild("HumanoidRootPart")
-			if rootPart and not isBouncing then
-				isBouncing = true
-				
-				-- Spieler in die Luft schleudern
-				rootPart.Velocity = Vector3.new(rootPart.Velocity.X, 150, rootPart.Velocity.Z)
-				
-				-- Pad-Animation (drückt sich kurz zusammen)
-				local originalSize = pad.Size
-				pad.Size = originalSize - Vector3.new(0, pad.Size.Y * 0.5, 0)
-				task.wait(0.1)
-				pad.Size = originalSize
-				
-				task.wait(0.5)
-				isBouncing = false
-			end
-		end)
-	end
-end
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+        scene.add(ambientLight);
+        const sun = new THREE.DirectionalLight(0xffffff, 0.6);
+        sun.position.set(20, 50, 20);
+        scene.add(sun);
+
+        // --- 2. GAME LOGIC & OBBY MAP ---
+        let stage = 0;
+        let deaths = 0;
+        let spawnPoint = new THREE.Vector3(0, 3, 0);
+
+        const platforms = []; // Speichert alle Hindernisse
+        const platformGeo = new THREE.BoxGeometry(1, 1, 1);
+
+        // Materialien
+        const mats = {
+            safe: new THREE.MeshLambertMaterial({color: 0xffffff}),     // Normal Weiß
+            lava: new THREE.MeshBasicMaterial({color: 0xff0000}),       // Tödlich Rot (leuchtend)
+            checkpoint: new THREE.MeshLambertMaterial({color: 0x00ff00}), // Sicher Grün
+            bounce: new THREE.MeshLambertMaterial({color: 0xaa00ff})    // Trampolin Lila
+        };
+
+        // Funktion um Blöcke zu bauen
+        function createBlock(x, y, z, width, length, type, stageNum = -1) {
+            const mesh = new THREE.Mesh(platformGeo, mats[type]);
+            mesh.scale.set(width, 1, length);
+            mesh.position.set(x, y, z);
+            scene.add(mesh);
+            
+            platforms.push({
+                mesh: mesh,
+                type: type,
+                stage: stageNum,
+                box: new THREE.Box3().setFromObject(mesh) // Für Kollision
+            });
+        }
+
+        // --- DEINE OBBY MAP WIRD HIER GEBAUT ---
+        // Stage 0: Start
+        createBlock(0, 0, 0, 10, 10, 'checkpoint', 0);
+        
+        // Stage 1: Einfache Sprünge
+        createBlock(0, 0, -10, 4, 4, 'safe');
+        createBlock(0, 0, -18, 4, 4, 'safe');
+        createBlock(0, 0, -26, 8, 8, 'checkpoint', 1);
+
+        // Stage 2: Lava überqueren
+        createBlock(0, 0, -34, 4, 2, 'safe');
+        createBlock(0, 0, -38, 12, 4, 'lava'); // Vorsicht, Lava!
+        createBlock(0, 0, -42, 4, 2, 'safe');
+        createBlock(0, 0, -50, 8, 8, 'checkpoint', 2);
+
+        // Stage 3: Trampoline (Hoch springen)
+        createBlock(0, 0, -60, 4, 4, 'bounce'); 
+        createBlock(0, 15, -70, 4, 4, 'safe'); // Man muss extrem hoch springen!
+        createBlock(0, 15, -80, 8, 8, 'checkpoint', 3);
+
+        // Stage 4: Dünner Pfad mit Lava links und rechts
+        createBlock(0, 15, -90, 2, 10, 'safe'); 
+        createBlock(-3, 15, -90, 4, 10, 'lava'); 
+        createBlock(3, 15, -90, 4, 10, 'lava');
+        createBlock(0, 15, -105, 10, 10, 'checkpoint', 4); // Ziel!
+
+
+        // --- 3. SPIELER & PHYSIK ---
+        const player = {
+            pos: spawnPoint.clone(),
+            vel: new THREE.Vector3(0, 0, 0),
+            height: 1.6,
+            radius: 0.4,
+            onGround: false
+        };
+        camera.position.copy(player.pos);
+
+        function updateUI() {
+            document.getElementById('stage-text').innerText = "Stage: " + stage;
+            document.getElementById('death-text').innerText = "Tode: " + deaths;
+        }
+
+        function killPlayer() {
+            deaths++;
+            updateUI();
+            player.pos.copy(spawnPoint); // Zurück zum Checkpoint
+            player.vel.set(0,0,0);
+            
+            // Roter Blitz auf dem Bildschirm
+            document.body.style.backgroundColor = "red";
+            setTimeout(() => { document.body.style.backgroundColor = "#87CEEB"; }, 100);
+        }
+
+        // --- 4. STEUERUNG (PC & iPad) ---
+        let yaw = 0, pitch = 0;
+        let moveVector = {x: 0, y: 0}, jumpTrigger = false;
+        
+        // PC
+        const startScreen = document.getElementById('start-screen');
+        startScreen.addEventListener('click', () => {
+            if(!/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+                document.body.requestPointerLock();
+            }
+            startScreen.style.display = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (document.pointerLockElement === document.body) {
+                yaw -= e.movementX * 0.004;
+                pitch -= e.movementY * 0.004;
+                pitch = Math.max(-Math.PI/2, Math.min(Math.PI/2, pitch));
+            }
+        });
+
+        let keys = {w:0, s:0, a:0, d:0};
+        document.addEventListener('keydown', (e) => {
+            let k = e.key.toLowerCase();
+            if(k==='w') keys.w=1; if(k==='s') keys.s=1; if(k==='a') keys.a=1; if(k==='d') keys.d=1;
+            if(e.code==='Space') jumpTrigger = true;
+        });
+        document.addEventListener('keyup', (e) => {
+            let k = e.key.toLowerCase();
+            if(k==='w') keys.w=0; if(k==='s') keys.s=0; if(k==='a') keys.a=0; if(k==='d') keys.d=0;
+            if(e.code==='Space') jumpTrigger = false;
+        });
+
+        // iPad Touch
+        const joyZone = document.getElementById('joystick-zone');
+        const joyKnob = document.getElementById('joystick-knob');
+        let joyId = null, lookId = null;
+        let joyStart = {x:0, y:0}, prevLook = {x:0, y:0};
+
+        window.addEventListener('touchstart', (e) => {
+            if(startScreen.style.display !== 'none') startScreen.style.display = 'none';
+            for(let t of e.changedTouches) {
+                if (t.clientX < window.innerWidth/2 && !joyId) {
+                    joyId = t.identifier; joyStart = {x: t.clientX, y: t.clientY};
+                    joyZone.style.left = (t.clientX - 60) + 'px';
+                    joyZone.style.bottom = (window.innerHeight - t.clientY - 60) + 'px';
+                } else if (t.clientX >= window.innerWidth/2 && !lookId && t.target.id !== 'jump-btn') {
+                    lookId = t.identifier; prevLook = {x: t.clientX, y: t.clientY};
+                }
+            }
+        });
+
+        window.addEventListener('touchmove', (e) => {
+            for(let t of e.touches) {
+                if(t.identifier === joyId) {
+                    let dx = t.clientX - joyStart.x, dy = t.clientY - joyStart.y;
+                    let dist = Math.sqrt(dx*dx + dy*dy);
+                    if(dist > 40) { dx = (dx/dist)*40; dy = (dy/dist)*40; }
+                    joyKnob.style.transform = `translate(${dx}px, ${dy}px)`;
+                    moveVector.x = dx / 40; moveVector.y = -dy / 40;
+                }
+                if(t.identifier === lookId) {
+                    yaw -= (t.clientX - prevLook.x) * 0.005; 
+                    pitch -= (t.clientY - prevLook.y) * 0.005;
+                    pitch = Math.max(-Math.PI/2, Math.min(Math.PI/2, pitch));
+                    prevLook = {x: t.clientX, y: t.clientY};
+                }
+            }
+        });
+
+        window.addEventListener('touchend', (e) => {
+            for(let t of e.changedTouches) {
+                if(t.identifier === joyId) {
+                    joyId = null; moveVector = {x:0, y:0};
+                    joyKnob.style.transform = `translate(0px, 0px)`;
+                    joyZone.style.left = '30px'; joyZone.style.bottom = '30px';
+                }
+                if(t.identifier === lookId) lookId = null;
+            }
+        });
+
+        const jumpBtn = document.getElementById('jump-btn');
+        jumpBtn.addEventListener('touchstart', (e) => { e.preventDefault(); jumpTrigger = true; });
+        jumpBtn.addEventListener('touchend', (e) => { e.preventDefault(); jumpTrigger = false; });
+
+        // --- 5. GAME LOOP & KOLLISION ---
+        const clock = new THREE.Clock();
+        const SPEED = 8.0, JUMP_FORCE = 12.0, GRAVITY = -30.0;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            let dt = Math.min(clock.getDelta(), 0.1);
+
+            // Drehung
+            const qYaw = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0), yaw);
+            const qPitch = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0), pitch);
+            camera.quaternion.copy(qYaw).multiply(qPitch);
+
+            // Bewegung berechnen
+            let fwd = new THREE.Vector3(0,0,-1).applyQuaternion(qYaw); fwd.y = 0; fwd.normalize();
+            let rgt = new THREE.Vector3(1,0,0).applyQuaternion(qYaw); rgt.y = 0; rgt.normalize();
+
+            let mx = (keys.d - keys.a) + moveVector.x;
+            let mz = (keys.w - keys.s) + moveVector.y;
+
+            let targetVel = fwd.multiplyScalar(mz).add(rgt.multiplyScalar(mx)).multiplyScalar(SPEED);
+            
+            // Physik Update
+            player.pos.x += targetVel.x * dt;
+            player.pos.z += targetVel.z * dt;
+            player.vel.y += GRAVITY * dt;
+            player.pos.y += player.vel.y * dt;
+
+            // Simple Box-Collision
+            player.onGround = false;
+            let playerBox = new THREE.Box3(
+                new THREE.Vector3(player.pos.x - player.radius, player.pos.y - player.height, player.pos.z - player.radius),
+                new THREE.Vector3(player.pos.x + player.radius, player.pos.y + 0.2, player.pos.z + player.radius)
+            );
+
+            for(let p of platforms) {
+                if (playerBox.intersectsBox(p.box)) {
+                    // Berührt Lava?
+                    if (p.type === 'lava') {
+                        killPlayer();
+                        return; // Schleife abbrechen
+                    }
+                    
+                    // Berührt Checkpoint?
+                    if (p.type === 'checkpoint' && p.stage > stage) {
+                        stage = p.stage;
+                        spawnPoint.copy(new THREE.Vector3(p.mesh.position.x, p.mesh.position.y + 3, p.mesh.position.z));
+                        updateUI();
+                    }
+
+                    // Boden-Kollision
+                    if (player.vel.y < 0 && player.pos.y > p.box.max.y) {
+                        player.pos.y = p.box.max.y + player.height;
+                        player.vel.y = 0;
+                        player.onGround = true;
+
+                        // Trampolin!
+                        if (p.type === 'bounce') {
+                            player.vel.y = 25; // Schleudert den Spieler extrem hoch!
+                            player.onGround = false;
+                        }
+                    }
+                }
+            }
+
+            // Fall ins Nichts
+            if (player.pos.y < -30) killPlayer();
+
+            // Springen
+            if (jumpTrigger && player.onGround) {
+                player.vel.y = JUMP_FORCE;
+                player.onGround = false;
+            }
+
+            camera.position.copy(player.pos);
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
