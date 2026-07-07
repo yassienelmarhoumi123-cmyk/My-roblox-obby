@@ -1,1 +1,22 @@
 <title>Roblox.com</title>
+-- Dieses LocalScript muss in deinen TextButton im GUI
+local player = game.Players.LocalPlayer
+local loginFrame = script.Parent.Parent -- Das Fenster, das verschwinden soll
+local nameInput = loginFrame:WaitForChild("TextBox") -- Name deiner TextBox
+local loginButton = script.Parent -- Der Button
+
+loginButton.MouseButton1Click:Connect(function()
+	local enteredName = nameInput.Text
+	
+	if enteredName ~= "" and #enteredName > 2 then
+		print("Erfolgreich eingeloggt als: " .. enteredName)
+		
+		-- Hier: Login-Fenster ausblenden
+		loginFrame.Visible = false
+		
+		-- Hier: Maus wieder freigeben (falls du sie gesperrt hattest)
+		game.Players.LocalPlayer.PlayerGui.Enabled = true
+	else
+		nameInput.PlaceholderText = "Bitte Namen eingeben!"
+	end
+end)
