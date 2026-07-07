@@ -3,73 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mein Browser Minecraft - Neustart</title>
+    <title>Mein Puzzle Minecraft</title>
     <style>
         body { margin: 0; overflow: hidden; background-color: #78a7ff; font-family: sans-serif; touch-action: none; }
         canvas { display: block; }
-        #crosshair {
-            position: absolute; top: 50%; left: 50%;
-            width: 10px; height: 10px;
-            background: white; transform: translate(-50%, -50%);
-            mix-blend-mode: difference; pointer-events: none;
-        }
-        #info {
-            position: absolute; top: 10px; left: 10px;
-            color: white; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 5px;
-        }
+        #crosshair { position: absolute; top: 50%; left: 50%; width: 10px; height: 10px; background: white; transform: translate(-50%, -50%); mix-blend-mode: difference; pointer-events: none; }
+        #info { position: absolute; top: 10px; left: 10px; color: white; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 5px; z-index: 10; }
+        /* --- HIER SCHRITT 4 STYLE EINSETZEN --- */
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
     <div id="crosshair"></div>
-    <div id="info"><b>Schritt 1: Das Fundament läuft!</b><br>Laufen: WASD oder Pfeiltasten<br>Springen: LEERTASTE<br>Umsehen: Mit dem Finger wischen</div>
-
+    <div id="info"><b>Minecraft Puzzle</b><br>Laufen: WASD / Pfeile | Umschauen: Wischen</div>
     <script>
-        // --- 1. DAS 3D-FENSTER AUFSETZEN ---
+        // --- 1. SETUP ---
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x78a7ff); // Blauer Himmel
+        scene.background = new THREE.Color(0x78a7ff);
+        
+        /* --- HIER SCHRITT 5 NEBEL EINSETZEN --- */
         
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // Licht hinzufügen, damit die Blöcke plastisch aussehen
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-        scene.add(ambientLight);
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        directionalLight.position.set(10, 20, 15);
-        scene.add(directionalLight);
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6); scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8); directionalLight.position.set(10, 20, 15); scene.add(directionalLight);
 
-        // --- 2. DIE ERSTEN BLÖCKE ---
+        const raycaster = new THREE.Raycaster(); const mouse = new THREE.Vector2(0, 0);
+        const blocksArray = [];
         const geometry = new THREE.BoxGeometry(1, 1, 1);
-        const grassColor = new THREE.MeshLambertMaterial({color: 0x557a2b});
-        const dirtColor = new THREE.MeshLambertMaterial({color: 0x866043});
-        const materials = [dirtColor, dirtColor, grassColor, dirtColor, dirtColor, dirtColor];
 
-        // Der eine Block in der Mitte
-        const block = new THREE.Mesh(geometry, materials);
-        block.position.set(0, 0, 0);
-        scene.add(block);
+        /* --- HIER SCHRITT 5 OUTLINE GEOMETRIE EINSETZEN --- */
 
-        // Die große grüne Bodenplatte, auf der wir laufen
+        // --- 2. MATERIALIEN & START-WELT ---
+        const dirtMat = new THREE.MeshLambertMaterial({color: 0x866043});
+        const grassMat = new THREE.MeshLambertMaterial({color: 0x557a2b});
+        let defaultMaterials = [dirtMat, dirtMat, grassMat, dirtMat, dirtMat, dirtMat];
+
+        /* --- HIER SCHRITT 4 MATERIAL-MAP EINSETZEN --- */
+
+        // Start-Block generieren
+        const startBlock = new THREE.Mesh(geometry, defaultMaterials);
+        startBlock.position.set(0, 0, 0);
+        scene.add(startBlock);
+        blocksArray.push(startBlock);
+
+        // Die Bodenplatte aus Schritt 1
         const floorGeometry = new THREE.BoxGeometry(20, 0.2, 20);
         const floorMaterial = new THREE.MeshLambertMaterial({color: 0x446622});
         const floor = new THREE.Mesh(floorGeometry, floorMaterial);
         floor.position.set(0, -0.6, 0);
         scene.add(floor);
 
-        // Startposition des Spielers (Augenhöhe über dem Boden)
+        /* --- HIER SCHRITT 2 WELT-SCHLEIFE EINSETZEN --- */
+
         camera.position.set(0, 1.6, 5);
 
-        // --- 3. TASTATUR-STEUERUNG (Laufen & Springen) ---
+        // --- 3. TASTATUR-STEUERUNG ---
         const keys = { forward: false, backward: false, left: false, right: false, jump: false };
-        let velocityY = 0;
-        const gravity = -0.01;
-        const jumpStrength = 0.18;
-        const speed = 0.08;
-        let canJump = false;
+        let velocityY = 0; const gravity = -0.01; const jumpStrength = 0.18; const speed = 0.08; let canJump = false;
 
         window.addEventListener('keydown', (e) => {
             if (e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp') keys.forward = true;
@@ -77,8 +72,83 @@
             if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') keys.left = true;
             if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') keys.right = true;
             if (e.code === 'Space') keys.jump = true;
+            /* --- HIER SCHRITT 4 KEYDOWN EINSETZEN --- */
         });
 
         window.addEventListener('keyup', (e) => {
             if (e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp') keys.forward = false;
-            if (e.key === 's' || e.key === 'S' || e.key === 'ArrowDown') keys.
+            if (e.key === 's' || e.key === 'S' || e.key === 'ArrowDown') keys.backward = false;
+            if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') keys.left = false;
+            if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') keys.right = false;
+            if (e.code === 'Space') keys.jump = false;
+        });
+
+        // --- 4. TOUCH-STEUERUNG (UMSEHEN) ---
+        let pitch = 0; yaw = 0; const lookSensitivity = 0.007; let prevTouchX = 0; let prevTouchY = 0;
+        let touchStartTime = 0; let hasMovedTouch = false;
+
+        window.addEventListener('touchstart', (e) => {
+            prevTouchX = e.touches[0].clientX; prevTouchY = e.touches[0].clientY;
+            touchStartTime = Date.now(); hasMovedTouch = false;
+        });
+
+        window.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const touchX = e.touches[0].clientX; const touchY = e.touches[0].clientY;
+            const diffX = touchX - prevTouchX; const diffY = touchY - prevTouchY;
+            if (Math.abs(diffX) > 2 || Math.abs(diffY) > 2) hasMovedTouch = true;
+            yaw -= diffX * lookSensitivity; pitch -= diffY * lookSensitivity;
+            pitch = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, pitch));
+            prevTouchX = touchX; prevTouchY = touchY;
+        });
+
+        window.addEventListener('touchend', (e) => {
+            if (hasMovedTouch) return;
+            /* --- HIER SCHRITT 3 LOGIK EINSETZEN --- */
+        });
+
+        // --- 5. GAME LOOP ---
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const quatYaw = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+            const quatPitch = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), pitch);
+            camera.quaternion.multiplyQuaternions(quatYaw, quatPitch);
+
+            const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(quatYaw);
+            const right = new THREE.Vector3(1, 0, 0).applyQuaternion(quatYaw);
+            const moveDirection = new THREE.Vector3();
+
+            if (keys.forward) moveDirection.add(forward);
+            if (keys.backward) moveDirection.add(forward.clone().negate());
+            if (keys.right) moveDirection.add(right);
+            if (keys.left) moveDirection.add(right.clone().negate());
+
+            moveDirection.y = 0;
+            if (moveDirection.lengthSq() > 0) {
+                moveDirection.normalize();
+                camera.position.add(moveDirection.multiplyScalar(speed));
+            }
+
+            velocityY += gravity; camera.position.y += velocityY;
+            
+            // Bodenkollision
+            let groundY = 1.6;
+            /* --- HIER SCHRITT 2 ANPASSUNG BODENHÖHE EINSETZEN --- */
+
+            if (camera.position.y < groundY) { camera.position.y = groundY; velocityY = 0; canJump = true; }
+            if (keys.jump && canJump) { velocityY = jumpStrength; canJump = false; }
+
+            /* --- HIER SCHRITT 5 ANIMATE RAYCAST EINSETZEN --- */
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
