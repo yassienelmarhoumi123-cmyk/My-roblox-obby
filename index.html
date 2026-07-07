@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mein Browser Minecraft</title>
+    <title>Mein Browser Minecraft - Schritt 1</title>
     <style>
         body { margin: 0; overflow: hidden; background-color: #78a7ff; font-family: sans-serif; }
         canvas { display: block; }
@@ -18,73 +18,117 @@
             color: white; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 5px;
         }
     </style>
-    <!-- Wir laden Three.js und die Maus-Steuerung (PointerLockControls) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/js/controls/PointerLockControls.js"></script>
 </head>
 <body>
 
     <div id="crosshair"></div>
-    <div id="info">Klicke ins Fenster, um dich mit der Maus umzusehen!</div>
+    <div id="info">Klicke zum Spielen! <br>Bewegung: WASD | Springen: LEERTASTE</div>
 
     <script>
-        // 1. Szene, Kamera und Renderer aufsetzen
+        // --- 1. SETUP ---
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x78a7ff); // Minecraft-Blauer Himmel
+        scene.background = new THREE.Color(0x78a7ff);
         
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer();
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // 2. Licht hinzufügen (damit die Blöcke 3D wirken)
+        // Licht
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
         scene.add(ambientLight);
         const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
         directionalLight.position.set(10, 20, 15);
         scene.add(directionalLight);
 
-        // 3. Maus-Steuerung aktivieren (wie in echten Shootern/Minecraft)
+        // --- 2. MAUS-STEUERUNG ---
         const controls = new THREE.PointerLockControls(camera, document.body);
-        
-        document.body.addEventListener('click', () => {
-            controls.lock(); // Sperrt die Maus im Fenster
-        });
-
+        document.body.addEventListener('click', () => { controls.lock(); });
         controls.addEventListener('lock', () => { document.getElementById('info').style.display = 'none'; });
         controls.addEventListener('unlock', () => { document.getElementById('info').style.display = 'block'; });
 
-        // 4. Einen "Dreck-Block" bauen (mit Farben statt Textur-Bildern für GitHub)
+        // --- 3. DER BLOCK & EIN BODEN ---
         const geometry = new THREE.BoxGeometry(1, 1, 1);
-        
-        // Minecraft-Farben: Oben grün (Gras), Seiten/Unten braun (Erde)
         const grassColor = new THREE.MeshLambertMaterial({color: 0x557a2b});
         const dirtColor = new THREE.MeshLambertMaterial({color: 0x866043});
-        
-        const materials = [
-            dirtColor,  // Rechts
-            dirtColor,  // Links
-            grassColor, // Oben
-            dirtColor,  // Unten
-            dirtColor,  // Vorne
-            dirtColor   // Hinten
-        ];
+        const materials = [dirtColor, dirtColor, grassColor, dirtColor, dirtColor, dirtColor];
 
+        // Ein einzelner Block in der Mitte
         const block = new THREE.Mesh(geometry, materials);
+        block.position.set(0, 0, 0);
         scene.add(block);
 
-        camera.position.z = 3;
-        camera.position.y = 1;
-        camera.lookAt(block.position);
+        // Eine kleine Plattform (Boden) zum Draufstehen bauen
+        const floorGeometry = new THREE.BoxGeometry(10, 0.2, 10);
+        const floorMaterial = new THREE.MeshLambertMaterial({color: 0x446622});
+        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+        floor.position.set(0, -0.6, 0); // Direkt unter dem Block
+        scene.add(floor);
 
-        // 5. Game Loop
+        // Spieler Startposition
+        camera.position.set(0, 1.6, 4); // 1.6 ist die Augenhöhe
+
+        // --- 4. TASTATUR-STEUERUNG & PHYSIK-VARIABLEN ---
+        const keys = { w: false, a: false, s: false, d: false, space: false };
+        let velocityY = 0;
+        const gravity = -0.01;
+        const jumpStrength = 0.2;
+        const speed = 0.1;
+        let canJump = false;
+
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'KeyW') keys.w = true;
+            if (e.code === 'KeyA') keys.a = true;
+            if (e.code === 'KeyS') keys.s = true;
+            if (e.code === 'KeyD') keys.d = true;
+            if (e.code === 'Space') keys.space = true;
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (e.code === 'KeyW') keys.w = false;
+            if (e.code === 'KeyA') keys.a = false;
+            if (e.code === 'KeyS') keys.s = false;
+            if (e.code === 'KeyD') keys.d = false;
+            if (e.code === 'Space') keys.space = false;
+        });
+
+        // --- 5. GAME LOOP ---
         function animate() {
             requestAnimationFrame(animate);
+
+            if (controls.isLocked) {
+                // Vorwärts / Rückwärts bewegen
+                if (keys.w) controls.moveForward(speed);
+                if (keys.s) controls.moveForward(-speed);
+                // Links / Rechts bewegen
+                if (keys.a) controls.moveRight(-speed);
+                if (keys.d) controls.moveRight(speed);
+
+                // Schwerkraft berechnen
+                velocityY += gravity;
+                camera.position.y += velocityY;
+
+                // Kollision mit dem Boden (damit man nicht unendlich fällt)
+                if (camera.position.y < 1.6) { // 1.6 über dem Boden
+                    camera.position.y = 1.6;
+                    velocityY = 0;
+                    canJump = true;
+                }
+
+                // Springen
+                if (keys.space && canJump) {
+                    velocityY = jumpStrength;
+                    canJump = false;
+                }
+            }
+
             renderer.render(scene, camera);
         }
         animate();
 
-        // Fenstergröße anpassen
+        // Resize
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
