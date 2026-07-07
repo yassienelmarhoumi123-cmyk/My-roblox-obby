@@ -2,10 +2,10 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mein Browser Minecraft - Schritt 1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mein Browser Minecraft - iPad Keyboard Edition</title>
     <style>
-        body { margin: 0; overflow: hidden; background-color: #78a7ff; font-family: sans-serif; }
+        body { margin: 0; overflow: hidden; background-color: #78a7ff; font-family: sans-serif; touch-action: none; }
         canvas { display: block; }
         #crosshair {
             position: absolute; top: 50%; left: 50%;
@@ -19,12 +19,11 @@
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/js/controls/PointerLockControls.js"></script>
 </head>
 <body>
 
     <div id="crosshair"></div>
-    <div id="info">Klicke zum Spielen! <br>Bewegung: WASD | Springen: LEERTASTE</div>
+    <div id="info"><b>iPad Steuerung:</b><br>Laufen: WASD oder Pfeiltasten<br>Springen: LEERTASTE<br>Umsehen: Mit dem Finger wischen!</div>
 
     <script>
         // --- 1. SETUP ---
@@ -32,7 +31,7 @@
         scene.background = new THREE.Color(0x78a7ff);
         
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer();
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
@@ -43,92 +42,122 @@
         directionalLight.position.set(10, 20, 15);
         scene.add(directionalLight);
 
-        // --- 2. MAUS-STEUERUNG ---
-        const controls = new THREE.PointerLockControls(camera, document.body);
-        document.body.addEventListener('click', () => { controls.lock(); });
-        controls.addEventListener('lock', () => { document.getElementById('info').style.display = 'none'; });
-        controls.addEventListener('unlock', () => { document.getElementById('info').style.display = 'block'; });
-
-        // --- 3. DER BLOCK & EIN BODEN ---
+        // --- 2. BLÖCKE ---
         const geometry = new THREE.BoxGeometry(1, 1, 1);
         const grassColor = new THREE.MeshLambertMaterial({color: 0x557a2b});
         const dirtColor = new THREE.MeshLambertMaterial({color: 0x866043});
         const materials = [dirtColor, dirtColor, grassColor, dirtColor, dirtColor, dirtColor];
 
-        // Ein einzelner Block in der Mitte
         const block = new THREE.Mesh(geometry, materials);
-        block.position.set(0, 0, 0);
         scene.add(block);
 
-        // Eine kleine Plattform (Boden) zum Draufstehen bauen
-        const floorGeometry = new THREE.BoxGeometry(10, 0.2, 10);
+        const floorGeometry = new THREE.BoxGeometry(20, 0.2, 20);
         const floorMaterial = new THREE.MeshLambertMaterial({color: 0x446622});
         const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-        floor.position.set(0, -0.6, 0); // Direkt unter dem Block
+        floor.position.set(0, -0.6, 0);
         scene.add(floor);
 
-        // Spieler Startposition
-        camera.position.set(0, 1.6, 4); // 1.6 ist die Augenhöhe
+        camera.position.set(0, 1.6, 5);
 
-        // --- 4. TASTATUR-STEUERUNG & PHYSIK-VARIABLEN ---
-        const keys = { w: false, a: false, s: false, d: false, space: false };
+        // --- 3. TASTATUR-STEUERUNG (Laufen & Springen) ---
+        const keys = { forward: false, backward: false, left: false, right: false, jump: false };
         let velocityY = 0;
         const gravity = -0.01;
-        const jumpStrength = 0.2;
-        const speed = 0.1;
+        const jumpStrength = 0.18;
+        const speed = 0.08;
         let canJump = false;
 
         window.addEventListener('keydown', (e) => {
-            if (e.code === 'KeyW') keys.w = true;
-            if (e.code === 'KeyA') keys.a = true;
-            if (e.code === 'KeyS') keys.s = true;
-            if (e.code === 'KeyD') keys.d = true;
-            if (e.code === 'Space') keys.space = true;
+            if (e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp') keys.forward = true;
+            if (e.key === 's' || e.key === 'S' || e.key === 'ArrowDown') keys.backward = true;
+            if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') keys.left = true;
+            if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') keys.right = true;
+            if (e.code === 'Space') keys.jump = true;
         });
 
         window.addEventListener('keyup', (e) => {
-            if (e.code === 'KeyW') keys.w = false;
-            if (e.code === 'KeyA') keys.a = false;
-            if (e.code === 'KeyS') keys.s = false;
-            if (e.code === 'KeyD') keys.d = false;
-            if (e.code === 'Space') keys.space = false;
+            if (e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp') keys.forward = false;
+            if (e.key === 's' || e.key === 'S' || e.key === 'ArrowDown') keys.backward = false;
+            if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') keys.left = false;
+            if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') keys.right = false;
+            if (e.code === 'Space') keys.jump = false;
+        });
+
+        // --- 4. TOUCH-STEUERUNG (Umsehen per Wischen) ---
+        let pitch = 0; // Hoch/Runter
+        let yaw = 0;   // Links/Rechts
+        const lookSensitivity = 0.007;
+        let prevTouchX = 0;
+        let prevTouchY = 0;
+
+        window.addEventListener('touchstart', (e) => {
+            prevTouchX = e.touches[0].clientX;
+            prevTouchY = e.touches[0].clientY;
+        });
+
+        window.addEventListener('touchmove', (e) => {
+            e.preventDefault(); // Verhindert Scrollen der Website
+            
+            const touchX = e.touches[0].clientX;
+            const touchY = e.touches[0].clientY;
+            
+            const movementX = touchX - prevTouchX;
+            const movementY = touchY - prevTouchY;
+            
+            yaw -= movementX * lookSensitivity;
+            pitch -= movementY * lookSensitivity;
+            
+            // Begrenzung für oben/unten gucken
+            pitch = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, pitch));
+            
+            prevTouchX = touchX;
+            prevTouchY = touchY;
         });
 
         // --- 5. GAME LOOP ---
         function animate() {
             requestAnimationFrame(animate);
 
-            if (controls.isLocked) {
-                // Vorwärts / Rückwärts bewegen
-                if (keys.w) controls.moveForward(speed);
-                if (keys.s) controls.moveForward(-speed);
-                // Links / Rechts bewegen
-                if (keys.a) controls.moveRight(-speed);
-                if (keys.d) controls.moveRight(speed);
+            // 1. Kamera-Rotation anwenden
+            const quatYaw = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+            const quatPitch = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), pitch);
+            camera.quaternion.multiplyQuaternions(quatYaw, quatPitch);
 
-                // Schwerkraft berechnen
-                velocityY += gravity;
-                camera.position.y += velocityY;
+            // 2. Tastatur-Bewegung berechnen
+            const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(quatYaw);
+            const right = new THREE.Vector3(1, 0, 0).applyQuaternion(quatYaw);
+            const moveDirection = new THREE.Vector3();
 
-                // Kollision mit dem Boden (damit man nicht unendlich fällt)
-                if (camera.position.y < 1.6) { // 1.6 über dem Boden
-                    camera.position.y = 1.6;
-                    velocityY = 0;
-                    canJump = true;
-                }
+            if (keys.forward) moveDirection.add(forward);
+            if (keys.backward) moveDirection.add(forward.clone().negate());
+            if (keys.right) moveDirection.add(right);
+            if (keys.left) moveDirection.add(right.clone().negate());
 
-                // Springen
-                if (keys.space && canJump) {
-                    velocityY = jumpStrength;
-                    canJump = false;
-                }
+            moveDirection.y = 0; // Verhindert Fliegen beim Vorwärtslaufen
+            if (moveDirection.lengthSq() > 0) {
+                moveDirection.normalize();
+                camera.position.add(moveDirection.multiplyScalar(speed));
+            }
+
+            // 3. Schwerkraft & Springen
+            velocityY += gravity;
+            camera.position.y += velocityY;
+
+            if (camera.position.y < 1.6) {
+                camera.position.y = 1.6;
+                velocityY = 0;
+                canJump = true;
+            }
+
+            if (keys.jump && canJump) {
+                velocityY = jumpStrength;
+                canJump = false;
             }
 
             renderer.render(scene, camera);
         }
         animate();
 
-        // Resize
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
