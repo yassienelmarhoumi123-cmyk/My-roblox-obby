@@ -1,1 +1,95 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mein Browser Minecraft</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #78a7ff; font-family: sans-serif; }
+        canvas { display: block; }
+        #crosshair {
+            position: absolute; top: 50%; left: 50%;
+            width: 10px; height: 10px;
+            background: white; transform: translate(-50%, -50%);
+            mix-blend-mode: difference; pointer-events: none;
+        }
+        #info {
+            position: absolute; top: 10px; left: 10px;
+            color: white; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 5px;
+        }
+    </style>
+    <!-- Wir laden Three.js und die Maus-Steuerung (PointerLockControls) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/js/controls/PointerLockControls.js"></script>
+</head>
+<body>
 
+    <div id="crosshair"></div>
+    <div id="info">Klicke ins Fenster, um dich mit der Maus umzusehen!</div>
+
+    <script>
+        // 1. Szene, Kamera und Renderer aufsetzen
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x78a7ff); // Minecraft-Blauer Himmel
+        
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // 2. Licht hinzufügen (damit die Blöcke 3D wirken)
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(10, 20, 15);
+        scene.add(directionalLight);
+
+        // 3. Maus-Steuerung aktivieren (wie in echten Shootern/Minecraft)
+        const controls = new THREE.PointerLockControls(camera, document.body);
+        
+        document.body.addEventListener('click', () => {
+            controls.lock(); // Sperrt die Maus im Fenster
+        });
+
+        controls.addEventListener('lock', () => { document.getElementById('info').style.display = 'none'; });
+        controls.addEventListener('unlock', () => { document.getElementById('info').style.display = 'block'; });
+
+        // 4. Einen "Dreck-Block" bauen (mit Farben statt Textur-Bildern für GitHub)
+        const geometry = new THREE.BoxGeometry(1, 1, 1);
+        
+        // Minecraft-Farben: Oben grün (Gras), Seiten/Unten braun (Erde)
+        const grassColor = new THREE.MeshLambertMaterial({color: 0x557a2b});
+        const dirtColor = new THREE.MeshLambertMaterial({color: 0x866043});
+        
+        const materials = [
+            dirtColor,  // Rechts
+            dirtColor,  // Links
+            grassColor, // Oben
+            dirtColor,  // Unten
+            dirtColor,  // Vorne
+            dirtColor   // Hinten
+        ];
+
+        const block = new THREE.Mesh(geometry, materials);
+        scene.add(block);
+
+        camera.position.z = 3;
+        camera.position.y = 1;
+        camera.lookAt(block.position);
+
+        // 5. Game Loop
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Fenstergröße anpassen
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
