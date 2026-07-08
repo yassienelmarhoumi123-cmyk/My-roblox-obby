@@ -3,45 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ultimate Realistic Obby - Flying Carpet Update</title>
+    <title>Roblox Style Obby - Ultimate Edition</title>
     <style>
-        body { margin: 0; overflow: hidden; background-color: #4a90e2; font-family: 'Segoe UI', sans-serif; touch-action: none; user-select: none; }
+        body { margin: 0; overflow: hidden; background-color: #3a86ff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; touch-action: none; user-select: none; }
         canvas { display: block; }
         
-        /* UI & Panels */
-        #ui-container { position: absolute; top: 15px; left: 15px; background: rgba(10, 15, 25, 0.85); color: #fff; padding: 15px 25px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); z-index: 10; text-shadow: 1px 1px 3px black; font-size: 20px; font-weight: bold; box-shadow: 0 5px 20px rgba(0,0,0,0.5); backdrop-filter: blur(5px); }
-        .ui-text { margin: 8px 0; }
-        #stage-text { color: #00ff66; }
-        #death-text { color: #ff3333; }
+        /* High-End UI Elements */
+        #ui-container { position: absolute; top: 15px; left: 15px; background: rgba(10, 15, 30, 0.85); color: #fff; padding: 15px 25px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); z-index: 10; font-size: 20px; font-weight: bold; box-shadow: 0 8px 25px rgba(0,0,0,0.4); backdrop-filter: blur(8px); }
+        .ui-text { margin: 5px 0; letter-spacing: 0.5px; }
+        #stage-text { color: #00ffaa; }
+        #death-text { color: #ff4757; }
 
-        /* Secret Code Panel */
-        #code-panel { position: absolute; top: 15px; right: 15px; background: rgba(10, 15, 25, 0.85); padding: 15px; border-radius: 12px; border: 2px solid #ffd700; color: white; z-index: 10; box-shadow: 0 5px 20px rgba(0,0,0,0.5); backdrop-filter: blur(5px); display: flex; flex-direction: column; gap: 8px; }
-        #code-panel h3 { margin: 0; font-size: 16px; color: #ffd700; text-align: center; }
-        #secret-input { padding: 8px; border-radius: 6px; border: none; font-size: 14px; text-align: center; font-weight: bold; }
-        #code-btn { padding: 8px; background: #ffd700; color: #000; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: transform 0.1s; }
+        /* Secret Code & Carpet Toggle Panel */
+        #code-panel { position: absolute; top: 15px; right: 15px; background: rgba(10, 15, 30, 0.85); padding: 15px; border-radius: 12px; border: 2px solid #ffd32a; color: white; z-index: 10; box-shadow: 0 8px 25px rgba(0,0,0,0.4); backdrop-filter: blur(8px); display: flex; flex-direction: column; gap: 8px; width: 160px; }
+        #code-panel h3 { margin: 0; font-size: 15px; color: #ffd32a; text-align: center; text-transform: uppercase; }
+        #secret-input { padding: 8px; border-radius: 6px; border: none; font-size: 14px; text-align: center; font-weight: bold; background: #fff; color: #000; }
+        #code-btn { padding: 10px; background: #ffd32a; color: #000; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; transition: all 0.1s; text-transform: uppercase; }
         #code-btn:active { transform: scale(0.95); }
 
         /* Mobile Controls */
-        #joystick-zone { position: absolute; bottom: 40px; left: 40px; width: 140px; height: 140px; background: rgba(0,0,0,0.2); border: 2px solid rgba(255,255,255,0.4); border-radius: 50%; z-index: 9; touch-action: none; backdrop-filter: blur(5px); }
-        #joystick-knob { position: absolute; top: 40px; left: 40px; width: 60px; height: 60px; background: rgba(255,255,255,0.9); border-radius: 50%; pointer-events: none; box-shadow: 0 4px 10px rgba(0,0,0,0.4); }
-        #jump-btn { position: absolute; bottom: 50px; right: 50px; width: 90px; height: 90px; background: rgba(255, 255, 255, 0.2); border: 2px solid rgba(255,255,255,0.5); border-radius: 50%; z-index: 9; display: flex; align-items: center; justify-content: center; color: white; font-size: 40px; font-weight: bold; backdrop-filter: blur(5px); transition: transform 0.1s; }
-        #jump-btn:active { background: rgba(255,255,255,0.5); transform: scale(0.9); }
+        #joystick-zone { position: absolute; bottom: 40px; left: 40px; width: 140px; height: 140px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; z-index: 9; touch-action: none; backdrop-filter: blur(5px); }
+        #joystick-knob { position: absolute; top: 40px; left: 40px; width: 60px; height: 60px; background: rgba(255,255,255,0.85); border-radius: 50%; pointer-events: none; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
         
-        /* Start Screen */
-        #start-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, #1a1a2e 0%, #000 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; z-index: 20; text-align: center; }
-        #start-screen h1 { font-size: 50px; color: #00ff66; text-shadow: 0 0 20px #00ff66; margin-bottom: 10px; text-transform: uppercase; }
-        #start-screen p { font-size: 18px; color: #ccc; max-width: 80%; margin-bottom: 30px; }
-        .btn-start { padding: 15px 50px; font-size: 24px; font-weight: bold; color: #000; background: #00ff66; border: none; border-radius: 40px; cursor: pointer; box-shadow: 0 0 20px #00ff66; transition: 0.2s; }
-        .btn-start:active { transform: scale(0.9); }
+        /* Action Buttons Right Side */
+        #action-container { position: absolute; bottom: 40px; right: 40px; display: flex; flex-direction: column; gap: 15px; z-index: 9; }
+        .control-btn { width: 85px; height: 85px; background: rgba(255, 255, 255, 0.15); border: 2px solid rgba(255,255,255,0.4); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 38px; font-weight: bold; backdrop-filter: blur(5px); transition: transform 0.1s; }
+        .control-btn:active { background: rgba(255,255,255,0.4); transform: scale(0.9); }
+        #down-btn { background: rgba(255, 71, 87, 0.2); border-color: rgba(255, 71, 87, 0.4); display: none; } /* Standardmäßig unsichtbar, erscheint beim Fliegen */
+        
+        /* Cinematic Title Screen */
+        #start-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, #1e272e 0%, #050505 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; z-index: 20; text-align: center; }
+        #start-screen h1 { font-size: 55px; color: #ffd32a; text-shadow: 0 0 25px rgba(255,211,42,0.6); margin-bottom: 5px; font-weight: 800; }
+        #start-screen p { font-size: 18px; color: #ced6e0; max-width: 80%; margin-bottom: 35px; line-height: 1.4; }
+        .btn-start { padding: 16px 55px; font-size: 24px; font-weight: bold; color: #000; background: #ffd32a; border: none; border-radius: 40px; cursor: pointer; box-shadow: 0 8px 25px rgba(255,211,42,0.4); transition: 0.2s; }
+        .btn-start:active { transform: scale(0.95); }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
     <div id="start-screen">
-        <h1>EPIC OBBY</h1>
-        <p>Gigantische Sprünge, realistische Physik und geheime Codes. Halte den Joystick beim Trampolin ganz nach vorne!</p>
-        <button class="btn-start" id="start-btn">SPIELEN</button>
+        <h1>ROBLOX MEGA OBBY</h1>
+        <p>Erreiche das Ziel! Nutze Geheimgeschenke an der Seite, um den fliegenden Teppich freizuschalten.</p>
+        <button class="btn-start" id="start-btn">START</button>
     </div>
 
     <div id="ui-container">
@@ -50,134 +54,145 @@
     </div>
 
     <div id="code-panel">
-        <h3>Geheim-Code</h3>
-        <input type="text" id="secret-input" placeholder="Code hier...">
-        <button id="code-btn">Einlösen</button>
+        <h3 id="panel-title">Code Eingeben</h3>
+        <input type="text" id="secret-input" placeholder="Passwort...">
+        <button id="code-btn">Aktivieren</button>
     </div>
 
     <div id="joystick-zone"><div id="joystick-knob"></div></div>
-    <div id="jump-btn">↑</div>
+    
+    <div id="action-container">
+        <div class="control-btn" id="jump-btn">↑</div>
+        <div class="control-btn" id="down-btn">↓</div>
+    </div>
 
     <script>
         // ==========================================
-        // 1. ENGINE & BELEUCHTUNG
+        // 1. GRAPHICS ENGINE & LIGHTING
         // ==========================================
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x4a90e2);
-        scene.fog = new THREE.FogExp2(0x4a90e2, 0.002);
+        scene.background = new THREE.Color(0x3a86ff);
+        scene.fog = new THREE.FogExp2(0x3a86ff, 0.0025);
 
         const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); 
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         document.body.appendChild(renderer.domElement);
 
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        // Ambient und sanftes Sonnenlicht für perfekte 3D-Tiefe
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
         scene.add(ambientLight);
         
-        const sunLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        sunLight.position.set(100, 200, 50);
+        const sunLight = new THREE.DirectionalLight(0xffffff, 0.85);
+        sunLight.position.set(80, 180, 60);
         sunLight.castShadow = true;
         sunLight.shadow.camera.left = -200; sunLight.shadow.camera.right = 200;
         sunLight.shadow.camera.top = 200; sunLight.shadow.camera.bottom = -200;
         sunLight.shadow.mapSize.width = 2048; sunLight.shadow.mapSize.height = 2048;
+        sunLight.shadow.bias = -0.0003;
         scene.add(sunLight);
 
         // ==========================================
-        // 2. MATERIALIEN & TEXTUREN
+        // 2. WORLD MATERIALS
         // ==========================================
-        function createGridTexture() {
+        function createGridTexture(color1, color2) {
             const cvs = document.createElement('canvas');
-            cvs.width = 256; cvs.height = 256;
+            cvs.width = 128; cvs.height = 128;
             const ctx = cvs.getContext('2d');
-            ctx.fillStyle = '#f0f0f0'; ctx.fillRect(0,0,256,256);
-            ctx.strokeStyle = '#cccccc'; ctx.lineWidth = 4;
-            ctx.strokeRect(0,0,256,256);
+            ctx.fillStyle = color1; ctx.fillRect(0,0,128,128);
+            ctx.strokeStyle = color2; ctx.lineWidth = 4;
+            ctx.strokeRect(0,0,128,128);
             const tex = new THREE.CanvasTexture(cvs);
             tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping;
             return tex;
         }
 
         const mats = {
-            safe: new THREE.MeshStandardMaterial({ map: createGridTexture(), roughness: 0.9 }),
-            lava: new THREE.MeshBasicMaterial({ color: 0xff2200 }),
-            checkpoint: new THREE.MeshStandardMaterial({ color: 0x00ff66, roughness: 0.5, metalness: 0.2 }),
-            bounce: new THREE.MeshStandardMaterial({ color: 0xaa00ff, roughness: 0.3, emissive: 0x4400aa }),
-            spinner: new THREE.MeshStandardMaterial({ color: 0xffaa00, roughness: 0.5 }),
-            carpet: new THREE.MeshStandardMaterial({ color: 0x8a2be2, roughness: 0.2, metalness: 0.5, side: THREE.DoubleSide }) // Lila Teppich
+            safe: new THREE.MeshStandardMaterial({ map: createGridTexture('#ffffff', '#e2e8f0'), roughness: 0.8 }),
+            lava: new THREE.MeshBasicMaterial({ color: 0xff3e3e }),
+            checkpoint: new THREE.MeshStandardMaterial({ map: createGridTexture('#00ffaa', '#00b377'), roughness: 0.4, metalness: 0.1 }),
+            bounce: new THREE.MeshStandardMaterial({ color: 0x9b5de5, roughness: 0.2, metalness: 0.6, emissive: 0x3a0ca3 }),
+            spinner: new THREE.MeshStandardMaterial({ color: 0xf15bb5, roughness: 0.4 }),
+            carpet: new THREE.MeshStandardMaterial({ color: 0xff007f, roughness: 0.3, metalness: 0.3, side: THREE.DoubleSide }) // Roblox Style Pink/Lila Teppich
         };
 
         // ==========================================
-        // 3. DER REALISTISCHE AVATAR (Komplett detailliert)
+        // 3. ULTRA REALISTIC AVATAR CONFIGURATION
         // ==========================================
         const playerGroup = new THREE.Group();
         scene.add(playerGroup);
 
-        const matSkin = new THREE.MeshStandardMaterial({ color: 0xffcc99, roughness: 0.6 }); // Echte Hautfarbe
-        const matShirt = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.8 }); // Schwarzes Shirt
-        const matPants = new THREE.MeshStandardMaterial({ color: 0x1e3f66, roughness: 0.9 }); // Dunkelblaue Jeans
-        const matShoes = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5 }); // Weiße Sneaker
+        const matSkin = new THREE.MeshStandardMaterial({ color: 0xffdbac, roughness: 0.5 }); 
+        const matShirt = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.7 }); 
+        const matPants = new THREE.MeshStandardMaterial({ color: 0x2e5bff, roughness: 0.8 }); 
+        const matShoes = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.4 });
+        const matHair = new THREE.MeshStandardMaterial({ color: 0x4a3728, roughness: 0.8 });
+        const matEyes = new THREE.MeshBasicMaterial({ color: 0x222222 });
 
-        // Hilfsfunktion für weiche Körperteile (Cylinder mit runden Enden)
-        function createLimb(radius, length, mat) {
+        function createSegment(radius, length, mat) {
             const group = new THREE.Group();
             const cylinder = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, length, 16), mat);
             cylinder.castShadow = true; cylinder.receiveShadow = true;
-            const sphereTop = new THREE.Mesh(new THREE.SphereGeometry(radius, 16, 16), mat);
-            sphereTop.position.y = length / 2; sphereTop.castShadow = true;
-            const sphereBot = new THREE.Mesh(new THREE.SphereGeometry(radius, 16, 16), mat);
-            sphereBot.position.y = -length / 2; sphereBot.castShadow = true;
-            group.add(cylinder); group.add(sphereTop); group.add(sphereBot);
+            const topSphere = new THREE.Mesh(new THREE.SphereGeometry(radius, 16, 16), mat);
+            topSphere.position.y = length / 2; topSphere.castShadow = true;
+            const botSphere = new THREE.Mesh(new THREE.SphereGeometry(radius, 16, 16), mat);
+            botSphere.position.y = -length / 2; botSphere.castShadow = true;
+            group.add(cylinder); group.add(topSphere); group.add(botSphere);
             return group;
         }
 
-        // Torso (Brust)
-        const torso = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.2, 0.4), matShirt);
-        torso.position.y = 2.0; torso.castShadow = true; playerGroup.add(torso);
+        // Hauptkörperaufbau
+        const torso = new THREE.Mesh(new THREE.BoxGeometry(0.75, 1.1, 0.4), matShirt);
+        torso.position.y = 1.95; torso.castShadow = true; playerGroup.add(torso);
 
-        // Hals & Kopf
-        const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.3, 16), matSkin);
-        neck.position.y = 0.7; torso.add(neck);
-        const headGroup = new THREE.Group(); headGroup.position.y = 0.3; neck.add(headGroup);
-        const head = new THREE.Mesh(new THREE.SphereGeometry(0.35, 32, 32), matSkin);
+        const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.25, 16), matSkin);
+        neck.position.y = 0.65; torso.add(neck);
+        
+        const headGroup = new THREE.Group(); headGroup.position.y = 0.25; neck.add(headGroup);
+        const head = new THREE.Mesh(new THREE.SphereGeometry(0.34, 32, 32), matSkin);
         head.castShadow = true; headGroup.add(head);
 
-        // Arme (Schulter -> Oberarm -> Ellenbogen -> Unterarm -> Hand)
-        function buildArm(isLeft) {
-            const sign = isLeft ? -1 : 1;
-            const shoulder = new THREE.Group(); shoulder.position.set(sign * 0.55, 0.4, 0); torso.add(shoulder);
-            const upperArm = createLimb(0.12, 0.6, matShirt); upperArm.position.y = -0.3; shoulder.add(upperArm);
-            const elbow = new THREE.Group(); elbow.position.set(0, -0.3, 0); upperArm.add(elbow);
-            const lowerArm = createLimb(0.1, 0.6, matSkin); lowerArm.position.y = -0.3; elbow.add(lowerArm);
-            const hand = new THREE.Mesh(new THREE.SphereGeometry(0.12, 16, 16), matSkin);
-            hand.position.y = -0.35; lowerArm.add(hand);
+        // Realistische Gesichtsdetails (Augen)
+        const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.04, 8, 8), matEyes); eyeL.position.set(-0.12, 0.05, 0.28); headGroup.add(eyeL);
+        const eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.04, 8, 8), matEyes); eyeR.position.set(0.12, 0.05, 0.28); headGroup.add(eyeR);
+
+        // Haare / Kappe
+        const hair = new THREE.Mesh(new THREE.SphereGeometry(0.36, 16, 16), matHair);
+        hair.position.set(0, 0.08, -0.04); hair.scale.set(1, 0.9, 1); headGroup.add(hair);
+
+        // Arm-Generierung
+        function makeArm(isLeft) {
+            const side = isLeft ? -1 : 1;
+            const shoulder = new THREE.Group(); shoulder.position.set(side * 0.52, 0.38, 0); torso.add(shoulder);
+            const upper = createSegment(0.11, 0.55, matShirt); upper.position.y = -0.28; shoulder.add(upper);
+            const elbow = new THREE.Group(); elbow.position.set(0, -0.28, 0); upper.add(elbow);
+            const lower = createSegment(0.09, 0.55, matSkin); lower.position.y = -0.28; elbow.add(lower);
+            const hand = new THREE.Mesh(new THREE.SphereGeometry(0.11, 16, 16), matSkin); hand.position.y = -0.32; lower.add(hand);
             return { shoulder, elbow };
         }
-        const armL = buildArm(true);
-        const armR = buildArm(false);
+        const armL = makeArm(true); const armR = makeArm(false);
 
-        // Beine (Hüfte -> Oberschenkel -> Knie -> Unterschenkel -> Fuß)
-        function buildLeg(isLeft) {
-            const sign = isLeft ? -1 : 1;
-            const hip = new THREE.Group(); hip.position.set(sign * 0.25, -0.6, 0); torso.add(hip);
-            const upperLeg = createLimb(0.18, 0.7, matPants); upperLeg.position.y = -0.35; hip.add(upperLeg);
-            const knee = new THREE.Group(); knee.position.set(0, -0.35, 0); upperLeg.add(knee);
-            const lowerLeg = createLimb(0.14, 0.7, matSkin); lowerLeg.position.y = -0.35; knee.add(lowerLeg);
-            const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.2, 0.4), matShoes);
-            shoe.position.set(0, -0.4, 0.05); shoe.castShadow = true; lowerLeg.add(shoe);
+        // Bein-Generierung
+        function makeLeg(isLeft) {
+            const side = isLeft ? -1 : 1;
+            const hip = new THREE.Group(); hip.position.set(side * 0.24, -0.55, 0); torso.add(hip);
+            const upper = createSegment(0.16, 0.65, matPants); upper.position.y = -0.32; hip.add(upper);
+            const knee = new THREE.Group(); knee.position.set(0, -0.32, 0); upper.add(knee);
+            const lower = createSegment(0.13, 0.65, matSkin); lower.position.y = -0.32; knee.add(lower);
+            const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.18, 0.38), matShoes); shoe.position.set(0, -0.38, 0.04); shoe.castShadow = true; lower.add(shoe);
             return { hip, knee };
         }
-        const legL = buildLeg(true);
-        const legR = buildLeg(false);
+        const legL = makeLeg(true); const legR = makeLeg(false);
 
-        // Physik Hitbox (Spieler Daten)
-        const player = { pos: new THREE.Vector3(0, 10, 0), vel: new THREE.Vector3(0, 0, 0), height: 3.8, radius: 0.5, onGround: false };
-        let spawnPoint = new THREE.Vector3(0, 10, 0);
+        // Physikdaten
+        const player = { pos: new THREE.Vector3(0, 5, 0), vel: new THREE.Vector3(0, 0, 0), height: 3.6, radius: 0.45, onGround: false };
+        let spawnPoint = new THREE.Vector3(0, 5, 0);
 
         // ==========================================
-        // 4. MAP DESIGN & TRAMPOLIN (Mega Boost)
+        // 4. MAP LAYOUT & FIXES (Lava & Jump Pad balanced)
         // ==========================================
         const platforms = [];
         let stage = 0, deaths = 0;
@@ -187,75 +202,118 @@
             mesh.position.set(x, y, z);
             if(mesh.material.map && type !== 'lava') {
                 mesh.material.map = mesh.material.map.clone();
-                mesh.material.map.repeat.set(w/4, d/4);
+                mesh.material.map.repeat.set(w/3, d/3);
             }
             if(type !== 'lava') { mesh.castShadow = true; mesh.receiveShadow = true; }
             scene.add(mesh);
-            const p = { mesh, type, stage: stageNum, w, h, d, moveData };
-            platforms.push(p); return p;
+            platforms.push({ mesh, type, stage: stageNum, w, h, d, moveData });
+            return platforms[platforms.length - 1];
         }
 
-        // Start
-        addBlock(0, 0, 0, 15, 1, 15, 'checkpoint', 0);
-        addBlock(0, 0, -15, 5, 1, 5, 'safe');
-        addBlock(0, 0, -28, 5, 1, 5, 'safe');
-        addBlock(0, 0, -42, 12, 1, 12, 'checkpoint', 1);
-
-        // Lava
-        addBlock(0, -0.5, -60, 20, 1, 22, 'lava'); 
-        addBlock(-6, 0, -52, 4, 1, 4, 'safe');
-        addBlock(6, 0, -68, 4, 1, 4, 'safe');
-        addBlock(0, 0, -84, 12, 1, 12, 'checkpoint', 2);
-
-        // TRAMPOLIN (Der krasse Jump)
-        addBlock(0, 0, -96, 5, 1, 5, 'safe'); 
-        addBlock(0, 0, -106, 8, 1, 8, 'bounce'); // Trampolin
+        // STAGE 0: Spawn-Zone
+        addBlock(0, 0, 0, 14, 1, 14, 'checkpoint', 0);
+        addBlock(0, 0, -14, 4, 1, 4, 'safe');
+        addBlock(0, 0, -25, 4, 1, 4, 'safe');
         
-        // ZIEL (Extrem hoch und weit weg, aber durch neuen Boost erreichbar)
-        addBlock(0, 60, -160, 20, 1, 20, 'checkpoint', 3); 
+        // STAGE 1: Erster Checkpoint
+        addBlock(0, 0, -38, 10, 1, 10, 'checkpoint', 1);
 
-        // Bewegliche Blöcke in der Luft
-        addBlock(0, 60, -180, 6, 1, 6, 'safe', -1, { speed: 1.2, range: 10, axis: 'x', startPos: 0 });
-        addBlock(0, 60, -200, 6, 1, 6, 'safe', -1, { speed: 1.2, range: 10, axis: 'x', startPos: Math.PI });
-        addBlock(0, 60, -220, 15, 1, 15, 'checkpoint', 4);
+        // STAGE 2: FIX FÜR DEN LAVASPRUNG (Viel näher beieinander & absolut schaffbar!)
+        addBlock(0, -0.5, -64, 24, 1, 36, 'lava'); // Der Lavasee unterhalb
+        addBlock(-2.5, 0, -52, 4, 1, 4, 'safe');    // Sprung 1: Perfekt erreichbar
+        addBlock(2.5, 0, -66, 4, 1, 4, 'safe');     // Sprung 2: Balanciert
+        addBlock(0, 0, -78, 4, 1, 4, 'safe');       // Sprung 3: Vorbereitung auf Checkpoint
+        addBlock(0, 0, -92, 10, 1, 10, 'checkpoint', 2);
 
-        // Finale
-        addBlock(0, 60, -245, 20, 1, 20, 'safe');
-        const spinner = addBlock(0, 61.5, -245, 24, 1, 2, 'spinner'); 
-        addBlock(0, 60, -275, 20, 1, 20, 'checkpoint', 5);
+        // STAGE 3: DAS MEGA JUMP PAD (Optimierte Landezone!)
+        addBlock(0, 0, -106, 5, 1, 5, 'safe');
+        addBlock(0, 0, -115, 6, 1, 6, 'bounce'); // Das Sprungbrett
+        
+        // Große Empfangsplattform im Himmel (Höhe: 50, Distanz perfekt auf Katapult abgestimmt)
+        addBlock(0, 50, -148, 20, 1, 20, 'checkpoint', 3);
+
+        // STAGE 4: Schwebende Hindernisse am Himmel
+        addBlock(0, 50, -170, 5, 1, 5, 'safe', -1, { speed: 1.5, range: 9, axis: 'x', startPos: 0 });
+        addBlock(0, 50, -190, 5, 1, 5, 'safe', -1, { speed: 1.5, range: 9, axis: 'x', startPos: Math.PI });
+        addBlock(0, 50, -210, 12, 1, 12, 'checkpoint', 4);
+
+        // STAGE 5: Der finale Rotor
+        addBlock(0, 50, -235, 16, 1, 16, 'safe');
+        const spinner = addBlock(0, 51.4, -235, 20, 1, 1.8, 'spinner');
+        
+        // ZIEL-PLATTFORM!
+        addBlock(0, 50, -265, 16, 1, 16, 'checkpoint', 5);
 
         // ==========================================
-        // 5. DAS "YASSIEN123" OSTEREI (Fliegender Teppich)
+        // 5. CARPET SYSTEM (Redeem Code & Toggle State)
         // ==========================================
-        let flyingMode = false;
-        let magicCarpet = null;
+        let carpetUnlocked = false;
+        let carpetEquipped = false;
+        let magicCarpetMesh = null;
 
-        document.getElementById('code-btn').addEventListener('click', () => {
-            const input = document.getElementById('secret-input').value;
-            if (input === 'yassien123' && !flyingMode) {
-                flyingMode = true;
-                document.getElementById('secret-input').value = 'AKTIVIERT!';
-                document.getElementById('secret-input').disabled = true;
-                
-                // Teppich erschaffen und an den Spieler hängen
-                magicCarpet = new THREE.Mesh(new THREE.BoxGeometry(3, 0.1, 4), mats.carpet);
-                magicCarpet.position.set(0, -0.2, 0); // Unter den Füßen
-                magicCarpet.castShadow = true;
-                playerGroup.add(magicCarpet);
+        const codeBtn = document.getElementById('code-btn');
+        const secretInput = document.getElementById('secret-input');
+        const panelTitle = document.getElementById('panel-title');
+        const downBtn = document.getElementById('down-btn');
 
-                // Spieler leicht anheben
-                player.pos.y += 2;
-                player.vel.y = 0;
-            } else if (input !== 'yassien123') {
-                alert('Falscher Code, Bro!');
+        codeBtn.addEventListener('click', () => {
+            if (!carpetUnlocked) {
+                // Code Validierung
+                if (secretInput.value === 'yassien123') {
+                    carpetUnlocked = true;
+                    carpetEquipped = true;
+                    
+                    // UI verändern -> Wandelt sich in Toggle-Button um
+                    panelTitle.innerHTML = "Teppich-Menü";
+                    secretInput.style.display = "none";
+                    codeBtn.innerHTML = "Ablegen";
+                    codeBtn.style.background = "#ff4757";
+                    codeBtn.style.color = "#fff";
+                    downBtn.style.display = "flex"; // Down Button aktivieren
+                    
+                    spawnCarpet();
+                } else {
+                    alert('Falscher Code, Bro! Versuchs nochmal.');
+                }
+            } else {
+                // Toggle Mechanismus (Anlegen / Ablegen)
+                if (carpetEquipped) {
+                    carpetEquipped = false;
+                    codeBtn.innerHTML = "Anlegen";
+                    codeBtn.style.background = "#2ed573";
+                    removeCarpet();
+                } else {
+                    carpetEquipped = true;
+                    codeBtn.innerHTML = "Ablegen";
+                    codeBtn.style.background = "#ff4757";
+                    spawnCarpet();
+                }
             }
         });
 
+        function spawnCarpet() {
+            if (magicCarpetMesh) return;
+            magicCarpetMesh = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.08, 3.8), mats.carpet);
+            magicCarpetMesh.position.set(0, -0.25, 0);
+            magicCarpetMesh.castShadow = true;
+            playerGroup.add(magicCarpetMesh);
+            player.pos.y += 1.5; // Leicht anheben für epischen Schwebestart
+            player.vel.y = 0;
+        }
+
+        function removeCarpet() {
+            if (magicCarpetMesh) {
+                playerGroup.remove(magicCarpetMesh);
+                magicCarpetMesh = null;
+            }
+        }
+
         // ==========================================
-        // 6. STEUERUNG (Touch & Keyboard)
+        // 6. CONTROL INPUT ENGINE
         // ==========================================
         let camAngleX = 0, camAngleY = 0.2;
-        let moveVector = {x: 0, y: 0}, jumpTrigger = false;
+        let moveVector = {x: 0, y: 0};
+        let jumpTrigger = false, downTrigger = false;
 
         document.getElementById('start-btn').addEventListener('click', () => {
             document.getElementById('start-screen').style.display = 'none';
@@ -267,9 +325,9 @@
 
         window.addEventListener('touchstart', (e) => {
             for(let t of e.changedTouches) {
-                if (t.clientX < window.innerWidth/2 && !joyId && t.clientY > 100) {
+                if (t.clientX < window.innerWidth/2 && !joyId && t.clientY > 80) {
                     joyId = t.identifier; joyStart = {x: t.clientX, y: t.clientY};
-                } else if (t.clientX >= window.innerWidth/2 && !lookId && t.target.id !== 'jump-btn' && t.target.id !== 'code-btn' && t.target.id !== 'secret-input') {
+                } else if (t.clientX >= window.innerWidth/2 && !lookId && !t.target.classList.contains('control-btn') && t.target.id !== 'code-btn' && t.target.id !== 'secret-input') {
                     lookId = t.identifier; prevLook = {x: t.clientX, y: t.clientY};
                 }
             }
@@ -280,15 +338,15 @@
                 if(t.identifier === joyId) {
                     let dx = t.clientX - joyStart.x, dy = t.clientY - joyStart.y;
                     let dist = Math.sqrt(dx*dx + dy*dy);
-                    let maxR = 40;
+                    let maxR = 45;
                     if(dist > maxR) { dx = (dx/dist)*maxR; dy = (dy/dist)*maxR; }
                     joyKnob.style.transform = `translate(${dx}px, ${dy}px)`;
                     moveVector.x = dx / maxR; moveVector.y = -dy / maxR;
                 }
                 if(t.identifier === lookId) {
-                    camAngleX -= (t.clientX - prevLook.x) * 0.006; 
-                    camAngleY += (t.clientY - prevLook.y) * 0.006;
-                    camAngleY = Math.max(-Math.PI/2 + 0.1, Math.min(Math.PI/2 - 0.1, camAngleY));
+                    camAngleX -= (t.clientX - prevLook.x) * 0.007; 
+                    camAngleY += (t.clientY - prevLook.y) * 0.007;
+                    camAngleY = Math.max(-0.3, Math.min(Math.PI/2 - 0.1, camAngleY));
                     prevLook = {x: t.clientX, y: t.clientY};
                 }
             }
@@ -301,33 +359,43 @@
             }
         });
 
-        const jumpBtn = document.getElementById('jump-btn');
-        jumpBtn.addEventListener('touchstart', (e) => { e.preventDefault(); jumpTrigger = true; });
-        jumpBtn.addEventListener('touchend', (e) => { e.preventDefault(); jumpTrigger = false; });
+        // Mobile Buttons Events
+        const jBtn = document.getElementById('jump-btn');
+        jBtn.addEventListener('touchstart', (e) => { e.preventDefault(); jumpTrigger = true; });
+        jBtn.addEventListener('touchend', (e) => { e.preventDefault(); jumpTrigger = false; });
 
-        let keys = {w:0, s:0, a:0, d:0};
+        const dBtn = document.getElementById('down-btn');
+        dBtn.addEventListener('touchstart', (e) => { e.preventDefault(); downTrigger = true; });
+        dBtn.addEventListener('touchend', (e) => { e.preventDefault(); downTrigger = false; });
+
+        // PC Support für Entwicklungs-Checks
+        let keys = {w:0, s:0, a:0, d:0, q:0, e:0};
         document.addEventListener('keydown', (e) => {
-            if(e.key==='w') keys.w=1; if(e.key==='s') keys.s=1; if(e.key==='a') keys.a=1; if(e.key==='d') keys.d=1;
+            if(e.key==='w'||e.key==='W') keys.w=1; if(e.key==='s'||e.key==='S') keys.s=1;
+            if(e.key==='a'||e.key==='A') keys.a=1; if(e.key==='d'||e.key==='D') keys.d=1;
+            if(e.key==='q'||e.key==='Q') downTrigger=true; if(e.key==='e'||e.key==='E') jumpTrigger=true;
             if(e.code==='Space') jumpTrigger = true;
         });
         document.addEventListener('keyup', (e) => {
-            if(e.key==='w') keys.w=0; if(e.key==='s') keys.s=0; if(e.key==='a') keys.a=0; if(e.key==='d') keys.d=0;
+            if(e.key==='w'||e.key==='W') keys.w=0; if(e.key==='s'||e.key==='S') keys.s=0;
+            if(e.key==='a'||e.key==='A') keys.a=0; if(e.key==='d'||e.key==='D') keys.d=0;
+            if(e.key==='q'||e.key==='Q') downTrigger=false; if(e.key==='e'||e.key==='E') jumpTrigger=false;
             if(e.code==='Space') jumpTrigger = false;
         });
 
         // ==========================================
-        // 7. GAME LOOP & PHYSIK
+        // 7. GAME TICK, PHYSICS & ADVANCED ANIMATION
         // ==========================================
         const clock = new THREE.Clock();
-        const SPEED = 16.0, JUMP_FORCE = 25.0, GRAVITY = -70.0;
+        const SPEED = 15.5, JUMP_FORCE = 24.5, GRAVITY = -68.0;
         let animTime = 0;
 
         function killPlayer() {
-            if(flyingMode) return; // Im Flugmodus kann man nicht sterben!
+            if (carpetEquipped) return; // Teppich-Götter sterben nicht!
             deaths++; document.getElementById('death-text').innerHTML = `💀 Tode: ${deaths}`;
             player.pos.copy(spawnPoint); player.vel.set(0,0,0);
-            document.body.style.backgroundColor = "darkred"; 
-            setTimeout(() => { document.body.style.backgroundColor = "#4a90e2"; }, 150);
+            document.body.style.backgroundColor = "#ff4757"; 
+            setTimeout(() => { document.body.style.backgroundColor = "#3a86ff"; }, 120);
         }
 
         function animate() {
@@ -335,11 +403,11 @@
             let dt = Math.min(clock.getDelta(), 0.1);
             let time = clock.getElapsedTime();
 
-            // Hindernisse bewegen
+            // Bewegen der Hindernisse
             for(let p of platforms) { if(p.moveData) p.mesh.position[p.moveData.axis] = Math.sin(time * p.moveData.speed + p.moveData.startPos) * p.moveData.range; }
-            spinner.mesh.rotation.y += 4 * dt;
+            spinner.mesh.rotation.y += 3.8 * dt;
 
-            // Bewegung berechnen
+            // Richtung kalkulieren
             let mx = keys.d - keys.a + moveVector.x;
             let mz = keys.w - keys.s + moveVector.y;
             let moveLen = Math.sqrt(mx*mx + mz*mz);
@@ -347,86 +415,88 @@
 
             let moveDir = new THREE.Vector3(mx, 0, -mz).applyMatrix4(new THREE.Matrix4().makeRotationY(camAngleX));
             
-            // X/Z Bewegung
+            // X-Z Achsenfortschritt
             player.pos.x += moveDir.x * SPEED * dt;
             player.pos.z += moveDir.z * SPEED * dt;
-            
-            // ==========================================
-            // LOGIK FÜR FLIEGENDEN TEPPICH VS NORMALE PHYSIK
-            // ==========================================
-            if (flyingMode) {
-                // Keine Schwerkraft, Fliegen mit Sprungtaste
-                player.vel.y = 0;
-                if (jumpTrigger) player.pos.y += SPEED * 0.8 * dt; // Hochfliegen
-                else if (moveLen === 0) player.pos.y += Math.sin(time * 3) * 0.02; // Leichtes Schweben im Stand
-                
-                // Teppich Animation
-                if(magicCarpet) magicCarpet.rotation.z = moveDir.x * -0.2; // Neigt sich beim Fliegen
-                
-                // Avatar sitzt im Schneidersitz auf dem Teppich
-                torso.position.y = 1.0;
-                torso.rotation.x = 0.2;
-                armL.shoulder.rotation.set(0.5, 0, 0.5); armL.elbow.rotation.x = -1.5;
-                armR.shoulder.rotation.set(0.5, 0, -0.5); armR.elbow.rotation.x = -1.5;
-                legL.hip.rotation.set(-1.5, 0.5, 0); legL.knee.rotation.x = 1.5;
-                legR.hip.rotation.set(-1.5, -0.5, 0); legR.knee.rotation.x = 1.5;
 
-                // Drehung in Flugrichtung
-                if (moveLen > 0.1) {
+            // ------------------------------------------
+            // VERZWEIGUNG: TEPPICH-MODUS VS NORMAL
+            // ------------------------------------------
+            if (carpetEquipped) {
+                // Sondereffekte & Flugphysik aktivieren
+                player.vel.y = 0;
+                
+                if (jumpTrigger) {
+                    player.pos.y += SPEED * 0.8 * dt; // Aufsteigen
+                } else if (downTrigger) {
+                    player.pos.y -= SPEED * 0.8 * dt; // Absinken
+                } else {
+                    player.pos.y += Math.sin(time * 3.5) * 0.015; // Autonome Schwebewellen
+                }
+
+                if(magicCarpetMesh) magicCarpetMesh.rotation.z = moveDir.x * -0.25; // Neigungswinkel-Feedback
+
+                // Roblox-Sitzpose auf Teppich (Schneidersitz)
+                torso.position.y = 1.15;
+                torso.rotation.x = 0.15;
+                armL.shoulder.rotation.set(0.6, 0, 0.4); armL.elbow.rotation.x = -1.4;
+                armR.shoulder.rotation.set(0.6, 0, -0.4); armR.elbow.rotation.x = -1.4;
+                legL.hip.rotation.set(-1.4, 0.6, 0); legL.knee.rotation.x = 1.4;
+                legR.hip.rotation.set(-1.4, -0.6, 0); legR.knee.rotation.x = 1.4;
+
+                if (moveLen > 0.05) {
                     let targetRot = Math.atan2(moveDir.x, moveDir.z);
                     let diff = targetRot - playerGroup.rotation.y;
                     while(diff < -Math.PI) diff += Math.PI*2; while(diff > Math.PI) diff -= Math.PI*2;
-                    playerGroup.rotation.y += diff * 10 * dt;
+                    playerGroup.rotation.y += diff * 11 * dt;
                 }
-
             } else {
-                // NORMALE PHYSIK
+                // PHYSIKALISCHE STANDARD-GRAVITATION
                 player.vel.y += GRAVITY * dt;
                 player.pos.y += player.vel.y * dt;
 
-                // Drehung
-                if (moveLen > 0.1) {
+                if (moveLen > 0.05) {
                     let targetRot = Math.atan2(moveDir.x, moveDir.z);
                     let diff = targetRot - playerGroup.rotation.y;
                     while(diff < -Math.PI) diff += Math.PI*2; while(diff > Math.PI) diff -= Math.PI*2;
-                    playerGroup.rotation.y += diff * 15 * dt; 
+                    playerGroup.rotation.y += diff * 15 * dt;
                 }
 
-                // ANIMATIONEN (Menschenähnlich)
+                // ANIMATIONS-MATRIX (Menschliche Muskel- und Gelenksimulation)
                 if (!player.onGround) {
-                    // Fallen / Springen
-                    torso.rotation.x = 0.2;
-                    armL.shoulder.rotation.set(3.0, 0, 0); armL.elbow.rotation.x = -0.2;
-                    armR.shoulder.rotation.set(3.0, 0, 0); armR.elbow.rotation.x = -0.2;
-                    legL.hip.rotation.x = -0.3; legL.knee.rotation.x = 0.6;
-                    legR.hip.rotation.x = 0.2; legR.knee.rotation.x = 0.1;
-                } else if (moveLen > 0.1) {
-                    // Laufen
-                    animTime += dt * 18;
-                    torso.position.y = 2.0 + Math.abs(Math.sin(animTime)) * 0.15;
-                    torso.rotation.x = 0.2;
+                    // Sprung/Fall-Haltung
+                    torso.rotation.x = 0.15;
+                    armL.shoulder.rotation.set(2.8, 0, 0.2); armL.elbow.rotation.x = -0.1;
+                    armR.shoulder.rotation.set(2.8, 0, -0.2); armR.elbow.rotation.x = -0.1;
+                    legL.hip.rotation.x = -0.4; legL.knee.rotation.x = 0.5;
+                    legR.hip.rotation.x = 0.3; legR.knee.rotation.x = 0.2;
+                } else if (moveLen > 0.05) {
+                    // Dynamischer Gehzyklus
+                    animTime += dt * 17.5;
+                    torso.position.y = 1.95 + Math.abs(Math.sin(animTime)) * 0.12;
+                    torso.rotation.x = 0.18;
                     
-                    armL.shoulder.rotation.x = Math.sin(animTime) * 1.5;
-                    armR.shoulder.rotation.x = Math.sin(animTime + Math.PI) * 1.5;
-                    armL.elbow.rotation.x = -0.5 + Math.sin(animTime) * 0.3;
-                    armR.elbow.rotation.x = -0.5 + Math.sin(animTime + Math.PI) * 0.3;
+                    armL.shoulder.rotation.x = Math.sin(animTime) * 1.4;
+                    armR.shoulder.rotation.x = Math.sin(animTime + Math.PI) * 1.4;
+                    armL.elbow.rotation.x = -0.4 + Math.sin(animTime) * 0.25;
+                    armR.elbow.rotation.x = -0.4 + Math.sin(animTime + Math.PI) * 0.25;
                     
-                    legL.hip.rotation.x = Math.sin(animTime + Math.PI) * 1.2;
-                    legR.hip.rotation.x = Math.sin(animTime) * 1.2;
-                    legL.knee.rotation.x = Math.max(0, Math.sin(animTime + Math.PI - 0.5) * 1.8);
-                    legR.knee.rotation.x = Math.max(0, Math.sin(animTime - 0.5) * 1.8);
+                    legL.hip.rotation.x = Math.sin(animTime + Math.PI) * 1.25;
+                    legR.hip.rotation.x = Math.sin(animTime) * 1.25;
+                    legL.knee.rotation.x = Math.max(0, Math.sin(animTime + Math.PI - 0.4) * 1.6);
+                    legR.knee.rotation.x = Math.max(0, Math.sin(animTime - 0.4) * 1.6);
                 } else {
-                    // Stehen (Atmen)
-                    animTime += dt * 3;
-                    torso.position.y = 2.0 + Math.sin(animTime) * 0.04;
+                    // Atmen im Ruhezustand
+                    animTime += dt * 2.8;
+                    torso.position.y = 1.95 + Math.sin(animTime) * 0.03;
                     torso.rotation.set(0, 0, 0);
-                    armL.shoulder.rotation.set(0.1, 0, 0.1); armL.elbow.rotation.x = -0.1;
-                    armR.shoulder.rotation.set(0.1, 0, -0.1); armR.elbow.rotation.x = -0.1;
+                    armL.shoulder.rotation.set(0.1, 0, 0.08); armL.elbow.rotation.x = -0.12;
+                    armR.shoulder.rotation.set(0.1, 0, -0.08); armR.elbow.rotation.x = -0.12;
                     legL.hip.rotation.set(0,0,0); legL.knee.rotation.x = 0;
                     legR.hip.rotation.set(0,0,0); legR.knee.rotation.x = 0;
                 }
 
-                // KOLLISION
+                // KOLLISIONS DETEKTION & AUSWERTUNG
                 player.onGround = false;
                 let pMinX = player.pos.x - player.radius, pMaxX = player.pos.x + player.radius;
                 let pMinY = player.pos.y, pMaxY = player.pos.y + player.height;
@@ -446,36 +516,36 @@
                             document.getElementById('stage-text').innerHTML = `📍 Stage: ${stage}`;
                         }
                         
-                        // Oben landen
-                        if (player.vel.y <= 0 && player.pos.y - player.vel.y * dt >= bMaxY - 0.5) {
+                        // Korrektur bei stabiler Landung von oben
+                        if (player.vel.y <= 0 && player.pos.y - player.vel.y * dt >= bMaxY - 0.45) {
                             player.pos.y = bMaxY; 
                             player.vel.y = 0; 
                             player.onGround = true;
                             
                             if (p.type === 'bounce') { 
-                                // MEGA TRAMPOLIN BOOST - FIX!
-                                player.vel.y = 100; // Unfassbare Höhe!
+                                // KATAPULT-BOOST ERHÖHT FÜR DIE HOHE PLATTFORM!
+                                player.vel.y = 110; 
                                 player.onGround = false; 
                             }
                         }
                     }
                 }
 
-                if (player.pos.y < -40) killPlayer();
+                if (player.pos.y < -35) killPlayer();
                 if (jumpTrigger && player.onGround) { player.vel.y = JUMP_FORCE; player.onGround = false; }
             }
 
-            // Transformiere Gruppe
+            // Matrix-Position anwenden
             playerGroup.position.copy(player.pos);
 
-            // Kamera Logic
-            let camDist = 12;
+            // Kamera Interpolation (Weiche Verfolgung)
+            let camDist = 11.5;
             let camOffsetX = Math.sin(camAngleX) * camDist * Math.cos(camAngleY);
             let camOffsetZ = Math.cos(camAngleX) * camDist * Math.cos(camAngleY);
-            let camOffsetY = Math.sin(camAngleY) * camDist + 2;
+            let camOffsetY = Math.sin(camAngleY) * camDist + 1.8;
             
-            camera.position.lerp(new THREE.Vector3(player.pos.x + camOffsetX, player.pos.y + camOffsetY, player.pos.z + camOffsetZ), 0.15);
-            camera.lookAt(player.pos.x, player.pos.y + 2, player.pos.z);
+            camera.position.lerp(new THREE.Vector3(player.pos.x + camOffsetX, player.pos.y + camOffsetY, player.pos.z + camOffsetZ), 0.16);
+            camera.lookAt(player.pos.x, player.pos.y + 1.8, player.pos.z);
 
             renderer.render(scene, camera);
         }
