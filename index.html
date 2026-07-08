@@ -3,181 +3,189 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ultimative 3D Obby - R15 Update</title>
+    <title>Ultimate Realistic Obby - Flying Carpet Update</title>
     <style>
-        body { margin: 0; overflow: hidden; background-color: #55b4ff; font-family: 'Arial', sans-serif; touch-action: none; user-select: none; }
+        body { margin: 0; overflow: hidden; background-color: #4a90e2; font-family: 'Segoe UI', sans-serif; touch-action: none; user-select: none; }
         canvas { display: block; }
         
-        /* UI & Leaderboard */
-        #ui-container { position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.8); color: white; padding: 15px 25px; border-radius: 12px; border: 2px solid #fff; z-index: 10; text-shadow: 2px 2px 4px black; font-size: 20px; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.6); }
+        /* UI & Panels */
+        #ui-container { position: absolute; top: 15px; left: 15px; background: rgba(10, 15, 25, 0.85); color: #fff; padding: 15px 25px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); z-index: 10; text-shadow: 1px 1px 3px black; font-size: 20px; font-weight: bold; box-shadow: 0 5px 20px rgba(0,0,0,0.5); backdrop-filter: blur(5px); }
         .ui-text { margin: 8px 0; }
-        #stage-text { color: #55ff55; }
-        #death-text { color: #ff5555; }
+        #stage-text { color: #00ff66; }
+        #death-text { color: #ff3333; }
+
+        /* Secret Code Panel */
+        #code-panel { position: absolute; top: 15px; right: 15px; background: rgba(10, 15, 25, 0.85); padding: 15px; border-radius: 12px; border: 2px solid #ffd700; color: white; z-index: 10; box-shadow: 0 5px 20px rgba(0,0,0,0.5); backdrop-filter: blur(5px); display: flex; flex-direction: column; gap: 8px; }
+        #code-panel h3 { margin: 0; font-size: 16px; color: #ffd700; text-align: center; }
+        #secret-input { padding: 8px; border-radius: 6px; border: none; font-size: 14px; text-align: center; font-weight: bold; }
+        #code-btn { padding: 8px; background: #ffd700; color: #000; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: transform 0.1s; }
+        #code-btn:active { transform: scale(0.95); }
 
         /* Mobile Controls */
-        #joystick-zone { position: absolute; bottom: 40px; left: 40px; width: 140px; height: 140px; background: rgba(0,0,0,0.3); border: 3px solid rgba(255,255,255,0.6); border-radius: 50%; z-index: 9; touch-action: none; backdrop-filter: blur(5px); }
-        #joystick-knob { position: absolute; top: 40px; left: 40px; width: 60px; height: 60px; background: rgba(255,255,255,0.9); border-radius: 50%; pointer-events: none; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        #jump-btn { position: absolute; bottom: 50px; right: 50px; width: 90px; height: 90px; background: rgba(0,0,0,0.4); border: 3px solid rgba(255,255,255,0.7); border-radius: 50%; z-index: 9; display: flex; align-items: center; justify-content: center; color: white; font-size: 40px; font-weight: bold; backdrop-filter: blur(5px); }
-        #jump-btn:active { background: rgba(255,255,255,0.7); transform: scale(0.9); }
+        #joystick-zone { position: absolute; bottom: 40px; left: 40px; width: 140px; height: 140px; background: rgba(0,0,0,0.2); border: 2px solid rgba(255,255,255,0.4); border-radius: 50%; z-index: 9; touch-action: none; backdrop-filter: blur(5px); }
+        #joystick-knob { position: absolute; top: 40px; left: 40px; width: 60px; height: 60px; background: rgba(255,255,255,0.9); border-radius: 50%; pointer-events: none; box-shadow: 0 4px 10px rgba(0,0,0,0.4); }
+        #jump-btn { position: absolute; bottom: 50px; right: 50px; width: 90px; height: 90px; background: rgba(255, 255, 255, 0.2); border: 2px solid rgba(255,255,255,0.5); border-radius: 50%; z-index: 9; display: flex; align-items: center; justify-content: center; color: white; font-size: 40px; font-weight: bold; backdrop-filter: blur(5px); transition: transform 0.1s; }
+        #jump-btn:active { background: rgba(255,255,255,0.5); transform: scale(0.9); }
         
-        /* Start-Screen */
-        #start-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, rgba(20,20,50,0.95) 0%, rgba(0,0,0,1) 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; z-index: 20; text-align: center; }
-        #start-screen h1 { font-size: 50px; color: #ffaa00; text-shadow: 0 0 20px #ffaa00; margin-bottom: 5px; }
-        #start-screen p { font-size: 18px; color: #ccc; margin-bottom: 30px; }
-        .btn-start { padding: 15px 50px; font-size: 26px; font-weight: bold; color: black; background: #55ff55; border: 4px solid white; border-radius: 40px; cursor: pointer; box-shadow: 0 0 30px #55ff55; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
+        /* Start Screen */
+        #start-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, #1a1a2e 0%, #000 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; z-index: 20; text-align: center; }
+        #start-screen h1 { font-size: 50px; color: #00ff66; text-shadow: 0 0 20px #00ff66; margin-bottom: 10px; text-transform: uppercase; }
+        #start-screen p { font-size: 18px; color: #ccc; max-width: 80%; margin-bottom: 30px; }
+        .btn-start { padding: 15px 50px; font-size: 24px; font-weight: bold; color: #000; background: #00ff66; border: none; border-radius: 40px; cursor: pointer; box-shadow: 0 0 20px #00ff66; transition: 0.2s; }
+        .btn-start:active { transform: scale(0.9); }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
     <div id="start-screen">
-        <h1>EPIC OBBY R15</h1>
-        <p>Besserer Charakter. Bessere Animationen. Bessere Map.</p>
+        <h1>EPIC OBBY</h1>
+        <p>Gigantische Sprünge, realistische Physik und geheime Codes. Halte den Joystick beim Trampolin ganz nach vorne!</p>
         <button class="btn-start" id="start-btn">SPIELEN</button>
     </div>
 
     <div id="ui-container">
-        <div class="ui-text" id="stage-text">🏆 Stage: 0</div>
+        <div class="ui-text" id="stage-text">📍 Stage: 0</div>
         <div class="ui-text" id="death-text">💀 Tode: 0</div>
+    </div>
+
+    <div id="code-panel">
+        <h3>Geheim-Code</h3>
+        <input type="text" id="secret-input" placeholder="Code hier...">
+        <button id="code-btn">Einlösen</button>
     </div>
 
     <div id="joystick-zone"><div id="joystick-knob"></div></div>
     <div id="jump-btn">↑</div>
 
     <script>
-        // === 1. ENGINE & SCHATTEN ===
+        // ==========================================
+        // 1. ENGINE & BELEUCHTUNG
+        // ==========================================
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x55b4ff);
-        scene.fog = new THREE.FogExp2(0x55b4ff, 0.004);
+        scene.background = new THREE.Color(0x4a90e2);
+        scene.fog = new THREE.FogExp2(0x4a90e2, 0.002);
 
         const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
         renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); 
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         document.body.appendChild(renderer.domElement);
 
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
         scene.add(ambientLight);
         
         const sunLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        sunLight.position.set(50, 100, 30);
+        sunLight.position.set(100, 200, 50);
         sunLight.castShadow = true;
-        sunLight.shadow.camera.left = -120; sunLight.shadow.camera.right = 120;
-        sunLight.shadow.camera.top = 120; sunLight.shadow.camera.bottom = -120;
+        sunLight.shadow.camera.left = -200; sunLight.shadow.camera.right = 200;
+        sunLight.shadow.camera.top = 200; sunLight.shadow.camera.bottom = -200;
         sunLight.shadow.mapSize.width = 2048; sunLight.shadow.mapSize.height = 2048;
         scene.add(sunLight);
 
-        // === 2. PROZEDURALE TEXTUREN ===
-        function createTexture(type) {
+        // ==========================================
+        // 2. MATERIALIEN & TEXTUREN
+        // ==========================================
+        function createGridTexture() {
             const cvs = document.createElement('canvas');
             cvs.width = 256; cvs.height = 256;
             const ctx = cvs.getContext('2d');
-
-            if (type === 'checker') {
-                ctx.fillStyle = '#dddddd'; ctx.fillRect(0,0,256,256);
-                ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,128,128); ctx.fillRect(128,128,128,128);
-            } else if (type === 'lava') {
-                ctx.fillStyle = '#ff3300'; ctx.fillRect(0,0,256,256);
-                for(let i=0; i<50; i++) {
-                    ctx.fillStyle = (Math.random()>0.5)? '#ffaa00' : '#aa0000';
-                    ctx.beginPath(); ctx.arc(Math.random()*256, Math.random()*256, Math.random()*20+5, 0, Math.PI*2); ctx.fill();
-                }
-            } else if (type === 'checkpoint') {
-                ctx.fillStyle = '#00cc00'; ctx.fillRect(0,0,256,256);
-                ctx.strokeStyle = '#55ff55'; ctx.lineWidth = 15; ctx.strokeRect(15,15,226,226);
-            } else if (type === 'bounce') {
-                ctx.fillStyle = '#aa00ff'; ctx.fillRect(0,0,256,256);
-                ctx.strokeStyle = '#eebbff'; ctx.lineWidth = 15;
-                ctx.beginPath(); ctx.arc(128,128, 80, 0, Math.PI*2); ctx.stroke();
-                ctx.beginPath(); ctx.arc(128,128, 40, 0, Math.PI*2); ctx.stroke();
-            } else if (type === 'face') {
-                // ROBLOX GESICHT!
-                ctx.fillStyle = '#f5cd30'; ctx.fillRect(0,0,256,256); // Hautfarbe
-                ctx.fillStyle = 'black';
-                ctx.fillRect(70, 90, 25, 35); // Linkes Auge
-                ctx.fillRect(160, 90, 25, 35); // Rechtes Auge
-                ctx.beginPath(); ctx.arc(128, 160, 40, 0, Math.PI, false); // Lächeln
-                ctx.lineWidth = 12; ctx.stroke();
-            }
-
+            ctx.fillStyle = '#f0f0f0'; ctx.fillRect(0,0,256,256);
+            ctx.strokeStyle = '#cccccc'; ctx.lineWidth = 4;
+            ctx.strokeRect(0,0,256,256);
             const tex = new THREE.CanvasTexture(cvs);
-            if(type !== 'face') { tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping; }
+            tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping;
             return tex;
         }
 
         const mats = {
-            safe: new THREE.MeshLambertMaterial({ map: createTexture('checker') }),
-            lava: new THREE.MeshBasicMaterial({ map: createTexture('lava') }),
-            checkpoint: new THREE.MeshLambertMaterial({ map: createTexture('checkpoint') }),
-            bounce: new THREE.MeshLambertMaterial({ map: createTexture('bounce') }),
-            spinner: new THREE.MeshLambertMaterial({ color: 0xffaa00 })
+            safe: new THREE.MeshStandardMaterial({ map: createGridTexture(), roughness: 0.9 }),
+            lava: new THREE.MeshBasicMaterial({ color: 0xff2200 }),
+            checkpoint: new THREE.MeshStandardMaterial({ color: 0x00ff66, roughness: 0.5, metalness: 0.2 }),
+            bounce: new THREE.MeshStandardMaterial({ color: 0xaa00ff, roughness: 0.3, emissive: 0x4400aa }),
+            spinner: new THREE.MeshStandardMaterial({ color: 0xffaa00, roughness: 0.5 }),
+            carpet: new THREE.MeshStandardMaterial({ color: 0x8a2be2, roughness: 0.2, metalness: 0.5, side: THREE.DoubleSide }) // Lila Teppich
         };
 
-        // === 3. DER NEUE R15 CHARAKTER (Meisterwerk) ===
+        // ==========================================
+        // 3. DER REALISTISCHE AVATAR (Komplett detailliert)
+        // ==========================================
         const playerGroup = new THREE.Group();
         scene.add(playerGroup);
 
-        const colorSkin = 0xf5cd30; const colorShirt = 0x0055aa; const colorPants = 0x222222;
+        const matSkin = new THREE.MeshStandardMaterial({ color: 0xffcc99, roughness: 0.6 }); // Echte Hautfarbe
+        const matShirt = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.8 }); // Schwarzes Shirt
+        const matPants = new THREE.MeshStandardMaterial({ color: 0x1e3f66, roughness: 0.9 }); // Dunkelblaue Jeans
+        const matShoes = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5 }); // Weiße Sneaker
 
-        function createPart(w, h, d, color) {
-            const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshLambertMaterial({color: color}));
-            mesh.castShadow = true; mesh.receiveShadow = true; return mesh;
+        // Hilfsfunktion für weiche Körperteile (Cylinder mit runden Enden)
+        function createLimb(radius, length, mat) {
+            const group = new THREE.Group();
+            const cylinder = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, length, 16), mat);
+            cylinder.castShadow = true; cylinder.receiveShadow = true;
+            const sphereTop = new THREE.Mesh(new THREE.SphereGeometry(radius, 16, 16), mat);
+            sphereTop.position.y = length / 2; sphereTop.castShadow = true;
+            const sphereBot = new THREE.Mesh(new THREE.SphereGeometry(radius, 16, 16), mat);
+            sphereBot.position.y = -length / 2; sphereBot.castShadow = true;
+            group.add(cylinder); group.add(sphereTop); group.add(sphereBot);
+            return group;
         }
 
-        // Rigging System (Damit sich Knie und Ellenbogen biegen!)
-        const torso = createPart(1.0, 1.2, 0.6, colorShirt);
-        torso.position.y = 1.6; playerGroup.add(torso);
+        // Torso (Brust)
+        const torso = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.2, 0.4), matShirt);
+        torso.position.y = 2.0; torso.castShadow = true; playerGroup.add(torso);
 
-        // Gesicht und Kopf
-        const matFace = new THREE.MeshLambertMaterial({ map: createTexture('face') });
-        const matHead = new THREE.MeshLambertMaterial({ color: colorSkin });
-        const headMaterials = [matHead, matHead, matHead, matHead, matFace, matHead]; // Gesicht ist vorne (Index 4)
-        const head = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.7, 0.7), headMaterials);
-        head.position.y = 0.95; head.castShadow = true; torso.add(head);
+        // Hals & Kopf
+        const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.3, 16), matSkin);
+        neck.position.y = 0.7; torso.add(neck);
+        const headGroup = new THREE.Group(); headGroup.position.y = 0.3; neck.add(headGroup);
+        const head = new THREE.Mesh(new THREE.SphereGeometry(0.35, 32, 32), matSkin);
+        head.castShadow = true; headGroup.add(head);
 
-        // Accessoires: Cap & Brille
-        const cap = createPart(0.72, 0.2, 0.72, 0xff0000); cap.position.y = 0.4; head.add(cap);
-        const capPeak = createPart(0.72, 0.05, 0.4, 0xff0000); capPeak.position.set(0, 0.3, 0.4); head.add(capPeak);
-        const glasses = createPart(0.75, 0.15, 0.75, 0x111111); glasses.position.set(0, 0.1, 0.05); head.add(glasses);
+        // Arme (Schulter -> Oberarm -> Ellenbogen -> Unterarm -> Hand)
+        function buildArm(isLeft) {
+            const sign = isLeft ? -1 : 1;
+            const shoulder = new THREE.Group(); shoulder.position.set(sign * 0.55, 0.4, 0); torso.add(shoulder);
+            const upperArm = createLimb(0.12, 0.6, matShirt); upperArm.position.y = -0.3; shoulder.add(upperArm);
+            const elbow = new THREE.Group(); elbow.position.set(0, -0.3, 0); upperArm.add(elbow);
+            const lowerArm = createLimb(0.1, 0.6, matSkin); lowerArm.position.y = -0.3; elbow.add(lowerArm);
+            const hand = new THREE.Mesh(new THREE.SphereGeometry(0.12, 16, 16), matSkin);
+            hand.position.y = -0.35; lowerArm.add(hand);
+            return { shoulder, elbow };
+        }
+        const armL = buildArm(true);
+        const armR = buildArm(false);
 
-        // Linker Arm (Mit Ellenbogen!)
-        const leftShoulder = new THREE.Group(); leftShoulder.position.set(-0.7, 0.5, 0); torso.add(leftShoulder);
-        const upperArmL = createPart(0.35, 0.6, 0.35, colorSkin); upperArmL.position.y = -0.3; leftShoulder.add(upperArmL);
-        const leftElbow = new THREE.Group(); leftElbow.position.set(0, -0.3, 0); upperArmL.add(leftElbow);
-        const lowerArmL = createPart(0.35, 0.6, 0.35, colorSkin); lowerArmL.position.y = -0.3; leftElbow.add(lowerArmL);
+        // Beine (Hüfte -> Oberschenkel -> Knie -> Unterschenkel -> Fuß)
+        function buildLeg(isLeft) {
+            const sign = isLeft ? -1 : 1;
+            const hip = new THREE.Group(); hip.position.set(sign * 0.25, -0.6, 0); torso.add(hip);
+            const upperLeg = createLimb(0.18, 0.7, matPants); upperLeg.position.y = -0.35; hip.add(upperLeg);
+            const knee = new THREE.Group(); knee.position.set(0, -0.35, 0); upperLeg.add(knee);
+            const lowerLeg = createLimb(0.14, 0.7, matSkin); lowerLeg.position.y = -0.35; knee.add(lowerLeg);
+            const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.2, 0.4), matShoes);
+            shoe.position.set(0, -0.4, 0.05); shoe.castShadow = true; lowerLeg.add(shoe);
+            return { hip, knee };
+        }
+        const legL = buildLeg(true);
+        const legR = buildLeg(false);
 
-        // Rechter Arm
-        const rightShoulder = new THREE.Group(); rightShoulder.position.set(0.7, 0.5, 0); torso.add(rightShoulder);
-        const upperArmR = createPart(0.35, 0.6, 0.35, colorSkin); upperArmR.position.y = -0.3; rightShoulder.add(upperArmR);
-        const rightElbow = new THREE.Group(); rightElbow.position.set(0, -0.3, 0); upperArmR.add(rightElbow);
-        const lowerArmR = createPart(0.35, 0.6, 0.35, colorSkin); lowerArmR.position.y = -0.3; rightElbow.add(lowerArmR);
+        // Physik Hitbox (Spieler Daten)
+        const player = { pos: new THREE.Vector3(0, 10, 0), vel: new THREE.Vector3(0, 0, 0), height: 3.8, radius: 0.5, onGround: false };
+        let spawnPoint = new THREE.Vector3(0, 10, 0);
 
-        // Linkes Bein (Mit Knie!)
-        const leftHip = new THREE.Group(); leftHip.position.set(-0.25, -0.6, 0); torso.add(leftHip);
-        const upperLegL = createPart(0.45, 0.7, 0.45, colorPants); upperLegL.position.y = -0.35; leftHip.add(upperLegL);
-        const leftKnee = new THREE.Group(); leftKnee.position.set(0, -0.35, 0); upperLegL.add(leftKnee);
-        const lowerLegL = createPart(0.45, 0.7, 0.45, colorPants); lowerLegL.position.y = -0.35; leftKnee.add(lowerLegL);
-
-        // Rechtes Bein
-        const rightHip = new THREE.Group(); rightHip.position.set(0.25, -0.6, 0); torso.add(rightHip);
-        const upperLegR = createPart(0.45, 0.7, 0.45, colorPants); upperLegR.position.y = -0.35; rightHip.add(upperLegR);
-        const rightKnee = new THREE.Group(); rightKnee.position.set(0, -0.35, 0); upperLegR.add(rightKnee);
-        const lowerLegR = createPart(0.45, 0.7, 0.45, colorPants); lowerLegR.position.y = -0.35; rightKnee.add(lowerLegR);
-
-        // Spieler Physik
-        const player = { pos: new THREE.Vector3(0, 5, 0), vel: new THREE.Vector3(0, 0, 0), height: 3.2, radius: 0.6, onGround: false };
-        let spawnPoint = new THREE.Vector3(0, 5, 0);
-
-        // === 4. DIE VERBESSERTE MAP (Bugfixes für Stage 3) ===
+        // ==========================================
+        // 4. MAP DESIGN & TRAMPOLIN (Mega Boost)
+        // ==========================================
         const platforms = [];
         let stage = 0, deaths = 0;
 
         function addBlock(x, y, z, w, h, d, type, stageNum = -1, moveData = null) {
             const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mats[type]);
             mesh.position.set(x, y, z);
-            if(mesh.material.map && type !== 'face') {
+            if(mesh.material.map && type !== 'lava') {
                 mesh.material.map = mesh.material.map.clone();
                 mesh.material.map.repeat.set(w/4, d/4);
             }
@@ -187,38 +195,66 @@
             platforms.push(p); return p;
         }
 
-        // Stage 0 & 1
-        addBlock(0, 0, 0, 10, 1, 10, 'checkpoint', 0);
-        addBlock(0, 0, -12, 4, 1, 4, 'safe');
-        addBlock(0, 0, -22, 4, 1, 4, 'safe');
-        addBlock(0, 0, -32, 8, 1, 8, 'checkpoint', 1);
+        // Start
+        addBlock(0, 0, 0, 15, 1, 15, 'checkpoint', 0);
+        addBlock(0, 0, -15, 5, 1, 5, 'safe');
+        addBlock(0, 0, -28, 5, 1, 5, 'safe');
+        addBlock(0, 0, -42, 12, 1, 12, 'checkpoint', 1);
 
-        // Stage 2 (Lava)
-        addBlock(0, 0, -42, 4, 1, 3, 'safe');
-        addBlock(0, -0.5, -51, 12, 1, 15, 'lava'); // Lava tiefergesetzt
-        addBlock(-4, 0, -48, 3, 1, 3, 'safe');
-        addBlock(4, 0, -54, 3, 1, 3, 'safe');
-        addBlock(0, 0, -62, 8, 1, 8, 'checkpoint', 2);
+        // Lava
+        addBlock(0, -0.5, -60, 20, 1, 22, 'lava'); 
+        addBlock(-6, 0, -52, 4, 1, 4, 'safe');
+        addBlock(6, 0, -68, 4, 1, 4, 'safe');
+        addBlock(0, 0, -84, 12, 1, 12, 'checkpoint', 2);
 
-        // Stage 3 BUGFIX (Trampolin)
-        // -> Zwischenstein hinzugefügt, damit man perfekt aufs Pad springen kann
-        addBlock(0, 0, -70, 3, 1, 3, 'safe'); 
-        addBlock(0, 0, -78, 5, 1, 5, 'bounce'); // Das Trampolin
-        // -> Die Zielplattform ist jetzt massiv und perfekt platziert!
-        addBlock(0, 28, -110, 15, 1, 15, 'checkpoint', 3);
+        // TRAMPOLIN (Der krasse Jump)
+        addBlock(0, 0, -96, 5, 1, 5, 'safe'); 
+        addBlock(0, 0, -106, 8, 1, 8, 'bounce'); // Trampolin
+        
+        // ZIEL (Extrem hoch und weit weg, aber durch neuen Boost erreichbar)
+        addBlock(0, 60, -160, 20, 1, 20, 'checkpoint', 3); 
 
-        // Stage 4 (Bewegliche Blöcke)
-        addBlock(0, 28, -122, 4, 1, 4, 'safe', -1, { speed: 2, range: 6, axis: 'x', startPos: 0 });
-        addBlock(0, 28, -134, 4, 1, 4, 'safe', -1, { speed: 2, range: 6, axis: 'x', startPos: Math.PI });
-        addBlock(0, 28, -148, 8, 1, 8, 'checkpoint', 4);
+        // Bewegliche Blöcke in der Luft
+        addBlock(0, 60, -180, 6, 1, 6, 'safe', -1, { speed: 1.2, range: 10, axis: 'x', startPos: 0 });
+        addBlock(0, 60, -200, 6, 1, 6, 'safe', -1, { speed: 1.2, range: 10, axis: 'x', startPos: Math.PI });
+        addBlock(0, 60, -220, 15, 1, 15, 'checkpoint', 4);
 
-        // Stage 5 (Der rotierende Balken)
-        addBlock(0, 28, -165, 14, 1, 14, 'safe');
-        const spinner = addBlock(0, 29.5, -165, 16, 1, 1, 'spinner'); 
-        addBlock(0, 28, -185, 10, 1, 10, 'checkpoint', 5);
+        // Finale
+        addBlock(0, 60, -245, 20, 1, 20, 'safe');
+        const spinner = addBlock(0, 61.5, -245, 24, 1, 2, 'spinner'); 
+        addBlock(0, 60, -275, 20, 1, 20, 'checkpoint', 5);
 
-        // === 5. STEUERUNG (Mobile & PC) ===
-        let camAngleX = 0, camAngleY = 0.3;
+        // ==========================================
+        // 5. DAS "YASSIEN123" OSTEREI (Fliegender Teppich)
+        // ==========================================
+        let flyingMode = false;
+        let magicCarpet = null;
+
+        document.getElementById('code-btn').addEventListener('click', () => {
+            const input = document.getElementById('secret-input').value;
+            if (input === 'yassien123' && !flyingMode) {
+                flyingMode = true;
+                document.getElementById('secret-input').value = 'AKTIVIERT!';
+                document.getElementById('secret-input').disabled = true;
+                
+                // Teppich erschaffen und an den Spieler hängen
+                magicCarpet = new THREE.Mesh(new THREE.BoxGeometry(3, 0.1, 4), mats.carpet);
+                magicCarpet.position.set(0, -0.2, 0); // Unter den Füßen
+                magicCarpet.castShadow = true;
+                playerGroup.add(magicCarpet);
+
+                // Spieler leicht anheben
+                player.pos.y += 2;
+                player.vel.y = 0;
+            } else if (input !== 'yassien123') {
+                alert('Falscher Code, Bro!');
+            }
+        });
+
+        // ==========================================
+        // 6. STEUERUNG (Touch & Keyboard)
+        // ==========================================
+        let camAngleX = 0, camAngleY = 0.2;
         let moveVector = {x: 0, y: 0}, jumpTrigger = false;
 
         document.getElementById('start-btn').addEventListener('click', () => {
@@ -231,31 +267,32 @@
 
         window.addEventListener('touchstart', (e) => {
             for(let t of e.changedTouches) {
-                if (t.clientX < window.innerWidth/2 && !joyId) {
+                if (t.clientX < window.innerWidth/2 && !joyId && t.clientY > 100) {
                     joyId = t.identifier; joyStart = {x: t.clientX, y: t.clientY};
-                } else if (t.clientX >= window.innerWidth/2 && !lookId && t.target.id !== 'jump-btn') {
+                } else if (t.clientX >= window.innerWidth/2 && !lookId && t.target.id !== 'jump-btn' && t.target.id !== 'code-btn' && t.target.id !== 'secret-input') {
                     lookId = t.identifier; prevLook = {x: t.clientX, y: t.clientY};
                 }
             }
-        });
+        }, {passive: false});
 
         window.addEventListener('touchmove', (e) => {
             for(let t of e.touches) {
                 if(t.identifier === joyId) {
                     let dx = t.clientX - joyStart.x, dy = t.clientY - joyStart.y;
                     let dist = Math.sqrt(dx*dx + dy*dy);
-                    if(dist > 40) { dx = (dx/dist)*40; dy = (dy/dist)*40; }
+                    let maxR = 40;
+                    if(dist > maxR) { dx = (dx/dist)*maxR; dy = (dy/dist)*maxR; }
                     joyKnob.style.transform = `translate(${dx}px, ${dy}px)`;
-                    moveVector.x = dx / 40; moveVector.y = -dy / 40;
+                    moveVector.x = dx / maxR; moveVector.y = -dy / maxR;
                 }
                 if(t.identifier === lookId) {
-                    camAngleX -= (t.clientX - prevLook.x) * 0.01; 
-                    camAngleY += (t.clientY - prevLook.y) * 0.01;
-                    camAngleY = Math.max(0.05, Math.min(Math.PI/2 - 0.1, camAngleY));
+                    camAngleX -= (t.clientX - prevLook.x) * 0.006; 
+                    camAngleY += (t.clientY - prevLook.y) * 0.006;
+                    camAngleY = Math.max(-Math.PI/2 + 0.1, Math.min(Math.PI/2 - 0.1, camAngleY));
                     prevLook = {x: t.clientX, y: t.clientY};
                 }
             }
-        });
+        }, {passive: false});
 
         window.addEventListener('touchend', (e) => {
             for(let t of e.changedTouches) {
@@ -268,27 +305,29 @@
         jumpBtn.addEventListener('touchstart', (e) => { e.preventDefault(); jumpTrigger = true; });
         jumpBtn.addEventListener('touchend', (e) => { e.preventDefault(); jumpTrigger = false; });
 
-        let keys = {w:0, s:0, a:0, d:0, left:0, right:0};
+        let keys = {w:0, s:0, a:0, d:0};
         document.addEventListener('keydown', (e) => {
             if(e.key==='w') keys.w=1; if(e.key==='s') keys.s=1; if(e.key==='a') keys.a=1; if(e.key==='d') keys.d=1;
-            if(e.key==='ArrowLeft') keys.left=1; if(e.key==='ArrowRight') keys.right=1;
             if(e.code==='Space') jumpTrigger = true;
         });
         document.addEventListener('keyup', (e) => {
             if(e.key==='w') keys.w=0; if(e.key==='s') keys.s=0; if(e.key==='a') keys.a=0; if(e.key==='d') keys.d=0;
-            if(e.key==='ArrowLeft') keys.left=0; if(e.key==='ArrowRight') keys.right=0;
             if(e.code==='Space') jumpTrigger = false;
         });
 
-        // === 6. GAME LOOP & R15 ANIMATIONEN ===
+        // ==========================================
+        // 7. GAME LOOP & PHYSIK
+        // ==========================================
         const clock = new THREE.Clock();
-        const SPEED = 13.0, JUMP_FORCE = 18.0, GRAVITY = -45.0; // Minimal schneller für besseres Gameplay
+        const SPEED = 16.0, JUMP_FORCE = 25.0, GRAVITY = -70.0;
         let animTime = 0;
 
         function killPlayer() {
+            if(flyingMode) return; // Im Flugmodus kann man nicht sterben!
             deaths++; document.getElementById('death-text').innerHTML = `💀 Tode: ${deaths}`;
             player.pos.copy(spawnPoint); player.vel.set(0,0,0);
-            document.body.style.backgroundColor = "red"; setTimeout(() => { document.body.style.backgroundColor = "#55b4ff"; }, 150);
+            document.body.style.backgroundColor = "darkred"; 
+            setTimeout(() => { document.body.style.backgroundColor = "#4a90e2"; }, 150);
         }
 
         function animate() {
@@ -296,109 +335,157 @@
             let dt = Math.min(clock.getDelta(), 0.1);
             let time = clock.getElapsedTime();
 
+            // Hindernisse bewegen
             for(let p of platforms) { if(p.moveData) p.mesh.position[p.moveData.axis] = Math.sin(time * p.moveData.speed + p.moveData.startPos) * p.moveData.range; }
-            spinner.mesh.rotation.y += 3 * dt;
+            spinner.mesh.rotation.y += 4 * dt;
 
-            if(keys.left) camAngleX += 2 * dt; if(keys.right) camAngleX -= 2 * dt;
-
+            // Bewegung berechnen
             let mx = keys.d - keys.a + moveVector.x;
             let mz = keys.w - keys.s + moveVector.y;
             let moveLen = Math.sqrt(mx*mx + mz*mz);
             if(moveLen > 1) { mx /= moveLen; mz /= moveLen; }
 
             let moveDir = new THREE.Vector3(mx, 0, -mz).applyMatrix4(new THREE.Matrix4().makeRotationY(camAngleX));
+            
+            // X/Z Bewegung
             player.pos.x += moveDir.x * SPEED * dt;
             player.pos.z += moveDir.z * SPEED * dt;
-            player.vel.y += GRAVITY * dt;
-            player.pos.y += player.vel.y * dt;
+            
+            // ==========================================
+            // LOGIK FÜR FLIEGENDEN TEPPICH VS NORMALE PHYSIK
+            // ==========================================
+            if (flyingMode) {
+                // Keine Schwerkraft, Fliegen mit Sprungtaste
+                player.vel.y = 0;
+                if (jumpTrigger) player.pos.y += SPEED * 0.8 * dt; // Hochfliegen
+                else if (moveLen === 0) player.pos.y += Math.sin(time * 3) * 0.02; // Leichtes Schweben im Stand
+                
+                // Teppich Animation
+                if(magicCarpet) magicCarpet.rotation.z = moveDir.x * -0.2; // Neigt sich beim Fliegen
+                
+                // Avatar sitzt im Schneidersitz auf dem Teppich
+                torso.position.y = 1.0;
+                torso.rotation.x = 0.2;
+                armL.shoulder.rotation.set(0.5, 0, 0.5); armL.elbow.rotation.x = -1.5;
+                armR.shoulder.rotation.set(0.5, 0, -0.5); armR.elbow.rotation.x = -1.5;
+                legL.hip.rotation.set(-1.5, 0.5, 0); legL.knee.rotation.x = 1.5;
+                legR.hip.rotation.set(-1.5, -0.5, 0); legR.knee.rotation.x = 1.5;
 
-            // --- R15 ANIMATION ENGINE ---
-            if (moveLen > 0.1) {
-                // Rotation zum Ziel
-                let targetRot = Math.atan2(moveDir.x, moveDir.z);
-                let diff = targetRot - playerGroup.rotation.y;
-                while(diff < -Math.PI) diff += Math.PI*2; while(diff > Math.PI) diff -= Math.PI*2;
-                playerGroup.rotation.y += diff * 12 * dt;
-            }
+                // Drehung in Flugrichtung
+                if (moveLen > 0.1) {
+                    let targetRot = Math.atan2(moveDir.x, moveDir.z);
+                    let diff = targetRot - playerGroup.rotation.y;
+                    while(diff < -Math.PI) diff += Math.PI*2; while(diff > Math.PI) diff -= Math.PI*2;
+                    playerGroup.rotation.y += diff * 10 * dt;
+                }
 
-            if (!player.onGround) {
-                // JUMP POSE (Epischer Sprung)
-                torso.rotation.x = 0.2; // Leicht nach vorne gelehnt
-                leftShoulder.rotation.x = 3.0; rightShoulder.rotation.x = 3.0; // Arme hoch!
-                leftElbow.rotation.x = 0; rightElbow.rotation.x = 0;
-                leftHip.rotation.x = -0.5; rightHip.rotation.x = 0.5; // Beine grätschen
-                leftKnee.rotation.x = 0.5; rightKnee.rotation.x = 0; // Ein Knie angewinkelt
-            } else if (moveLen > 0.1) {
-                // RUN ANIMATION (Mit Knie-Biegung)
-                animTime += dt * 18;
-                torso.rotation.x = 0.15; // Beim Laufen nach vorne lehnen
-                
-                // Arme schwingen
-                leftShoulder.rotation.x = Math.sin(animTime) * 1.0;
-                rightShoulder.rotation.x = Math.sin(animTime + Math.PI) * 1.0;
-                leftElbow.rotation.x = -0.3; rightElbow.rotation.x = -0.3; // Ellenbogen leicht angewinkelt
-                
-                // Beine schwingen
-                leftHip.rotation.x = Math.sin(animTime + Math.PI) * 1.0;
-                rightHip.rotation.x = Math.sin(animTime) * 1.0;
-                
-                // Knie knicken nur nach hinten ein (Trick mit Math.max)
-                leftKnee.rotation.x = Math.max(0, Math.sin(animTime + Math.PI - 1) * 1.2);
-                rightKnee.rotation.x = Math.max(0, Math.sin(animTime - 1) * 1.2);
             } else {
-                // IDLE ANIMATION (Atmen)
-                animTime += dt * 2;
-                torso.rotation.x = 0;
-                torso.position.y = 1.6 + Math.sin(animTime) * 0.05; // Brustkorb hebt sich
-                leftShoulder.rotation.x = 0.1; rightShoulder.rotation.x = 0.1;
-                leftElbow.rotation.x = -0.1; rightElbow.rotation.x = -0.1;
-                leftHip.rotation.x = 0; rightHip.rotation.x = 0;
-                leftKnee.rotation.x = 0; rightKnee.rotation.x = 0;
-            }
+                // NORMALE PHYSIK
+                player.vel.y += GRAVITY * dt;
+                player.pos.y += player.vel.y * dt;
 
-            // Kollision
-            player.onGround = false;
-            let pMinX = player.pos.x - player.radius, pMaxX = player.pos.x + player.radius;
-            let pMinY = player.pos.y, pMaxY = player.pos.y + player.height;
-            let pMinZ = player.pos.z - player.radius, pMaxZ = player.pos.z + player.radius;
+                // Drehung
+                if (moveLen > 0.1) {
+                    let targetRot = Math.atan2(moveDir.x, moveDir.z);
+                    let diff = targetRot - playerGroup.rotation.y;
+                    while(diff < -Math.PI) diff += Math.PI*2; while(diff > Math.PI) diff -= Math.PI*2;
+                    playerGroup.rotation.y += diff * 15 * dt; 
+                }
 
-            for(let p of platforms) {
-                let b = p.mesh.position;
-                let bMinX = b.x - p.w/2, bMaxX = b.x + p.w/2;
-                let bMinY = b.y - p.h/2, bMaxY = b.y + p.h/2;
-                let bMinZ = b.z - p.d/2, bMaxZ = b.z + p.d/2;
+                // ANIMATIONEN (Menschenähnlich)
+                if (!player.onGround) {
+                    // Fallen / Springen
+                    torso.rotation.x = 0.2;
+                    armL.shoulder.rotation.set(3.0, 0, 0); armL.elbow.rotation.x = -0.2;
+                    armR.shoulder.rotation.set(3.0, 0, 0); armR.elbow.rotation.x = -0.2;
+                    legL.hip.rotation.x = -0.3; legL.knee.rotation.x = 0.6;
+                    legR.hip.rotation.x = 0.2; legR.knee.rotation.x = 0.1;
+                } else if (moveLen > 0.1) {
+                    // Laufen
+                    animTime += dt * 18;
+                    torso.position.y = 2.0 + Math.abs(Math.sin(animTime)) * 0.15;
+                    torso.rotation.x = 0.2;
+                    
+                    armL.shoulder.rotation.x = Math.sin(animTime) * 1.5;
+                    armR.shoulder.rotation.x = Math.sin(animTime + Math.PI) * 1.5;
+                    armL.elbow.rotation.x = -0.5 + Math.sin(animTime) * 0.3;
+                    armR.elbow.rotation.x = -0.5 + Math.sin(animTime + Math.PI) * 0.3;
+                    
+                    legL.hip.rotation.x = Math.sin(animTime + Math.PI) * 1.2;
+                    legR.hip.rotation.x = Math.sin(animTime) * 1.2;
+                    legL.knee.rotation.x = Math.max(0, Math.sin(animTime + Math.PI - 0.5) * 1.8);
+                    legR.knee.rotation.x = Math.max(0, Math.sin(animTime - 0.5) * 1.8);
+                } else {
+                    // Stehen (Atmen)
+                    animTime += dt * 3;
+                    torso.position.y = 2.0 + Math.sin(animTime) * 0.04;
+                    torso.rotation.set(0, 0, 0);
+                    armL.shoulder.rotation.set(0.1, 0, 0.1); armL.elbow.rotation.x = -0.1;
+                    armR.shoulder.rotation.set(0.1, 0, -0.1); armR.elbow.rotation.x = -0.1;
+                    legL.hip.rotation.set(0,0,0); legL.knee.rotation.x = 0;
+                    legR.hip.rotation.set(0,0,0); legR.knee.rotation.x = 0;
+                }
 
-                if (pMinX <= bMaxX && pMaxX >= bMinX && pMinY <= bMaxY && pMaxY >= bMinY && pMinZ <= bMaxZ && pMaxZ >= bMinZ) {
-                    if (p.type === 'lava' || p.type === 'spinner') { killPlayer(); return; }
-                    if (p.type === 'checkpoint' && p.stage > stage) {
-                        stage = p.stage; spawnPoint.set(b.x, bMaxY, b.z);
-                        document.getElementById('stage-text').innerHTML = `🏆 Stage: ${stage}`;
-                    }
-                    if (player.vel.y <= 0 && player.pos.y - player.vel.y * dt >= bMaxY - 0.3) {
-                        player.pos.y = bMaxY; player.vel.y = 0; player.onGround = true;
-                        if (p.type === 'bounce') { player.vel.y = 50; player.onGround = false; } // MEGA BOOST FÜR STAGE 3
+                // KOLLISION
+                player.onGround = false;
+                let pMinX = player.pos.x - player.radius, pMaxX = player.pos.x + player.radius;
+                let pMinY = player.pos.y, pMaxY = player.pos.y + player.height;
+                let pMinZ = player.pos.z - player.radius, pMaxZ = player.pos.z + player.radius;
+
+                for(let p of platforms) {
+                    let b = p.mesh.position;
+                    let bMinX = b.x - p.w/2, bMaxX = b.x + p.w/2;
+                    let bMinY = b.y - p.h/2, bMaxY = b.y + p.h/2;
+                    let bMinZ = b.z - p.d/2, bMaxZ = b.z + p.d/2;
+
+                    if (pMinX <= bMaxX && pMaxX >= bMinX && pMinY <= bMaxY && pMaxY >= bMinY && pMinZ <= bMaxZ && pMaxZ >= bMinZ) {
+                        if (p.type === 'lava' || p.type === 'spinner') { killPlayer(); return; }
+                        
+                        if (p.type === 'checkpoint' && p.stage > stage) {
+                            stage = p.stage; spawnPoint.set(b.x, bMaxY, b.z);
+                            document.getElementById('stage-text').innerHTML = `📍 Stage: ${stage}`;
+                        }
+                        
+                        // Oben landen
+                        if (player.vel.y <= 0 && player.pos.y - player.vel.y * dt >= bMaxY - 0.5) {
+                            player.pos.y = bMaxY; 
+                            player.vel.y = 0; 
+                            player.onGround = true;
+                            
+                            if (p.type === 'bounce') { 
+                                // MEGA TRAMPOLIN BOOST - FIX!
+                                player.vel.y = 100; // Unfassbare Höhe!
+                                player.onGround = false; 
+                            }
+                        }
                     }
                 }
+
+                if (player.pos.y < -40) killPlayer();
+                if (jumpTrigger && player.onGround) { player.vel.y = JUMP_FORCE; player.onGround = false; }
             }
 
-            if (player.pos.y < -20) killPlayer();
-            if (jumpTrigger && player.onGround) { player.vel.y = JUMP_FORCE; player.onGround = false; }
-
+            // Transformiere Gruppe
             playerGroup.position.copy(player.pos);
 
-            // Kamera
-            let camDist = 9;
+            // Kamera Logic
+            let camDist = 12;
             let camOffsetX = Math.sin(camAngleX) * camDist * Math.cos(camAngleY);
             let camOffsetZ = Math.cos(camAngleX) * camDist * Math.cos(camAngleY);
-            let camOffsetY = Math.sin(camAngleY) * camDist + 1.5;
+            let camOffsetY = Math.sin(camAngleY) * camDist + 2;
+            
             camera.position.lerp(new THREE.Vector3(player.pos.x + camOffsetX, player.pos.y + camOffsetY, player.pos.z + camOffsetZ), 0.15);
-            camera.lookAt(player.pos.x, player.pos.y + 1.5, player.pos.z);
+            camera.lookAt(player.pos.x, player.pos.y + 2, player.pos.z);
 
             renderer.render(scene, camera);
         }
 
         animate();
-        window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
+        window.addEventListener('resize', () => { 
+            camera.aspect = window.innerWidth / window.innerHeight; 
+            camera.updateProjectionMatrix(); 
+            renderer.setSize(window.innerWidth, window.innerHeight); 
+        });
     </script>
 </body>
 </html>
