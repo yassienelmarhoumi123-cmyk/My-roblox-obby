@@ -2,576 +2,147 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Freddy Fazbear Obby - Ultimate Edition</title>
+    <title>Ultimate Freddy Fazbear Obby Engine</title>
     <style>
-        body { margin: 0; overflow: hidden; background-color: #1a1a2e; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; touch-action: none; user-select: none; }
-        canvas { display: block; }
-        
-        /* High-End Loading Screen */
-        #loading-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, #2c3e50 0%, #000000 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; z-index: 50; text-align: center; }
-        #loading-screen h1 { font-size: 55px; color: #ff9f43; text-shadow: 0 0 30px rgba(255,159,67,0.8); margin-bottom: 25px; font-weight: 900; letter-spacing: 2px; }
-        .loader { border: 6px solid rgba(255,255,255,0.05); border-top: 6px solid #ff9f43; border-radius: 50%; width: 70px; height: 70px; animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite; box-shadow: 0 0 20px rgba(255,159,67,0.4); }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* HUD & UI */
-        #ui-container { position: absolute; top: 20px; left: 20px; background: rgba(10, 15, 30, 0.85); color: #fff; padding: 15px 30px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.15); z-index: 10; font-size: 22px; font-weight: bold; box-shadow: 0 10px 30px rgba(0,0,0,0.6); backdrop-filter: blur(10px); display: none; }
-        .ui-text { margin: 8px 0; letter-spacing: 1px; }
-        #stage-text { color: #1dd1a1; }
-        #death-text { color: #ff6b6b; }
-
-        /* Secret Code Panel (Fliegender Teppich) */
-        #code-panel { position: absolute; top: 20px; right: 20px; background: rgba(10, 15, 30, 0.85); padding: 15px 20px; border-radius: 15px; border: 2px solid #feca57; color: white; z-index: 10; box-shadow: 0 10px 30px rgba(0,0,0,0.6); backdrop-filter: blur(10px); display: none; flex-direction: column; gap: 10px; width: 170px; }
-        #code-panel h3 { margin: 0; font-size: 16px; color: #feca57; text-align: center; text-transform: uppercase; letter-spacing: 1px; }
-        #secret-input { padding: 10px; border-radius: 8px; border: none; font-size: 14px; text-align: center; font-weight: bold; background: rgba(255,255,255,0.9); color: #222; outline: none; }
-        #code-btn { padding: 10px; background: linear-gradient(135deg, #feca57, #ff9f43); color: #000; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px; transition: transform 0.1s, box-shadow 0.1s; text-transform: uppercase; box-shadow: 0 4px 15px rgba(254,202,87,0.4); }
-        #code-btn:active { transform: scale(0.95); box-shadow: 0 2px 5px rgba(254,202,87,0.4); }
-
-        /* Mobile Controls */
-        #joystick-zone { position: absolute; bottom: 50px; left: 50px; width: 150px; height: 150px; background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.2); border-radius: 50%; z-index: 9; touch-action: none; backdrop-filter: blur(8px); display: none; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
-        #joystick-knob { position: absolute; top: 45px; left: 45px; width: 60px; height: 60px; background: rgba(255,255,255,0.9); border-radius: 50%; pointer-events: none; box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
-        
-        #action-container { position: absolute; bottom: 50px; right: 50px; display: none; flex-direction: column; gap: 20px; z-index: 9; }
-        .control-btn { width: 90px; height: 90px; background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 40px; font-weight: bold; backdrop-filter: blur(8px); transition: transform 0.1s; cursor: pointer; box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
-        .control-btn:active { background: rgba(255,255,255,0.3); transform: scale(0.9); }
-        #down-btn { background: rgba(255, 107, 107, 0.15); border-color: rgba(255, 107, 107, 0.4); display: none; }
-        
-        #start-btn { display: none; padding: 18px 60px; font-size: 26px; font-weight: 900; color: #111; background: linear-gradient(135deg, #1dd1a1, #10ac84); border: none; border-radius: 50px; cursor: pointer; box-shadow: 0 10px 30px rgba(29, 209, 161, 0.5); margin-top: 40px; text-transform: uppercase; transition: transform 0.2s; }
-        #start-btn:hover { transform: scale(1.05); }
-        #start-btn:active { transform: scale(0.95); }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #050505; font-family: 'Arial Black', sans-serif; }
+        #debug-console { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.8); color: #00ff00; padding: 15px; border-radius: 5px; font-family: monospace; z-index: 1000; pointer-events: none; border: 1px solid #333; }
+        #ui-overlay { position: absolute; top: 20px; right: 20px; text-align: right; color: white; z-index: 999; }
     </style>
-
     <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-            }
-        }
+        { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }
     </script>
 </head>
 <body>
-
-    <div id="loading-screen">
-        <h1>FREDDY'S MEGA OBBY</h1>
-        <div id="spinner" class="loader"></div>
-        <p id="loading-text" style="color: #a4b0be; margin-top: 25px; font-size: 18px; max-width: 600px; line-height: 1.5;">
-            Lade 3D Engine & Freddy Modell...<br>
-            <span style="font-size: 14px; color: #ff6b6b;">(Wichtig: Deine Datei muss freddy-fazbear.glb heißen und online sein!)</span>
-        </p>
-        <button id="start-btn">SPIEL STARTEN</button>
-    </div>
-
-    <div id="ui-container">
-        <div class="ui-text" id="stage-text">📍 Checkpoint: 0</div>
-        <div class="ui-text" id="death-text">💀 Tode: 0</div>
-    </div>
-
-    <div id="code-panel">
-        <h3 id="panel-title">Geheim Code</h3>
-        <input type="text" id="secret-input" placeholder="Passwort...">
-        <button id="code-btn">Aktivieren</button>
-    </div>
-
-    <div id="joystick-zone"><div id="joystick-knob"></div></div>
-    <div id="action-container">
-        <div class="control-btn" id="jump-btn">↑</div>
-        <div class="control-btn" id="down-btn">↓</div>
+    <div id="debug-console">Initialisiere Freddy Obby Engine...</div>
+    <div id="ui-overlay">
+        <h1>FREDDY OBBY V2</h1>
+        <p id="status">Warte auf Assets...</p>
     </div>
 
     <script type="module">
         import * as THREE from 'three';
         import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-        // ==========================================
-        // 1. ENGINE, CAMERA & ADVANCED LIGHTING
-        // ==========================================
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x1a252c); // Düsterer Himmel
-        scene.fog = new THREE.FogExp2(0x1a252c, 0.0035); // Dichter Nebel für Atmosphäre
+        /**
+         * CLASS: GameEngine
+         * Verwaltet die komplette 3D-Welt, Licht, Kamera und den Game-Loop.
+         */
+        class GameEngine {
+            constructor() {
+                this.scene = new THREE.Scene();
+                this.scene.background = new THREE.Color(0x101010);
+                this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+                this.renderer = new THREE.WebGLRenderer({ antialias: true });
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.renderer.shadowMap.enabled = true;
+                document.body.appendChild(this.renderer.domElement);
 
-        const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
-        
-        const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        renderer.toneMapping = THREE.ACESFilmicToneMapping; // Bessere Farben/Kontraste
-        renderer.toneMappingExposure = 1.0;
-        document.body.appendChild(renderer.domElement);
-
-        // Düstere, aber klare Beleuchtung (FNAF Vibe)
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
-        scene.add(ambientLight);
-        
-        const dirLight = new THREE.DirectionalLight(0xaabbff, 1.2); // Leicht bläuliches Mondlicht
-        dirLight.position.set(100, 200, 50);
-        dirLight.castShadow = true;
-        dirLight.shadow.camera.left = -200; dirLight.shadow.camera.right = 200;
-        dirLight.shadow.camera.top = 200; dirLight.shadow.camera.bottom = -200;
-        dirLight.shadow.mapSize.width = 2048; dirLight.shadow.mapSize.height = 2048;
-        dirLight.shadow.bias = -0.0005;
-        scene.add(dirLight);
-
-        const pointLight = new THREE.PointLight(0xffaa00, 0.8, 100); // Warmes Spotlight in der Nähe
-        scene.add(pointLight);
-
-        // ==========================================
-        // 2. WORLD MATERIALS & PROCEDURAL TEXTURES
-        // ==========================================
-        function createGridTexture(color1, color2) {
-            const cvs = document.createElement('canvas');
-            cvs.width = 256; cvs.height = 256;
-            const ctx = cvs.getContext('2d');
-            ctx.fillStyle = color1; ctx.fillRect(0,0,256,256);
-            ctx.strokeStyle = color2; ctx.lineWidth = 6;
-            ctx.strokeRect(0,0,256,256);
-            ctx.beginPath(); ctx.moveTo(0,128); ctx.lineTo(256,128); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(128,0); ctx.lineTo(128,256); ctx.stroke();
-            const tex = new THREE.CanvasTexture(cvs);
-            tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping;
-            return tex;
-        }
-
-        const mats = {
-            safe: new THREE.MeshStandardMaterial({ map: createGridTexture('#2c3e50', '#34495e'), roughness: 0.9, metalness: 0.1 }),
-            lava: new THREE.MeshStandardMaterial({ color: 0xff3e3e, emissive: 0xaa0000, roughness: 0.1, metalness: 0.1 }),
-            checkpoint: new THREE.MeshStandardMaterial({ map: createGridTexture('#1dd1a1', '#10ac84'), roughness: 0.6 }),
-            bounce: new THREE.MeshStandardMaterial({ color: 0x9b5de5, roughness: 0.2, emissive: 0x5a189a }),
-            spinner: new THREE.MeshStandardMaterial({ color: 0xfeca57, roughness: 0.5, metalness: 0.8 }),
-            carpet: new THREE.MeshStandardMaterial({ map: createGridTexture('#8e44ad', '#9b59b6'), roughness: 0.4, side: THREE.DoubleSide })
-        };
-
-        // ==========================================
-        // 3. OBBY LEVEL DESIGN (Komplexe Map)
-        // ==========================================
-        const platforms = [];
-        let stage = 0, deaths = 0;
-
-        function addBlock(x, y, z, w, h, d, type, stageNum = -1, moveData = null) {
-            const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mats[type]);
-            mesh.position.set(x, y, z);
-            if(mesh.material.map && type !== 'lava') {
-                mesh.material.map = mesh.material.map.clone();
-                mesh.material.map.repeat.set(w/4, d/4);
-            }
-            if(type !== 'lava') { mesh.castShadow = true; mesh.receiveShadow = true; }
-            scene.add(mesh);
-            platforms.push({ mesh, type, stage: stageNum, w, h, d, moveData });
-            return platforms[platforms.length - 1];
-        }
-
-        // --- Stage 0 bis 2: Klassische Sprünge & Lava ---
-        addBlock(0, 0, 0, 15, 1.5, 15, 'checkpoint', 0); // Start
-        addBlock(0, 0, -16, 5, 1, 5, 'safe');
-        addBlock(0, 0, -28, 5, 1, 5, 'safe');
-        addBlock(0, 0, -42, 12, 1, 12, 'checkpoint', 1);
-
-        addBlock(0, -1, -70, 30, 1.5, 45, 'lava'); // Große Lavagrube
-        addBlock(-4, 0, -56, 4, 1, 4, 'safe');
-        addBlock(4, 0, -72, 4, 1, 4, 'safe');
-        addBlock(-2, 0, -88, 4, 1, 4, 'safe');
-        addBlock(0, 0, -104, 12, 1, 12, 'checkpoint', 2);
-
-        // --- Stage 3: Das Katapult (Perfekt balanciert) ---
-        addBlock(0, 0, -120, 6, 1, 6, 'safe');
-        addBlock(0, 0, -132, 8, 1, 8, 'bounce'); // Trampolin-Pad
-        addBlock(0, 65, -175, 25, 2, 25, 'checkpoint', 3); // Wolken-Plattform hoch im Himmel
-
-        // --- Stage 4 & 5: Bewegliche Himmelshindernisse ---
-        addBlock(0, 65, -205, 6, 1, 6, 'safe', -1, { speed: 2.0, range: 12, axis: 'x', startPos: 0 });
-        addBlock(0, 65, -225, 6, 1, 6, 'safe', -1, { speed: 2.0, range: 12, axis: 'x', startPos: Math.PI });
-        addBlock(0, 65, -250, 15, 1.5, 15, 'checkpoint', 4);
-
-        addBlock(0, 65, -280, 20, 1, 20, 'safe');
-        const spinner = addBlock(0, 66.5, -280, 26, 1.5, 2, 'spinner'); // Todesrotor
-        addBlock(0, 65, -315, 20, 2, 20, 'checkpoint', 5); // Episches Finale
-
-        // ==========================================
-        // 4. FREDDY FAZBEAR LADEN & ANIMIEREN
-        // ==========================================
-        const playerGroup = new THREE.Group();
-        scene.add(playerGroup);
-        
-        // Logische Hitbox für die Kollision
-        const player = { pos: new THREE.Vector3(0, 10, 0), vel: new THREE.Vector3(0, 0, 0), height: 4.0, radius: 0.8, onGround: false };
-        let spawnPoint = new THREE.Vector3(0, 10, 0);
-
-        let freddyModel = null;
-        let mixer = null; // Für importierte Keyframe-Animationen
-        let animationsMap = new Map();
-        let currentAction = null;
-
-        const loader = new GLTFLoader();
-        
-        // --- DAS HERZSTÜCK: LADEN DER GLB DATEI ---
-        loader.load('./freddy-fazbear.glb', (gltf) => {
-            freddyModel = gltf.scene;
-            
-            // Anpassung der Größe und Position innerhalb der unsichtbaren Hitbox
-            // TIPP: Wenn Freddy zu groß/klein ist, ändere die 1.0 Werte bei scale.set()
-            freddyModel.scale.set(1.0, 1.0, 1.0); 
-            freddyModel.position.y = -2.0; // Füße an die Unterkante der Hitbox setzen
-            freddyModel.rotation.y = Math.PI; // Blickrichtung korrigieren
-
-            freddyModel.traverse((child) => {
-                if (child.isMesh) {
-                    child.castShadow = true;
-                    child.receiveShadow = true;
-                    // Material-Optimierungen für besseres Aussehen
-                    if(child.material) {
-                        child.material.roughness = 0.7;
-                        child.material.metalness = 0.1;
-                    }
-                }
-            });
-
-            playerGroup.add(freddyModel);
-
-            // --- ANIMATIONS MIXER SETUP ---
-            if (gltf.animations && gltf.animations.length > 0) {
-                mixer = new THREE.AnimationMixer(freddyModel);
-                gltf.animations.forEach((clip, index) => {
-                    const action = mixer.clipAction(clip);
-                    // Wenn die Animationen Namen haben, speichern wir sie, sonst über Index
-                    animationsMap.set(clip.name || `Anim_${index}`, action);
-                });
-
-                // Versuche eine "Idle" Animation zu finden, sonst nimm die erste
-                let idleKey = Array.from(animationsMap.keys()).find(k => k.toLowerCase().includes('idle')) || Array.from(animationsMap.keys())[0];
-                if (idleKey) {
-                    currentAction = animationsMap.get(idleKey);
-                    currentAction.play();
-                }
-            }
-
-            // Ladescreen ausblenden, Start Button einblenden
-            document.getElementById('spinner').style.display = 'none';
-            document.getElementById('loading-text').innerHTML = 'FREDDY WURDE ERFOLGREICH GELADEN!<br><span style="color:#1dd1a1; font-size: 14px;">Bereit für die Mega Obby</span>';
-            document.getElementById('start-btn').style.display = 'block';
-
-        }, undefined, (error) => {
-            console.error("Modell Ladefehler:", error);
-            document.getElementById('spinner').style.display = 'none';
-            document.getElementById('loading-text').innerHTML = 'FEHLER: Konnte "freddy-fazbear.glb" nicht finden.<br><span style="color:#ff6b6b; font-size:14px;">Stelle sicher, dass du die .blend Datei in Blender als .glb exportiert hast und sie im selben GitHub-Ordner liegt!</span>';
-            // Start trotzdem erlauben (Man spielt dann als unsichtbare Hitbox)
-            document.getElementById('start-btn').style.display = 'block'; 
-        });
-
-        // Funktion zum weichen Überblenden von Animationen
-        function fadeToAction(name, duration = 0.2) {
-            if(!mixer || !animationsMap.has(name)) return;
-            const nextAction = animationsMap.get(name);
-            if (currentAction === nextAction) return;
-
-            nextAction.reset().fadeIn(duration).play();
-            if (currentAction) currentAction.fadeOut(duration);
-            currentAction = nextAction;
-        }
-
-        // ==========================================
-        // 5. DAS "YASSIEN123" TEPPICH SYSTEM
-        // ==========================================
-        let carpetEquipped = false;
-        let magicCarpetMesh = null;
-
-        const codeBtn = document.getElementById('code-btn');
-        const secretInput = document.getElementById('secret-input');
-        const downBtn = document.getElementById('down-btn');
-
-        codeBtn.addEventListener('click', () => {
-            if (secretInput.style.display !== "none") {
-                if (secretInput.value === 'yassien123') {
-                    document.getElementById('panel-title').innerHTML = "🌟 TEPPICH";
-                    secretInput.style.display = "none";
-                    toggleCarpet(true);
-                } else {
-                    alert('Zugriff verweigert. Falscher Code!');
-                }
-            } else {
-                toggleCarpet(!carpetEquipped);
-            }
-        });
-
-        function toggleCarpet(state) {
-            carpetEquipped = state;
-            if (carpetEquipped) {
-                codeBtn.innerHTML = "ABLEGEN";
-                codeBtn.style.background = "linear-gradient(135deg, #ff6b6b, #ee5253)";
-                downBtn.style.display = "flex";
+                this.lights();
+                this.setupEnvironment();
+                this.freddy = new FreddyController(this.scene);
                 
-                if (!magicCarpetMesh) {
-                    magicCarpetMesh = new THREE.Mesh(new THREE.BoxGeometry(4.5, 0.15, 5.5), mats.carpet);
-                    magicCarpetMesh.position.set(0, -2.1, 0); // Unter Freddys Füßen
-                    magicCarpetMesh.castShadow = true;
-                }
-                playerGroup.add(magicCarpetMesh);
-                player.pos.y += 2.0; 
-                player.vel.y = 0;
-            } else {
-                codeBtn.innerHTML = "ANLEGEN";
-                codeBtn.style.background = "linear-gradient(135deg, #feca57, #ff9f43)";
-                downBtn.style.display = "none";
-                if (magicCarpetMesh) playerGroup.remove(magicCarpetMesh);
+                this.clock = new THREE.Clock();
+                this.render();
+            }
+
+            lights() {
+                const amb = new THREE.AmbientLight(0xffffff, 0.5);
+                this.scene.add(amb);
+                const sun = new THREE.DirectionalLight(0xffffff, 2.0);
+                sun.position.set(50, 100, 50);
+                sun.castShadow = true;
+                this.scene.add(sun);
+            }
+
+            setupEnvironment() {
+                const floor = new THREE.Mesh(
+                    new THREE.PlaneGeometry(1000, 1000),
+                    new THREE.MeshStandardMaterial({ color: 0x222222 })
+                );
+                floor.rotation.x = -Math.PI / 2;
+                this.scene.add(floor);
+            }
+
+            render() {
+                requestAnimationFrame(() => this.render());
+                const dt = this.clock.getDelta();
+                this.freddy.update(dt);
+                
+                // Kamera folgt Freddy
+                this.camera.position.lerp(new THREE.Vector3(this.freddy.group.position.x, this.freddy.group.position.y + 5, this.freddy.group.position.z + 10), 0.1);
+                this.camera.lookAt(this.freddy.group.position);
+                
+                this.renderer.render(this.scene, this.camera);
             }
         }
 
-        // ==========================================
-        // 6. STEUERUNG (Touch & Tastatur)
-        // ==========================================
-        let camAngleX = 0, camAngleY = 0.15;
-        let moveVector = {x: 0, y: 0};
-        let jumpTrigger = false, downTrigger = false;
-
-        document.getElementById('start-btn').addEventListener('click', () => {
-            document.getElementById('loading-screen').style.display = 'none';
-            document.getElementById('ui-container').style.display = 'block';
-            document.getElementById('code-panel').style.display = 'flex';
-            document.getElementById('joystick-zone').style.display = 'block';
-            document.getElementById('action-container').style.display = 'flex';
-        });
-
-        // --- Joystick Logic ---
-        const joyKnob = document.getElementById('joystick-knob');
-        let joyId = null, lookId = null;
-        let joyStart = {x:0, y:0}, prevLook = {x:0, y:0};
-
-        window.addEventListener('touchstart', (e) => {
-            for(let t of e.changedTouches) {
-                if (t.clientX < window.innerWidth/2 && !joyId && t.clientY > window.innerHeight/2) {
-                    joyId = t.identifier; joyStart = {x: t.clientX, y: t.clientY};
-                } else if (t.clientX >= window.innerWidth/2 && !lookId && t.target.tagName !== 'BUTTON' && t.target.tagName !== 'INPUT' && !t.target.classList.contains('control-btn')) {
-                    lookId = t.identifier; prevLook = {x: t.clientX, y: t.clientY};
-                }
+        /**
+         * CLASS: FreddyController
+         * Verwaltet das Modell, die Sichtbarkeit und Animationen.
+         */
+        class FreddyController {
+            constructor(scene) {
+                this.group = new THREE.Group();
+                scene.add(this.group);
+                this.loadModel();
             }
-        }, {passive: false});
 
-        window.addEventListener('touchmove', (e) => {
-            for(let t of e.touches) {
-                if(t.identifier === joyId) {
-                    let dx = t.clientX - joyStart.x, dy = t.clientY - joyStart.y;
-                    let dist = Math.sqrt(dx*dx + dy*dy);
-                    let maxR = 45;
-                    if(dist > maxR) { dx = (dx/dist)*maxR; dy = (dy/dist)*maxR; }
-                    joyKnob.style.transform = `translate(${dx}px, ${dy}px)`;
-                    moveVector.x = dx / maxR; moveVector.y = -dy / maxR;
-                }
-                if(t.identifier === lookId) {
-                    camAngleX -= (t.clientX - prevLook.x) * 0.007; 
-                    camAngleY += (t.clientY - prevLook.y) * 0.007;
-                    camAngleY = Math.max(-0.25, Math.min(Math.PI/2 - 0.1, camAngleY));
-                    prevLook = {x: t.clientX, y: t.clientY};
-                }
-            }
-        }, {passive: false});
+            loadModel() {
+                const loader = new GLTFLoader();
+                const log = document.getElementById('debug-console');
+                log.innerText = "Lade Freddy-Modell...";
 
-        window.addEventListener('touchend', (e) => {
-            for(let t of e.changedTouches) {
-                if(t.identifier === joyId) { joyId = null; moveVector = {x:0, y:0}; joyKnob.style.transform = `translate(0px, 0px)`; }
-                if(t.identifier === lookId) lookId = null;
-            }
-        });
+                loader.load('./freddy-fazbear.glb', (gltf) => {
+                    this.model = gltf.scene;
+                    
+                    // AUTO-FIX: Modell normalisieren
+                    const box = new THREE.Box3().setFromObject(this.model);
+                    const size = new THREE.Vector3();
+                    box.getSize(size);
+                    const center = new THREE.Vector3();
+                    box.getCenter(center);
+                    
+                    // Skalierung: Wenn Modell zu klein/groß ist
+                    const scale = 2.0 / Math.max(size.x, size.y, size.z);
+                    this.model.scale.set(scale, scale, scale);
+                    this.model.position.sub(center.multiplyScalar(scale));
 
-        // --- Buttons & Keyboard ---
-        document.getElementById('jump-btn').addEventListener('touchstart', (e) => { e.preventDefault(); jumpTrigger = true; });
-        document.getElementById('jump-btn').addEventListener('touchend', (e) => { e.preventDefault(); jumpTrigger = false; });
-        document.getElementById('down-btn').addEventListener('touchstart', (e) => { e.preventDefault(); downTrigger = true; });
-        document.getElementById('down-btn').addEventListener('touchend', (e) => { e.preventDefault(); downTrigger = false; });
-
-        let keys = {w:0, s:0, a:0, d:0};
-        document.addEventListener('keydown', (e) => {
-            let k = e.key.toLowerCase();
-            if(k==='w') keys.w=1; if(k==='s') keys.s=1; if(k==='a') keys.a=1; if(k==='d') keys.d=1;
-            if(e.code==='Space') jumpTrigger = true;
-        });
-        document.addEventListener('keyup', (e) => {
-            let k = e.key.toLowerCase();
-            if(k==='w') keys.w=0; if(k==='s') keys.s=0; if(k==='a') keys.a=0; if(k==='d') keys.d=0;
-            if(e.code==='Space') jumpTrigger = false;
-        });
-
-
-        // ==========================================
-        // 7. CORE GAME LOOP, PHYSICS & ANIMATION LOGIC
-        // ==========================================
-        const clock = new THREE.Clock();
-        const SPEED = 16.5, JUMP_FORCE = 26.0, GRAVITY = -72.0;
-
-        function killPlayer() {
-            if (carpetEquipped) return; // Cheater sterben nicht!
-            deaths++; document.getElementById('death-text').innerHTML = `💀 Tode: ${deaths}`;
-            player.pos.copy(spawnPoint); player.vel.set(0,0,0);
-            
-            // Screen Flash Effect
-            const overlay = document.createElement('div');
-            overlay.style.cssText = "position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(255,0,0,0.5);z-index:100;pointer-events:none;transition:opacity 0.2s;";
-            document.body.appendChild(overlay);
-            setTimeout(() => { overlay.style.opacity = '0'; setTimeout(() => overlay.remove(), 200); }, 50);
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            let dt = Math.min(clock.getDelta(), 0.1);
-            let time = clock.getElapsedTime();
-
-            // 1. Echte GLB Animationen aktualisieren
-            if (mixer) mixer.update(dt);
-
-            // 2. Map Animationen (Rotor & schwebende Blöcke)
-            for(let p of platforms) { if(p.moveData) p.mesh.position[p.moveData.axis] = Math.sin(time * p.moveData.speed + p.moveData.startPos) * p.moveData.range; }
-            spinner.mesh.rotation.y += 4.2 * dt;
-
-            // 3. Bewegungs-Vektoren aus Eingabe berechnen
-            let mx = keys.d - keys.a + moveVector.x;
-            let mz = keys.w - keys.s + moveVector.y;
-            let moveLen = Math.sqrt(mx*mx + mz*mz);
-            if(moveLen > 1) { mx /= moveLen; mz /= moveLen; }
-            
-            // Bewegung relativ zur Kamera berechnen
-            let moveDir = new THREE.Vector3(mx, 0, -mz).applyMatrix4(new THREE.Matrix4().makeRotationY(camAngleX));
-            
-            player.pos.x += moveDir.x * SPEED * dt;
-            player.pos.z += moveDir.z * SPEED * dt;
-
-            // SpotLight verfolgt den Spieler
-            pointLight.position.set(player.pos.x, player.pos.y + 5, player.pos.z);
-
-            // ==========================================
-            // LOGIK ZWEIG 1: FLIEGENDER TEPPICH
-            // ==========================================
-            if (carpetEquipped) {
-                player.vel.y = 0;
-                
-                // Hoch/Runter fliegen
-                if (jumpTrigger) player.pos.y += SPEED * 0.8 * dt;
-                else if (downTrigger) player.pos.y -= SPEED * 0.8 * dt;
-                else player.pos.y += Math.sin(time * 3) * 0.02; // Sanftes Schweben im Stand
-
-                if(magicCarpetMesh) magicCarpetMesh.rotation.z = moveDir.x * -0.25;
-
-                // Freddy Ausrichtung
-                if (moveLen > 0.05) {
-                    let targetRot = Math.atan2(moveDir.x, moveDir.z);
-                    let diff = targetRot - playerGroup.rotation.y;
-                    while(diff < -Math.PI) diff += Math.PI*2; while(diff > Math.PI) diff -= Math.PI*2;
-                    playerGroup.rotation.y += diff * 12 * dt;
-                }
-                
-                // Animation auf "Idle" setzen
-                if(mixer && animationsMap.size > 0) {
-                    let idleName = Array.from(animationsMap.keys()).find(k => k.toLowerCase().includes('idle')) || Array.from(animationsMap.keys())[0];
-                    fadeToAction(idleName, 0.2);
-                }
-
-            } else {
-                // ==========================================
-                // LOGIK ZWEIG 2: NORMALE OBBY PHYSIK
-                // ==========================================
-                player.vel.y += GRAVITY * dt;
-                player.pos.y += player.vel.y * dt;
-
-                if (moveLen > 0.05) {
-                    // Freddy dreht sich smooth in Laufrichtung
-                    let targetRot = Math.atan2(moveDir.x, moveDir.z);
-                    let diff = targetRot - playerGroup.rotation.y;
-                    while(diff < -Math.PI) diff += Math.PI*2; while(diff > Math.PI) diff -= Math.PI*2;
-                    playerGroup.rotation.y += diff * 15 * dt;
-
-                    // Versuche "Walk" oder "Run" Animation zu spielen
-                    if(mixer && animationsMap.size > 1) {
-                        let walkName = Array.from(animationsMap.keys()).find(k => k.toLowerCase().includes('walk') || k.toLowerCase().includes('run')) || Array.from(animationsMap.keys())[1];
-                        fadeToAction(walkName, 0.2);
-                    } else if (!mixer && freddyModel) {
-                        // FALLBACK: Wenn die Datei gar keine echten Animationen hat, wackelt er prozedural!
-                        freddyModel.rotation.z = Math.sin(time * 18) * 0.15;
-                        freddyModel.rotation.x = 0.1; // Leicht nach vorne gebeugt
-                        freddyModel.position.y = -2.0 + Math.abs(Math.sin(time * 18)) * 0.2;
-                    }
-                } else {
-                    // Spieler steht still
-                    if(mixer && animationsMap.size > 0) {
-                        let idleName = Array.from(animationsMap.keys()).find(k => k.toLowerCase().includes('idle')) || Array.from(animationsMap.keys())[0];
-                        fadeToAction(idleName, 0.3);
-                    } else if (!mixer && freddyModel) {
-                        // FALLBACK: Atmen (Prozedural)
-                        freddyModel.rotation.set(0, 0, 0);
-                        freddyModel.position.y = -2.0 + Math.sin(time * 3) * 0.05; // Brust heben/senken
-                    }
-                }
-
-                // KOLLISIONSABFRAGE (AABB Hitbox System)
-                player.onGround = false;
-                let pMinX = player.pos.x - player.radius, pMaxX = player.pos.x + player.radius;
-                let pMinY = player.pos.y, pMaxY = player.pos.y + player.height;
-                let pMinZ = player.pos.z - player.radius, pMaxZ = player.pos.z + player.radius;
-
-                for(let p of platforms) {
-                    let b = p.mesh.position;
-                    let bMinX = b.x - p.w/2, bMaxX = b.x + p.w/2;
-                    let bMinY = b.y - p.h/2, bMaxY = b.y + p.h/2;
-                    let bMinZ = b.z - p.d/2, bMaxZ = b.z + p.d/2;
-
-                    // Überschneiden sich die Hitboxen?
-                    if (pMinX <= bMaxX && pMaxX >= bMinX && pMinY <= bMaxY && pMaxY >= bMinY && pMinZ <= bMaxZ && pMaxZ >= bMinZ) {
-                        
-                        // Tod durch Lava oder Spinner
-                        if (p.type === 'lava' || p.type === 'spinner') { killPlayer(); return; }
-                        
-                        // Checkpoints aktualisieren
-                        if (p.type === 'checkpoint' && p.stage > stage) {
-                            stage = p.stage; spawnPoint.set(b.x, bMaxY, b.z);
-                            document.getElementById('stage-text').innerHTML = `📍 Checkpoint: ${stage}`;
-                        }
-                        
-                        // Landung von oben berechnen
-                        if (player.vel.y <= 0 && player.pos.y - player.vel.y * dt >= bMaxY - 0.5) {
-                            player.pos.y = bMaxY; 
-                            player.vel.y = 0; 
-                            player.onGround = true;
-                            
-                            if (p.type === 'bounce') { 
-                                player.vel.y = 125; // MEGA KATAPULT SCHUB!
-                                player.onGround = false; 
+                    // Sicherstellen, dass das Material sichtbar ist
+                    this.model.traverse((child) => {
+                        if (child.isMesh) {
+                            child.castShadow = true;
+                            // Erzwinge Material, falls Shader fehlschlagen
+                            if(child.material) {
+                                child.material.side = THREE.DoubleSide;
+                                child.material.needsUpdate = true;
                             }
                         }
-                    }
-                }
+                    });
 
-                // In den Abgrund gefallen
-                if (player.pos.y < -40) killPlayer();
-                
-                // Springen
-                if (jumpTrigger && player.onGround) { 
-                    player.vel.y = JUMP_FORCE; 
-                    player.onGround = false; 
-                }
+                    this.group.add(this.model);
+                    log.innerText = "Freddy erfolgreich geladen & zentriert!";
+                    document.getElementById('status').innerText = "Status: Bereit";
+
+                }, (xhr) => {
+                    const percent = (xhr.loaded / xhr.total * 100).toFixed(0);
+                    log.innerText = `Ladevorgang: ${percent}%`;
+                }, (error) => {
+                    log.innerText = "FEHLER: Konnte Modell nicht laden! Prüfe Konsole.";
+                    console.error("Modell Fehler:", error);
+                    // FALLBACK: Ein Würfel anzeigen, damit man sieht, dass das Spiel läuft
+                    const cube = new THREE.Mesh(new THREE.BoxGeometry(1,1,1), new THREE.MeshNormalMaterial());
+                    this.group.add(cube);
+                });
             }
 
-            // 4. Matrix Aktualisierung
-            playerGroup.position.copy(player.pos);
-
-            // 5. Cinematic Kamera Interpolation (Folgt dem Spieler butterweich)
-            let camDist = 13.0; // Distanz der Kamera zum Spieler
-            let camOffsetX = Math.sin(camAngleX) * camDist * Math.cos(camAngleY);
-            let camOffsetZ = Math.cos(camAngleX) * camDist * Math.cos(camAngleY);
-            let camOffsetY = Math.sin(camAngleY) * camDist + 3.0; // Schaut etwas über Freddys Kopf hinweg
-            
-            let targetCamPos = new THREE.Vector3(player.pos.x + camOffsetX, player.pos.y + camOffsetY, player.pos.z + camOffsetZ);
-            camera.position.lerp(targetCamPos, 0.15); // Der Wert 0.15 sorgt für den "smoothen" Schwenk
-            camera.lookAt(player.pos.x, player.pos.y + 2.5, player.pos.z);
-
-            renderer.render(scene, camera);
+            update(dt) {
+                // Hier könntest du eine Lauf-Logik einbauen
+                this.group.rotation.y += 0.005; 
+            }
         }
 
-        animate();
-        
-        // Responsive Design (Fenstergrößenänderung abfangen)
-        window.addEventListener('resize', () => { 
-            camera.aspect = window.innerWidth / window.innerHeight; 
-            camera.updateProjectionMatrix(); 
-            renderer.setSize(window.innerWidth, window.innerHeight); 
-        });
+        // Startpunkt
+        new GameEngine();
     </script>
 </body>
 </html>
