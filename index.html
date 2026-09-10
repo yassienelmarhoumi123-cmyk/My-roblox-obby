@@ -1,2 +1,1058 @@
-<h1> erdals seite </h1>
-<title> erdal der sigma </title>
+<!DOCTYPE html>
+<html lang="de" class="h-full w-full overflow-hidden">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Wobbly Gang - 3D Multiplayer</title>
+
+    <!-- Tailwind CSS für eine moderne, responsive Benutzeroberfläche -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- PeerJS für Peer-to-Peer WebRTC Multiplayer (Kein dedizierter Server nötig) -->
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+
+    <!-- Import Maps für Three.js und Cannon.js (Physik) -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+                "cannon-es": "https://unpkg.com/cannon-es@0.20.0/dist/cannon-es.js"
+            }
+        }
+    </script>
+
+    <style>
+        /* Spezifische Anpassungen, damit das Spiel im Vollbild läuft */
+        body { margin: 0; padding: 0; overflow: hidden; background-color: #1a1a2e; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; user-select: none; }
+        #game-canvas { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; }
+        .ui-layer { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 10; pointer-events: none; }
+        .pointer-events-auto { pointer-events: auto; }
+        
+        /* Neonglühen für Text */
+        .text-glow { text-shadow: 0 0 10px rgba(255,255,255,0.8), 0 0 20px rgba(0, 200, 255, 0.5); }
+        
+        /* Custom Scrollbar für die Spielerliste */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+        
+        /* Lade-Animation */
+        .loader {
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            border-left-color: #00d2ff;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="text-white antialiased">
+
+    <!-- 3D Canvas für Three.js -->
+    <canvas id="game-canvas"></canvas>
+
+    <!-- UI Overlay Schicht -->
+    <div id="ui-container" class="ui-layer flex flex-col justify-center items-center backdrop-blur-sm bg-black/60 transition-opacity duration-500">
+        
+        <!-- Ladebildschirm -->
+        <div id="loading-screen" class="flex flex-col items-center justify-center space-y-4">
+            <div class="loader"></div>
+            <h2 class="text-2xl font-bold text-glow tracking-widest uppercase">Lade Assets...</h2>
+            <p id="loading-text" class="text-gray-400 text-sm">Initialisiere Engine</p>
+        </div>
+
+        <!-- Hauptmenü (Wird nach dem Laden angezeigt) -->
+        <div id="main-menu" class="hidden pointer-events-auto bg-gray-900/90 p-8 rounded-2xl border border-gray-700 shadow-2xl w-[90%] max-w-md text-center">
+            <h1 class="text-4xl font-extrabold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 uppercase tracking-widest text-glow">Wobbly Gang</h1>
+            <p class="text-gray-400 mb-8 text-sm">WebGL Multiplayer Brawler</p>
+
+            <div class="space-y-4">
+                <button id="btn-host" class="w-full py-4 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 rounded-xl font-bold text-lg shadow-lg transform transition active:scale-95">
+                    Spiel Hosten (Server)
+                </button>
+                
+                <div class="relative flex py-2 items-center">
+                    <div class="flex-grow border-t border-gray-600"></div>
+                    <span class="flex-shrink-0 mx-4 text-gray-500 text-sm font-semibold uppercase">Oder</span>
+                    <div class="flex-grow border-t border-gray-600"></div>
+                </div>
+
+                <div class="flex space-x-2">
+                    <input type="text" id="input-join-id" placeholder="Lobby-ID eingeben..." class="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 transition">
+                    <button id="btn-join" class="px-6 bg-purple-600 hover:bg-purple-500 rounded-xl font-bold shadow-lg transform transition active:scale-95">
+                        Beitreten
+                    </button>
+                </div>
+            </div>
+            
+            <div class="mt-6 text-xs text-gray-500 text-left bg-gray-800/50 p-4 rounded-lg">
+                <p class="font-bold mb-1 text-gray-300">Steuerung:</p>
+                <ul class="list-disc list-inside">
+                    <li><kbd class="bg-gray-700 px-1 rounded">W</kbd> <kbd class="bg-gray-700 px-1 rounded">A</kbd> <kbd class="bg-gray-700 px-1 rounded">S</kbd> <kbd class="bg-gray-700 px-1 rounded">D</kbd> - Bewegen</li>
+                    <li><kbd class="bg-gray-700 px-1 rounded">Leertaste</kbd> - Springen</li>
+                    <li><kbd class="bg-gray-700 px-1 rounded">Linksklick</kbd> / <kbd class="bg-gray-700 px-1 rounded">E</kbd> - Schlagen (Physik-Impuls)</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Lobby Bildschirm (Vor dem Spielstart) -->
+        <div id="lobby-screen" class="hidden pointer-events-auto bg-gray-900/90 p-8 rounded-2xl border border-blue-500/30 shadow-2xl w-[90%] max-w-lg">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-white">Lobby</h2>
+                <span id="player-count" class="bg-blue-600/30 text-blue-400 px-3 py-1 rounded-full text-sm font-bold border border-blue-500/50">1/4 Spieler</span>
+            </div>
+            
+            <div class="bg-gray-800 border border-gray-700 rounded-xl p-4 mb-6 text-center">
+                <p class="text-sm text-gray-400 mb-1">Deine Lobby-ID (Kopieren & an Freunde senden):</p>
+                <div class="flex items-center justify-center space-x-2">
+                    <code id="display-lobby-id" class="text-xl font-mono text-green-400 font-bold tracking-wider select-all">LÄDT...</code>
+                </div>
+            </div>
+
+            <div class="space-y-2 mb-6 max-h-48 overflow-y-auto pr-2" id="player-list">
+                <!-- Spieler werden hier dynamisch per JS eingefügt -->
+            </div>
+
+            <button id="btn-start-game" class="w-full py-4 bg-green-600 hover:bg-green-500 rounded-xl font-bold text-lg shadow-lg transform transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                Kampf Starten!
+            </button>
+            <p id="waiting-host-text" class="text-center text-yellow-400 text-sm mt-4 hidden">Warte auf Host zum Starten...</p>
+        </div>
+    </div>
+
+    <!-- Ingame HUD -->
+    <div id="ingame-hud" class="ui-layer hidden flex justify-between p-6">
+        <div class="bg-black/50 backdrop-blur border border-gray-700 rounded-xl p-4 h-fit">
+            <h3 class="text-gray-400 text-xs uppercase font-bold tracking-widest mb-2">Spieler Status</h3>
+            <div id="ingame-player-list" class="space-y-2">
+                <!-- Ingame Status -->
+            </div>
+        </div>
+        
+        <div class="text-right">
+            <h3 class="text-2xl font-black text-glow text-white opacity-50" id="fps-counter">60 FPS</h3>
+        </div>
+    </div>
+
+    <!-- Spielende Bildschirm -->
+    <div id="game-over-screen" class="ui-layer hidden flex flex-col justify-center items-center bg-black/80 backdrop-blur-md">
+        <h1 id="winner-text" class="text-6xl font-black text-glow mb-4 text-yellow-400 uppercase tracking-tighter">SPIELER 1 GEWINNT!</h1>
+        <p class="text-gray-300 text-xl mb-8">Alle anderen sind aus der Arena gefallen.</p>
+        <button id="btn-back-menu" class="pointer-events-auto px-8 py-4 bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded-xl font-bold shadow-lg transform transition active:scale-95">
+            Zurück zur Lobby
+        </button>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- SPIEL LOGIK (Javascript Modul)             -->
+    <!-- ========================================== -->
+    <script type="module">
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
+        import * as CANNON from 'cannon-es';
+
+        // --- Konstanten & Globale Variablen ---
+        const GAME_STATES = { INIT: 0, MENU: 1, LOBBY: 2, PLAYING: 3, GAME_OVER: 4 };
+        let currentState = GAME_STATES.INIT;
+        let isHost = false;
+        let localPlayerId = null;
+        
+        // Netzwerk (PeerJS)
+        let peer = null;
+        let connections = {}; // Für den Host: Verbundene Clients
+        let hostConnection = null; // Für Clients: Verbindung zum Host
+        
+        // Engine (Three.js & Cannon.js)
+        let scene, camera, renderer;
+        let physicsWorld;
+        let clock = new THREE.Clock();
+        
+        // Assets
+        let characterTemplate = null; // Das geladene "Gang Beast Rigged.glb"
+        let animations = [];
+        
+        // Spielwelt
+        let players = {}; // Alle Spielerobjekte { id: { mesh, body, mixer, isDead } }
+        let physicsMaterials = {};
+        let levelObjects = []; // Kisten, Plattformen etc.
+
+        // Input
+        const inputState = { forward: false, backward: false, left: false, right: false, jump: false, punch: false };
+        let mouseLook = { x: 0, y: 0 };
+
+        // --- DOM Elemente ---
+        const uiContainer = document.getElementById('ui-container');
+        const loadingScreen = document.getElementById('loading-screen');
+        const loadingText = document.getElementById('loading-text');
+        const mainMenu = document.getElementById('main-menu');
+        const lobbyScreen = document.getElementById('lobby-screen');
+        const ingameHud = document.getElementById('ingame-hud');
+        const gameOverScreen = document.getElementById('game-over-screen');
+
+        // ==========================================
+        // 1. INITIALISIERUNG
+        // ==========================================
+        async function init() {
+            initThreeJS();
+            initPhysics();
+            setupInput();
+            
+            try {
+                await loadAssets();
+                loadingText.innerText = "Fertig!";
+                setTimeout(() => changeState(GAME_STATES.MENU), 500);
+            } catch (err) {
+                loadingText.innerText = "Fehler beim Laden. Prüfe ob 'Gang Beast Rigged.glb' existiert!";
+                loadingText.classList.add('text-red-500');
+                console.error("Asset Load Error:", err);
+            }
+
+            // Gameloop starten
+            renderer.setAnimationLoop(gameLoop);
+        }
+
+        // ==========================================
+        // 2. 3D ENGINE (Three.js) SETUP
+        // ==========================================
+        function initThreeJS() {
+            const canvas = document.getElementById('game-canvas');
+            
+            // Szene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x87CEEB); // Himmelblau
+            scene.fog = new THREE.FogExp2(0x87CEEB, 0.015);
+
+            // Kamera
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 10, 15);
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+            // Licht
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+            dirLight.position.set(20, 50, -20);
+            dirLight.castShadow = true;
+            dirLight.shadow.camera.top = 30;
+            dirLight.shadow.camera.bottom = -30;
+            dirLight.shadow.camera.left = -30;
+            dirLight.shadow.camera.right = 30;
+            dirLight.shadow.mapSize.width = 2048;
+            dirLight.shadow.mapSize.height = 2048;
+            scene.add(dirLight);
+
+            // Resize Event
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+
+        // ==========================================
+        // 3. PHYSIK ENGINE (Cannon.js) SETUP
+        // ==========================================
+        function initPhysics() {
+            physicsWorld = new CANNON.World({
+                gravity: new CANNON.Vec3(0, -15, 0), // Etwas stärkere Schwerkraft für snappy Sprünge
+            });
+            physicsWorld.broadphase = new CANNON.SAPBroadphase(physicsWorld);
+            physicsWorld.solver.iterations = 10;
+
+            // Materialien für Reibung und Bouncing (Wackelpudding-Effekt)
+            physicsMaterials.ground = new CANNON.Material('ground');
+            physicsMaterials.player = new CANNON.Material('player');
+            physicsMaterials.box = new CANNON.Material('box');
+
+            const playerGroundContact = new CANNON.ContactMaterial(physicsMaterials.ground, physicsMaterials.player, {
+                friction: 0.5,
+                restitution: 0.1 // Wenig bouncen
+            });
+            physicsWorld.addContactMaterial(playerGroundContact);
+
+            const playerPlayerContact = new CANNON.ContactMaterial(physicsMaterials.player, physicsMaterials.player, {
+                friction: 0.8,
+                restitution: 0.5 // Spieler prallen voneinander ab (Gang Beasts Style)
+            });
+            physicsWorld.addContactMaterial(playerPlayerContact);
+        }
+
+        // ==========================================
+        // 4. ASSET LADER (Das Rigged Model)
+        // ==========================================
+        
+        function createFallbackCharacter() {
+            const group = new THREE.Group();
+            
+            // Einfache Kapsel als Körper (ähnlich wie eine Gang Beast Figur)
+            const bodyGeo = new THREE.CapsuleGeometry(0.5, 1, 4, 16);
+            const material = new THREE.MeshStandardMaterial({ color: 0xcccccc });
+            const bodyMesh = new THREE.Mesh(bodyGeo, material);
+            bodyMesh.position.y = 0.5; // Auf Bodenhöhe bringen
+            bodyMesh.castShadow = true;
+            bodyMesh.receiveShadow = true;
+            group.add(bodyMesh);
+
+            // Augen zur Orientierung (damit man sieht, wo vorne ist)
+            const eyeGeo = new THREE.SphereGeometry(0.1, 8, 8);
+            const eyeMat = new THREE.MeshStandardMaterial({ color: 0x000000 });
+            const eyeL = new THREE.Mesh(eyeGeo, eyeMat);
+            eyeL.position.set(-0.2, 0.8, 0.45);
+            const eyeR = new THREE.Mesh(eyeGeo, eyeMat);
+            eyeR.position.set(0.2, 0.8, 0.45);
+            group.add(eyeL);
+            group.add(eyeR);
+
+            return group;
+        }
+
+        function loadAssets() {
+            return new Promise((resolve, reject) => {
+                loadingText.innerText = "Lade 3D Modell...";
+                const loader = new GLTFLoader();
+                
+                // FEHLERBEHEBUNG: URL-Codierung für Leerzeichen (%20 anstatt " ")
+                const modelUrl = 'Gang%20Beast%20Rigged.glb';
+                
+                loader.load(modelUrl, (gltf) => {
+                    characterTemplate = gltf.scene;
+                    animations = gltf.animations;
+
+                    // Schatten aktivieren und Materialien anpassen
+                    characterTemplate.traverse((child) => {
+                        if (child.isMesh) {
+                            child.castShadow = true;
+                            child.receiveShadow = true;
+                            // Fallback falls Material fehlt
+                            if(!child.material) {
+                                child.material = new THREE.MeshStandardMaterial({color: Math.random() * 0xffffff});
+                            }
+                        }
+                    });
+                    
+                    console.log("Modell erfolgreich geladen!");
+                    resolve();
+                }, (xhr) => {
+                    let percent = Math.round((xhr.loaded / xhr.total) * 100);
+                    loadingText.innerText = `Lade Modell... ${percent}%`;
+                }, (error) => {
+                    // FALLBACK: Wenn das Modell nicht existiert (z.B. hier in der Live-Vorschau)
+                    console.warn("Modell nicht gefunden. Nutze Ersatz-Figur.", error);
+                    loadingText.innerText = "Modell fehlt. Lade Ersatz-Figur...";
+                    characterTemplate = createFallbackCharacter();
+                    animations = []; // Keine Animationen für den Ersatz
+                    
+                    // Kurze Verzögerung, damit man den Text lesen kann, dann trotzdem starten!
+                    setTimeout(() => resolve(), 1000); 
+                });
+            });
+        }
+
+        // ==========================================
+        // 5. ARENA BAUEN (Level Design)
+        // ==========================================
+        function buildArena() {
+            // Alte Arena aufräumen
+            levelObjects.forEach(obj => {
+                scene.remove(obj.mesh);
+                physicsWorld.removeBody(obj.body);
+            });
+            levelObjects = [];
+
+            // 1. Die Haupt-Plattform (Ein Ring weit oben im Himmel)
+            const platformSize = 25;
+            const platformHeight = 2;
+            
+            // Three.js Mesh
+            const platGeo = new THREE.CylinderGeometry(platformSize, platformSize, platformHeight, 32);
+            const platMat = new THREE.MeshStandardMaterial({ color: 0x333344, roughness: 0.8 });
+            const platformMesh = new THREE.Mesh(platGeo, platMat);
+            platformMesh.receiveShadow = true;
+            platformMesh.position.y = -platformHeight / 2;
+            scene.add(platformMesh);
+
+            // Cannon.js Body
+            const platShape = new CANNON.Cylinder(platformSize, platformSize, platformHeight, 32);
+            const platformBody = new CANNON.Body({
+                mass: 0, // 0 bedeutet statisch (bewegt sich nicht)
+                material: physicsMaterials.ground,
+                shape: platShape,
+                position: new CANNON.Vec3(0, -platformHeight / 2, 0)
+            });
+            // Cannon Cylinder Ausrichtung fixen (Cannon Cylinder rotiert um Z, Three um Y)
+            platformBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0); 
+            physicsWorld.addBody(platformBody);
+            
+            levelObjects.push({mesh: platformMesh, body: platformBody});
+
+            // 2. Ein paar dynamische Boxen zum werfen/stolpern einfügen
+            for(let i = 0; i < 15; i++) {
+                const s = 1 + Math.random() * 1.5;
+                const boxGeo = new THREE.BoxGeometry(s, s, s);
+                const boxMat = new THREE.MeshStandardMaterial({ color: Math.random() * 0xffffff });
+                const boxMesh = new THREE.Mesh(boxGeo, boxMat);
+                boxMesh.castShadow = true;
+                boxMesh.receiveShadow = true;
+                scene.add(boxMesh);
+
+                const boxShape = new CANNON.Box(new CANNON.Vec3(s/2, s/2, s/2));
+                const boxBody = new CANNON.Body({
+                    mass: s * 5,
+                    material: physicsMaterials.box,
+                    shape: boxShape,
+                    position: new CANNON.Vec3((Math.random()-0.5)*20, 5 + Math.random()*10, (Math.random()-0.5)*20)
+                });
+                physicsWorld.addBody(boxBody);
+                levelObjects.push({mesh: boxMesh, body: boxBody, isDynamic: true});
+            }
+        }
+
+        // ==========================================
+        // 6. SPIELER LOGIK (Spawn, Physik, Sync)
+        // ==========================================
+        function spawnPlayer(id, isLocal, startPos) {
+            if (players[id]) return; // Existiert schon
+
+            // 1. Visuelles Modell klonen (SkeletonUtils für rigged models)
+            const model = SkeletonUtils.clone(characterTemplate);
+            
+            // Farbe etwas randomisieren für Unterscheidung
+            const playerColor = new THREE.Color().setHSL(Math.random(), 0.8, 0.5);
+            model.traverse((child) => {
+                if (child.isMesh && child.material) {
+                    child.material = child.material.clone();
+                    // Wir tönen das Material leicht ein
+                    child.material.color.multiply(playerColor); 
+                }
+            });
+            
+            scene.add(model);
+
+            // Animation Mixer setup
+            const mixer = new THREE.AnimationMixer(model);
+            const actions = {};
+            if (animations && animations.length > 0) {
+                // Versuche Walk/Idle Animationen zu finden, sonst nehme die erste
+                animations.forEach((clip) => {
+                    actions[clip.name] = mixer.clipAction(clip);
+                });
+                // Starte default animation falls vorhanden
+                if(actions[animations[0].name]) actions[animations[0].name].play();
+            }
+
+            // 2. Physik Body erstellen (Eine stehende Kapsel/Kugel Kombi für den Gang Beast Look)
+            const radius = 0.8;
+            const shape = new CANNON.Sphere(radius);
+            const body = new CANNON.Body({
+                mass: 50,
+                material: physicsMaterials.player,
+                position: new CANNON.Vec3(startPos.x, startPos.y, startPos.z),
+                linearDamping: 0.4, // Damit sie nicht ewig rutschen
+                angularDamping: 0.99, // Aufrecht halten
+                fixedRotation: true // Damit die Kugel nicht wild rollt
+            });
+            body.addShape(shape);
+            physicsWorld.addBody(body);
+
+            players[id] = {
+                id: id,
+                isLocal: isLocal,
+                mesh: model,
+                body: body,
+                mixer: mixer,
+                actions: actions,
+                color: playerColor.getHexString(),
+                isDead: false,
+                lastPunchTime: 0
+            };
+
+            updateIngameUI();
+        }
+
+        function removePlayer(id) {
+            if(!players[id]) return;
+            scene.remove(players[id].mesh);
+            physicsWorld.removeBody(players[id].body);
+            delete players[id];
+            updateIngameUI();
+        }
+
+        // ==========================================
+        // 7. MULTIPLAYER NETZWERK (PeerJS)
+        // ==========================================
+        
+        function initNetworkAsHost() {
+            // Eigene ID generieren (Zufällig oder fest)
+            localPlayerId = 'wg-' + Math.random().toString(36).substr(2, 6);
+            peer = new Peer(localPlayerId);
+
+            peer.on('open', (id) => {
+                document.getElementById('display-lobby-id').innerText = id;
+                isHost = true;
+                addPlayerToLobbyUI(id, true);
+                
+                // UI Aktualisieren
+                document.getElementById('btn-start-game').style.display = 'block';
+                document.getElementById('waiting-host-text').style.display = 'none';
+            });
+
+            peer.on('connection', (conn) => {
+                // Neuer Spieler verbindet sich
+                conn.on('open', () => {
+                    connections[conn.peer] = conn;
+                    addPlayerToLobbyUI(conn.peer, false);
+                    
+                    // Allen Bescheid geben, wer in der Lobby ist
+                    broadcastLobbyState();
+
+                    // Wenn wir schon spielen, direkt spawnen lassen
+                    if(currentState === GAME_STATES.PLAYING) {
+                        spawnPlayer(conn.peer, false, {x: 0, y: 10, z: 0});
+                        // Schicke ihm die Init-Daten
+                        conn.send({ type: 'GAME_START', players: Object.keys(players) });
+                    }
+                });
+
+                conn.on('data', (data) => {
+                    if(currentState === GAME_STATES.PLAYING && data.type === 'INPUT') {
+                        // Der Host empfängt den Input der Clients und berechnet die Physik
+                        if(players[conn.peer] && !players[conn.peer].isDead) {
+                            applyInputToBody(players[conn.peer], data.input);
+                        }
+                    }
+                });
+
+                conn.on('close', () => {
+                    delete connections[conn.peer];
+                    removePlayerToLobbyUI(conn.peer);
+                    if(currentState === GAME_STATES.PLAYING) removePlayer(conn.peer);
+                    broadcastLobbyState();
+                });
+            });
+            
+            peer.on('error', (err) => {
+                alert("PeerJS Fehler (Host): " + err);
+                changeState(GAME_STATES.MENU);
+            });
+        }
+
+        function initNetworkAsClient(hostId) {
+            localPlayerId = 'wg-client-' + Math.random().toString(36).substr(2, 4);
+            peer = new Peer(localPlayerId);
+
+            peer.on('open', (id) => {
+                // Verbinde zum Host
+                hostConnection = peer.connect(hostId, { reliable: true });
+                
+                hostConnection.on('open', () => {
+                    document.getElementById('display-lobby-id').innerText = hostId + " (Verbunden)";
+                    document.getElementById('btn-start-game').style.display = 'none';
+                    document.getElementById('waiting-host-text').style.display = 'block';
+                });
+
+                hostConnection.on('data', (data) => {
+                    // Verarbeite Nachrichten vom Host
+                    if(data.type === 'LOBBY_UPDATE') {
+                        updateLobbyList(data.clients);
+                    } 
+                    else if(data.type === 'GAME_START') {
+                        startGameClient();
+                    }
+                    else if(data.type === 'SYNC') {
+                        // Physik Update vom Host (Server Authoritative)
+                        syncPhysicsState(data.state);
+                    }
+                });
+                
+                hostConnection.on('close', () => {
+                    alert("Verbindung zum Host verloren.");
+                    window.location.reload();
+                });
+            });
+            
+            peer.on('error', (err) => {
+                alert("Verbindungsfehler. Existiert die ID? (" + err + ")");
+                changeState(GAME_STATES.MENU);
+            });
+        }
+
+        function broadcastLobbyState() {
+            if(!isHost) return;
+            const clients = [localPlayerId, ...Object.keys(connections)];
+            document.getElementById('player-count').innerText = `${clients.length}/8 Spieler`;
+            
+            for(let id in connections) {
+                connections[id].send({ type: 'LOBBY_UPDATE', clients: clients });
+            }
+        }
+
+        // ==========================================
+        // 8. SPIELABLAUF & LOOP
+        // ==========================================
+        function startGameHost() {
+            buildArena();
+            
+            // Sich selbst spawnen
+            spawnPlayer(localPlayerId, true, {x: 0, y: 5, z: 0});
+            
+            // Alle verbundenen Clients spawnen
+            let offset = 2;
+            for(let id in connections) {
+                spawnPlayer(id, false, {x: offset, y: 5, z: 0});
+                connections[id].send({ type: 'GAME_START' });
+                offset += 2;
+            }
+            
+            changeState(GAME_STATES.PLAYING);
+        }
+
+        function startGameClient() {
+            buildArena();
+            // Als Client spawnen wir erstmal keine Physik, da der Sync alles überschreibt
+            changeState(GAME_STATES.PLAYING);
+        }
+
+        function changeState(newState) {
+            currentState = newState;
+            
+            // Alle UI Layer ausblenden
+            uiContainer.classList.remove('hidden');
+            loadingScreen.classList.add('hidden');
+            mainMenu.classList.add('hidden');
+            lobbyScreen.classList.add('hidden');
+            ingameHud.classList.add('hidden');
+            gameOverScreen.classList.add('hidden');
+            document.exitPointerLock?.();
+
+            switch(newState) {
+                case GAME_STATES.INIT:
+                    loadingScreen.classList.remove('hidden');
+                    break;
+                case GAME_STATES.MENU:
+                    mainMenu.classList.remove('hidden');
+                    break;
+                case GAME_STATES.LOBBY:
+                    lobbyScreen.classList.remove('hidden');
+                    break;
+                case GAME_STATES.PLAYING:
+                    uiContainer.classList.add('hidden'); // Verstecke komplettes graues Overlay
+                    ingameHud.classList.remove('hidden');
+                    ingameHud.parentElement.classList.remove('backdrop-blur-sm', 'bg-black/60'); // Clear view
+                    
+                    // Pointer Lock für Maus-Kamera
+                    document.body.requestPointerLock = document.body.requestPointerLock || document.body.mozRequestPointerLock;
+                    document.body.requestPointerLock();
+                    break;
+                case GAME_STATES.GAME_OVER:
+                    ingameHud.parentElement.classList.add('backdrop-blur-sm', 'bg-black/60');
+                    gameOverScreen.classList.remove('hidden');
+                    break;
+            }
+        }
+
+        // Der zentrale Gameloop (wird von requestAnimationFrame aufgerufen)
+        function gameLoop() {
+            const dt = Math.min(clock.getDelta(), 0.1); // Max delta für Lag-Schutz
+
+            if(currentState === GAME_STATES.PLAYING) {
+                
+                // HOST LOGIK: Berechnet Physik
+                if(isHost) {
+                    physicsWorld.step(1/60, dt, 3);
+                    
+                    // Lokalen Input anwenden
+                    if(players[localPlayerId] && !players[localPlayerId].isDead) {
+                        applyInputToBody(players[localPlayerId], inputState);
+                    }
+
+                    // Todes-Check (Aus der Arena gefallen?)
+                    for(let id in players) {
+                        const p = players[id];
+                        if(!p.isDead && p.body.position.y < -15) {
+                            p.isDead = true;
+                            // Etwas Blut oder Effekt hier möglich
+                            console.log(id + " ist gestorben!");
+                            updateIngameUI();
+                            checkWinCondition();
+                        }
+                    }
+
+                    // Netzwerk-Sync vorbereiten
+                    const syncData = {
+                        players: {},
+                        objects: []
+                    };
+
+                    // Spielerpositionen sichern
+                    for(let id in players) {
+                        const p = players[id];
+                        syncData.players[id] = {
+                            x: p.body.position.x, y: p.body.position.y, z: p.body.position.z,
+                            qx: p.body.quaternion.x, qy: p.body.quaternion.y, qz: p.body.quaternion.z, qw: p.body.quaternion.w,
+                            isDead: p.isDead
+                        };
+                        
+                        // Three.js Mesh für Host selbst updaten
+                        if(!p.isDead) {
+                            p.mesh.position.copy(p.body.position);
+                            // Modell leicht nach unten versetzen (wegen Kapsel-Zentrum)
+                            p.mesh.position.y -= 0.8; 
+                            
+                            // Wackelpudding-Rotationseffekt basierend auf Geschwindigkeit
+                            const vel = p.body.velocity;
+                            const speed = Math.sqrt(vel.x*vel.x + vel.z*vel.z);
+                            if(speed > 1) {
+                                // Rotiere in Laufrichtung
+                                const angle = Math.atan2(vel.x, vel.z);
+                                p.mesh.rotation.y = angle;
+                                // Simuliere Wackeln (Gang Beasts style)
+                                p.mesh.rotation.z = Math.sin(Date.now() * 0.01) * 0.2;
+                            } else {
+                                p.mesh.rotation.z = 0;
+                            }
+                        } else {
+                            p.mesh.position.y = -1000; // Verstecken
+                        }
+                        
+                        if(p.mixer) p.mixer.update(dt);
+                    }
+
+                    // Kisten-Positionen sichern
+                    levelObjects.forEach((obj, index) => {
+                        if(obj.isDynamic) {
+                            syncData.objects.push({
+                                i: index,
+                                x: obj.body.position.x, y: obj.body.position.y, z: obj.body.position.z,
+                                qx: obj.body.quaternion.x, qy: obj.body.quaternion.y, qz: obj.body.quaternion.z, qw: obj.body.quaternion.w
+                            });
+                            
+                            // Host Mesh Update
+                            obj.mesh.position.copy(obj.body.position);
+                            obj.mesh.quaternion.copy(obj.body.quaternion);
+                        }
+                    });
+
+                    // Sende Zustand an alle Clients
+                    for(let id in connections) {
+                        connections[id].send({ type: 'SYNC', state: syncData });
+                    }
+
+                } 
+                // CLIENT LOGIK: Sendet Input, rendert State
+                else {
+                    if(hostConnection && hostConnection.open) {
+                        // Sende Tasten an Server
+                        hostConnection.send({ type: 'INPUT', input: inputState });
+                    }
+                    // Animationen updaten
+                    for(let id in players) {
+                        if(players[id].mixer) players[id].mixer.update(dt);
+                    }
+                }
+
+                updateCamera();
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // ==========================================
+        // 9. PHYSIK-STEUERUNG (Die "Wobbly" Gang Beasts Moves)
+        // ==========================================
+        function applyInputToBody(player, input) {
+            const speed = 15;
+            let moveX = 0;
+            let moveZ = 0;
+            
+            // Kamera-orientierte Bewegung (vereinfacht)
+            const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+            forward.y = 0; forward.normalize();
+            const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+            right.y = 0; right.normalize();
+
+            if(input.forward) { moveX -= forward.x * speed; moveZ -= forward.z * speed; }
+            if(input.backward) { moveX += forward.x * speed; moveZ += forward.z * speed; }
+            if(input.left) { moveX -= right.x * speed; moveZ -= right.z * speed; }
+            if(input.right) { moveX += right.x * speed; moveZ += right.z * speed; }
+
+            // Kräfte anwenden anstatt direkte Velocity zu setzen (für Physik-Feel)
+            player.body.applyForce(new CANNON.Vec3(moveX, 0, moveZ), player.body.position);
+
+            // Begrenze maximale Geschwindigkeit
+            const maxV = 8;
+            if(player.body.velocity.x > maxV) player.body.velocity.x = maxV;
+            if(player.body.velocity.x < -maxV) player.body.velocity.x = -maxV;
+            if(player.body.velocity.z > maxV) player.body.velocity.z = maxV;
+            if(player.body.velocity.z < -maxV) player.body.velocity.z = -maxV;
+
+            // Springen (Nur wenn nah am Boden)
+            if(input.jump) {
+                // Raycast nach unten um Boden zu checken
+                const p = player.body.position;
+                if(p.y < Math.abs(1.5)) { // Sehr simple Check für diese Demo
+                    player.body.velocity.y = 10;
+                }
+            }
+            
+            // Schlagen (Gang Beast typischer Impuls)
+            if(input.punch) {
+                const now = Date.now();
+                if(now - player.lastPunchTime > 1000) { // Cooldown 1 Sek
+                    player.lastPunchTime = now;
+                    // Finde andere Spieler in der Nähe und puste sie weg
+                    for(let otherId in players) {
+                        if(otherId !== player.id) {
+                            const other = players[otherId];
+                            const dist = player.body.position.distanceTo(other.body.position);
+                            if(dist < 2.5) {
+                                // Knockback!
+                                const dir = new CANNON.Vec3();
+                                other.body.position.vsub(player.body.position, dir);
+                                dir.normalize();
+                                const punchForce = 800; // Harter Schlag
+                                other.body.applyImpulse(new CANNON.Vec3(dir.x * punchForce, punchForce*0.5, dir.z * punchForce), other.body.position);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // ==========================================
+        // 10. CLIENT SYNC VERARBEITUNG
+        // ==========================================
+        function syncPhysicsState(state) {
+            // Spieler synchronisieren
+            for(let id in state.players) {
+                const pData = state.players[id];
+                
+                if(!players[id]) {
+                    spawnPlayer(id, id === localPlayerId, {x: pData.x, y: pData.y, z: pData.z});
+                }
+                
+                const p = players[id];
+                p.isDead = pData.isDead;
+
+                if(!p.isDead) {
+                    // Smooth Interpolation für Clients (Anti-Lag)
+                    p.mesh.position.lerp(new THREE.Vector3(pData.x, pData.y - 0.8, pData.z), 0.3);
+                    
+                    // Wackeln simulieren wie beim Host
+                    // Hier berechnen wir die Richtung basierend auf Positionsveränderung
+                    const dx = pData.x - p.mesh.position.x;
+                    const dz = pData.z - p.mesh.position.z;
+                    if(Math.abs(dx) > 0.01 || Math.abs(dz) > 0.01) {
+                        p.mesh.rotation.y = Math.atan2(dx, dz);
+                        p.mesh.rotation.z = Math.sin(Date.now() * 0.01) * 0.2;
+                    } else {
+                        p.mesh.rotation.z = 0;
+                    }
+
+                } else {
+                    p.mesh.position.y = -1000;
+                }
+            }
+
+            // Boxen synchronisieren
+            state.objects.forEach(objData => {
+                const targetObj = levelObjects[objData.i];
+                if(targetObj && targetObj.isDynamic) {
+                    targetObj.mesh.position.lerp(new THREE.Vector3(objData.x, objData.y, objData.z), 0.5);
+                    targetObj.mesh.quaternion.slerp(new THREE.Quaternion(objData.qx, objData.qy, objData.qz, objData.qw), 0.5);
+                }
+            });
+        }
+
+        // ==========================================
+        // 11. INPUT & KAMERA
+        // ==========================================
+        function setupInput() {
+            document.addEventListener('keydown', (e) => {
+                if(currentState !== GAME_STATES.PLAYING) return;
+                switch(e.code) {
+                    case 'KeyW': case 'ArrowUp': inputState.forward = true; break;
+                    case 'KeyS': case 'ArrowDown': inputState.backward = true; break;
+                    case 'KeyA': case 'ArrowLeft': inputState.left = true; break;
+                    case 'KeyD': case 'ArrowRight': inputState.right = true; break;
+                    case 'Space': inputState.jump = true; break;
+                    case 'KeyE': inputState.punch = true; break;
+                }
+            });
+
+            document.addEventListener('keyup', (e) => {
+                if(currentState !== GAME_STATES.PLAYING) return;
+                switch(e.code) {
+                    case 'KeyW': case 'ArrowUp': inputState.forward = false; break;
+                    case 'KeyS': case 'ArrowDown': inputState.backward = false; break;
+                    case 'KeyA': case 'ArrowLeft': inputState.left = false; break;
+                    case 'KeyD': case 'ArrowRight': inputState.right = false; break;
+                    case 'Space': inputState.jump = false; break;
+                    case 'KeyE': inputState.punch = false; break;
+                }
+            });
+
+            document.addEventListener('mousedown', (e) => {
+                if(currentState === GAME_STATES.PLAYING && e.button === 0) {
+                    inputState.punch = true;
+                }
+            });
+            document.addEventListener('mouseup', (e) => {
+                if(currentState === GAME_STATES.PLAYING && e.button === 0) {
+                    inputState.punch = false;
+                }
+            });
+
+            // Mausbewegung für Kamera
+            document.addEventListener('mousemove', (e) => {
+                if(document.pointerLockElement === document.body) {
+                    mouseLook.x -= e.movementX * 0.005;
+                    mouseLook.y -= e.movementY * 0.005;
+                    // Clamp vertikal
+                    mouseLook.y = Math.max(-Math.PI/3, Math.min(Math.PI/3, mouseLook.y));
+                }
+            });
+        }
+
+        function updateCamera() {
+            if(!players[localPlayerId] || players[localPlayerId].isDead) return;
+            
+            const target = players[localPlayerId].mesh.position;
+            
+            // Orbit Kamera Logik
+            const distance = 8;
+            camera.position.x = target.x + distance * Math.sin(mouseLook.x) * Math.cos(mouseLook.y);
+            camera.position.y = target.y + distance * Math.sin(mouseLook.y) + 3; // Etwas höher schauen
+            camera.position.z = target.z + distance * Math.cos(mouseLook.x) * Math.cos(mouseLook.y);
+            
+            camera.lookAt(target.x, target.y + 1, target.z);
+        }
+
+        // ==========================================
+        // 12. UI LOGIK & EVENTS
+        // ==========================================
+        
+        // Buttons binden
+        document.getElementById('btn-host').addEventListener('click', () => {
+            changeState(GAME_STATES.LOBBY);
+            initNetworkAsHost();
+        });
+
+        document.getElementById('btn-join').addEventListener('click', () => {
+            const id = document.getElementById('input-join-id').value.trim();
+            if(id) {
+                changeState(GAME_STATES.LOBBY);
+                initNetworkAsClient(id);
+            } else {
+                alert("Bitte eine Lobby-ID eingeben!");
+            }
+        });
+
+        document.getElementById('btn-start-game').addEventListener('click', () => {
+            if(isHost) startGameHost();
+        });
+        
+        document.getElementById('btn-back-menu').addEventListener('click', () => {
+            window.location.reload(); // Quick Reset
+        });
+
+        // UI Helfer
+        const domPlayerList = document.getElementById('player-list');
+        
+        function addPlayerToLobbyUI(id, isHostUser) {
+            const div = document.createElement('div');
+            div.className = "flex justify-between items-center bg-gray-700/50 p-3 rounded-lg border border-gray-600";
+            div.id = `lobby-p-${id}`;
+            div.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-500"></div>
+                    <span class="font-bold text-gray-200">${id === localPlayerId ? 'Du' : 'Spieler'} <span class="text-xs text-gray-500">#${id.substr(0,4)}</span></span>
+                </div>
+                ${isHostUser ? '<span class="text-xs font-bold text-yellow-500 bg-yellow-500/20 px-2 py-1 rounded">HOST</span>' : ''}
+            `;
+            domPlayerList.appendChild(div);
+        }
+        
+        function removePlayerToLobbyUI(id) {
+            const el = document.getElementById(`lobby-p-${id}`);
+            if(el) el.remove();
+        }
+
+        function updateLobbyList(clients) {
+            domPlayerList.innerHTML = ''; // Clear
+            document.getElementById('player-count').innerText = `${clients.length}/8 Spieler`;
+            clients.forEach((id, index) => {
+                addPlayerToLobbyUI(id, index === 0); // index 0 ist host
+            });
+        }
+
+        function updateIngameUI() {
+            const list = document.getElementById('ingame-player-list');
+            list.innerHTML = '';
+            for(let id in players) {
+                const p = players[id];
+                list.innerHTML += `
+                    <div class="flex items-center space-x-2 ${p.isDead ? 'opacity-30' : ''}">
+                        <div class="w-4 h-4 rounded-full" style="background-color: #${p.color}"></div>
+                        <span class="text-sm font-bold ${id === localPlayerId ? 'text-white' : 'text-gray-400'}">
+                            ${id === localPlayerId ? 'DU' : 'Gegner'} ${p.isDead ? '(K.O.)' : ''}
+                        </span>
+                    </div>
+                `;
+            }
+        }
+
+        function checkWinCondition() {
+            if(!isHost) return;
+            let aliveCount = 0;
+            let winnerId = null;
+            
+            for(let id in players) {
+                if(!players[id].isDead) {
+                    aliveCount++;
+                    winnerId = id;
+                }
+            }
+            
+            // Wenn nur noch einer (oder null) übrig ist
+            if(aliveCount <= 1 && Object.keys(players).length > 1) {
+                setTimeout(() => {
+                    // Sende Game Over an alle
+                    for(let id in connections) {
+                        connections[id].send({ type: 'SYNC', state: { players: {}, objects: [] } }); // Letzter State clear
+                        connections[id].send({ type: 'LOBBY_UPDATE', clients: [] }); // Cheat um Event zu triggern
+                    }
+                    changeState(GAME_STATES.GAME_OVER);
+                    const winText = document.getElementById('winner-text');
+                    if(winnerId === localPlayerId) {
+                        winText.innerText = "DU GEWINNST!";
+                        winText.className = "text-6xl font-black text-glow mb-4 text-green-400 uppercase tracking-tighter";
+                    } else if (winnerId) {
+                        winText.innerText = "GEGNER GEWINNT!";
+                        winText.className = "text-6xl font-black text-glow mb-4 text-red-400 uppercase tracking-tighter";
+                    } else {
+                        winText.innerText = "UNENTSCHIEDEN!";
+                    }
+                }, 1000);
+            }
+        }
+
+        // Startpunkt
+        init();
+
+    </script>
+</body>
+</html>
+```
+
+
