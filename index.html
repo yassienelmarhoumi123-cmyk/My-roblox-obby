@@ -181,7 +181,7 @@
         let levelObjects = []; // Kisten, Plattformen etc.
 
         // Input
-        const inputState = { forward: false, backward: false, left: false, right: false, jump: false, punch: false };
+        const inputState = { forward: false, backward: false, left: false, right: false, jump: false, punch: false, camAngleX: 0 };
         let mouseLook = { x: 0, y: 0 };
 
         // --- DOM Elemente ---
@@ -322,8 +322,8 @@
                 loadingText.innerText = "Lade 3D Modell...";
                 const loader = new GLTFLoader();
                 
-                // FEHLERBEHEBUNG: URL-Codierung für Leerzeichen (%20 anstatt " ")
-                const modelUrl = 'Gang%20Beast%20Rigged.glb';
+                // FEHLERBEHEBUNG: Relativer Pfad für GitHub Pages
+                const modelUrl = './Gang%20Beast%20Rigged.glb';
                 
                 loader.load(modelUrl, (gltf) => {
                     characterTemplate = gltf.scene;
@@ -347,14 +347,21 @@
                     let percent = Math.round((xhr.loaded / xhr.total) * 100);
                     loadingText.innerText = `Lade Modell... ${percent}%`;
                 }, (error) => {
-                    // FALLBACK: Wenn das Modell nicht existiert (z.B. hier in der Live-Vorschau)
-                    console.warn("Modell nicht gefunden. Nutze Ersatz-Figur.", error);
+                    // FALLBACK: Wenn das Modell nicht existiert (z.B. wegen ZIP-Datei)
+                    console.error("Modell konnte nicht geladen werden:", error);
+                    
+                    // Prominente UI-Warnung wegen ZIP-Datei erstellen
+                    const zipWarning = document.createElement('div');
+                    zipWarning.className = 'absolute top-4 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-6 py-4 rounded-xl shadow-2xl font-bold text-center z-50 border-2 border-red-400 w-[90%] max-w-lg';
+                    zipWarning.innerHTML = `⚠️ FEHLENDE DATEI!<br>Bitte entpacke <b>gang-beast-rigged.zip</b> auf GitHub!<br>Die Datei muss exakt <b>Gang Beast Rigged.glb</b> heißen und direkt im Repository liegen, nicht in einer ZIP-Datei!`;
+                    document.body.appendChild(zipWarning);
+
                     loadingText.innerText = "Modell fehlt. Lade Ersatz-Figur...";
                     characterTemplate = createFallbackCharacter();
                     animations = []; // Keine Animationen für den Ersatz
                     
                     // Kurze Verzögerung, damit man den Text lesen kann, dann trotzdem starten!
-                    setTimeout(() => resolve(), 1000); 
+                    setTimeout(() => resolve(), 3000); 
                 });
             });
         }
@@ -374,7 +381,7 @@
             const platformSize = 25;
             const platformHeight = 2;
             
-            // Three.js Mesh
+            // Three.js Mesh (Visuell ein Zylinder)
             const platGeo = new THREE.CylinderGeometry(platformSize, platformSize, platformHeight, 32);
             const platMat = new THREE.MeshStandardMaterial({ color: 0x333344, roughness: 0.8 });
             const platformMesh = new THREE.Mesh(platGeo, platMat);
@@ -382,16 +389,14 @@
             platformMesh.position.y = -platformHeight / 2;
             scene.add(platformMesh);
 
-            // Cannon.js Body
-            const platShape = new CANNON.Cylinder(platformSize, platformSize, platformHeight, 32);
+            // Cannon.js Body (Physikalisch eine Box, viel zuverlässiger gegen Durchfallen!)
+            const platShape = new CANNON.Box(new CANNON.Vec3(platformSize, platformHeight / 2, platformSize));
             const platformBody = new CANNON.Body({
-                mass: 0, // 0 bedeutet statisch (bewegt sich nicht)
+                mass: 0, // 0 bedeutet statisch (bewegt sich nicht, fällt nicht)
                 material: physicsMaterials.ground,
                 shape: platShape,
                 position: new CANNON.Vec3(0, -platformHeight / 2, 0)
             });
-            // Cannon Cylinder Ausrichtung fixen (Cannon Cylinder rotiert um Z, Three um Y)
-            platformBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0); 
             physicsWorld.addBody(platformBody);
             
             levelObjects.push({mesh: platformMesh, body: platformBody});
@@ -667,6 +672,9 @@
 
             if(currentState === GAME_STATES.PLAYING) {
                 
+                // Kamera-Winkel für Bewegungsrichtung speichern
+                inputState.camAngleX = mouseLook.x;
+
                 // HOST LOGIK: Berechnet Physik
                 if(isHost) {
                     physicsWorld.step(1/60, dt, 3);
@@ -771,37 +779,42 @@
         // 9. PHYSIK-STEUERUNG (Die "Wobbly" Gang Beasts Moves)
         // ==========================================
         function applyInputToBody(player, input) {
-            const speed = 15;
+            const force = 1500; // Kraft stark erhöht, da die Masse 50 beträgt
             let moveX = 0;
             let moveZ = 0;
             
-            // Kamera-orientierte Bewegung (vereinfacht)
-            const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
-            forward.y = 0; forward.normalize();
-            const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
-            right.y = 0; right.normalize();
+            // Kamera-orientierte Bewegung (vom Client oder Host übertragen)
+            const angle = input.camAngleX || 0;
+            
+            const forwardX = -Math.sin(angle);
+            const forwardZ = -Math.cos(angle);
+            const rightX = Math.cos(angle);
+            const rightZ = -Math.sin(angle);
 
-            if(input.forward) { moveX -= forward.x * speed; moveZ -= forward.z * speed; }
-            if(input.backward) { moveX += forward.x * speed; moveZ += forward.z * speed; }
-            if(input.left) { moveX -= right.x * speed; moveZ -= right.z * speed; }
-            if(input.right) { moveX += right.x * speed; moveZ += right.z * speed; }
+            if(input.forward) { moveX += forwardX * force; moveZ += forwardZ * force; }
+            if(input.backward) { moveX -= forwardX * force; moveZ -= forwardZ * force; }
+            if(input.left) { moveX -= rightX * force; moveZ -= rightZ * force; }
+            if(input.right) { moveX += rightX * force; moveZ += rightZ * force; }
 
-            // Kräfte anwenden anstatt direkte Velocity zu setzen (für Physik-Feel)
-            player.body.applyForce(new CANNON.Vec3(moveX, 0, moveZ), player.body.position);
+            // Kräfte anwenden
+            if(moveX !== 0 || moveZ !== 0) {
+                player.body.applyForce(new CANNON.Vec3(moveX, 0, moveZ), player.body.position);
+                player.body.wakeUp(); // Sicherstellen, dass die Engine den Body berechnet
+            }
 
             // Begrenze maximale Geschwindigkeit
-            const maxV = 8;
+            const maxV = 10;
             if(player.body.velocity.x > maxV) player.body.velocity.x = maxV;
             if(player.body.velocity.x < -maxV) player.body.velocity.x = -maxV;
             if(player.body.velocity.z > maxV) player.body.velocity.z = maxV;
             if(player.body.velocity.z < -maxV) player.body.velocity.z = -maxV;
 
-            // Springen (Nur wenn nah am Boden)
+            // Springen
             if(input.jump) {
-                // Raycast nach unten um Boden zu checken
-                const p = player.body.position;
-                if(p.y < Math.abs(1.5)) { // Sehr simple Check für diese Demo
-                    player.body.velocity.y = 10;
+                // Darf springen, wenn vertikale Geschwindigkeit fast 0 ist (steht auf Boden/Block)
+                if(Math.abs(player.body.velocity.y) < 0.5) { 
+                    player.body.velocity.y = 12; // Sprungkraft
+                    player.body.wakeUp();
                 }
             }
             
@@ -1054,5 +1067,4 @@
 </body>
 </html>
 ```
-
 
