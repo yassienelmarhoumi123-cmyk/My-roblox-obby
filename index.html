@@ -3,264 +3,541 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stickman Multiplayer Fight</title>
-    <!-- PeerJS für den Multiplayer-Netzwerkcode -->
-    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <title>Neon Arena - Multiplayer</title>
+    <!-- PeerJS für die Serverlose Multiplayer-Verbindung -->
+    <script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
     <style>
-        body {
+        body, html {
             margin: 0;
-            background: #111;
-            color: #fff;
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #050510;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow: hidden;
+            user-select: none;
         }
-        #menu {
-            position: absolute;
-            background: rgba(0, 0, 0, 0.85);
-            padding: 30px;
-            border-radius: 12px;
-            text-align: center;
-            box-shadow: 0 0 20px rgba(0,255,100,0.3);
-            z-index: 10;
-        }
-        input, button {
-            padding: 10px;
-            font-size: 16px;
-            margin: 5px;
-            border-radius: 5px;
-            border: none;
-        }
-        button {
-            background: #00ff66;
-            color: #111;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        button:hover { background: #00cc52; }
-        canvas {
-            background: linear-gradient(to bottom, #222, #050505);
-            border-bottom: 4px solid #00ff66;
-            display: none;
+        #gameCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
         }
         #ui {
             position: absolute;
-            top: 20px;
-            font-size: 20px;
-            font-weight: bold;
-            display: none;
-            width: 800px;
-            justify-content: space-between;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(10, 15, 30, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid #00ffcc;
+            box-shadow: 0 0 30px rgba(0, 255, 204, 0.3);
+            text-align: center;
+            width: 350px;
+            z-index: 10;
         }
+        h1 { margin-top: 0; color: #00ffcc; text-shadow: 0 0 10px #00ffcc; }
+        input {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+            background: #000;
+            border: 1px solid #00ffcc;
+            color: #00ffcc;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            background: transparent;
+            color: #00ffcc;
+            border: 2px solid #00ffcc;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #00ffcc;
+            color: #000;
+            box-shadow: 0 0 15px #00ffcc;
+        }
+        #hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            pointer-events: none;
+            display: none;
+            z-index: 5;
+        }
+        .hud-text { font-size: 20px; font-weight: bold; margin-bottom: 5px; color: #fff; }
+        .score { color: #ff0055; text-shadow: 0 0 5px #ff0055; }
     </style>
 </head>
 <body>
 
-    <div id="menu">
-        <h1>Stickman Fight Multiplayer</h1>
-        <p>Kämpfe gegen deinen Freund über das Internet!</p>
-        <button onclick="hostGame()">Spiel erstellen (Host)</button>
-        <br><br>
-        <input type="text" id="joinId" placeholder="Host Code eingeben...">
-        <button onclick="joinGame()">Beitreten</button>
-        <p id="status" style="color: #00ff66; margin-top: 15px;"></p>
-    </div>
-
+    <!-- User Interface fürs Verbinden -->
     <div id="ui">
-        <div id="p1Health" style="color: #ff3333;">Spieler 1 HP: 100</div>
-        <div id="p2Health" style="color: #3388ff;">Spieler 2 HP: 100</div>
+        <h1>NEON ARENA</h1>
+        <p id="statusMsg">Verbinde zum Netzwerk...</p>
+        
+        <div id="hostSection" style="display: none;">
+            <p>Deine Spieler-ID (Gib sie deinem Freund):</p>
+            <input type="text" id="myIdDisplay" readonly>
+            <button id="copyBtn">ID Kopieren</button>
+            <hr style="border-color: #333; margin: 20px 0;">
+            <p>Oder trete einem Freund bei:</p>
+            <input type="text" id="friendIdInput" placeholder="ID des Freundes eingeben">
+            <button id="joinBtn">Spiel Beitreten</button>
+        </div>
     </div>
 
-    <canvas id="gameCanvas" width="800" height="450"></canvas>
+    <!-- Ingame HUD -->
+    <div id="hud">
+        <div class="hud-text">Leben: <span id="healthDisplay" style="color: #00ffcc;">100</span></div>
+        <div class="hud-text">Kills: <span id="scoreDisplay" class="score">0</span></div>
+    </div>
+
+    <!-- Das Spielfeld -->
+    <canvas id="gameCanvas"></canvas>
 
 <script>
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
+/** 
+ * ==========================================
+ * NETZWERK & MULTIPLAYER LOGIK (PEERJS)
+ * ==========================================
+ */
+const peer = new Peer(); 
+let conn; 
+let isHost = false;
+let myId = '';
+let gameStarted = false;
 
-    let peer, conn;
-    let isHost = false;
-    let gameStarted = false;
+// UI Elemente
+const ui = document.getElementById('ui');
+const statusMsg = document.getElementById('statusMsg');
+const hostSection = document.getElementById('hostSection');
+const myIdDisplay = document.getElementById('myIdDisplay');
+const friendIdInput = document.getElementById('friendIdInput');
+const hud = document.getElementById('hud');
 
-    // Spieler-Objekte
-    let p1 = { x: 150, y: 300, w: 30, h: 70, vx: 0, vy: 0, hp: 100, color: "#ff3333", facing: 1, attacking: false };
-    let p2 = { x: 620, y: 300, w: 30, h: 70, vx: 0, vy: 0, hp: 100, color: "#3388ff", facing: -1, attacking: false };
+// PeerJS Events
+peer.on('open', function(id) {
+    myId = id;
+    myIdDisplay.value = id;
+    statusMsg.innerText = "Verbunden! Warte auf Gegner...";
+    hostSection.style.display = "block";
+});
 
-    let keys = {};
+document.getElementById('copyBtn').addEventListener('click', () => {
+    myIdDisplay.select();
+    document.execCommand('copy');
+    document.getElementById('copyBtn').innerText = "Kopiert!";
+    setTimeout(() => document.getElementById('copyBtn').innerText = "ID Kopieren", 2000);
+});
 
-    window.addEventListener("keydown", (e) => keys[e.key] = true);
-    window.addEventListener("keyup", (e) => keys[e.key] = false);
+// Wenn man als CLIENT beitritt
+document.getElementById('joinBtn').addEventListener('click', () => {
+    const friendId = friendIdInput.value.trim();
+    if (!friendId) return alert("Bitte eine ID eingeben!");
+    
+    statusMsg.innerText = "Verbinde...";
+    conn = peer.connect(friendId);
+    setupConnection(conn, false);
+});
 
-    function hostGame() {
-        peer = new Peer();
-        peer.on("open", (id) => {
-            document.getElementById("status").innerText = "Dein Code: " + id + "\nWarte auf Mitspieler...";
-        });
-        peer.on("connection", (c) => {
-            conn = c;
-            isHost = true;
-            setupConnection();
-        });
-    }
+// Wenn man als HOST jemanden empfängt
+peer.on('connection', function(connection) {
+    if (conn) return; // Nur 1v1 erlaubt
+    conn = connection;
+    setupConnection(conn, true);
+});
 
-    function joinGame() {
-        const id = document.getElementById("joinId").value;
-        peer = new Peer();
-        peer.on("open", () => {
-            conn = peer.connect(id);
-            isHost = false;
-            setupConnection();
-        });
-    }
+function setupConnection(connection, hostMode) {
+    isHost = hostMode;
+    connection.on('open', function() {
+        startGame();
+    });
 
-    function setupConnection() {
-        conn.on("open", () => {
-            document.getElementById("menu").style.display = "none";
-            canvas.style.display = "block";
-            document.getElementById("ui").style.display = "flex";
-            gameStarted = true;
-            loop();
-        });
-
-        conn.on("data", (data) => {
-            if (isHost) {
-                // Host empfängt Steuerung von Spieler 2
-                p2.x = data.x;
-                p2.y = data.y;
-                p2.vx = data.vx;
-                p2.vy = data.vy;
-                p2.hp = data.hp;
-                p2.attacking = data.attacking;
-            } else {
-                // Client empfängt komplette Welt vom Host
-                p1 = data.p1;
-                p2 = data.p2;
-            }
-        });
-    }
-
-    function updatePhysics(player) {
-        // Schwerkraft
-        player.vy += 0.5;
-        player.y += player.vy;
-
-        // Bodenkollision
-        if (player.y + player.h > 370) {
-            player.y = 370 - player.h;
-            player.vy = 0;
-        }
-
-        // Grenzen
-        if (player.x < 0) player.x = 0;
-        if (player.x > canvas.width - player.w) player.x = canvas.width - player.w;
-    }
-
-    function loop() {
-        if (!gameStarted) return;
-
+    connection.on('data', function(data) {
         if (isHost) {
-            // Host berechnet die Logik für Spieler 1 (A/D = Bewegen, W = Springen, Leertaste = Schlag)
-            if (keys["a"] || keys["A"]) { p1.vx = -4; p1.facing = -1; }
-            else if (keys["d"] || keys["D"]) { p1.vx = 4; p1.facing = 1; }
-            else { p1.vx = 0; }
-
-            if ((keys["w"] || keys["W"]) && p1.y + p1.h >= 370) {
-                p1.vy = -12;
+            // Host empfängt Inputs vom Client
+            if (data.type === 'input') {
+                clientInput = data;
             }
-
-            p1.attacking = keys[" "] ? true : false;
-            p1.x += p1.vx;
-
-            updatePhysics(p1);
-            updatePhysics(p2);
-
-            // Schlag-Kollisionsabfrage (Host prüft Treffer)
-            if (p1.attacking && Math.abs(p1.x - p2.x) < 50 && Math.abs(p1.y - p2.y) < 50) {
-                p2.hp -= 0.5;
-            }
-            if (p2.attacking && Math.abs(p2.x - p1.x) < 50 && Math.abs(p2.y - p1.y) < 50) {
-                p1.hp -= 0.5;
-            }
-
-            // Daten an Client senden
-            conn.send({ p1: p1, p2: p2 });
-
         } else {
-            // Client steuert Spieler 2 (Pfeiltasten / Enter zum Schlagen)
-            if (keys["ArrowLeft"]) { p2.vx = -4; p2.facing = -1; }
-            else if (keys["ArrowRight"]) { p2.vx = 4; p2.facing = 1; }
-            else { p2.vx = 0; }
-
-            if (keys["ArrowUp"] && p2.y + p2.h >= 370) {
-                p2.vy = -12;
+            // Client empfängt den Spielstatus vom Host
+            if (data.type === 'gameState') {
+                gameState = data.state;
+                createParticlesFromEvents(data.events);
             }
-
-            p2.attacking = keys["Enter"] ? true : false;
-            p2.x += p2.vx;
-            updatePhysics(p2);
-
-            // Eigene Daten an Host senden
-            conn.send({ x: p2.x, y: p2.y, vx: p2.vx, vy: p2.vy, hp: p2.hp, attacking: p2.attacking });
         }
+    });
 
-        draw();
-        requestAnimationFrame(loop);
+    connection.on('close', () => {
+        alert("Verbindung abgebrochen!");
+        location.reload();
+    });
+}
+
+function startGame() {
+    ui.style.display = 'none';
+    hud.style.display = 'block';
+    gameStarted = true;
+    
+    // Resize Event
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+    
+    if (isHost) {
+        initGameState();
+    }
+    
+    // Start Game Loop
+    requestAnimationFrame(gameLoop);
+}
+
+/** 
+ * ==========================================
+ * SPIEL LOGIK & ENGINE
+ * ==========================================
+ */
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+let width, height;
+
+// Inputs des lokalen Spielers
+let keys = { w: false, a: false, s: false, d: false };
+let mouse = { x: 0, y: 0, down: false };
+
+// Input des Clients (Nur für Host relevant)
+let clientInput = { keys: {}, mouse: {x:0, y:0, down:false} };
+
+// Der globale Spielstatus (Host hat die Autorität)
+let gameState = {
+    host: { x: 400, y: 300, hp: 100, score: 0, color: '#00ffcc', vx: 0, vy: 0, cooldown: 0 },
+    client: { x: 800, y: 600, hp: 100, score: 0, color: '#ff0055', vx: 0, vy: 0, cooldown: 0 },
+    bullets: []
+};
+
+let particles = [];
+let networkEvents = []; // Für Sounds/Effekte beim Client
+
+// Arena Größe
+const ARENA_WIDTH = 2000;
+const ARENA_HEIGHT = 1500;
+let camera = { x: 0, y: 0 };
+
+function resizeCanvas() {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+}
+
+function initGameState() {
+    gameState.host.x = ARENA_WIDTH * 0.25;
+    gameState.host.y = ARENA_HEIGHT / 2;
+    gameState.client.x = ARENA_WIDTH * 0.75;
+    gameState.client.y = ARENA_HEIGHT / 2;
+    gameState.host.hp = 100;
+    gameState.client.hp = 100;
+}
+
+// Input Listener
+window.addEventListener('keydown', (e) => {
+    if (keys.hasOwnProperty(e.key.toLowerCase())) keys[e.key.toLowerCase()] = true;
+});
+window.addEventListener('keyup', (e) => {
+    if (keys.hasOwnProperty(e.key.toLowerCase())) keys[e.key.toLowerCase()] = false;
+});
+canvas.addEventListener('mousemove', (e) => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+});
+canvas.addEventListener('mousedown', () => mouse.down = true);
+canvas.addEventListener('mouseup', () => mouse.down = false);
+
+/** 
+ * ==========================================
+ * GAME LOOP (Update & Render)
+ * ==========================================
+ */
+let lastTime = Date.now();
+
+function gameLoop() {
+    if (!gameStarted) return;
+    let now = Date.now();
+    let dt = (now - lastTime) / 1000; // Delta Time
+    lastTime = now;
+
+    if (isHost) {
+        updateHost(dt);
+        // Sende Status an Client
+        conn.send({ type: 'gameState', state: gameState, events: networkEvents });
+        networkEvents = []; // Reset nach senden
+    } else {
+        // Client sendet nur seine Eingaben an den Host
+        // Maus in Welt-Koordinaten umrechnen
+        let worldMouseX = mouse.x + camera.x;
+        let worldMouseY = mouse.y + camera.y;
+        conn.send({ type: 'input', keys: keys, mouse: { x: worldMouseX, y: worldMouseY, down: mouse.down } });
     }
 
-    function drawStickman(p) {
-        ctx.strokeStyle = p.color;
-        ctx.lineWidth = 4;
+    updateParticles(dt);
+    updateCamera();
+    draw();
+
+    requestAnimationFrame(gameLoop);
+}
+
+// Physik & Logik (Läuft nur auf dem Host)
+function updateHost(dt) {
+    const SPEED = 400;
+    const FRICTION = 0.85;
+    const BULLET_SPEED = 800;
+    
+    // --- HOST BEWEGUNG ---
+    if (keys.w) gameState.host.vy -= SPEED * dt;
+    if (keys.s) gameState.host.vy += SPEED * dt;
+    if (keys.a) gameState.host.vx -= SPEED * dt;
+    if (keys.d) gameState.host.vx += SPEED * dt;
+
+    // --- CLIENT BEWEGUNG ---
+    if (clientInput.keys.w) gameState.client.vy -= SPEED * dt;
+    if (clientInput.keys.s) gameState.client.vy += SPEED * dt;
+    if (clientInput.keys.a) gameState.client.vx -= SPEED * dt;
+    if (clientInput.keys.d) gameState.client.vx += SPEED * dt;
+
+    // Physik anwenden (Reibung und Position)
+    ['host', 'client'].forEach(playerKey => {
+        let p = gameState[playerKey];
+        p.vx *= FRICTION;
+        p.vy *= FRICTION;
+        p.x += p.vx;
+        p.y += p.vy;
+
+        // Rand-Kollision
+        if (p.x < 20) { p.x = 20; p.vx = 0; }
+        if (p.x > ARENA_WIDTH - 20) { p.x = ARENA_WIDTH - 20; p.vx = 0; }
+        if (p.y < 20) { p.y = 20; p.vy = 0; }
+        if (p.y > ARENA_HEIGHT - 20) { p.y = ARENA_HEIGHT - 20; p.vy = 0; }
+        
+        if (p.cooldown > 0) p.cooldown -= dt;
+    });
+
+    // --- SCHIESSEN (HOST) ---
+    if (mouse.down && gameState.host.cooldown <= 0 && gameState.host.hp > 0) {
+        let worldMx = mouse.x + camera.x;
+        let worldMy = mouse.y + camera.y;
+        let angle = Math.atan2(worldMy - gameState.host.y, worldMx - gameState.host.x);
+        gameState.bullets.push({
+            x: gameState.host.x, y: gameState.host.y,
+            vx: Math.cos(angle) * BULLET_SPEED, vy: Math.sin(angle) * BULLET_SPEED,
+            owner: 'host', color: gameState.host.color, life: 1.5
+        });
+        gameState.host.cooldown = 0.15; // Schussrate
+    }
+
+    // --- SCHIESSEN (CLIENT) ---
+    if (clientInput.mouse.down && gameState.client.cooldown <= 0 && gameState.client.hp > 0) {
+        let angle = Math.atan2(clientInput.mouse.y - gameState.client.y, clientInput.mouse.x - gameState.client.x);
+        gameState.bullets.push({
+            x: gameState.client.x, y: gameState.client.y,
+            vx: Math.cos(angle) * BULLET_SPEED, vy: Math.sin(angle) * BULLET_SPEED,
+            owner: 'client', color: gameState.client.color, life: 1.5
+        });
+        gameState.client.cooldown = 0.15;
+    }
+
+    // --- KUGELN UPDATEN & KOLLISION ---
+    for (let i = gameState.bullets.length - 1; i >= 0; i--) {
+        let b = gameState.bullets[i];
+        b.x += b.vx * dt;
+        b.y += b.vy * dt;
+        b.life -= dt;
+
+        let hit = false;
+
+        // Trefferprüfung
+        ['host', 'client'].forEach(targetKey => {
+            let target = gameState[targetKey];
+            if (b.owner !== targetKey && target.hp > 0) {
+                let dist = Math.hypot(target.x - b.x, target.y - b.y);
+                if (dist < 25) { // Radius Spieler + Kugel
+                    target.hp -= 10;
+                    hit = true;
+                    // Event für Partikel generieren
+                    networkEvents.push({ type: 'hit', x: b.x, y: b.y, color: b.color });
+                    createExplosion(b.x, b.y, b.color, 10);
+                    
+                    if (target.hp <= 0) {
+                        // Jemand ist gestorben
+                        let killer = gameState[b.owner];
+                        killer.score += 1;
+                        networkEvents.push({ type: 'death', x: target.x, y: target.y, color: target.color });
+                        createExplosion(target.x, target.y, target.color, 50);
+                        
+                        // Respawn nach 3 Sekunden
+                        setTimeout(() => {
+                            target.hp = 100;
+                            target.x = Math.random() * (ARENA_WIDTH - 100) + 50;
+                            target.y = Math.random() * (ARENA_HEIGHT - 100) + 50;
+                            target.vx = 0; target.vy = 0;
+                        }, 3000);
+                    }
+                }
+            }
+        });
+
+        // Kugel am Rand löschen
+        if (b.life <= 0 || hit || b.x < 0 || b.x > ARENA_WIDTH || b.y < 0 || b.y > ARENA_HEIGHT) {
+            gameState.bullets.splice(i, 1);
+        }
+    }
+}
+
+/** 
+ * ==========================================
+ * RENDERING (Grafik)
+ * ==========================================
+ */
+function updateCamera() {
+    let me = isHost ? gameState.host : gameState.client;
+    // Weiche Kameraverfolgung (Lerp)
+    let targetX = me.x - width / 2;
+    let targetY = me.y - height / 2;
+    
+    // Kamera an Ränder binden
+    targetX = Math.max(0, Math.min(targetX, ARENA_WIDTH - width));
+    targetY = Math.max(0, Math.min(targetY, ARENA_HEIGHT - height));
+
+    camera.x += (targetX - camera.x) * 0.1;
+    camera.y += (targetY - camera.y) * 0.1;
+}
+
+function draw() {
+    // Hintergrund löschen
+    ctx.fillStyle = '#050510';
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.save();
+    ctx.translate(-camera.x, -camera.y);
+
+    // Raster zeichnen (Cyber-Grid)
+    ctx.strokeStyle = 'rgba(0, 255, 204, 0.05)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for(let x = 0; x <= ARENA_WIDTH; x += 100) { ctx.moveTo(x, 0); ctx.lineTo(x, ARENA_HEIGHT); }
+    for(let y = 0; y <= ARENA_HEIGHT; y += 100) { ctx.moveTo(0, y); ctx.lineTo(ARENA_WIDTH, y); }
+    ctx.stroke();
+    
+    // Arena Umrandung
+    ctx.strokeStyle = '#00ffcc';
+    ctx.lineWidth = 5;
+    ctx.strokeRect(0, 0, ARENA_WIDTH, ARENA_HEIGHT);
+
+    // Kugeln zeichnen
+    gameState.bullets.forEach(b => {
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, 6, 0, Math.PI * 2);
+        ctx.fillStyle = b.color;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = b.color;
+        ctx.fill();
+        ctx.shadowBlur = 0; // Reset
+    });
+
+    // Partikel zeichnen
+    particles.forEach(p => {
+        ctx.globalAlpha = p.life / p.maxLife;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
         ctx.fillStyle = p.color;
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+    });
 
-        let cx = p.x + p.w / 2;
-        let cy = p.y;
+    // Spieler zeichnen
+    ['host', 'client'].forEach(playerKey => {
+        let p = gameState[playerKey];
+        if (p.hp <= 0) return; // Wenn tot, nicht zeichnen
 
-        // Kopf
+        // Leuchteffekt
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = p.color;
+
         ctx.beginPath();
-        ctx.arc(cx, cy + 12, 12, 0, Math.PI * 2);
-        ctx.stroke();
-
-        // Körper
+        ctx.arc(p.x, p.y, 20, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.fill();
+        
+        ctx.shadowBlur = 0;
+        
+        // Inneres Design
         ctx.beginPath();
-        ctx.moveTo(cx, cy + 24);
-        ctx.lineTo(cx, cy + 50);
-        ctx.stroke();
+        ctx.arc(p.x, p.y, 10, 0, Math.PI * 2);
+        ctx.fillStyle = '#111';
+        ctx.fill();
 
-        // Arme & Schlag-Animation
-        ctx.beginPath();
-        ctx.moveTo(cx, cy + 30);
-        let armX = p.attacking ? cx + (p.facing * 35) : cx + (p.facing * 15);
-        ctx.lineTo(armX, cy + 40);
-        ctx.stroke();
+        // HP Balken über Spieler
+        ctx.fillStyle = 'rgba(255,0,0,0.5)';
+        ctx.fillRect(p.x - 25, p.y - 40, 50, 6);
+        ctx.fillStyle = '#00ffcc';
+        ctx.fillRect(p.x - 25, p.y - 40, (p.hp / 100) * 50, 6);
+    });
 
-        // Beine
-        ctx.beginPath();
-        ctx.moveTo(cx, cy + 50);
-        ctx.lineTo(cx - 10, cy + 70);
-        ctx.moveTo(cx, cy + 50);
-        ctx.lineTo(cx + 10, cy + 70);
-        ctx.stroke();
+    ctx.restore();
+
+    // HUD Updaten (Lokal)
+    let myStats = isHost ? gameState.host : gameState.client;
+    document.getElementById('healthDisplay').innerText = Math.max(0, myStats.hp);
+    document.getElementById('scoreDisplay').innerText = myStats.score;
+}
+
+/** 
+ * ==========================================
+ * PARTIKEL SYSTEM (Visuelle Effekte)
+ * ==========================================
+ */
+function createExplosion(x, y, color, amount) {
+    for (let i = 0; i < amount; i++) {
+        let angle = Math.random() * Math.PI * 2;
+        let speed = Math.random() * 300 + 50;
+        particles.push({
+            x: x, y: y,
+            vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+            life: Math.random() * 0.5 + 0.2,
+            maxLife: 0.7,
+            size: Math.random() * 4 + 2,
+            color: color
+        });
     }
+}
 
-    function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Boden zeichnen
-        ctx.fillStyle = "#00ff66";
-        ctx.fillRect(0, 370, canvas.width, 80);
-
-        // Figuren zeichnen
-        drawStickman(p1);
-        drawStickman(p2);
-
-        // UI aktualisieren
-        document.getElementById("p1Health").innerText = "Spieler 1 (Rot) HP: " + Math.max(0, Math.floor(p1.hp));
-        document.getElementById("p2Health").innerText = "Spieler 2 (Blau) HP: " + Math.max(0, Math.floor(p2.hp));
+function updateParticles(dt) {
+    for (let i = particles.length - 1; i >= 0; i--) {
+        let p = particles[i];
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.vx *= 0.9; // Partikel-Reibung
+        p.vy *= 0.9;
+        p.life -= dt;
+        if (p.life <= 0) particles.splice(i, 1);
     }
+}
+
+// Wenn der Client Netzwerk-Events für Partikel vom Host erhält
+function createParticlesFromEvents(events) {
+    if (!events) return;
+    events.forEach(e => {
+        if (e.type === 'hit') createExplosion(e.x, e.y, e.color, 10);
+        if (e.type === 'death') createExplosion(e.x, e.y, e.color, 50);
+    });
+}
 </script>
-
 </body>
 </html>
