@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clash Royale 3D - FPS & Third Person</title>
+    <title>Clash Royale 3D - Perfekte Kamera</title>
     <style>
         body {
             margin: 0;
@@ -51,11 +51,24 @@
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         document.body.appendChild(renderer.domElement);
 
-        // Kamera startet jetzt exakt in der Mitte der Map (X:0, Z:0)
+        // ==========================================
+        // NEUES SPIELER-SETUP (Körper und Kopf getrennt)
+        // ==========================================
+        
+        // 1. Der Spieler (enthält das Modell und bewegt sich über die Map)
+        const player = new THREE.Group();
+        player.position.set(0, 0, 0); 
+        scene.add(player);
+
+        // 2. Die Kamerahalterung (der "Kopf" - ist auf Augenhöhe und nickt hoch/runter)
+        const cameraHolder = new THREE.Group();
+        cameraHolder.position.set(0, 1.5, 0); // 1.5 Einheiten über dem Boden
+        player.add(cameraHolder);
+
+        // 3. Die eigentliche Kamera
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 2, 0); 
-        camera.rotation.order = 'YXZ';
-        scene.add(camera);
+        camera.position.set(0, 0, 0); // Startet genau im Kopf (Ego-Sicht)
+        cameraHolder.add(camera);
 
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
         scene.add(ambientLight);
@@ -67,6 +80,7 @@
 
         const loader = new THREE.GLTFLoader();
 
+        // Arena laden
         loader.load('enviroment_clash_royal 3.glb', function (gltf) {
             const arena = gltf.scene;
             arena.position.set(0, 0, 0);
@@ -74,26 +88,32 @@
             scene.add(arena);
         });
 
+        // Hog Rider laden
         let hogRider = null;
         let isFirstPerson = true;
 
         loader.load('hog_rider_adventure.glb', function (gltf) {
             hogRider = gltf.scene;
-            // Hog Rider deutlich kleiner gemacht
             hogRider.scale.set(0.08, 0.08, 0.08); 
             
-            // Ego-Perspektive-Startposition (angepasst an das kleinere Modell)
-            hogRider.position.set(0, -0.6, -0.5); 
-            hogRider.rotation.y = Math.PI;
+            // Steht fest auf dem Boden (Y=0), relativ zum Spieler
+            hogRider.position.set(0, 0, 0); 
+            hogRider.rotation.y = Math.PI; // Guckt nach vorne
 
-            camera.add(hogRider);
+            // WICHTIG: In der Ego-Perspektive machen wir das Modell unsichtbar!
+            hogRider.visible = false; 
+
+            player.add(hogRider);
         });
 
-        // Wischen / Maussteuerung
+        // ==========================================
+        // STEUERUNG & UMSEHEN
+        // ==========================================
+        
         let isDragging = false;
         let previousTouch = { x: 0, y: 0 };
-        let yaw = 0;
-        let pitch = 0;
+        let yaw = 0;   // Links/Rechts
+        let pitch = 0; // Oben/Unten
 
         document.addEventListener('pointerdown', (e) => {
             isDragging = true;
@@ -109,10 +129,13 @@
                 yaw -= deltaX * 0.005;
                 pitch -= deltaY * 0.005;
 
+                // Kamera darf sich nicht überschlagen
                 pitch = Math.max(-Math.PI/2, Math.min(Math.PI/2, pitch));
 
-                camera.rotation.y = yaw;
-                camera.rotation.x = pitch;
+                // Der GESAMTE Spieler dreht sich nach links/rechts
+                player.rotation.y = yaw;
+                // NUR der Kopf (Kamera) dreht sich nach oben/unten (Modell bleibt auf dem Boden)
+                cameraHolder.rotation.x = pitch;
 
                 previousTouch.x = e.clientX;
                 previousTouch.y = e.clientY;
@@ -123,13 +146,11 @@
             isDragging = false;
         });
 
-        // Steuerung und Perspektiven-Wechsel (Taste C)
         let moveForward = false;
         let moveBackward = false;
         let moveLeft = false;
         let moveRight = false;
         
-        // Geschwindigkeit stark reduziert, damit die Map sich größer anfühlt
         const moveSpeed = 0.08; 
 
         window.addEventListener('keydown', (e) => {
@@ -138,17 +159,17 @@
             if (e.key === 's' || e.key === 'S') moveBackward = true;
             if (e.key === 'd' || e.key === 'D') moveRight = true;
             
-            // Taste C schaltet Perspektive um
+            // Perspektiven-Wechsel
             if (e.key === 'c' || e.key === 'C') {
-                if (hogRider) {
-                    isFirstPerson = !isFirstPerson;
-                    if (isFirstPerson) {
-                        // Position für Ego-Perspektive
-                        hogRider.position.set(0, -0.6, -0.5); 
-                    } else {
-                        // Position für Third-Person (Hog Rider wird weiter vor die Kamera geschoben)
-                        hogRider.position.set(0, -1.5, -3.5); 
-                    }
+                isFirstPerson = !isFirstPerson;
+                if (isFirstPerson) {
+                    // Ego-Perspektive: Kamera in den Kopf, Modell ausblenden
+                    camera.position.set(0, 0, 0); 
+                    if (hogRider) hogRider.visible = false;
+                } else {
+                    // Third-Person: Kamera zurück und leicht nach oben, Modell einblenden
+                    camera.position.set(0, 1, 4); 
+                    if (hogRider) hogRider.visible = true;
                 }
             }
         });
@@ -166,8 +187,6 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        // Grenzwert-Variablen für unsichtbare Wände (Kollision)
-        // Verkleinere oder vergrößere diese Werte, um die Spielfeldgrenze anzupassen
         const BOUNDARY_X = 22; 
         const BOUNDARY_Z = 35; 
 
@@ -179,24 +198,25 @@
                 const moveZ = (moveBackward ? 1 : 0) - (moveForward ? 1 : 0);
 
                 const direction = new THREE.Vector3(moveX, 0, moveZ);
-                const rotation = new THREE.Euler(0, camera.rotation.y, 0, 'YXZ');
-                
-                direction.applyEuler(rotation);
                 
                 if (direction.length() > 0) {
                     direction.normalize().multiplyScalar(moveSpeed);
-                    camera.position.add(direction);
+                    // Bewegung anhand der Blickrichtung (Yaw) anpassen
+                    direction.applyAxisAngle(new THREE.Vector3(0, 1, 0), player.rotation.y);
+                    
+                    // Wir bewegen jetzt den Spieler (player), nicht mehr nur die Kamera
+                    player.position.add(direction);
                 }
             }
 
-            // Kollisionsabfrage (Unsichtbare Wände)
-            if (camera.position.x > BOUNDARY_X) camera.position.x = BOUNDARY_X;
-            if (camera.position.x < -BOUNDARY_X) camera.position.x = -BOUNDARY_X;
-            if (camera.position.z > BOUNDARY_Z) camera.position.z = BOUNDARY_Z;
-            if (camera.position.z < -BOUNDARY_Z) camera.position.z = -BOUNDARY_Z;
+            // Kollisionsabfrage
+            if (player.position.x > BOUNDARY_X) player.position.x = BOUNDARY_X;
+            if (player.position.x < -BOUNDARY_X) player.position.x = -BOUNDARY_X;
+            if (player.position.z > BOUNDARY_Z) player.position.z = BOUNDARY_Z;
+            if (player.position.z < -BOUNDARY_Z) player.position.z = -BOUNDARY_Z;
 
-            // Feste Höhe einhalten
-            camera.position.y = 2;
+            // Feste Höhe einhalten (Spieler bleibt auf dem Boden)
+            player.position.y = 0;
 
             renderer.render(scene, camera);
         }
