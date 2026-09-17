@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clash Royale 3D - iPad & WASD</title>
+    <title>Clash Royale 3D - FPS & Third Person</title>
     <style>
         body {
             margin: 0;
             overflow: hidden;
             background-color: #87CEEB;
             font-family: Arial, sans-serif;
-            /* Verhindert das Markieren von Text oder Scrollen beim Wischen auf dem iPad */
             touch-action: none; 
             user-select: none;
         }
@@ -22,10 +21,11 @@
             top: 10px;
             left: 10px;
             color: white;
-            background: rgba(0,0,0,0.5);
-            padding: 10px;
+            background: rgba(0,0,0,0.6);
+            padding: 15px;
             border-radius: 5px;
             pointer-events: none;
+            line-height: 1.5;
         }
     </style>
 </head>
@@ -33,15 +33,14 @@
 
     <div id="info">
         <b>W, A, S, D</b> zum Laufen<br>
-        <b>Display wischen</b> zum Umsehen
+        <b>Display wischen / Maus ziehen</b> zum Umsehen<br>
+        <b>Taste C</b> für Perspektiven-Wechsel (Ego / Third-Person)
     </div>
 
-    <!-- Three.js Basis -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 
     <script>
-        // 1. Szene & Renderer einrichten
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x87CEEB);
         scene.fog = new THREE.Fog(0x87CEEB, 20, 150);
@@ -52,13 +51,12 @@
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         document.body.appendChild(renderer.domElement);
 
-        // 2. Kamera (Spieler) einrichten
+        // Kamera startet jetzt exakt in der Mitte der Map (X:0, Z:0)
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 2, 10); // Start-Position in der Arena
-        camera.rotation.order = 'YXZ'; // Wichtig für korrekte Drehung
+        camera.position.set(0, 2, 0); 
+        camera.rotation.order = 'YXZ';
         scene.add(camera);
 
-        // 3. Licht
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
         scene.add(ambientLight);
 
@@ -69,7 +67,6 @@
 
         const loader = new THREE.GLTFLoader();
 
-        // 4. ARENA LADEN
         loader.load('enviroment_clash_royal 3.glb', function (gltf) {
             const arena = gltf.scene;
             arena.position.set(0, 0, 0);
@@ -77,24 +74,26 @@
             scene.add(arena);
         });
 
-        // 5. HOG RIDER LADEN (Ich-Perspektive)
         let hogRider = null;
+        let isFirstPerson = true;
+
         loader.load('hog_rider_adventure.glb', function (gltf) {
             hogRider = gltf.scene;
-            hogRider.scale.set(0.2, 0.2, 0.2); 
+            // Hog Rider deutlich kleiner gemacht
+            hogRider.scale.set(0.08, 0.08, 0.08); 
             
-            // Kamera anheften (Waffe/Kopf vor der Linse)
-            hogRider.position.set(0, -1.2, -1.0); 
+            // Ego-Perspektive-Startposition (angepasst an das kleinere Modell)
+            hogRider.position.set(0, -0.6, -0.5); 
             hogRider.rotation.y = Math.PI;
 
             camera.add(hogRider);
         });
 
-        // 6. EIGENE KAMERA-STEUERUNG FÜR IPAD (Wischen)
+        // Wischen / Maussteuerung
         let isDragging = false;
         let previousTouch = { x: 0, y: 0 };
-        let yaw = 0;   // Links/Rechts drehen
-        let pitch = 0; // Oben/Unten gucken
+        let yaw = 0;
+        let pitch = 0;
 
         document.addEventListener('pointerdown', (e) => {
             isDragging = true;
@@ -107,11 +106,9 @@
                 const deltaX = e.clientX - previousTouch.x;
                 const deltaY = e.clientY - previousTouch.y;
 
-                // Empfindlichkeit beim Wischen
                 yaw -= deltaX * 0.005;
                 pitch -= deltaY * 0.005;
 
-                // Kamera darf sich nicht überschlagen (Begrenzung oben/unten)
                 pitch = Math.max(-Math.PI/2, Math.min(Math.PI/2, pitch));
 
                 camera.rotation.y = yaw;
@@ -126,18 +123,34 @@
             isDragging = false;
         });
 
-        // 7. BEWEGUNG (WASD Tastatur)
+        // Steuerung und Perspektiven-Wechsel (Taste C)
         let moveForward = false;
         let moveBackward = false;
         let moveLeft = false;
         let moveRight = false;
-        const moveSpeed = 0.25;
+        
+        // Geschwindigkeit stark reduziert, damit die Map sich größer anfühlt
+        const moveSpeed = 0.08; 
 
         window.addEventListener('keydown', (e) => {
             if (e.key === 'w' || e.key === 'W') moveForward = true;
             if (e.key === 'a' || e.key === 'A') moveLeft = true;
             if (e.key === 's' || e.key === 'S') moveBackward = true;
             if (e.key === 'd' || e.key === 'D') moveRight = true;
+            
+            // Taste C schaltet Perspektive um
+            if (e.key === 'c' || e.key === 'C') {
+                if (hogRider) {
+                    isFirstPerson = !isFirstPerson;
+                    if (isFirstPerson) {
+                        // Position für Ego-Perspektive
+                        hogRider.position.set(0, -0.6, -0.5); 
+                    } else {
+                        // Position für Third-Person (Hog Rider wird weiter vor die Kamera geschoben)
+                        hogRider.position.set(0, -1.5, -3.5); 
+                    }
+                }
+            }
         });
 
         window.addEventListener('keyup', (e) => {
@@ -147,36 +160,42 @@
             if (e.key === 'd' || e.key === 'D') moveRight = false;
         });
 
-        // 8. Fenstergröße anpassen
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        // 9. GAME LOOP
+        // Grenzwert-Variablen für unsichtbare Wände (Kollision)
+        // Verkleinere oder vergrößere diese Werte, um die Spielfeldgrenze anzupassen
+        const BOUNDARY_X = 22; 
+        const BOUNDARY_Z = 35; 
+
         function animate() {
             requestAnimationFrame(animate);
 
-            // Bewegung relativ zur Blickrichtung berechnen
             if (moveForward || moveBackward || moveLeft || moveRight) {
                 const moveX = (moveRight ? 1 : 0) - (moveLeft ? 1 : 0);
                 const moveZ = (moveBackward ? 1 : 0) - (moveForward ? 1 : 0);
 
-                // Hilfsvektor erstellen, um in Blickrichtung zu laufen
                 const direction = new THREE.Vector3(moveX, 0, moveZ);
                 const rotation = new THREE.Euler(0, camera.rotation.y, 0, 'YXZ');
                 
                 direction.applyEuler(rotation);
                 
-                // Normalisieren, damit diagonal gehen nicht schneller ist
                 if (direction.length() > 0) {
                     direction.normalize().multiplyScalar(moveSpeed);
                     camera.position.add(direction);
                 }
             }
 
-            // Stelle sicher, dass die Spieler-Höhe konstant bleibt (kein Fliegen)
+            // Kollisionsabfrage (Unsichtbare Wände)
+            if (camera.position.x > BOUNDARY_X) camera.position.x = BOUNDARY_X;
+            if (camera.position.x < -BOUNDARY_X) camera.position.x = -BOUNDARY_X;
+            if (camera.position.z > BOUNDARY_Z) camera.position.z = BOUNDARY_Z;
+            if (camera.position.z < -BOUNDARY_Z) camera.position.z = -BOUNDARY_Z;
+
+            // Feste Höhe einhalten
             camera.position.y = 2;
 
             renderer.render(scene, camera);
