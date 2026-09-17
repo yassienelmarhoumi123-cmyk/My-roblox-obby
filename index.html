@@ -1,86 +1,261 @@
-<!DOCTYPE html
+<!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meine KI Website</title>
+    <title>Mini Clash Royale</title>
     <style>
-        body { font-family: sans-serif; background: #121212; color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .chat-container { width: 400px; background: #1e1e1e; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        #chat-box { height: 300px; overflow-y: auto; border: 1px solid #333; padding: 10px; margin-bottom: 10px; border-radius: 5px; background: #181818; display: flex; flex-direction: column; gap: 8px;}
-        .message { padding: 8px 12px; border-radius: 8px; max-width: 80%; word-break: break-word; }
-        .user { background: #007bff; align-self: flex-end; }
-        .ai { background: #333; align-self: flex-start; }
-        .input-area { display: flex; gap: 5px; }
-        input { flex: 1; padding: 10px; border: 1px solid #444; background: #222; color: #fff; border-radius: 5px; }
-        button { padding: 10px 15px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; }
-        button:hover { background: #218838; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background-color: #1a1a2e;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Hauptcontainer für das Spiel */
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 450px;
+            height: 100vh;
+            max-height: 850px;
+            background-color: #0f3460;
+            border-left: 4px solid #e94560;
+            border-right: 4px solid #e94560;
+            position: relative;
+        }
+
+        /* Oberer Bereich: HUD / Anzeigen */
+        #hud {
+            width: 100%;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.3);
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* Das Spielfeld (Canvas) */
+        #gameCanvas {
+            background-color: #2e5d4b; /* Ein klassischer Arena-Rasen-Ton */
+            flex-grow: 1;
+            width: 100%;
+            display: block;
+            cursor: pointer;
+        }
+
+        /* Unterer Bereich: Elixier & Karten */
+        #control-panel {
+            width: 100%;
+            background: #162447;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            border-top: 3px solid #e94560;
+        }
+
+        /* Elixier Leiste */
+        #elixir-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #elixir-bar-bg {
+            flex-grow: 1;
+            height: 16px;
+            background-color: #0f3460;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #533483;
+            position: relative;
+        }
+
+        #elixir-bar-fill {
+            width: 50%; /* Startwert / Dynamisch änderbar */
+            height: 100%;
+            background: linear-gradient(90deg, #9b59b6, #e056fd);
+            transition: width 0.1s linear;
+        }
+
+        #elixir-text {
+            font-weight: bold;
+            font-size: 15px;
+            color: #e056fd;
+            min-width: 45px;
+            text-align: right;
+        }
+
+        /* Karten-Auswahl unten */
+        #cards-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .card {
+            flex: 1;
+            height: 85px;
+            background-color: #1f4068;
+            border: 2px solid #e94560;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px;
+            cursor: pointer;
+            transition: transform 0.1s, background-color 0.2s;
+            position: relative;
+        }
+
+        .card:hover {
+            background-color: #284b76;
+            transform: translateY(-3px);
+        }
+
+        .card.selected {
+            border-color: #00ff88;
+            background-color: #224c36;
+            box-shadow: 0 0 10px #00ff88;
+        }
+
+        .card-cost {
+            background-color: #9b59b6;
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 10px;
+            align-self: flex-end;
+        }
+
+        .card-name {
+            font-size: 11px;
+            text-align: center;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
-    <div class="chat-container">
-        <h2>Meine Gratis-KI</h2>
-        <div id="chat-box"></div>
-        <div class="input-area">
-            <input type="text" id="user-input" placeholder="Frag mich was..." onkeydown="if(event.key === 'Enter') sendMessage()">
-            <button onclick="sendMessage()">Senden</button>
+    <div id="game-container">
+        <!-- HUD / Status -->
+        <div id="hud">
+            <span id="enemy-status">Gegner Base: 100%</span>
+            <span id="player-status">Deine Base: 100%</span>
+        </div>
+
+        <!-- Das Spielfeld -->
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- Bedienelemente unten -->
+        <div id="control-panel">
+            <!-- Elixier Anzeige -->
+            <div id="elixir-container">
+                <span>Elixier:</span>
+                <div id="elixir-bar-bg">
+                    <div id="elixir-bar-fill"></div>
+                </div>
+                <span id="elixir-text">5.0 / 10</span>
+            </div>
+
+            <!-- Handkarten (Clash Royale Style) -->
+            <div id="cards-container">
+                <div class="card" onclick="selectCard(0, 'Ritter', 3)">
+                    <span class="card-cost">3</span>
+                    <span class="card-name">Ritter</span>
+                </div>
+                <div class="card" onclick="selectCard(1, 'Bogenschützen', 2)">
+                    <span class="card-cost">2</span>
+                    <span class="card-name">Bogenschützen</span>
+                </div>
+                <div class="card" onclick="selectCard(2, 'Riese', 5)">
+                    <span class="card-cost">5</span>
+                    <span class="card-name">Riese</span>
+                </div>
+                <div class="card" onclick="selectCard(3, 'Feuerball', 4)">
+                    <span class="card-cost">4</span>
+                    <span class="card-name">Feuerball</span>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        // HIER DEINEN OPENROUTER API-KEY EINTRAGEN:
-        const API_KEY = "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";
+        // Canvas-Größe automatisch anpassen
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
 
-        async function sendMessage() {
-            const inputField = document.getElementById("user-input");
-            const chatBox = document.getElementById("chat-box");
-            const userText = inputField.value.trim();
-
-            if (!userText) return;
-
-            // Nutzer-Nachricht anzeigen
-            chatBox.innerHTML += `<div class="message user">${userText}</div>`;
-            inputField.value = "";
-            chatBox.scrollTop = chatBox.scrollHeight;
-
-            // Platzhalter für KI-Antwort
-            const aiMessageDiv = document.createElement("div");
-            aiMessageDiv.className = "message ai";
-            aiMessageDiv.innerText = "Denkt nach...";
-            chatBox.appendChild(aiMessageDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
-
-            try {
-                const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-                    method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${API_KEY}`,
-                        "Content-Type": "application/json",
-                        "HTTP-Referer": window.location.href, // Pflicht für OpenRouter
-                        "X-Title": "Meine GitHub KI" // Optionaler Name deiner Seite
-                    },
-                    body: JSON.stringify({
-                        "model": "openrouter/free", // Nutzt automatisch ein freies Modell
-                        "messages": [
-                            {"role": "user", "content": userText}
-                        ]
-                    })
-                });
-
-                const data = await response.json();
-                
-                if (data.choices && data.choices.length > 0) {
-                    aiMessageDiv.innerText = data.choices[0].message.content;
-                } else {
-                    aiMessageDiv.innerText = "Fehler: Keine Antwort erhalten.";
-                }
-            } catch (error) {
-                aiMessageDiv.innerText = "Netzwerkfehler aufgetreten.";
-                console.error(error);
-            }
-            chatBox.scrollTop = chatBox.scrollHeight;
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight - document.getElementById('hud').offsetHeight - document.getElementById('control-panel').offsetHeight;
         }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        let selectedCardIndex = null;
+
+        // Funktion zum Auswählen einer Karte
+        function selectCard(index, name, cost) {
+            const cards = document.querySelectorAll('.card');
+            
+            // Wenn dieselbe Karte nochmal geklickt wird -> abwählen
+            if (selectedCardIndex === index) {
+                cards[index].classList.remove('selected');
+                selectedCardIndex = null;
+                console.log("Karte abgewählt");
+                return;
+            }
+
+            // Alle Karten zurücksetzen und neue markieren
+            cards.forEach(c => c.classList.remove('selected'));
+            cards[index].classList.add('selected');
+            selectedCardIndex = index;
+            console.log(`Karte ausgewählt: ${name} (Kosten: ${cost})`);
+        }
+
+        // Einfache Test-Zeichnung im Canvas (wird später durch den Game Loop ersetzt)
+        function drawArena() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Mittellinie / Fluss der Arena
+            ctx.strokeStyle = '#388087';
+            ctx.lineWidth = 4;
+            ctx.setLineDash([10, 5]);
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height / 2);
+            ctx.lineTo(canvas.width, canvas.height / 2);
+            ctx.stroke();
+            ctx.setLineDash([]); // Zurücksetzen
+
+            // Gegnerischer Turm (oben)
+            ctx.fillStyle = '#e94560';
+            ctx.fillRect(canvas.width / 2 - 30, 30, 60, 60);
+
+            // Spieler Turm (unten)
+            ctx.fillStyle = '#00ff88';
+            ctx.fillRect(canvas.width / 2 - 30, canvas.height - 90, 60, 60);
+        }
+
+        drawArena();
     </script>
 </body>
 </html>
