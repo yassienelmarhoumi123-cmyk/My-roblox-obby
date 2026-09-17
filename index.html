@@ -3,210 +3,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clash Royale 3D - FPS Game</title>
+    <title>Clash Royale 3D - iPad & WASD</title>
     <style>
         body {
             margin: 0;
             overflow: hidden;
-            background-color: #111;
+            background-color: #87CEEB;
             font-family: Arial, sans-serif;
+            /* Verhindert das Markieren von Text oder Scrollen beim Wischen auf dem iPad */
+            touch-action: none; 
+            user-select: none;
         }
         canvas {
             display: block;
         }
-        /* Startbildschirm (Blocker), da Browser eine Interaktion erfordern, um die Maus einzufangen */
-        #blocker {
+        #info {
             position: absolute;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.6);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
+            top: 10px;
+            left: 10px;
             color: white;
-            z-index: 10;
-        }
-        #instructions {
-            text-align: center;
-            cursor: pointer;
-        }
-        #instructions h1 {
-            font-size: 40px;
-            margin-bottom: 10px;
-        }
-        #instructions p {
-            font-size: 20px;
+            background: rgba(0,0,0,0.5);
+            padding: 10px;
+            border-radius: 5px;
+            pointer-events: none;
         }
     </style>
 </head>
 <body>
 
-    <!-- Overlay für den Spielstart -->
-    <div id="blocker">
-        <div id="instructions">
-            <h1>Clash Royale Arena</h1>
-            <p>Klicke in das Fenster, um das Spiel zu starten.</p>
-            <br/>
-            <p><b>Maus:</b> Umsehen | <b>W, A, S, D:</b> Bewegen | <b>ESC:</b> Menü</p>
-        </div>
+    <div id="info">
+        <b>W, A, S, D</b> zum Laufen<br>
+        <b>Display wischen</b> zum Umsehen
     </div>
 
     <!-- Three.js Basis -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-    <!-- WICHTIG: PointerLockControls anstelle von OrbitControls für echtes Spielgefühl -->
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/PointerLockControls.js"></script>
 
     <script>
         // 1. Szene & Renderer einrichten
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x87CEEB); // Himmelblau statt dunkelgrau für bessere Atmosphäre
-        scene.fog = new THREE.Fog(0x87CEEB, 20, 150); // Leichter Nebel kaschiert die Ränder der Map
+        scene.background = new THREE.Color(0x87CEEB);
+        scene.fog = new THREE.Fog(0x87CEEB, 20, 150);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Weichere Schatten
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         document.body.appendChild(renderer.domElement);
 
-        // 2. First-Person Kamera & Spieler-Einrichtung
+        // 2. Kamera (Spieler) einrichten
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        // Spawnpunkt: Mittig in der Arena, Höhe (Y) auf 2 (Augenhöhe)
-        camera.position.set(0, 2, 10); 
+        camera.position.set(0, 2, 10); // Start-Position in der Arena
+        camera.rotation.order = 'YXZ'; // Wichtig für korrekte Drehung
         scene.add(camera);
 
-        // 3. Licht[cite: 3]
+        // 3. Licht
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
         scene.add(ambientLight);
 
         const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
         directionalLight.position.set(20, 30, 20);
         directionalLight.castShadow = true;
-        directionalLight.shadow.mapSize.width = 2048;
-        directionalLight.shadow.mapSize.height = 2048;
         scene.add(directionalLight);
 
-        // 4. Steuerung (PointerLock)
-        const controls = new THREE.PointerLockControls(camera, document.body);
-        
-        const blocker = document.getElementById('blocker');
-        const instructions = document.getElementById('instructions');
+        const loader = new THREE.GLTFLoader();
 
-        // Klick in den Bildschirm fängt die Maus ein (Spiel startet)
-        instructions.addEventListener('click', function () {
-            controls.lock();
-        });
-
-        controls.addEventListener('lock', function () {
-            blocker.style.display = 'none'; // Menü ausblenden
-        });
-
-        controls.addEventListener('unlock', function () {
-            blocker.style.display = 'flex'; // Menü wieder anzeigen
-        });
-
-        // 5. 3D-Modelle laden (Fest codiert, Arena größer, Hog Rider kleiner)
-        const loader = new THREE.GLTFLoader();[cite: 3]
-
-        // --- ARENA LADEN ---
-        loader.load('enviroment_clash_royal 3.glb', function (gltf) {[cite: 3]
+        // 4. ARENA LADEN
+        loader.load('enviroment_clash_royal 3.glb', function (gltf) {
             const arena = gltf.scene;
             arena.position.set(0, 0, 0);
-            
-            // MAP GRÖSSER MACHEN: (z.B. 4x so groß)
             arena.scale.set(4, 4, 4); 
-            
-            // Schattenwurf für alle Teile der Arena aktivieren
-            arena.traverse(function(node) {
-                if (node.isMesh) {
-                    node.castShadow = true;
-                    node.receiveShadow = true;
-                }
-            });
             scene.add(arena);
-            console.log('Arena geladen und vergrößert!');
         });
 
-        // --- HOG RIDER LADEN (ICH-PERSPEKTIVE) ---
-        let hogRider = null;[cite: 3]
-        loader.load('hog_rider_adventure.glb', function (gltf) {[cite: 3]
+        // 5. HOG RIDER LADEN (Ich-Perspektive)
+        let hogRider = null;
+        loader.load('hog_rider_adventure.glb', function (gltf) {
             hogRider = gltf.scene;
-            
-            // HOG RIDER KLEINER MACHEN:
             hogRider.scale.set(0.2, 0.2, 0.2); 
             
-            // Positionierung relativ zur Kamera (Ich-Perspektive)
-            // Er sitzt etwas unterhalb (-1.2) und leicht vor der Kamera (-1.0),
-            // damit man den Kopf des Hogs und evtl. den Hammer sehen kann.
+            // Kamera anheften (Waffe/Kopf vor der Linse)
             hogRider.position.set(0, -1.2, -1.0); 
-            
-            // Um 180 Grad drehen, damit er in die gleiche Richtung schaut wie die Kamera
             hogRider.rotation.y = Math.PI;
 
-            // WICHTIG: Der Hog Rider wird an die Kamera geheftet!
-            // Bewegst du die Kamera, bewegt sich der Hog Rider automatisch mit.
             camera.add(hogRider);
-            console.log('Hog Rider geladen und an Kamera gebunden!');
         });
 
-        // 6. Bewegungs-Logik einrichten (Richtige Steuerung)
+        // 6. EIGENE KAMERA-STEUERUNG FÜR IPAD (Wischen)
+        let isDragging = false;
+        let previousTouch = { x: 0, y: 0 };
+        let yaw = 0;   // Links/Rechts drehen
+        let pitch = 0; // Oben/Unten gucken
+
+        document.addEventListener('pointerdown', (e) => {
+            isDragging = true;
+            previousTouch.x = e.clientX;
+            previousTouch.y = e.clientY;
+        });
+
+        document.addEventListener('pointermove', (e) => {
+            if (isDragging) {
+                const deltaX = e.clientX - previousTouch.x;
+                const deltaY = e.clientY - previousTouch.y;
+
+                // Empfindlichkeit beim Wischen
+                yaw -= deltaX * 0.005;
+                pitch -= deltaY * 0.005;
+
+                // Kamera darf sich nicht überschlagen (Begrenzung oben/unten)
+                pitch = Math.max(-Math.PI/2, Math.min(Math.PI/2, pitch));
+
+                camera.rotation.y = yaw;
+                camera.rotation.x = pitch;
+
+                previousTouch.x = e.clientX;
+                previousTouch.y = e.clientY;
+            }
+        });
+
+        document.addEventListener('pointerup', () => {
+            isDragging = false;
+        });
+
+        // 7. BEWEGUNG (WASD Tastatur)
         let moveForward = false;
         let moveBackward = false;
         let moveLeft = false;
         let moveRight = false;
-        
-        const moveSpeed = 0.25; // Laufgeschwindigkeit
+        const moveSpeed = 0.25;
 
         window.addEventListener('keydown', (e) => {
-            switch (e.code) {
-                case 'KeyW': moveForward = true; break;
-                case 'KeyA': moveLeft = true; break;
-                case 'KeyS': moveBackward = true; break;
-                case 'KeyD': moveRight = true; break;
-            }
+            if (e.key === 'w' || e.key === 'W') moveForward = true;
+            if (e.key === 'a' || e.key === 'A') moveLeft = true;
+            if (e.key === 's' || e.key === 'S') moveBackward = true;
+            if (e.key === 'd' || e.key === 'D') moveRight = true;
         });
 
         window.addEventListener('keyup', (e) => {
-            switch (e.code) {
-                case 'KeyW': moveForward = false; break;
-                case 'KeyA': moveLeft = false; break;
-                case 'KeyS': moveBackward = false; break;
-                case 'KeyD': moveRight = false; break;
-            }
+            if (e.key === 'w' || e.key === 'W') moveForward = false;
+            if (e.key === 'a' || e.key === 'A') moveLeft = false;
+            if (e.key === 's' || e.key === 'S') moveBackward = false;
+            if (e.key === 'd' || e.key === 'D') moveRight = false;
         });
 
-        // 7. Fenster anpassen[cite: 3]
-        window.addEventListener('resize', onWindowResize, false);[cite: 3]
-        function onWindowResize() {[cite: 3]
-            camera.aspect = window.innerWidth / window.innerHeight;[cite: 3]
-            camera.updateProjectionMatrix();[cite: 3]
-            renderer.setSize(window.innerWidth, window.innerHeight);[cite: 3]
-        }[cite: 3]
+        // 8. Fenstergröße anpassen
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
 
-        // 8. Game Loop[cite: 3]
-        function animate() {[cite: 3]
-            requestAnimationFrame(animate);[cite: 3]
+        // 9. GAME LOOP
+        function animate() {
+            requestAnimationFrame(animate);
 
-            // Bewegung nur ausführen, wenn das Spiel aktiv (Maus gesperrt) ist
-            if (controls.isLocked === true) {
-                // Steuerung relativ zur Blickrichtung
-                if (moveForward) controls.moveForward(moveSpeed);
-                if (moveBackward) controls.moveForward(-moveSpeed);
-                if (moveLeft) controls.moveRight(-moveSpeed);
-                if (moveRight) controls.moveRight(moveSpeed);
+            // Bewegung relativ zur Blickrichtung berechnen
+            if (moveForward || moveBackward || moveLeft || moveRight) {
+                const moveX = (moveRight ? 1 : 0) - (moveLeft ? 1 : 0);
+                const moveZ = (moveBackward ? 1 : 0) - (moveForward ? 1 : 0);
 
-                // Optionale Begrenzung der Y-Achse (damit man nicht fliegt oder durch den Boden fällt)
-                // Hält die Kamera immer auf einer Höhe von 2
-                if (camera.position.y !== 2) {
-                    camera.position.y = 2;
+                // Hilfsvektor erstellen, um in Blickrichtung zu laufen
+                const direction = new THREE.Vector3(moveX, 0, moveZ);
+                const rotation = new THREE.Euler(0, camera.rotation.y, 0, 'YXZ');
+                
+                direction.applyEuler(rotation);
+                
+                // Normalisieren, damit diagonal gehen nicht schneller ist
+                if (direction.length() > 0) {
+                    direction.normalize().multiplyScalar(moveSpeed);
+                    camera.position.add(direction);
                 }
             }
 
-            renderer.render(scene, camera);[cite: 3]
-        }[cite: 3]
+            // Stelle sicher, dass die Spieler-Höhe konstant bleibt (kein Fliegen)
+            camera.position.y = 2;
+
+            renderer.render(scene, camera);
+        }
         
-        animate();[cite: 3]
+        animate();
     </script>
 </body>
 </html>
