@@ -3,259 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mini Clash Royale</title>
+    <title>3D Game Environment</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            user-select: none;
-        }
-
         body {
-            background-color: #1a1a2e;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: #fff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
+            margin: 0;
             overflow: hidden;
+            background-color: #111;
         }
-
-        /* Hauptcontainer für das Spiel */
-        #game-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            max-width: 450px;
-            height: 100vh;
-            max-height: 850px;
-            background-color: #0f3460;
-            border-left: 4px solid #e94560;
-            border-right: 4px solid #e94560;
-            position: relative;
-        }
-
-        /* Oberer Bereich: HUD / Anzeigen */
-        #hud {
-            width: 100%;
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(0, 0, 0, 0.3);
-            font-size: 14px;
-            font-weight: bold;
-        }
-
-        /* Das Spielfeld (Canvas) */
-        #gameCanvas {
-            background-color: #2e5d4b; /* Ein klassischer Arena-Rasen-Ton */
-            flex-grow: 1;
-            width: 100%;
+        canvas {
             display: block;
-            cursor: pointer;
-        }
-
-        /* Unterer Bereich: Elixier & Karten */
-        #control-panel {
-            width: 100%;
-            background: #162447;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            border-top: 3px solid #e94560;
-        }
-
-        /* Elixier Leiste */
-        #elixir-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        #elixir-bar-bg {
-            flex-grow: 1;
-            height: 16px;
-            background-color: #0f3460;
-            border-radius: 8px;
-            overflow: hidden;
-            border: 2px solid #533483;
-            position: relative;
-        }
-
-        #elixir-bar-fill {
-            width: 50%; /* Startwert / Dynamisch änderbar */
-            height: 100%;
-            background: linear-gradient(90deg, #9b59b6, #e056fd);
-            transition: width 0.1s linear;
-        }
-
-        #elixir-text {
-            font-weight: bold;
-            font-size: 15px;
-            color: #e056fd;
-            min-width: 45px;
-            text-align: right;
-        }
-
-        /* Karten-Auswahl unten */
-        #cards-container {
-            display: flex;
-            justify-content: space-between;
-            gap: 8px;
-        }
-
-        .card {
-            flex: 1;
-            height: 85px;
-            background-color: #1f4068;
-            border: 2px solid #e94560;
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            padding: 6px;
-            cursor: pointer;
-            transition: transform 0.1s, background-color 0.2s;
-            position: relative;
-        }
-
-        .card:hover {
-            background-color: #284b76;
-            transform: translateY(-3px);
-        }
-
-        .card.selected {
-            border-color: #00ff88;
-            background-color: #224c36;
-            box-shadow: 0 0 10px #00ff88;
-        }
-
-        .card-cost {
-            background-color: #9b59b6;
-            color: white;
-            font-size: 11px;
-            font-weight: bold;
-            padding: 2px 6px;
-            border-radius: 10px;
-            align-self: flex-end;
-        }
-
-        .card-name {
-            font-size: 11px;
-            text-align: center;
-            font-weight: bold;
         }
     </style>
 </head>
 <body>
 
-    <div id="game-container">
-        <!-- HUD / Status -->
-        <div id="hud">
-            <span id="enemy-status">Gegner Base: 100%</span>
-            <span id="player-status">Deine Base: 100%</span>
-        </div>
-
-        <!-- Das Spielfeld -->
-        <canvas id="gameCanvas"></canvas>
-
-        <!-- Bedienelemente unten -->
-        <div id="control-panel">
-            <!-- Elixier Anzeige -->
-            <div id="elixir-container">
-                <span>Elixier:</span>
-                <div id="elixir-bar-bg">
-                    <div id="elixir-bar-fill"></div>
-                </div>
-                <span id="elixir-text">5.0 / 10</span>
-            </div>
-
-            <!-- Handkarten (Clash Royale Style) -->
-            <div id="cards-container">
-                <div class="card" onclick="selectCard(0, 'Ritter', 3)">
-                    <span class="card-cost">3</span>
-                    <span class="card-name">Ritter</span>
-                </div>
-                <div class="card" onclick="selectCard(1, 'Bogenschützen', 2)">
-                    <span class="card-cost">2</span>
-                    <span class="card-name">Bogenschützen</span>
-                </div>
-                <div class="card" onclick="selectCard(2, 'Riese', 5)">
-                    <span class="card-cost">5</span>
-                    <span class="card-name">Riese</span>
-                </div>
-                <div class="card" onclick="selectCard(3, 'Feuerball', 4)">
-                    <span class="card-cost">4</span>
-                    <span class="card-name">Feuerball</span>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Three.js und der GLTFLoader über CDN einbinden -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
     <script>
-        // Canvas-Größe automatisch anpassen
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
+        // 1. Szene, Kamera und Renderer einrichten
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x202020); // Hintergrundfarbe
 
-        function resizeCanvas() {
-            canvas.width = canvas.parentElement.clientWidth;
-            canvas.height = canvas.parentElement.clientHeight - document.getElementById('hud').offsetHeight - document.getElementById('control-panel').offsetHeight;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.setFocalLength(20);
+        camera.position.set(0, 10, 20); // Startposition der Kamera
 
-        let selectedCardIndex = null;
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.body.appendChild(renderer.domElement);
 
-        // Funktion zum Auswählen einer Karte
-        function selectCard(index, name, cost) {
-            const cards = document.querySelectorAll('.card');
-            
-            // Wenn dieselbe Karte nochmal geklickt wird -> abwählen
-            if (selectedCardIndex === index) {
-                cards[index].classList.remove('selected');
-                selectedCardIndex = null;
-                console.log("Karte abgewählt");
-                return;
+        // 2. Kamera-Steuerung (damit du dich mit der Maus umsehen/herumzoomen kannst)
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+
+        // 3. Licht hinzufügen (damit das Modell nicht komplett schwarz ist)
+        const ambientLight = new THREE.AmbientLight(0xffffff, 1.2); // Weiches Grundlicht
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
+        directionalLight.position.set(10, 20, 10);
+        directionalLight.castShadow = true;
+        scene.add(directionalLight);
+
+        // 4. Hier wird dein 3D-Modell geladen!
+        const loader = new THREE.GLTFLoader();
+        
+        // >>> TRAGE HIER DEN NAMEN DEINER DATEI EIN <<<
+        const modelFileName = 'DEINE_DATEI.glb'; 
+
+        loader.load(
+            modelFileName,
+            function (gltf) {
+                const model = gltf.scene;
+                
+                // Optional: Position, Skalierung oder Drehung anpassen
+                model.position.set(0, 0, 0);
+                model.scale.set(1, 1, 1); 
+
+                scene.add(model);
+                console.log('Modell erfolgreich geladen!');
+            },
+            function (xhr) {
+                // Ladebalken-Fortschritt in der Konsole anzeigen
+                console.log((xhr.loaded / xhr.total * 100) + '% geladen');
+            },
+            function (error) {
+                console.error('Fehler beim Laden des Modells:', error);
             }
+        );
 
-            // Alle Karten zurücksetzen und neue markieren
-            cards.forEach(c => c.classList.remove('selected'));
-            cards[index].classList.add('selected');
-            selectedCardIndex = index;
-            console.log(`Karte ausgewählt: ${name} (Kosten: ${cost})`);
+        // 5. Fenster-Größenanpassung
+        window.addEventListener('resize', onWindowResize, false);
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
         }
 
-        // Einfache Test-Zeichnung im Canvas (wird später durch den Game Loop ersetzt)
-        function drawArena() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Mittellinie / Fluss der Arena
-            ctx.strokeStyle = '#388087';
-            ctx.lineWidth = 4;
-            ctx.setLineDash([10, 5]);
-            ctx.beginPath();
-            ctx.moveTo(0, canvas.height / 2);
-            ctx.lineTo(canvas.width, canvas.height / 2);
-            ctx.stroke();
-            ctx.setLineDash([]); // Zurücksetzen
-
-            // Gegnerischer Turm (oben)
-            ctx.fillStyle = '#e94560';
-            ctx.fillRect(canvas.width / 2 - 30, 30, 60, 60);
-
-            // Spieler Turm (unten)
-            ctx.fillStyle = '#00ff88';
-            ctx.fillRect(canvas.width / 2 - 30, canvas.height - 90, 60, 60);
+        // 6. Animations-Schleife (Render-Loop)
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
         }
-
-        drawArena();
+        animate();
     </script>
 </body>
 </html>
