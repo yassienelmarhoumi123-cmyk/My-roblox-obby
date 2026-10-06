@@ -1,822 +1,683 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neon - Stadt, Land, Fluss</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Poppins:wght@700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-color: #0f172a; /* Slate 900 */
-            --accent-glow: 0 0 20px rgba(139, 92, 246, 0.5); /* Violet glow */
-        }
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
-            color: #f8fafc;
-            min-height: 100vh;
-            background-image: 
-                radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
-                radial-gradient(at 50% 0%, hsla(225,39%,30%,0.3) 0, transparent 50%), 
-                radial-gradient(at 100% 0%, hsla(339,49%,30%,0.3) 0, transparent 50%);
-            background-attachment: fixed;
-            overflow-x: hidden;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🇦🇺 English Class Test Prep - Unit 1: Australia</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --accent: #f59e0b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --success: #22c55e;
+      --danger: #ef4444;
+      --radius: 16px;
+    }
 
-        h1, h2, h3, .title-font {
-            font-family: 'Poppins', sans-serif;
-        }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
 
-        .glass {
-            background: rgba(30, 41, 59, 0.4);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 1rem;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-        }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
 
-        .glass-input {
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid rgba(139, 92, 246, 0.3);
-            color: white;
-            transition: all 0.3s ease;
-        }
+    header {
+      width: 100%;
+      max-width: 900px;
+      text-align: center;
+      margin-bottom: 25px;
+      padding: 20px;
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
 
-        .glass-input:focus {
-            outline: none;
-            border-color: rgba(139, 92, 246, 0.8);
-            box-shadow: var(--accent-glow);
-        }
+    header h1 {
+      font-size: 2rem;
+      color: #38bdf8;
+      margin-bottom: 8px;
+    }
 
-        .btn-primary {
-            background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
-            border: none;
-            color: white;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
+    header p {
+      color: var(--text-muted);
+      font-size: 1rem;
+    }
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 0 25px rgba(236, 72, 153, 0.6);
-        }
+    .score-badge {
+      display: inline-block;
+      margin-top: 12px;
+      background: var(--accent);
+      color: #0f172a;
+      font-weight: bold;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.95rem;
+    }
 
-        .btn-stop {
-            background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
-            box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
-        }
-        
-        .btn-stop:hover {
-            box-shadow: 0 0 25px rgba(239, 68, 68, 0.8);
-        }
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      width: 100%;
+      max-width: 900px;
+      margin-bottom: 25px;
+    }
 
-        .neon-text {
-            background: -webkit-linear-gradient(135deg, #a78bfa, #f472b6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 30px rgba(167, 139, 250, 0.3);
-        }
+    .nav-btn {
+      background: var(--card-bg);
+      color: var(--text);
+      border: 1px solid var(--card-border);
+      padding: 12px 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
-        .screen {
-            display: none;
-            animation: fadeIn 0.5s ease-out forwards;
-        }
+    .nav-btn:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
 
-        .screen.active {
-            display: flex;
-        }
+    .nav-btn.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+    }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
+    main {
+      width: 100%;
+      max-width: 900px;
+    }
 
-        /* Pulse animation for the active letter */
-        @keyframes pulse-letter {
-            0% { transform: scale(1); text-shadow: 0 0 20px rgba(236, 72, 153, 0.5); }
-            50% { transform: scale(1.1); text-shadow: 0 0 40px rgba(236, 72, 153, 0.9); }
-            100% { transform: scale(1); text-shadow: 0 0 20px rgba(236, 72, 153, 0.5); }
-        }
+    .section {
+      display: none;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
 
-        .active-letter {
-            animation: pulse-letter 2s infinite;
-        }
-    </style>
+    .section.active {
+      display: block;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h2 {
+      color: #38bdf8;
+      margin-bottom: 15px;
+      font-size: 1.5rem;
+      border-bottom: 2px solid var(--card-border);
+      padding-bottom: 10px;
+    }
+
+    .rule-box {
+      background: #0f172a;
+      border-left: 4px solid var(--accent);
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .rule-box strong {
+      color: var(--accent);
+    }
+
+    /* Flashcard Styles */
+    .flashcard-container {
+      perspective: 1000px;
+      width: 100%;
+      max-width: 450px;
+      height: 240px;
+      margin: 0 auto 20px auto;
+      cursor: pointer;
+    }
+
+    .flashcard {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: var(--radius);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+
+    .flashcard.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .card-front, .card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      border-radius: var(--radius);
+      border: 1px solid var(--card-border);
+      text-align: center;
+    }
+
+    .card-front {
+      background: linear-gradient(145deg, #1e293b, #0f172a);
+    }
+
+    .card-back {
+      background: linear-gradient(145deg, #1e3a8a, #0f172a);
+      transform: rotateY(180deg);
+    }
+
+    .flashcard h3 {
+      font-size: 1.8rem;
+      color: #38bdf8;
+      margin-bottom: 8px;
+    }
+
+    .flashcard p {
+      color: var(--text-muted);
+      font-size: 1rem;
+    }
+
+    .card-controls {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    .btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn:hover {
+      background: var(--primary-hover);
+    }
+
+    /* Quiz Question Styles */
+    .quiz-card {
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .quiz-question {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    @media (min-width: 600px) {
+      .options-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .option-btn {
+      background: var(--card-bg);
+      color: var(--text);
+      border: 1px solid var(--card-border);
+      padding: 12px 15px;
+      border-radius: 8px;
+      text-align: left;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: all 0.2s;
+    }
+
+    .option-btn:hover {
+      border-color: var(--primary);
+      background: #334155;
+    }
+
+    .option-btn.correct {
+      background: var(--success) !important;
+      border-color: var(--success) !important;
+      color: white;
+    }
+
+    .option-btn.wrong {
+      background: var(--danger) !important;
+      border-color: var(--danger) !important;
+      color: white;
+    }
+
+    .input-box {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+      background: var(--card-bg);
+      color: white;
+      font-size: 1rem;
+      margin-bottom: 10px;
+    }
+
+    .feedback {
+      margin-top: 10px;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .feedback.correct { color: var(--success); }
+    .feedback.wrong { color: var(--danger); }
+
+    /* Scramble Game */
+    .scramble-word {
+      font-size: 2rem;
+      letter-spacing: 6px;
+      color: var(--accent);
+      font-weight: bold;
+      text-align: center;
+      margin: 15px 0;
+    }
+
+    footer {
+      margin-top: auto;
+      padding: 20px;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      text-align: center;
+    }
+  </style>
 </head>
-<body class="flex flex-col items-center justify-center p-4">
+<body>
 
-    <div id="app-container" class="w-full max-w-4xl relative min-h-[80vh] flex flex-col">
-        
-        <!-- HEADER -->
-        <header class="text-center mb-8 pt-8">
-            <h1 class="text-5xl md:text-6xl font-bold title-font neon-text tracking-wider uppercase">Stadt Land Neon</h1>
-            <p class="text-gray-400 mt-2 text-sm md:text-base">Das moderne Wortspiel für dich und deine Freunde</p>
-        </header>
+  <header>
+    <h1>🇦🇺 Class Test Prep: Unit 1 Australia</h1>
+    <p>Gezielte Vorbereitung für deine Englisch-Arbeit (Vokabeln, Grammatik & Writing)</p>
+    <div class="score-badge">Gesamtpunkte: <span id="total-score">0</span></div>
+  </header>
 
-        <!-- SCREEN: MAIN MENU -->
-        <div id="screen-menu" class="screen active flex-col items-center justify-center flex-1 w-full max-w-md mx-auto space-y-6">
-            <div class="glass p-8 w-full flex flex-col space-y-6 text-center">
-                <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-2">Dein Spielername</label>
-                    <input type="text" id="player-name-input" placeholder="Z.B. xX_Master_Xx" class="glass-input w-full px-4 py-3 rounded-lg text-center font-bold text-lg" maxlength="15">
-                </div>
-                
-                <div class="h-px w-full bg-gradient-to-r from-transparent via-gray-600 to-transparent my-4"></div>
+  <nav>
+    <button class="nav-btn active" onclick="switchTab('vocab')">🔤 Vokabeln</button>
+    <button class="nav-btn" onclick="switchTab('grammar')">🧩 Grammatik</button>
+    <button class="nav-btn" onclick="switchTab('reading')">🦘 Australien & Leon</button>
+    <button class="nav-btn" onclick="switchTab('writing')">✍️ Argumentative Writing</button>
+    <button class="nav-btn" onclick="switchTab('game')">🎮 Mini-Game</button>
+  </nav>
 
-                <button id="btn-create-room" class="btn-primary w-full py-4 rounded-xl font-bold text-lg uppercase tracking-wider">
-                    Neues Spiel erstellen
-                </button>
+  <main>
 
-                <div class="relative flex items-center py-2">
-                    <div class="flex-grow border-t border-gray-600"></div>
-                    <span class="flex-shrink-0 mx-4 text-gray-400 text-sm">ODER</span>
-                    <div class="flex-grow border-t border-gray-600"></div>
-                </div>
+    <!-- SECTION 1: VOCABULARY -->
+    <section id="vocab" class="section active">
+      <h2>Unit 1 Vocabulary Trainer</h2>
+      <div class="rule-box">
+        💡 <strong>Tipp für die Arbeit:</strong> Lerne die Wortbedeutungen und den Kontext. Du musst die Randnotizen nicht auswendig können, sondern verstehen, wie die Wörter in Sätzen benutzt werden!
+      </div>
 
-                <div class="flex space-x-2">
-                    <input type="text" id="room-code-input" placeholder="CODE" class="glass-input w-2/3 px-4 py-3 rounded-lg text-center font-bold text-xl uppercase tracking-widest" maxlength="4">
-                    <button id="btn-join-room" class="btn-primary w-1/3 rounded-lg font-bold">Beitreten</button>
-                </div>
-                <p id="menu-error" class="text-red-400 text-sm hidden"></p>
-            </div>
+      <h3 style="margin-bottom: 15px;">1. Interaktive Karteikarten</h3>
+      <div class="flashcard-container" onclick="flipCard()">
+        <div class="flashcard" id="card">
+          <div class="card-front">
+            <h3 id="card-english">outback</h3>
+            <p>Klicke zum Umdrehen 🔄</p>
+          </div>
+          <div class="card-back">
+            <h3 id="card-german">das Hinterland Australiens</h3>
+            <p id="card-example">"We traveled through the Australian outback."</p>
+          </div>
         </div>
+      </div>
+      <div class="card-controls">
+        <button class="btn" onclick="prevCard()">⬅️ Vorherige</button>
+        <button class="btn" onclick="nextCard()">Nächste ➡️</button>
+      </div>
 
-        <!-- SCREEN: LOBBY -->
-        <div id="screen-lobby" class="screen flex-col items-center flex-1 w-full mx-auto space-y-6 hidden">
-            <div class="glass p-8 w-full text-center relative overflow-hidden">
-                <div class="absolute top-0 right-0 p-4 opacity-10">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                </div>
-                
-                <h2 class="text-2xl font-bold mb-2">Warteraum</h2>
-                <div class="flex items-center justify-center space-x-3 mb-8">
-                    <span class="text-gray-400">Room Code:</span>
-                    <span id="display-room-code" class="text-4xl font-bold text-white tracking-widest bg-gray-800/50 px-4 py-2 rounded-lg border border-gray-700 select-all"></span>
-                </div>
+      <h3 style="margin-bottom: 15px; margin-top: 30px;">2. Vokabel-Quiz</h3>
+      <div id="vocab-quiz-container"></div>
+    </section>
 
-                <div class="w-full max-w-lg mx-auto bg-gray-900/50 rounded-xl p-4 border border-gray-700/50">
-                    <h3 class="text-lg font-semibold text-left mb-3 border-b border-gray-700 pb-2">Spieler (<span id="player-count">1</span>)</h3>
-                    <ul id="lobby-players-list" class="space-y-2 text-left">
-                        <!-- Players injected here via JS -->
-                    </ul>
-                </div>
+    <!-- SECTION 2: GRAMMAR -->
+    <section id="grammar" class="section">
+      <h2>Grammatik: Participles & Verbs of Perception</h2>
+      
+      <div class="rule-box">
+        📌 <strong>Regel 1: Verbs of perception + Object + Present Participle</strong><br>
+        Nach Verben der Wahrnehmung (<em>see, hear, listen to, notice, spot, watch, smell, feel</em>) folgt ein **Objekt + Verb mit -ing**.<br>
+        <em>Beispiel:</em> "Tom spotted a koala <strong>feeding</strong> her baby." / "I saw a ferry <strong>arriving</strong>."
+      </div>
 
-                <div id="host-controls" class="mt-8 hidden">
-                    <button id="btn-start-game" class="btn-primary w-full max-w-md py-4 rounded-xl font-bold text-xl uppercase tracking-wider">
-                        Spiel Starten
-                    </button>
-                    <p class="text-xs text-gray-500 mt-2">Nur der Host kann das Spiel starten.</p>
-                </div>
-                <div id="guest-waiting" class="mt-8 text-gray-400 animate-pulse">
-                    Warte auf Host, um das Spiel zu starten...
-                </div>
-            </div>
-        </div>
+      <div class="rule-box">
+        📌 <strong>Regel 2: Participle clauses statt Relativsätze</strong><br>
+        Aktiv → <strong>Present Participle (-ing)</strong>: "The city is full of people <em>looking for a parking space</em>."<br>
+        Passiv → <strong>Past Participle (-ed / 3. Form)</strong>: "An event <em>watched by millions of people</em>."
+      </div>
 
-        <!-- SCREEN: GAME BOARD -->
-        <div id="screen-game" class="screen flex-col items-center flex-1 w-full mx-auto hidden">
-            
-            <div class="w-full flex justify-between items-center mb-6 glass px-6 py-4">
-                <div class="flex flex-col">
-                    <span class="text-xs text-gray-400 uppercase tracking-widest">Runde</span>
-                    <span id="game-round-display" class="font-bold text-xl">1</span>
-                </div>
-                <div class="flex flex-col items-center">
-                    <span class="text-xs text-gray-400 uppercase tracking-widest mb-1">Buchstabe</span>
-                    <div id="game-letter-display" class="text-6xl font-bold active-letter title-font neon-text">A</div>
-                </div>
-                <div class="flex flex-col items-end">
-                    <span class="text-xs text-gray-400 uppercase tracking-widest">Punkte</span>
-                    <span id="game-score-display" class="font-bold text-xl text-green-400">0</span>
-                </div>
-            </div>
+      <h3 style="margin-bottom: 15px;">Übung A: Verbs of Perception (Setze das Verb mit -ing ein)</h3>
+      <div id="perception-quiz-container"></div>
 
-            <div class="glass p-6 w-full mb-6">
-                <form id="game-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Input fields dynamically generated here -->
-                </form>
-            </div>
+      <h3 style="margin-bottom: 15px; margin-top: 30px;">Übung B: Participle Clauses (Relativsatz verkürzen)</h3>
+      <div id="participle-quiz-container"></div>
+    </section>
 
-            <button id="btn-stop-round" class="btn-stop w-full max-w-sm py-4 rounded-full font-bold text-2xl uppercase tracking-wider text-white transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center space-x-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>
-                <span>STOP!</span>
-            </button>
-        </div>
+    <!-- SECTION 3: AUSTRALIA & READING -->
+    <section id="reading" class="section">
+      <h2>Australien Fakten & Leon's Testimonial</h2>
+      <div class="rule-box">
+        📖 <strong>Wissen aus den Texten (S. 14–15):</strong><br>
+        • **Leon (16)** war für 6 Monate in Sydney (Manly Beach), wohnte bei einer Gastfamilie (Brian, Elvira, Nick) und ging auf eine Jungen-Privatschule.<br>
+        • **Aussie Slang:** <em>ripper snags</em> = tolle Würstchen, <em>barbie</em> = Grillfest, <em>Aussie</em> = Australier/in.<br>
+        • **Highlights in Sydney:** The Rocks, Circular Quay, Vivid Sydney (Licht-Festival), Manly Ferry.
+      </div>
+      <div id="reading-quiz-container"></div>
+    </section>
 
-        <!-- SCREEN: RESULTS -->
-        <div id="screen-results" class="screen flex-col items-center flex-1 w-full mx-auto hidden">
-            <div class="glass p-8 w-full text-center relative">
-                <h2 class="text-3xl font-bold mb-2 neon-text">Runde Beendet!</h2>
-                <p class="text-gray-400 mb-8">Auswertung der Antworten (Buchstabe: <span id="result-letter" class="text-white font-bold"></span>)</p>
+    <!-- SECTION 4: ARGUMENTATIVE WRITING -->
+    <section id="writing" class="section">
+      <h2>Argumentative Writing (Erörterung)</h2>
+      <div class="rule-box">
+        ✍️ <strong>Struktur einer Erörterung (S. 21 & 184):</strong><br>
+        1. **Introduction:** Thema vorstellen (ohne eigene Meinung einzubringen).<br>
+        2. **Main Body:** <br>
+        &nbsp;&nbsp;&nbsp;a) Gegenargumente (Arguments against your view)<br>
+        &nbsp;&nbsp;&nbsp;b) Eigene Argumente (Arguments supporting your view)<br>
+        3. **Conclusion:** Zusammenfassung & eigene Meinung kurz begründen.
+      </div>
 
-                <div id="results-container" class="space-y-6 w-full text-left">
-                    <!-- Results injected here via JS -->
-                </div>
+      <h3 style="margin-bottom: 15px;">Übung: Verbindungswörter & Struktur</h3>
+      <div id="writing-quiz-container"></div>
+    </section>
 
-                <div id="host-next-controls" class="mt-8 hidden">
-                    <button id="btn-next-round" class="btn-primary w-full py-4 rounded-xl font-bold text-lg uppercase tracking-wider mt-4">
-                        Nächste Runde Starten
-                    </button>
-                </div>
-                <div id="guest-next-waiting" class="mt-8 text-gray-400 animate-pulse">
-                    Warte auf Host für nächste Runde...
-                </div>
-            </div>
-        </div>
+    <!-- SECTION 5: MINI-GAME -->
+    <section id="game" class="section">
+      <h2>🎮 Mini-Game: Word Scramble</h2>
+      <p style="color: var(--text-muted); margin-bottom: 20px;">Entwirre die Buchstaben, um die korrekte Vokabel aus Unit 1 zu finden!</p>
 
-    </div>
+      <div class="quiz-card" style="text-align: center;">
+        <div id="scramble-hint" style="color: var(--accent); font-weight: bold;">Hinweis: Hinterland</div>
+        <div class="scramble-word" id="scramble-target">T U O B A C K</div>
+        <input type="text" id="scramble-input" class="input-box" placeholder="Deine Antwort hier eingeben..." style="max-width: 300px; text-align: center; margin: 0 auto 15px auto; display: block;">
+        <button class="btn" onclick="checkScramble()">Überprüfen</button>
+        <div id="scramble-feedback" class="feedback"></div>
+      </div>
+    </section>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+  </main>
 
-        // Environment Variables Handling
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-slf-app';
-        let firebaseConfig = {};
-        try {
-            if (typeof __firebase_config !== 'undefined') {
-                firebaseConfig = JSON.parse(__firebase_config);
-            }
-        } catch(e) { console.error("Firebase config parse error", e); }
+  <footer>
+    🇦🇺 Viel Erfolg bei deiner Englisch-Klassenarbeit!
+  </footer>
+
+  <script>
+    // GLOBAL STATE
+    let totalScore = 0;
+    const answeredQuestions = new Set();
+
+    function addScore(points, id) {
+      if (!answeredQuestions.has(id)) {
+        answeredQuestions.add(id);
+        totalScore += points;
+        document.getElementById('total-score').innerText = totalScore;
+      }
+    }
+
+    // TAB NAVIGATION
+    function switchTab(tabId) {
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+      
+      event.currentTarget.classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    // FLASHCARDS DATA
+    const flashcards = [
+      { english: "outback", german: "das Hinterland Australiens", example: "The outback is very large and remote." },
+      { english: "stunning", german: "atemberaubend, umwerfend", example: "Sydney has stunning beaches." },
+      { english: "remote", german: "abgelegen, abgeschieden", example: "They stayed in a remote village." },
+      { english: "easy-going", german: "locker, unbeschwert, gelassen", example: "Aussies love the easy-going way of life." },
+      { english: "barbie", german: "Grillfest (Aussie-Slang)", example: "Brian cooks a lot on the barbie." },
+      { english: "homesick", german: "Heimweh haben", example: "Leon got homesick at Christmas." },
+      { english: "convict", german: "Sträfling, Gefangener", example: "The first convicts settled in Sydney in the 1790s." },
+      { english: "self-confident", german: "selbstbewusst", example: "He is much more self-confident now." }
+    ];
+
+    let currentCardIndex = 0;
+
+    function flipCard() {
+      document.getElementById('card').classList.toggle('flipped');
+    }
+
+    function updateCard() {
+      document.getElementById('card').classList.remove('flipped');
+      setTimeout(() => {
+        const item = flashcards[currentCardIndex];
+        document.getElementById('card-english').innerText = item.english;
+        document.getElementById('card-german').innerText = item.german;
+        document.getElementById('card-example').innerText = `"${item.example}"`;
+      }, 200);
+    }
+
+    function nextCard() {
+      currentCardIndex = (currentCardIndex + 1) % flashcards.length;
+      updateCard();
+    }
+
+    function prevCard() {
+      currentCardIndex = (currentCardIndex - 1 + flashcards.length) % flashcards.length;
+      updateCard();
+    }
+
+    // VOCAB QUIZ DATA
+    const vocabQuestions = [
+      { id: 'v1', q: 'Was bedeutet das australische Slang-Wort "barbie"?', options: ['Puppe', 'Grillfest', 'Strand', 'Schule'], correct: 1 },
+      { id: 'v2', q: 'Was heißt "easy-going" auf Deutsch?', options: ['leichtfüßig', 'locker / gelassen', 'schwierig', 'pünktlich'], correct: 1 },
+      { id: 'v3', q: 'Welches Wort passt? "The beaches in Manly are absolutely ________ (atemberaubend)."', options: ['remote', 'stunning', 'talkative', 'private'], correct: 1 },
+      { id: 'v4', q: 'Was ist ein "convict"?', options: ['Ein Reiseleiter', 'Ein Einheimischer', 'Ein Sträfling', 'Ein Känguru'], correct: 2 }
+    ];
+
+    // PERCEPTION GRAMMAR DATA
+    const perceptionQuestions = [
+      { id: 'g1', q: 'At Taronga Zoo, Tom spotted a koala mother ________ (feed) her baby.', answer: 'feeding' },
+      { id: 'g2', q: 'Tom noticed a toy koala ________ (lie) on the ground.', answer: 'lying' },
+      { id: 'g3', q: 'He looked around and saw a little girl ________ (cry).', answer: 'crying' },
+      { id: 'g4', q: 'Tom\'s father smelled sausages ________ (cook) on a barbecue.', answer: 'cooking' },
+      { id: 'g5', q: 'They sat down and watched the boats ________ (sail) in the harbour.', answer: 'sailing' }
+    ];
+
+    // PARTICIPLE CLAUSES DATA
+    const participleQuestions = [
+      { id: 'p1', q: 'Verkürze den Satz: "The city is full of people who are looking for a parking space."', options: ['The city is full of people looked for a parking space.', 'The city is full of people looking for a parking space.', 'The city is full of people look for a parking space.'], correct: 1 },
+      { id: 'p2', q: 'Verkürze den Satz: "The Eurovision Song Contest is an event which is watched by millions of people."', options: ['an event watching by millions', 'an event watched by millions', 'an event watch by millions'], correct: 1 },
+      { id: 'p3', q: 'Welche Form nutzt man für ein Verkürzen von Aktiv-Sätzen?', options: ['Present Participle (-ing)', 'Past Participle (-ed / 3. Form)', 'Infinitive with to'], correct: 0 }
+    ];
+
+    // READING QUIZ DATA
+    const readingQuestions = [
+      { id: 'r1', q: 'Wie lange blieb Leon in Sydney?', options: ['3 Monate', '6 Monate', '1 Jahr', '2 Wochen'], correct: 1 },
+      { id: 'r2', q: 'Was sind "ripper snags" im australischen Englisch?', options: ['Kängurus', 'Tolle Würstchen', 'Gefährliche Spinnen', 'Große Wellen'], correct: 1 },
+      { id: 'r3', q: 'Welcher Sport ist an Leons Privatschule am wichtigsten?', options: ['Fußball', 'Cricket', 'Rugby', 'Tennis'], correct: 2 },
+      { id: 'r4', q: 'Was ist "Vivid Sydney"?', options: ['Ein Surfwettbewerb', 'Ein Licht- und Kunstfestival', 'Ein Zoo', 'Eine historische Straße'], correct: 1 }
+    ];
+
+    // WRITING QUIZ DATA
+    const writingQuestions = [
+      { id: 'w1', q: 'Was gehört in den Einleitungssatz (Introduction) einer Erörterung?', options: ['Direkt die eigene Meinung sagen', 'Das Thema vorstellen ohne eigene Meinung', 'Nur Gegenargumente aufzählen', 'Ein kurzes Fazit schreiben'], correct: 1 },
+      { id: 'w2', q: 'Welche Phrase eignet sich zum Einleiten von weiteren Argumenten?', options: ['In addition, ...', 'Goodbye, ...', 'Once upon a time, ...', 'Dear Sir or Madam, ...'], correct: 0 },
+      { id: 'w3', q: 'Wie zeigt man Gegensätze auf?', options: ['On the one hand ... on the other hand', 'Firstly ... secondly', 'In conclusion ... finally', 'Because of ... so'], correct: 0 }
+    ];
+
+    // RENDER MULTIPLE CHOICE QUIZ
+    function renderMCQuiz(containerId, questions) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = '';
+
+      questions.forEach((q) => {
+        const card = document.createElement('div');
+        card.className = 'quiz-card';
         
-        let initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-        // Ensure we only init if we have config
-        let app, db, auth;
-        if (Object.keys(firebaseConfig).length > 0) {
-            app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-        }
-
-        // --- GLOBAL APP STATE ---
-        const STATE = {
-            userId: null,
-            playerName: '',
-            roomCode: null,
-            isHost: false,
-            currentLobbyData: null,
-            unsubscribeLobby: null,
-            localAnswers: {}
-        };
-
-        const LETTERS = 'ABCDEFGHIJKLMNOPRSTUVWZ'.split(''); // Removed tricky ones for smooth gameplay
-        
-        const ALL_CATEGORIES = [
-            "Stadt", "Land", "Fluss", "Name", "Tier", 
-            "Beruf", "Marke", "Promi", "Essen", "Pflanze", "Film/Serie"
-        ];
-
-        // ----------------------------------------------------
-        // THE CHEAT DICTIONARY (GODMODE)
-        // ----------------------------------------------------
-        const GODMODE_DICT = {
-            'A': { 'Stadt':'Amsterdam', 'Land':'Argentinien', 'Fluss':'Amazonas', 'Name':'Anna', 'Tier':'Affe', 'Beruf':'Arzt', 'Marke':'Apple', 'Promi':'Adele', 'Essen':'Apfel', 'Pflanze':'Aloe Vera', 'Film/Serie':'Avatar' },
-            'B': { 'Stadt':'Berlin', 'Land':'Brasilien', 'Fluss':'Brahmaputra', 'Name':'Ben', 'Tier':'Bär', 'Beruf':'Bäcker', 'Marke':'BMW', 'Promi':'Brad Pitt', 'Essen':'Banane', 'Pflanze':'Bambus', 'Film/Serie':'Batman' },
-            'C': { 'Stadt':'Chicago', 'Land':'Chile', 'Fluss':'Colorado', 'Name':'Chris', 'Tier':'Chamäleon', 'Beruf':'Clown', 'Marke':'Coca Cola', 'Promi':'Cristiano Ronaldo', 'Essen':'Currywurst', 'Pflanze':'Chrysantheme', 'Film/Serie':'Cars' },
-            'D': { 'Stadt':'Dortmund', 'Land':'Dänemark', 'Fluss':'Donau', 'Name':'David', 'Tier':'Dachs', 'Beruf':'Detektiv', 'Marke':'Dior', 'Promi':'Drake', 'Essen':'Döner', 'Pflanze':'Distel', 'Film/Serie':'Dune' },
-            'E': { 'Stadt':'Essen', 'Land':'Estland', 'Fluss':'Elbe', 'Name':'Emil', 'Tier':'Elefant', 'Beruf':'Elektriker', 'Marke':'Esprit', 'Promi':'Eminem', 'Essen':'Erdbeere', 'Pflanze':'Efeu', 'Film/Serie':'ET' },
-            'F': { 'Stadt':'Frankfurt', 'Land':'Frankreich', 'Fluss':'Fulda', 'Name':'Felix', 'Tier':'Fuchs', 'Beruf':'Friseur', 'Marke':'Ford', 'Promi':'Frank Sinatra', 'Essen':'Fisch', 'Pflanze':'Farn', 'Film/Serie':'Fast & Furious' },
-            'G': { 'Stadt':'Genf', 'Land':'Griechenland', 'Fluss':'Ganges', 'Name':'Gustav', 'Tier':'Giraffe', 'Beruf':'Gärtner', 'Marke':'Gucci', 'Promi':'George Clooney', 'Essen':'Gurke', 'Pflanze':'Gänseblümchen', 'Film/Serie':'Gladiator' },
-            'H': { 'Stadt':'Hamburg', 'Land':'Holland', 'Fluss':'Havel', 'Name':'Hans', 'Tier':'Hund', 'Beruf':'Holzfäller', 'Marke':'Hugo Boss', 'Promi':'Harrison Ford', 'Essen':'Honig', 'Pflanze':'Hortensie', 'Film/Serie':'Harry Potter' },
-            'I': { 'Stadt':'Istanbul', 'Land':'Italien', 'Fluss':'Isar', 'Name':'Ida', 'Tier':'Igel', 'Beruf':'Informatiker', 'Marke':'IKEA', 'Promi':'Idris Elba', 'Essen':'Ingwer', 'Pflanze':'Iris', 'Film/Serie':'Inception' },
-            'J': { 'Stadt':'Jakarta', 'Land':'Japan', 'Fluss':'Jordan', 'Name':'Julia', 'Tier':'Jaguar', 'Beruf':'Jongleur', 'Marke':'JBL', 'Promi':'Johnny Depp', 'Essen':'Joghurt', 'Pflanze':'Jasmin', 'Film/Serie':'Joker' },
-            'K': { 'Stadt':'Köln', 'Land':'Kenia', 'Fluss':'Kongo', 'Name':'Kevin', 'Tier':'Kamel', 'Beruf':'Kellner', 'Marke':'Kelloggs', 'Promi':'Keanu Reeves', 'Essen':'Käse', 'Pflanze':'Kaktus', 'Film/Serie':'King Kong' },
-            'L': { 'Stadt':'London', 'Land':'Lettland', 'Fluss':'Loire', 'Name':'Lukas', 'Tier':'Löwe', 'Beruf':'Lehrer', 'Marke':'Lego', 'Promi':'Leonardo DiCaprio', 'Essen':'Lachs', 'Pflanze':'Lilie', 'Film/Serie':'Lost' },
-            'M': { 'Stadt':'München', 'Land':'Mexiko', 'Fluss':'Mosel', 'Name':'Max', 'Tier':'Maus', 'Beruf':'Maler', 'Marke':'Mercedes', 'Promi':'Madonna', 'Essen':'Mango', 'Pflanze':'Moos', 'Film/Serie':'Matrix' },
-            'N': { 'Stadt':'New York', 'Land':'Norwegen', 'Fluss':'Nil', 'Name':'Nina', 'Tier':'Nashorn', 'Beruf':'Notar', 'Marke':'Nike', 'Promi':'Natalie Portman', 'Essen':'Nudeln', 'Pflanze':'Nelke', 'Film/Serie':'Narcos' },
-            'O': { 'Stadt':'Oslo', 'Land':'Oman', 'Fluss':'Oder', 'Name':'Otto', 'Tier':'Ochse', 'Beruf':'Optiker', 'Marke':'Opel', 'Promi':'Orlando Bloom', 'Essen':'Orange', 'Pflanze':'Orchidee', 'Film/Serie':'Oceans Eleven' },
-            'P': { 'Stadt':'Paris', 'Land':'Polen', 'Fluss':'Po', 'Name':'Paul', 'Tier':'Panda', 'Beruf':'Pilot', 'Marke':'Puma', 'Promi':'Pedro Pascal', 'Essen':'Pizza', 'Pflanze':'Palme', 'Film/Serie':'Pulp Fiction' },
-            'R': { 'Stadt':'Rom', 'Land':'Russland', 'Fluss':'Rhein', 'Name':'Ralf', 'Tier':'Ratte', 'Beruf':'Richter', 'Marke':'Rolex', 'Promi':'Rihanna', 'Essen':'Reis', 'Pflanze':'Rose', 'Film/Serie':'Rocky' },
-            'S': { 'Stadt':'Stuttgart', 'Land':'Spanien', 'Fluss':'Seine', 'Name':'Sarah', 'Tier':'Schlange', 'Beruf':'Schmied', 'Marke':'Sony', 'Promi':'Sylvester Stallone', 'Essen':'Salat', 'Pflanze':'Sonnenblume', 'Film/Serie':'Star Wars' },
-            'T': { 'Stadt':'Tokio', 'Land':'Türkei', 'Fluss':'Themse', 'Name':'Tim', 'Tier':'Tiger', 'Beruf':'Tischler', 'Marke':'Toyota', 'Promi':'Tom Cruise', 'Essen':'Tomate', 'Pflanze':'Tulpe', 'Film/Serie':'Titanic' },
-            'U': { 'Stadt':'Ulm', 'Land':'Ungarn', 'Fluss':'Ural', 'Name':'Uwe', 'Tier':'Uhu', 'Beruf':'Uhrmacher', 'Marke':'Under Armour', 'Promi':'Uma Thurman', 'Essen':'Udon', 'Pflanze':'Ulme', 'Film/Serie':'Up' },
-            'V': { 'Stadt':'Venedig', 'Land':'Venezuela', 'Fluss':'Volga', 'Name':'Viktor', 'Tier':'Vogel', 'Beruf':'Verkäufer', 'Marke':'Vans', 'Promi':'Vin Diesel', 'Essen':'Vanille', 'Pflanze':'Veilchen', 'Film/Serie':'Venom' },
-            'W': { 'Stadt':'Wien', 'Land':'Wales', 'Fluss':'Weser', 'Name':'Werner', 'Tier':'Wal', 'Beruf':'Wächter', 'Marke':'VW', 'Promi':'Will Smith', 'Essen':'Waffel', 'Pflanze':'Weide', 'Film/Serie':'Wall-E' },
-            'Z': { 'Stadt':'Zürich', 'Land':'Zypern', 'Fluss':'Zambezi', 'Name':'Zoe', 'Tier':'Zebra', 'Beruf':'Zahnarzt', 'Marke':'Zara', 'Promi':'Zendaya', 'Essen':'Zitrone', 'Pflanze':'Zeder', 'Film/Serie':'Zombieland' }
-        };
-
-        // Fallback generator for letters not fully defined (just in case)
-        const getGodmodeAnswer = (letter, category) => {
-            if (GODMODE_DICT[letter] && GODMODE_DICT[letter][category]) {
-                return GODMODE_DICT[letter][category];
-            }
-            return letter + "-Super" + category.substring(0,3); // Fake fallback
-        };
-
-        // --- DOM ELEMENTS ---
-        const screens = {
-            menu: document.getElementById('screen-menu'),
-            lobby: document.getElementById('screen-lobby'),
-            game: document.getElementById('screen-game'),
-            results: document.getElementById('screen-results')
-        };
-
-        const els = {
-            playerName: document.getElementById('player-name-input'),
-            roomCodeInput: document.getElementById('room-code-input'),
-            btnCreate: document.getElementById('btn-create-room'),
-            btnJoin: document.getElementById('btn-join-room'),
-            menuError: document.getElementById('menu-error'),
-            
-            displayRoomCode: document.getElementById('display-room-code'),
-            lobbyList: document.getElementById('lobby-players-list'),
-            playerCount: document.getElementById('player-count'),
-            hostControls: document.getElementById('host-controls'),
-            guestWaiting: document.getElementById('guest-waiting'),
-            btnStartGame: document.getElementById('btn-start-game'),
-            
-            gameRound: document.getElementById('game-round-display'),
-            gameLetter: document.getElementById('game-letter-display'),
-            gameScore: document.getElementById('game-score-display'),
-            gameForm: document.getElementById('game-form'),
-            btnStopRound: document.getElementById('btn-stop-round'),
-            
-            resultLetter: document.getElementById('result-letter'),
-            resultsContainer: document.getElementById('results-container'),
-            hostNextControls: document.getElementById('host-next-controls'),
-            guestNextWaiting: document.getElementById('guest-next-waiting'),
-            btnNextRound: document.getElementById('btn-next-round')
-        };
-
-        // --- UTILS ---
-        const generateRoomCode = () => {
-            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-            let result = '';
-            for (let i = 0; i < 4; i++) {
-                result += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            return result;
-        };
-
-        const showScreen = (screenName) => {
-            Object.values(screens).forEach(s => s.classList.remove('active'));
-            screens[screenName].classList.add('active');
-        };
-
-        const showError = (msg) => {
-            els.menuError.textContent = msg;
-            els.menuError.classList.remove('hidden');
-            setTimeout(() => els.menuError.classList.add('hidden'), 3000);
-        };
-
-        const getLobbyRef = (code) => doc(db, 'artifacts', appId, 'public', 'data', `slf_rooms_${code}`);
-
-        // --- FIREBASE AUTH & INIT ---
-        const initGame = async () => {
-            if (!auth) {
-                showError("Firebase nicht konfiguriert.");
-                return;
-            }
-            try {
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(auth);
-                }
-                STATE.userId = auth.currentUser.uid;
-                
-                // Retrieve saved name if any
-                const savedName = localStorage.getItem('slf_player_name');
-                if (savedName) els.playerName.value = savedName;
-
-            } catch (error) {
-                console.error("Auth Error:", error);
-                showError("Verbindungsfehler.");
-            }
-        };
-
-        // --- LOBBY LOGIC ---
-        const joinOrCreateRoom = async (isCreating) => {
-            if (!auth || !STATE.userId) return;
-            
-            const name = els.playerName.value.trim();
-            if (!name) return showError("Bitte gib einen Namen ein!");
-            localStorage.setItem('slf_player_name', name);
-            STATE.playerName = name;
-
-            let code = isCreating ? generateRoomCode() : els.roomCodeInput.value.trim().toUpperCase();
-            if (!isCreating && code.length !== 4) return showError("Raumcode muss 4 Buchstaben lang sein!");
-
-            const roomRef = getLobbyRef(code);
-
-            try {
-                if (isCreating) {
-                    STATE.isHost = true;
-                    await setDoc(roomRef, {
-                        status: 'waiting', // waiting, playing, evaluating
-                        hostUid: STATE.userId,
-                        currentLetter: '',
-                        categories: [],
-                        round: 1,
-                        players: {
-                            [STATE.userId]: {
-                                name: name,
-                                score: 0,
-                                answers: {}
-                            }
-                        }
-                    });
-                } else {
-                    const snap = await getDoc(roomRef);
-                    if (!snap.exists()) return showError("Raum nicht gefunden!");
-                    const data = snap.data();
-                    if (data.status !== 'waiting' && data.status !== 'evaluating') {
-                        return showError("Spiel läuft bereits!");
-                    }
-                    STATE.isHost = data.hostUid === STATE.userId;
-                    
-                    // Add user to players map using updateDoc with dot notation
-                    await updateDoc(roomRef, {
-                        [`players.${STATE.userId}`]: {
-                            name: name,
-                            score: data.players[STATE.userId]?.score || 0,
-                            answers: {}
-                        }
-                    });
-                }
-
-                STATE.roomCode = code;
-                els.displayRoomCode.textContent = code;
-                setupLobbyListener(roomRef);
-                showScreen('lobby');
-
-            } catch (err) {
-                console.error(err);
-                showError("Fehler beim Beitreten des Raums.");
-            }
-        };
-
-        const setupLobbyListener = (roomRef) => {
-            if (STATE.unsubscribeLobby) STATE.unsubscribeLobby();
-
-            STATE.unsubscribeLobby = onSnapshot(roomRef, (snapshot) => {
-                if (!snapshot.exists()) {
-                    showError("Raum wurde geschlossen.");
-                    showScreen('menu');
-                    return;
-                }
-                const data = snapshot.data();
-                STATE.currentLobbyData = data;
-                
-                // Determine Host implicitly if previous host left (simple fallback, not robust but okay here)
-                if (data.hostUid === STATE.userId) STATE.isHost = true;
-
-                updateUIRoleSpecifics();
-                
-                // Handle State Transitions
-                if (data.status === 'waiting') {
-                    renderLobbyPlayers(data.players);
-                    if (screens.lobby.style.display !== 'flex') showScreen('lobby');
-                } else if (data.status === 'playing') {
-                    if (!screens.game.classList.contains('active')) {
-                        prepareGameUI(data);
-                        showScreen('game');
-                    }
-                } else if (data.status === 'evaluating') {
-                    if (!screens.results.classList.contains('active')) {
-                        renderResults(data);
-                        showScreen('results');
-                    }
-                }
-            }, (error) => {
-                console.error("Listen Error:", error);
-            });
-        };
-
-        const updateUIRoleSpecifics = () => {
-            if (STATE.isHost) {
-                els.hostControls.classList.remove('hidden');
-                els.guestWaiting.classList.add('hidden');
-                els.hostNextControls.classList.remove('hidden');
-                els.guestNextWaiting.classList.add('hidden');
-            } else {
-                els.hostControls.classList.add('hidden');
-                els.guestWaiting.classList.remove('hidden');
-                els.hostNextControls.classList.add('hidden');
-                els.guestNextWaiting.classList.remove('hidden');
-            }
-        };
-
-        const renderLobbyPlayers = (playersMap) => {
-            els.lobbyList.innerHTML = '';
-            const pIds = Object.keys(playersMap);
-            els.playerCount.textContent = pIds.length;
-            
-            pIds.forEach(id => {
-                const p = playersMap[id];
-                const li = document.createElement('li');
-                li.className = 'flex items-center justify-between p-3 bg-gray-800 rounded-lg border border-gray-700';
-                
-                let hostBadge = id === STATE.currentLobbyData.hostUid 
-                    ? '<span class="text-xs bg-purple-600 px-2 py-1 rounded-full text-white ml-2 shadow-[0_0_10px_rgba(139,92,246,0.5)]">Host</span>' 
-                    : '';
-                
-                li.innerHTML = `
-                    <div class="flex items-center">
-                        <div class="w-2 h-2 rounded-full bg-green-400 mr-3 shadow-[0_0_5px_rgba(74,222,128,0.8)]"></div>
-                        <span class="font-bold text-lg">${p.name}</span>
-                        ${hostBadge}
-                    </div>
-                    <span class="text-gray-400 font-mono">Punkte: ${p.score || 0}</span>
-                `;
-                els.lobbyList.appendChild(li);
-            });
-        };
-
-        // --- GAME LOGIC ---
-        const generateCategories = () => {
-            const shuffled = [...ALL_CATEGORIES].sort(() => 0.5 - Math.random());
-            return shuffled.slice(0, 5); // 5 random categories
-        };
-
-        const startGameAction = async () => {
-            if (!STATE.isHost || !STATE.roomCode) return;
-            const roomRef = getLobbyRef(STATE.roomCode);
-            
-            const randomLetter = LETTERS[Math.floor(Math.random() * LETTERS.length)];
-            const chosenCategories = generateCategories();
-
-            // Clear previous answers
-            const updates = {
-                status: 'playing',
-                currentLetter: randomLetter,
-                categories: chosenCategories,
-            };
-            
-            // Clear all players' answers
-            Object.keys(STATE.currentLobbyData.players).forEach(uid => {
-                updates[`players.${uid}.answers`] = {};
-            });
-
-            await updateDoc(roomRef, updates);
-        };
-
-        const prepareGameUI = (data) => {
-            STATE.localAnswers = {};
-            els.gameRound.textContent = data.round;
-            els.gameLetter.textContent = data.currentLetter;
-            els.gameScore.textContent = data.players[STATE.userId]?.score || 0;
-            
-            els.gameForm.innerHTML = '';
-            
-            data.categories.forEach((cat, index) => {
-                const div = document.createElement('div');
-                div.className = 'flex flex-col space-y-1';
-                div.innerHTML = `
-                    <label class="text-sm font-semibold text-gray-300 ml-1 flex items-center">
-                        <span class="w-5 h-5 inline-flex items-center justify-center bg-gray-700 text-xs rounded-full mr-2">${index+1}</span>
-                        ${cat}
-                    </label>
-                    <input type="text" data-category="${cat}" class="game-input glass-input w-full px-4 py-3 rounded-lg text-lg" placeholder="..." autocomplete="off">
-                `;
-                els.gameForm.appendChild(div);
-            });
-
-            // Auto-focus first input
-            setTimeout(() => {
-                const firstInput = els.gameForm.querySelector('.game-input');
-                if (firstInput) firstInput.focus();
-            }, 500);
-        };
-
-        const submitRoundAndStop = async () => {
-            if (!STATE.userId || !STATE.roomCode) return;
-            
-            // Gather answers
-            const inputs = els.gameForm.querySelectorAll('.game-input');
-            const answers = {};
-            inputs.forEach(input => {
-                answers[input.dataset.category] = input.value.trim();
-            });
-
-            const roomRef = getLobbyRef(STATE.roomCode);
-            
-            try {
-                // First save our answers
-                await updateDoc(roomRef, {
-                    [`players.${STATE.userId}.answers`]: answers,
-                    status: 'evaluating' // The first to stop changes the status for everyone
-                });
-            } catch(e) {
-                console.error("Error stopping round", e);
-            }
-        };
-
-        // Auto-save answers when evaluating triggered by SOMEONE ELSE
-        const saveLocalAnswersIfEvaluating = async () => {
-             const inputs = els.gameForm.querySelectorAll('.game-input');
-             if(inputs.length === 0) return; // not playing
-             const answers = {};
-             inputs.forEach(input => {
-                 answers[input.dataset.category] = input.value.trim();
-             });
-             const roomRef = getLobbyRef(STATE.roomCode);
-             await updateDoc(roomRef, {
-                 [`players.${STATE.userId}.answers`]: answers
-             });
-        };
-
-        const renderResults = async (data) => {
-            // If someone else stopped, we quickly save our inputs if we haven't
-            if (data.status === 'evaluating' && (!data.players[STATE.userId].answers || Object.keys(data.players[STATE.userId].answers).length === 0)) {
-                await saveLocalAnswersIfEvaluating();
-                // We rely on the snapshot firing again once we update our answers
-            }
-
-            els.resultLetter.textContent = data.currentLetter;
-            els.resultsContainer.innerHTML = '';
-
-            const players = data.players;
-            const categories = data.categories;
-
-            // Simple auto-scoring logic (local calculation for display)
-            // 10 pts for any non-empty answer matching the first letter (case insensitive)
-            
-            // Build UI for each player
-            Object.keys(players).forEach(uid => {
-                const p = players[uid];
-                let roundScore = 0;
-                
-                const card = document.createElement('div');
-                card.className = 'bg-gray-800/80 rounded-xl p-4 border border-gray-700 mb-4 shadow-lg';
-                
-                let answersHTML = '';
-                
-                categories.forEach(cat => {
-                    const ans = p.answers ? (p.answers[cat] || '') : '';
-                    let isValid = false;
-                    let displayAns = ans;
-                    
-                    if (ans && ans.charAt(0).toLowerCase() === data.currentLetter.toLowerCase()) {
-                        isValid = true;
-                        roundScore += 10;
-                    }
-
-                    if (!ans) displayAns = '<span class="italic text-gray-600">- Keine Antwort -</span>';
-                    
-                    let statusColor = isValid ? 'text-green-400' : 'text-red-400';
-                    let statusIcon = isValid 
-                        ? `<svg class="w-4 h-4 text-green-400 ml-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>`
-                        : `<svg class="w-4 h-4 text-red-400 ml-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>`;
-
-                    answersHTML += `
-                        <div class="flex justify-between items-center py-1 border-b border-gray-700/50 last:border-0 text-sm">
-                            <span class="text-gray-400 w-1/3">${cat}</span>
-                            <span class="w-2/3 text-right font-medium ${statusColor} flex items-center justify-end">${displayAns} ${statusIcon}</span>
-                        </div>
-                    `;
-                });
-
-                card.innerHTML = `
-                    <div class="flex justify-between items-center mb-3">
-                        <span class="font-bold text-lg text-white">${p.name} ${uid === STATE.userId ? '(Du)' : ''}</span>
-                        <span class="font-mono text-green-400 bg-green-400/10 px-3 py-1 rounded-full border border-green-400/30">+${roundScore} Pkt</span>
-                    </div>
-                    <div class="pl-2">
-                        ${answersHTML}
-                    </div>
-                `;
-                els.resultsContainer.appendChild(card);
-                
-                // If I am host, I update the main score in DB (only host does this to prevent race conditions)
-                if (STATE.isHost && data.status === 'evaluating') {
-                     updatePlayerScore(uid, p.score + roundScore, data.round);
-                }
-            });
-        };
-
-        const updatePlayerScore = async (uid, newScore, currentRound) => {
-            // Prevent multiple adds by tracking if score was already processed for this round.
-            // Simplified for this artifact: We just overwrite `score` with calculated total if needed,
-            // But since Firebase snapshot might fire multiple times, a robust approach is needed.
-            // For brevity, we assume Host calculates and updates once when entering 'evaluating'.
-            
-            // To ensure we only update once per round transition:
-            if(STATE.currentLobbyData.roundProcessed === currentRound) return; 
-
-            const roomRef = getLobbyRef(STATE.roomCode);
-            await updateDoc(roomRef, {
-                [`players.${uid}.score`]: newScore
-            });
-        };
-        
-        const markRoundProcessedAndNext = async () => {
-             if (!STATE.isHost) return;
-             const roomRef = getLobbyRef(STATE.roomCode);
-             const nextRound = STATE.currentLobbyData.round + 1;
-             
-             // First mark processed to prevent double scoring
-             await updateDoc(roomRef, {
-                 roundProcessed: STATE.currentLobbyData.round
-             });
-             
-             // Then go back to waiting room for next round
-             await updateDoc(roomRef, {
-                 status: 'waiting',
-                 round: nextRound,
-                 currentLetter: '',
-                 categories: []
-             });
-        }
-
-
-        // ----------------------------------------------------
-        // THE CHEAT SYSTEM (GODMODE)
-        // ----------------------------------------------------
-        let cheatBuffer = "";
-        const CHEAT_CODE = "godmode";
-
-        document.addEventListener('keydown', (e) => {
-            // Only capture basic alphabet keys for the cheat buffer
-            if (e.key.length === 1 && e.key.match(/[a-z]/i)) {
-                cheatBuffer += e.key.toLowerCase();
-                // Keep buffer at length of cheat code
-                if (cheatBuffer.length > CHEAT_CODE.length) {
-                    cheatBuffer = cheatBuffer.slice(1);
-                }
-
-                // Check for trigger
-                if (cheatBuffer === CHEAT_CODE) {
-                    activateGodmode();
-                    cheatBuffer = ""; // reset
-                }
-            }
+        let optionsHTML = '';
+        q.options.forEach((opt, idx) => {
+          optionsHTML += `<button class="option-btn" onclick="checkMC('${q.id}', ${idx}, ${q.correct}, this)">${opt}</button>`;
         });
 
-        const activateGodmode = () => {
-            // Only works if we are actively playing
-            if (!STATE.currentLobbyData || STATE.currentLobbyData.status !== 'playing') return;
-            
-            const currentLetter = STATE.currentLobbyData.currentLetter;
-            const categories = STATE.currentLobbyData.categories;
-            
-            if (!currentLetter || !categories) return;
+        card.innerHTML = `
+          <div class="quiz-question">${q.q}</div>
+          <div class="options-grid">${optionsHTML}</div>
+          <div id="feedback-${q.id}" class="feedback"></div>
+        `;
+        container.appendChild(card);
+      });
+    }
 
-            // Flash screen to indicate success secretly (subtle)
-            document.body.style.transition = "background-color 0.1s";
-            document.body.style.backgroundColor = "#4c1d95"; // deep purple flash
-            setTimeout(() => {
-                document.body.style.backgroundColor = "var(--bg-color)";
-            }, 150);
+    function checkMC(qId, selectedIdx, correctIdx, btn) {
+      const parent = btn.parentElement;
+      const buttons = parent.querySelectorAll('.option-btn');
+      const feedback = document.getElementById(`feedback-${qId}`);
 
-            // Populate fields
-            const inputs = els.gameForm.querySelectorAll('.game-input');
-            inputs.forEach(input => {
-                const cat = input.dataset.category;
-                const answer = getGodmodeAnswer(currentLetter, cat);
-                
-                // Type it out slowly for effect, or instantly. Let's do instant for godmode power.
-                input.value = answer;
-                
-                // Trigger visual feedback on the input
-                input.style.boxShadow = "0 0 15px #22d3ee"; // cyan glow
-                setTimeout(() => {
-                    input.style.boxShadow = "";
-                }, 1000);
-            });
-            
-            console.log("Godmode activated.");
-        };
+      buttons.forEach(b => b.disabled = true);
 
+      if (selectedIdx === correctIdx) {
+        btn.classList.add('correct');
+        feedback.innerText = '✨ Richtig! (+10 Punkte)';
+        feedback.className = 'feedback correct';
+        addScore(10, qId);
+      } else {
+        btn.classList.add('wrong');
+        buttons[correctIdx].classList.add('correct');
+        feedback.innerText = '❌ Leider falsch!';
+        feedback.className = 'feedback wrong';
+      }
+    }
 
-        // --- EVENT LISTENERS ---
-        els.btnCreate.addEventListener('click', () => joinOrCreateRoom(true));
-        els.btnJoin.addEventListener('click', () => joinOrCreateRoom(false));
-        els.btnStartGame.addEventListener('click', startGameAction);
-        els.btnStopRound.addEventListener('click', submitRoundAndStop);
-        els.btnNextRound.addEventListener('click', markRoundProcessedAndNext);
-        
-        // Handle ENTER key in Join Room input
-        els.roomCodeInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') joinOrCreateRoom(false);
-        });
-        
-        // Handle ENTER in Game to move to next input or submit
-        els.gameForm.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                const inputs = Array.from(els.gameForm.querySelectorAll('.game-input'));
-                const index = inputs.indexOf(e.target);
-                if (index > -1 && index < inputs.length - 1) {
-                    inputs[index + 1].focus();
-                } else if (index === inputs.length - 1) {
-                    // Last input, maybe blur or highlight STOP
-                    inputs[index].blur();
-                    els.btnStopRound.classList.add('animate-pulse');
-                    setTimeout(()=> els.btnStopRound.classList.remove('animate-pulse'), 1000);
-                }
-            }
-        });
+    // RENDER FILL IN BLANK QUIZ
+    function renderPerceptionQuiz() {
+      const container = document.getElementById('perception-quiz-container');
+      container.innerHTML = '';
 
-        // Initialize
-        window.addEventListener('load', () => {
-            initGame();
-        });
+      perceptionQuestions.forEach((q) => {
+        const card = document.createElement('div');
+        card.className = 'quiz-card';
+        card.innerHTML = `
+          <div class="quiz-question">${q.q}</div>
+          <input type="text" id="input-${q.id}" class="input-box" placeholder="Antwort eingeben (z.B. feeding)...">
+          <button class="btn" onclick="checkFill('${q.id}', '${q.answer}')">Prüfen</button>
+          <div id="feedback-${q.id}" class="feedback"></div>
+        `;
+        container.appendChild(card);
+      });
+    }
 
-    </script>
+    function checkFill(qId, answer) {
+      const input = document.getElementById(`input-${qId}`);
+      const val = input.value.trim().toLowerCase();
+      const feedback = document.getElementById(`feedback-${qId}`);
+
+      if (val === answer.toLowerCase()) {
+        feedback.innerText = '✨ Richtig! (+10 Punkte)';
+        feedback.className = 'feedback correct';
+        input.style.borderColor = 'var(--success)';
+        addScore(10, qId);
+      } else {
+        feedback.innerText = `❌ Falsch. Die richtige Antwort ist: ${answer}`;
+        feedback.className = 'feedback wrong';
+        input.style.borderColor = 'var(--danger)';
+      }
+    }
+
+    // SCRAMBLE GAME LOGIC
+    const scrambleWords = [
+      { word: 'OUTBACK', hint: 'Das australische Hinterland' },
+      { word: 'BARBIE', hint: 'Aussie Slang für Grillfest' },
+      { word: 'PARTICIPLE', hint: 'Grammatik-Thema der Arbeit' },
+      { word: 'SUNSCREEN', hint: 'Schützt vor der Sonne' },
+      { word: 'TESTIMONIAL', hint: 'Erfahrungsbericht (Leon)' }
+    ];
+
+    let currentScrambleIndex = 0;
+
+    function initScramble() {
+      const item = scrambleWords[currentScrambleIndex];
+      document.getElementById('scramble-hint').innerText = `Hinweis: ${item.hint}`;
+      
+      // Shuffle letters
+      let arr = item.word.split('');
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      document.getElementById('scramble-target').innerText = arr.join(' ');
+      document.getElementById('scramble-input').value = '';
+      document.getElementById('scramble-feedback').innerText = '';
+    }
+
+    function checkScramble() {
+      const input = document.getElementById('scramble-input').value.trim().toUpperCase();
+      const target = scrambleWords[currentScrambleIndex].word;
+      const feedback = document.getElementById('scramble-feedback');
+
+      if (input === target) {
+        feedback.innerText = '🎉 Super gemacht! (+15 Punkte)';
+        feedback.className = 'feedback correct';
+        addScore(15, 'scramble-' + currentScrambleIndex);
+
+        setTimeout(() => {
+          currentScrambleIndex = (currentScrambleIndex + 1) % scrambleWords.length;
+          initScramble();
+        }, 1500);
+      } else {
+        feedback.innerText = '❌ Nicht ganz, versuche es nochmal!';
+        feedback.className = 'feedback wrong';
+      }
+    }
+
+    // INITIALIZATION
+    window.onload = function() {
+      updateCard();
+      renderMCQuiz('vocab-quiz-container', vocabQuestions);
+      renderPerceptionQuiz();
+      renderMCQuiz('participle-quiz-container', participleQuestions);
+      renderMCQuiz('reading-quiz-container', readingQuestions);
+      renderMCQuiz('writing-quiz-container', writingQuestions);
+      initScramble();
+    };
+  </script>
 </body>
 </html>
