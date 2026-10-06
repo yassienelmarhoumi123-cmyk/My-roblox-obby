@@ -3,19 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🇦🇺 English Class Test Prep - Unit 1: Australia</title>
+  <title>🇦🇺 English Class Test Prep PRO - Unit 1 Australia</title>
   <style>
     :root {
-      --bg: #0f172a;
-      --card-bg: #1e293b;
-      --card-border: #334155;
-      --primary: #3b82f6;
-      --primary-hover: #2563eb;
+      --bg-dark: #0a0f1d;
+      --bg-card: #151c2e;
+      --bg-sidebar: #0f172a;
+      --border-color: #1e293b;
+      --primary: #38bdf8;
+      --primary-hover: #0284c7;
       --accent: #f59e0b;
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
-      --success: #22c55e;
+      --success: #10b981;
       --danger: #ef4444;
+      --text-main: #f8fafc;
+      --text-sub: #94a3b8;
       --radius: 16px;
     }
 
@@ -23,228 +24,184 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
     }
 
     body {
-      background-color: var(--bg);
-      color: var(--text);
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      display: flex;
       min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* SIDEBAR */
+    aside {
+      width: 280px;
+      background-color: var(--bg-sidebar);
+      border-right: 1px solid var(--border-color);
+      padding: 25px 20px;
       display: flex;
       flex-direction: column;
+      gap: 25px;
+      position: fixed;
+      height: 100vh;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
       align-items: center;
-      padding: 20px;
+      gap: 12px;
     }
 
-    header {
-      width: 100%;
-      max-width: 900px;
-      text-align: center;
-      margin-bottom: 25px;
-      padding: 20px;
-      background: linear-gradient(135deg, #1e293b, #0f172a);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius);
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-    }
-
-    header h1 {
+    .brand-logo {
       font-size: 2rem;
-      color: #38bdf8;
+    }
+
+    .brand-text h1 {
+      font-size: 1.1rem;
+      color: var(--primary);
+      font-weight: 800;
+    }
+
+    .brand-text p {
+      font-size: 0.75rem;
+      color: var(--text-sub);
+    }
+
+    /* USER PROFILE BADGE */
+    .user-stats {
+      background: rgba(56, 189, 248, 0.05);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: 12px;
+      padding: 15px;
+    }
+
+    .stats-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      font-weight: 700;
       margin-bottom: 8px;
     }
 
-    header p {
-      color: var(--text-muted);
-      font-size: 1rem;
+    .xp-bar-bg {
+      background: #1e293b;
+      height: 8px;
+      border-radius: 4px;
+      overflow: hidden;
     }
 
-    .score-badge {
-      display: inline-block;
-      margin-top: 12px;
-      background: var(--accent);
-      color: #0f172a;
-      font-weight: bold;
-      padding: 6px 16px;
-      border-radius: 20px;
-      font-size: 0.95rem;
+    .xp-bar-fill {
+      background: linear-gradient(90deg, #38bdf8, #10b981);
+      height: 100%;
+      width: 0%;
+      transition: width 0.4s ease;
     }
 
-    nav {
+    /* NAV LINKS */
+    .nav-list {
+      list-style: none;
       display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-      width: 100%;
-      max-width: 900px;
-      margin-bottom: 25px;
-    }
-
-    .nav-btn {
-      background: var(--card-bg);
-      color: var(--text);
-      border: 1px solid var(--card-border);
-      padding: 12px 20px;
-      border-radius: 12px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
+      flex-direction: column;
       gap: 8px;
     }
 
-    .nav-btn:hover {
-      border-color: var(--primary);
-      transform: translateY(-2px);
-    }
-
-    .nav-btn.active {
-      background: var(--primary);
-      border-color: var(--primary);
-      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
-    }
-
-    main {
+    .nav-item button {
       width: 100%;
-      max-width: 900px;
+      background: transparent;
+      border: none;
+      color: var(--text-sub);
+      padding: 12px 16px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: left;
     }
 
+    .nav-item button:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
+    }
+
+    .nav-item button.active {
+      background: var(--primary);
+      color: #04111d;
+      box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
+    }
+
+    /* MAIN CONTENT AREA */
+    main {
+      margin-left: 280px;
+      flex: 1;
+      padding: 40px;
+      max-width: 1000px;
+    }
+
+    header.dashboard-header {
+      margin-bottom: 30px;
+    }
+
+    header.dashboard-header h2 {
+      font-size: 1.8rem;
+      margin-bottom: 6px;
+    }
+
+    header.dashboard-header p {
+      color: var(--text-sub);
+    }
+
+    /* CONTENT SECTIONS */
     .section {
       display: none;
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius);
-      padding: 30px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     }
 
     .section.active {
       display: block;
-      animation: fadeIn 0.3s ease-in-out;
+      animation: fadeIn 0.3s ease-out;
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
+      from { opacity: 0; transform: translateY(12px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    h2 {
-      color: #38bdf8;
-      margin-bottom: 15px;
-      font-size: 1.5rem;
-      border-bottom: 2px solid var(--card-border);
-      padding-bottom: 10px;
-    }
-
-    .rule-box {
-      background: #0f172a;
-      border-left: 4px solid var(--accent);
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      font-size: 0.95rem;
-      line-height: 1.5;
-    }
-
-    .rule-box strong {
-      color: var(--accent);
-    }
-
-    /* Flashcard Styles */
-    .flashcard-container {
-      perspective: 1000px;
-      width: 100%;
-      max-width: 450px;
-      height: 240px;
-      margin: 0 auto 20px auto;
-      cursor: pointer;
-    }
-
-    .flashcard {
-      width: 100%;
-      height: 100%;
-      position: relative;
-      transform-style: preserve-3d;
-      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-      border-radius: var(--radius);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-    }
-
-    .flashcard.flipped {
-      transform: rotateY(180deg);
-    }
-
-    .card-front, .card-back {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      backface-visibility: hidden;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-      border-radius: var(--radius);
-      border: 1px solid var(--card-border);
-      text-align: center;
-    }
-
-    .card-front {
-      background: linear-gradient(145deg, #1e293b, #0f172a);
-    }
-
-    .card-back {
-      background: linear-gradient(145deg, #1e3a8a, #0f172a);
-      transform: rotateY(180deg);
-    }
-
-    .flashcard h3 {
-      font-size: 1.8rem;
-      color: #38bdf8;
-      margin-bottom: 8px;
-    }
-
-    .flashcard p {
-      color: var(--text-muted);
-      font-size: 1rem;
-    }
-
-    .card-controls {
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-      margin-bottom: 30px;
-    }
-
-    .btn {
-      background: var(--primary);
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .btn:hover {
-      background: var(--primary-hover);
-    }
-
-    /* Quiz Question Styles */
-    .quiz-card {
-      background: #0f172a;
-      border: 1px solid var(--card-border);
+    /* INFO RULE BOX */
+    .rule-card {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.6), rgba(15, 23, 42, 0.8));
+      border: 1px solid var(--border-color);
+      border-left: 4px solid var(--primary);
       border-radius: 12px;
       padding: 20px;
+      margin-bottom: 25px;
+      line-height: 1.6;
+      font-size: 0.95rem;
+    }
+
+    .rule-card strong {
+      color: var(--primary);
+    }
+
+    /* CARDS & QUIZZES */
+    .quiz-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 22px;
       margin-bottom: 20px;
     }
 
-    .quiz-question {
-      font-size: 1.1rem;
-      font-weight: 600;
+    .quiz-title {
+      font-weight: 700;
+      font-size: 1.05rem;
       margin-bottom: 15px;
+      line-height: 1.4;
     }
 
     .options-grid {
@@ -253,430 +210,535 @@
       gap: 10px;
     }
 
-    @media (min-width: 600px) {
+    @media (min-width: 650px) {
       .options-grid {
         grid-template-columns: 1fr 1fr;
       }
     }
 
-    .option-btn {
-      background: var(--card-bg);
-      color: var(--text);
-      border: 1px solid var(--card-border);
-      padding: 12px 15px;
-      border-radius: 8px;
+    .btn-option {
+      background: #0f172a;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 12px 18px;
+      border-radius: 10px;
       text-align: left;
       cursor: pointer;
       font-size: 0.95rem;
       transition: all 0.2s;
     }
 
-    .option-btn:hover {
+    .btn-option:hover {
       border-color: var(--primary);
-      background: #334155;
+      background: #1e293b;
     }
 
-    .option-btn.correct {
+    .btn-option.correct {
       background: var(--success) !important;
       border-color: var(--success) !important;
       color: white;
     }
 
-    .option-btn.wrong {
+    .btn-option.wrong {
       background: var(--danger) !important;
       border-color: var(--danger) !important;
       color: white;
     }
 
-    .input-box {
+    .input-pro {
       width: 100%;
-      padding: 12px;
-      border-radius: 8px;
-      border: 1px solid var(--card-border);
-      background: var(--card-bg);
+      background: #0f172a;
+      border: 1px solid var(--border-color);
+      padding: 12px 16px;
+      border-radius: 10px;
       color: white;
       font-size: 1rem;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
+      outline: none;
     }
 
-    .feedback {
-      margin-top: 10px;
-      font-weight: 600;
+    .input-pro:focus {
+      border-color: var(--primary);
+    }
+
+    .btn-action {
+      background: var(--primary);
+      color: #0f172a;
+      font-weight: 700;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-action:hover {
+      background: var(--primary-hover);
+      color: white;
+    }
+
+    .feedback-msg {
+      margin-top: 12px;
+      font-weight: 700;
       font-size: 0.95rem;
     }
+    .feedback-msg.success { color: var(--success); }
+    .feedback-msg.danger { color: var(--danger); }
 
-    .feedback.correct { color: var(--success); }
-    .feedback.wrong { color: var(--danger); }
-
-    /* Scramble Game */
-    .scramble-word {
-      font-size: 2rem;
-      letter-spacing: 6px;
-      color: var(--accent);
-      font-weight: bold;
-      text-align: center;
-      margin: 15px 0;
+    /* FLASHCARD STYLES */
+    .flashcard-wrapper {
+      perspective: 1000px;
+      width: 100%;
+      max-width: 500px;
+      height: 260px;
+      margin: 0 auto 20px auto;
     }
 
-    footer {
-      margin-top: auto;
-      padding: 20px;
-      color: var(--text-muted);
-      font-size: 0.85rem;
+    .flashcard-inner {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+    }
+
+    .flashcard-inner.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .fc-front, .fc-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: var(--radius);
+      border: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 25px;
       text-align: center;
+    }
+
+    .fc-front {
+      background: linear-gradient(145deg, #151c2e, #0f172a);
+    }
+
+    .fc-back {
+      background: linear-gradient(145deg, #1e293b, #0f172a);
+      transform: rotateY(180deg);
+    }
+
+    .fc-word {
+      font-size: 2rem;
+      color: var(--primary);
+      margin-bottom: 8px;
+      font-weight: 800;
+    }
+
+    .fc-sub {
+      color: var(--text-sub);
+      font-size: 0.9rem;
+    }
+
+    .audio-btn {
+      background: rgba(56, 189, 248, 0.15);
+      border: none;
+      color: var(--primary);
+      padding: 6px 14px;
+      border-radius: 20px;
+      margin-top: 10px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .fc-controls {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+      body { flex-direction: column; }
+      aside { width: 100%; height: auto; position: relative; }
+      main { margin-left: 0; padding: 20px; }
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <h1>🇦🇺 Class Test Prep: Unit 1 Australia</h1>
-    <p>Gezielte Vorbereitung für deine Englisch-Arbeit (Vokabeln, Grammatik & Writing)</p>
-    <div class="score-badge">Gesamtpunkte: <span id="total-score">0</span></div>
-  </header>
+  <!-- SIDEBAR NAVIGATION -->
+  <aside>
+    <div class="brand">
+      <div class="brand-logo">🇦🇺</div>
+      <div class="brand-text">
+        <h1>Class Test PRO</h1>
+        <p>Unit 1: Australia</p>
+      </div>
+    </div>
 
-  <nav>
-    <button class="nav-btn active" onclick="switchTab('vocab')">🔤 Vokabeln</button>
-    <button class="nav-btn" onclick="switchTab('grammar')">🧩 Grammatik</button>
-    <button class="nav-btn" onclick="switchTab('reading')">🦘 Australien & Leon</button>
-    <button class="nav-btn" onclick="switchTab('writing')">✍️ Argumentative Writing</button>
-    <button class="nav-btn" onclick="switchTab('game')">🎮 Mini-Game</button>
-  </nav>
+    <div class="user-stats">
+      <div class="stats-header">
+        <span id="user-level">Level 1: Rookie</span>
+        <span id="user-xp">0 XP</span>
+      </div>
+      <div class="xp-bar-bg">
+        <div class="xp-bar-fill" id="xp-fill"></div>
+      </div>
+    </div>
 
+    <ul class="nav-list">
+      <li class="nav-item">
+        <button class="active" onclick="showTab('vocab', this)">🔤 Vokabel-Mastery</button>
+      </li>
+      <li class="nav-item">
+        <button onclick="showTab('perception', this)">👁️ Verbs of Perception</button>
+      </li>
+      <li class="nav-item">
+        <button onclick="showTab('participles', this)">🧩 Participle Clauses</button>
+      </li>
+      <li class="nav-item">
+        <button onclick="showTab('reading', this)">🦘 Reading & Sydney</button>
+      </li>
+      <li class="nav-item">
+        <button onclick="showTab('writing', this)">✍️ Writing (Erörterung)</button>
+      </li>
+      <li class="nav-item">
+        <button onclick="showTab('exam', this)">🎓 Exam Simulation</button>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- MAIN CONTENT -->
   <main>
 
     <!-- SECTION 1: VOCABULARY -->
     <section id="vocab" class="section active">
-      <h2>Unit 1 Vocabulary Trainer</h2>
-      <div class="rule-box">
-        💡 <strong>Tipp für die Arbeit:</strong> Lerne die Wortbedeutungen und den Kontext. Du musst die Randnotizen nicht auswendig können, sondern verstehen, wie die Wörter in Sätzen benutzt werden!
+      <header class="dashboard-header">
+        <h2>🔤 Vokabel-Mastery (Unit 1)</h2>
+        <p>Lerne Schlüsselbegriffe, Aussprache und Kontext für die Klassenarbeit.</p>
+      </header>
+
+      <div class="rule-card">
+        💡 <strong>Pro-Lernhilfe:</strong> Du musst die Worterklärungen nicht wortwörtlich auswendig lernen, sondern verstehen, in welchem Kontext sie im Satz angewendet werden!
       </div>
 
-      <h3 style="margin-bottom: 15px;">1. Interaktive Karteikarten</h3>
-      <div class="flashcard-container" onclick="flipCard()">
-        <div class="flashcard" id="card">
-          <div class="card-front">
-            <h3 id="card-english">outback</h3>
-            <p>Klicke zum Umdrehen 🔄</p>
+      <!-- FLASHCARD PLAYER -->
+      <div class="flashcard-wrapper" onclick="toggleFlip()">
+        <div class="flashcard-inner" id="fc-card">
+          <div class="fc-front">
+            <div class="fc-word" id="fc-en">outback</div>
+            <div class="fc-sub">Klicke zum Umdrehen 🔄</div>
+            <button class="audio-btn" onclick="event.stopPropagation(); speakWord()">🔊 Aussprache anhören</button>
           </div>
-          <div class="card-back">
-            <h3 id="card-german">das Hinterland Australiens</h3>
-            <p id="card-example">"We traveled through the Australian outback."</p>
+          <div class="fc-back">
+            <div class="fc-word" id="fc-de" style="color: var(--accent);">das Hinterland Australiens</div>
+            <div class="fc-sub" id="fc-ex" style="font-style: italic; margin-top: 10px;">"We traveled through the Australian outback."</div>
           </div>
         </div>
       </div>
-      <div class="card-controls">
-        <button class="btn" onclick="prevCard()">⬅️ Vorherige</button>
-        <button class="btn" onclick="nextCard()">Nächste ➡️</button>
+
+      <div class="fc-controls">
+        <button class="btn-action" onclick="prevFC()">⬅️ Zurück</button>
+        <button class="btn-action" onclick="nextFC()">Weiter ➡️</button>
       </div>
 
-      <h3 style="margin-bottom: 15px; margin-top: 30px;">2. Vokabel-Quiz</h3>
-      <div id="vocab-quiz-container"></div>
+      <h3 style="margin-bottom: 15px;">Vokabel-Intensivtest</h3>
+      <div id="vocab-quiz-list"></div>
     </section>
 
-    <!-- SECTION 2: GRAMMAR -->
-    <section id="grammar" class="section">
-      <h2>Grammatik: Participles & Verbs of Perception</h2>
-      
-      <div class="rule-box">
-        📌 <strong>Regel 1: Verbs of perception + Object + Present Participle</strong><br>
-        Nach Verben der Wahrnehmung (<em>see, hear, listen to, notice, spot, watch, smell, feel</em>) folgt ein **Objekt + Verb mit -ing**.<br>
-        <em>Beispiel:</em> "Tom spotted a koala <strong>feeding</strong> her baby." / "I saw a ferry <strong>arriving</strong>."
+    <!-- SECTION 2: VERBS OF PERCEPTION -->
+    <section id="perception" class="section">
+      <header class="dashboard-header">
+        <h2>👁️ Verbs of Perception + Object + Present Participle</h2>
+        <p>Übungen zu Buchseite 19 (Aufgabe 8 & 9).</p>
+      </header>
+
+      <div class="rule-card">
+        📌 <strong>Grammatik-Formel:</strong><br>
+        <strong>Verb der Wahrnehmung</strong> (<em>see, hear, notice, watch, smell, spot, feel</em>) + <strong>Objekt</strong> + <strong>Verb mit -ing</strong>.<br>
+        <em>Beispiel:</em> Tom spotted a koala mother <strong>feeding</strong> her baby. / I saw a ferry <strong>arriving</strong>.
       </div>
 
-      <div class="rule-box">
-        📌 <strong>Regel 2: Participle clauses statt Relativsätze</strong><br>
-        Aktiv → <strong>Present Participle (-ing)</strong>: "The city is full of people <em>looking for a parking space</em>."<br>
-        Passiv → <strong>Past Participle (-ed / 3. Form)</strong>: "An event <em>watched by millions of people</em>."
-      </div>
-
-      <h3 style="margin-bottom: 15px;">Übung A: Verbs of Perception (Setze das Verb mit -ing ein)</h3>
-      <div id="perception-quiz-container"></div>
-
-      <h3 style="margin-bottom: 15px; margin-top: 30px;">Übung B: Participle Clauses (Relativsatz verkürzen)</h3>
-      <div id="participle-quiz-container"></div>
+      <div id="perception-quiz-list"></div>
     </section>
 
-    <!-- SECTION 3: AUSTRALIA & READING -->
+    <!-- SECTION 3: PARTICIPLE CLAUSES -->
+    <section id="participles" class="section">
+      <header class="dashboard-header">
+        <h2>🧩 Participle Clauses (Verkürzung von Relativsätzen)</h2>
+        <p>Übungen zu Buchseite 18 & 172.</p>
+      </header>
+
+      <div class="rule-card">
+        📌 <strong>Aktiv vs. Passiv:</strong><br>
+        • <strong>Aktiv (Present Participle = -ing):</strong> The man <em>who was driving the car</em> → The man <strong>driving</strong> the car.<br>
+        • <strong>Passiv (Past Participle = -ed / 3. Form):</strong> An event <em>which is watched by millions</em> → An event <strong>watched</strong> by millions.
+      </div>
+
+      <div id="participle-quiz-list"></div>
+    </section>
+
+    <!-- SECTION 4: READING & SYDNEY -->
     <section id="reading" class="section">
-      <h2>Australien Fakten & Leon's Testimonial</h2>
-      <div class="rule-box">
-        📖 <strong>Wissen aus den Texten (S. 14–15):</strong><br>
-        • **Leon (16)** war für 6 Monate in Sydney (Manly Beach), wohnte bei einer Gastfamilie (Brian, Elvira, Nick) und ging auf eine Jungen-Privatschule.<br>
-        • **Aussie Slang:** <em>ripper snags</em> = tolle Würstchen, <em>barbie</em> = Grillfest, <em>Aussie</em> = Australier/in.<br>
-        • **Highlights in Sydney:** The Rocks, Circular Quay, Vivid Sydney (Licht-Festival), Manly Ferry.
+      <header class="dashboard-header">
+        <h2>🦘 Reading Comprehension: Leon & Sydney</h2>
+        <p>Fragen zu "Leon's Testimonial" & "Rosella In-Flight Tips" (S. 14–15).</p>
+      </header>
+
+      <div class="rule-card">
+        📖 <strong>Fakten-Check:</strong> Leon verbrachte 6 Monate in Sydney (Manly Beach), wohnte bei Gasteltern Brian & Elvira sowie Gastbruder Nick, ging auf eine Jungen-Privatschule (Rugby ist sehr wichtig) und lernte Surfen.
       </div>
-      <div id="reading-quiz-container"></div>
+
+      <div id="reading-quiz-list"></div>
     </section>
 
-    <!-- SECTION 4: ARGUMENTATIVE WRITING -->
+    <!-- SECTION 5: ARGUMENTATIVE WRITING -->
     <section id="writing" class="section">
-      <h2>Argumentative Writing (Erörterung)</h2>
-      <div class="rule-box">
-        ✍️ <strong>Struktur einer Erörterung (S. 21 & 184):</strong><br>
-        1. **Introduction:** Thema vorstellen (ohne eigene Meinung einzubringen).<br>
-        2. **Main Body:** <br>
-        &nbsp;&nbsp;&nbsp;a) Gegenargumente (Arguments against your view)<br>
-        &nbsp;&nbsp;&nbsp;b) Eigene Argumente (Arguments supporting your view)<br>
-        3. **Conclusion:** Zusammenfassung & eigene Meinung kurz begründen.
+      <header class="dashboard-header">
+        <h2>✍️ Writing Masterclass: Argumentative Text</h2>
+        <p>Struktur & Verbindungswörter für deine Erörterung (S. 21 & 184).</p>
+      </header>
+
+      <div class="rule-card">
+        ✍️ <strong>Aufbau einer Erörterung:</strong><br>
+        1. <strong>Introduction:</strong> Thema neutral vorstellen.<br>
+        2. <strong>Main Body:</strong> Gegenargumente bringen, danach eigene Argumente entkräften.<br>
+        3. <strong>Conclusion:</strong> Eigene Meinung begründet zusammenfassen.
       </div>
 
-      <h3 style="margin-bottom: 15px;">Übung: Verbindungswörter & Struktur</h3>
-      <div id="writing-quiz-container"></div>
+      <div id="writing-quiz-list"></div>
     </section>
 
-    <!-- SECTION 5: MINI-GAME -->
-    <section id="game" class="section">
-      <h2>🎮 Mini-Game: Word Scramble</h2>
-      <p style="color: var(--text-muted); margin-bottom: 20px;">Entwirre die Buchstaben, um die korrekte Vokabel aus Unit 1 zu finden!</p>
+    <!-- SECTION 6: EXAM SIMULATION -->
+    <section id="exam" class="section">
+      <header class="dashboard-header">
+        <h2>🎓 Klassenarbeits-Simulation</h2>
+        <p>10 gemischte Fragen aus allen Bereichen unter Prüfungsbedingungen.</p>
+      </header>
 
-      <div class="quiz-card" style="text-align: center;">
-        <div id="scramble-hint" style="color: var(--accent); font-weight: bold;">Hinweis: Hinterland</div>
-        <div class="scramble-word" id="scramble-target">T U O B A C K</div>
-        <input type="text" id="scramble-input" class="input-box" placeholder="Deine Antwort hier eingeben..." style="max-width: 300px; text-align: center; margin: 0 auto 15px auto; display: block;">
-        <button class="btn" onclick="checkScramble()">Überprüfen</button>
-        <div id="scramble-feedback" class="feedback"></div>
+      <div id="exam-container">
+        <button class="btn-action" style="padding: 15px 30px; font-size: 1.1rem;" onclick="startExam()">🚀 Prüfung jetzt starten</button>
       </div>
     </section>
 
   </main>
 
-  <footer>
-    🇦🇺 Viel Erfolg bei deiner Englisch-Klassenarbeit!
-  </footer>
-
   <script>
-    // GLOBAL STATE
-    let totalScore = 0;
-    const answeredQuestions = new Set();
+    // GAME STATE & XP SYSTEM
+    let xp = 0;
+    let level = 1;
+    const answeredIDs = new Set();
 
-    function addScore(points, id) {
-      if (!answeredQuestions.has(id)) {
-        answeredQuestions.add(id);
-        totalScore += points;
-        document.getElementById('total-score').innerText = totalScore;
+    function addXP(amount, id) {
+      if (!answeredIDs.has(id)) {
+        answeredIDs.add(id);
+        xp += amount;
+        updateXPUI();
       }
     }
 
-    // TAB NAVIGATION
-    function switchTab(tabId) {
-      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-      document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+    function updateXPUI() {
+      document.getElementById('user-xp').innerText = `${xp} XP`;
+      let currentLevelName = "Level 1: Aussie Rookie";
+      let progress = (xp % 100);
       
-      event.currentTarget.classList.add('active');
+      if (xp >= 300) { currentLevelName = "Level 4: Outback Master 🏆"; }
+      else if (xp >= 200) { currentLevelName = "Level 3: Sydney Explorer 🏄‍♂️"; }
+      else if (xp >= 100) { currentLevelName = "Level 2: Grammar Expert 🎓"; }
+
+      document.getElementById('user-level').innerText = currentLevelName;
+      document.getElementById('xp-fill').style.width = `${Math.min(progress, 100)}%`;
+    }
+
+    // NAVIGATION
+    function showTab(tabId, btn) {
+      document.querySelectorAll('.nav-item button').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+
+      btn.classList.add('active');
       document.getElementById(tabId).classList.add('active');
     }
 
-    // FLASHCARDS DATA
+    // FLASHCARD PLAYER DATA & SPEECH SYNTHESIS
     const flashcards = [
-      { english: "outback", german: "das Hinterland Australiens", example: "The outback is very large and remote." },
-      { english: "stunning", german: "atemberaubend, umwerfend", example: "Sydney has stunning beaches." },
-      { english: "remote", german: "abgelegen, abgeschieden", example: "They stayed in a remote village." },
-      { english: "easy-going", german: "locker, unbeschwert, gelassen", example: "Aussies love the easy-going way of life." },
-      { english: "barbie", german: "Grillfest (Aussie-Slang)", example: "Brian cooks a lot on the barbie." },
-      { english: "homesick", german: "Heimweh haben", example: "Leon got homesick at Christmas." },
-      { english: "convict", german: "Sträfling, Gefangener", example: "The first convicts settled in Sydney in the 1790s." },
-      { english: "self-confident", german: "selbstbewusst", example: "He is much more self-confident now." }
+      { en: "outback", de: "das Hinterland Australiens", ex: "The outback is remote and huge." },
+      { en: "stunning", de: "atemberaubend, umwerfend", ex: "Sydney has stunning beaches." },
+      { en: "remote", de: "abgelegen, abgeschieden", ex: "They stayed in a remote village." },
+      { en: "easy-going", de: "locker, unbeschwert, gelassen", ex: "Aussies love the easy-going lifestyle." },
+      { en: "barbie", de: "Grillfest (Aussie-Slang)", ex: "Brian cooks a lot of sausages on the barbie." },
+      { en: "homesick", de: "Heimweh haben", ex: "Leon got homesick at Christmas time." },
+      { en: "convict", de: "Sträfling, Gefangener", ex: "The first convicts arrived in the 1790s." },
+      { en: "self-confident", de: "selbstbewusst", ex: "He is much more self-confident now." },
+      { en: "flying fox", de: "Flughund (Fledermausart)", ex: "You can see flying foxes in Botanic Garden." },
+      { en: "didgeridoo", de: "Didgeridoo (Aboriginal Musikinstrument)", ex: "Aboriginal players play the didgeridoo." }
     ];
 
-    let currentCardIndex = 0;
+    let fcIdx = 0;
 
-    function flipCard() {
-      document.getElementById('card').classList.toggle('flipped');
+    function toggleFlip() {
+      document.getElementById('fc-card').classList.toggle('flipped');
     }
 
-    function updateCard() {
-      document.getElementById('card').classList.remove('flipped');
+    function speakWord() {
+      const text = flashcards[fcIdx].en;
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'en-US';
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function updateFC() {
+      document.getElementById('fc-card').classList.remove('flipped');
       setTimeout(() => {
-        const item = flashcards[currentCardIndex];
-        document.getElementById('card-english').innerText = item.english;
-        document.getElementById('card-german').innerText = item.german;
-        document.getElementById('card-example').innerText = `"${item.example}"`;
+        document.getElementById('fc-en').innerText = flashcards[fcIdx].en;
+        document.getElementById('fc-de').innerText = flashcards[fcIdx].de;
+        document.getElementById('fc-ex').innerText = `"${flashcards[fcIdx].ex}"`;
       }, 200);
     }
 
-    function nextCard() {
-      currentCardIndex = (currentCardIndex + 1) % flashcards.length;
-      updateCard();
+    function nextFC() {
+      fcIdx = (fcIdx + 1) % flashcards.length;
+      updateFC();
     }
 
-    function prevCard() {
-      currentCardIndex = (currentCardIndex - 1 + flashcards.length) % flashcards.length;
-      updateCard();
+    function prevFC() {
+      fcIdx = (fcIdx - 1 + flashcards.length) % flashcards.length;
+      updateFC();
     }
 
-    // VOCAB QUIZ DATA
-    const vocabQuestions = [
-      { id: 'v1', q: 'Was bedeutet das australische Slang-Wort "barbie"?', options: ['Puppe', 'Grillfest', 'Strand', 'Schule'], correct: 1 },
-      { id: 'v2', q: 'Was heißt "easy-going" auf Deutsch?', options: ['leichtfüßig', 'locker / gelassen', 'schwierig', 'pünktlich'], correct: 1 },
-      { id: 'v3', q: 'Welches Wort passt? "The beaches in Manly are absolutely ________ (atemberaubend)."', options: ['remote', 'stunning', 'talkative', 'private'], correct: 1 },
-      { id: 'v4', q: 'Was ist ein "convict"?', options: ['Ein Reiseleiter', 'Ein Einheimischer', 'Ein Sträfling', 'Ein Känguru'], correct: 2 }
+    // EXERCISE DATA
+    const vocabQuiz = [
+      { id: 'v1', q: 'Was bedeutet der Ausdruck "ripper snags" im Aussie-Slang?', opts: ['Gefährliche Krokodile', 'Tolle / leckere Würstchen', 'Große Surfwellen', 'Schöne Strände'], correct: 1 },
+      { id: 'v2', q: 'Ergänze den Satz: "Sydney has a lot of ________ (atemberaubend) beaches like Manly."', opts: ['remote', 'stunning', 'talkative', 'private'], correct: 1 },
+      { id: 'v3', q: 'Welches Wort beschreibt eine Person, die sehr entspannt und locker ist?', opts: ['homesick', 'easy-going', 'poisonous', 'populous'], correct: 1 },
+      { id: 'v4', q: 'Was ist "the outback"?', opts: ['Ein Restaurant in Sydney', 'Das dünn besiedelte Hinterland Australiens', 'Ein berühmter Surfer-Strand', 'Ein Festival'], correct: 1 }
     ];
 
-    // PERCEPTION GRAMMAR DATA
-    const perceptionQuestions = [
-      { id: 'g1', q: 'At Taronga Zoo, Tom spotted a koala mother ________ (feed) her baby.', answer: 'feeding' },
-      { id: 'g2', q: 'Tom noticed a toy koala ________ (lie) on the ground.', answer: 'lying' },
-      { id: 'g3', q: 'He looked around and saw a little girl ________ (cry).', answer: 'crying' },
-      { id: 'g4', q: 'Tom\'s father smelled sausages ________ (cook) on a barbecue.', answer: 'cooking' },
-      { id: 'g5', q: 'They sat down and watched the boats ________ (sail) in the harbour.', answer: 'sailing' }
+    const perceptionQuiz = [
+      { id: 'p1', q: 'At Taronga Zoo, Tom spotted a koala mother ________ (feed) her baby.', ans: 'feeding' },
+      { id: 'p2', q: 'Tom noticed a toy koala ________ (lie) on the ground.', ans: 'lying' },
+      { id: 'p3', q: 'He saw a little girl ________ (cry) near the otters.', ans: 'crying' },
+      { id: 'p4', q: 'Tom\'s father smelled sausages ________ (cook) on the barbecue.', ans: 'cooking' },
+      { id: 'p5', q: 'They watched the boats ________ (sail) in Sydney Harbour.', ans: 'sailing' },
+      { id: 'p6', q: 'I\'ve never seen tourists ________ (climb) Sydney Harbour Bridge.', ans: 'climbing' },
+      { id: 'p7', q: 'Your skin is red! I can feel my skin ________ (burn).', ans: 'burning' },
+      { id: 'p8', q: 'I saw the Manly ferry ________ (arrive) at Circular Quay.', ans: 'arriving' }
     ];
 
-    // PARTICIPLE CLAUSES DATA
-    const participleQuestions = [
-      { id: 'p1', q: 'Verkürze den Satz: "The city is full of people who are looking for a parking space."', options: ['The city is full of people looked for a parking space.', 'The city is full of people looking for a parking space.', 'The city is full of people look for a parking space.'], correct: 1 },
-      { id: 'p2', q: 'Verkürze den Satz: "The Eurovision Song Contest is an event which is watched by millions of people."', options: ['an event watching by millions', 'an event watched by millions', 'an event watch by millions'], correct: 1 },
-      { id: 'p3', q: 'Welche Form nutzt man für ein Verkürzen von Aktiv-Sätzen?', options: ['Present Participle (-ing)', 'Past Participle (-ed / 3. Form)', 'Infinitive with to'], correct: 0 }
+    const participleQuiz = [
+      { id: 'part1', q: 'Verkürze den Satz: "The city is full of people who are looking for a parking space."', opts: ['...people looked for a parking space.', '...people looking for a parking space.', '...people look for a parking space.'], correct: 1 },
+      { id: 'part2', q: 'Verkürze den Satz: "The Eurovision Song Contest is an event which is watched by millions."', opts: ['...an event watching by millions.', '...an event watched by millions.', '...an event watch by millions.'], correct: 1 },
+      { id: 'part3', q: 'Forme um: "I noticed two women who were arguing outside."', opts: ['I noticed two women argued outside.', 'I noticed two women arguing outside.', 'I noticed two women to argue outside.'], correct: 1 },
+      { id: 'part4', q: 'Wann benutzt man das Past Participle (-ed / 3. Form) bei Relativsatzverkürzungen?', opts: ['Für aktive Handlungen', 'Für passivische Bedeutungen', 'Für Handlungen in der Zukunft'], correct: 1 }
     ];
 
-    // READING QUIZ DATA
-    const readingQuestions = [
-      { id: 'r1', q: 'Wie lange blieb Leon in Sydney?', options: ['3 Monate', '6 Monate', '1 Jahr', '2 Wochen'], correct: 1 },
-      { id: 'r2', q: 'Was sind "ripper snags" im australischen Englisch?', options: ['Kängurus', 'Tolle Würstchen', 'Gefährliche Spinnen', 'Große Wellen'], correct: 1 },
-      { id: 'r3', q: 'Welcher Sport ist an Leons Privatschule am wichtigsten?', options: ['Fußball', 'Cricket', 'Rugby', 'Tennis'], correct: 2 },
-      { id: 'r4', q: 'Was ist "Vivid Sydney"?', options: ['Ein Surfwettbewerb', 'Ein Licht- und Kunstfestival', 'Ein Zoo', 'Eine historische Straße'], correct: 1 }
+    const readingQuiz = [
+      { id: 'r1', q: 'Wie lange dauerte Leons Aufenthalt in Australien?', opts: ['3 Monate', '6 Monate', '12 Monate', '2 Jahre'], correct: 1 },
+      { id: 'r2', q: 'An welchem bekannten Strand wohnte Leons Gastfamilie?', opts: ['Bondi Beach', 'Manly Beach', 'Palm Beach', 'Byron Bay'], correct: 1 },
+      { id: 'r3', q: 'Wann hatte Leon ein einziges Mal Heimweh (homesick)?', opts: ['An seinem ersten Schultag', 'An Ostern', 'An Weihnachten (Christmas)', 'Gar nicht'], correct: 2 },
+      { id: 'r4', q: 'Was ist "Vivid Sydney"?', opts: ['Ein Zoo mit Kängurus', 'Ein bekanntes Licht- und Kunstfestival', 'Ein historisches Viertel mit Convicts', 'Ein Surf-Wettbewerb'], correct: 1 }
     ];
 
-    // WRITING QUIZ DATA
-    const writingQuestions = [
-      { id: 'w1', q: 'Was gehört in den Einleitungssatz (Introduction) einer Erörterung?', options: ['Direkt die eigene Meinung sagen', 'Das Thema vorstellen ohne eigene Meinung', 'Nur Gegenargumente aufzählen', 'Ein kurzes Fazit schreiben'], correct: 1 },
-      { id: 'w2', q: 'Welche Phrase eignet sich zum Einleiten von weiteren Argumenten?', options: ['In addition, ...', 'Goodbye, ...', 'Once upon a time, ...', 'Dear Sir or Madam, ...'], correct: 0 },
-      { id: 'w3', q: 'Wie zeigt man Gegensätze auf?', options: ['On the one hand ... on the other hand', 'Firstly ... secondly', 'In conclusion ... finally', 'Because of ... so'], correct: 0 }
+    const writingQuiz = [
+      { id: 'w1', q: 'Welche Wendung nutzt man zur Einleitung von Gegenargumenten?', opts: ['In conclusion, ...', 'On the one hand, some people argue that...', 'Personally, I believe that...', 'First of all, ...'], correct: 1 },
+      { id: 'w2', q: 'Was gehört NICHT in die Einleitung (Introduction) einer Erörterung?', opts: ['Das Thema vorstellen', 'Eine allgemeine Frage aufwerfen', 'Sofort die eigene finale Meinung verkünden', 'Neutral bleiben'], correct: 2 },
+      { id: 'w3', q: 'Welches Verbindungswort fügt ein weiteres ergänzendes Argument hinzu?', opts: ['Furthermore, ...', 'In contrast, ...', 'On the other hand, ...', 'However, ...'], correct: 0 }
     ];
 
-    // RENDER MULTIPLE CHOICE QUIZ
-    function renderMCQuiz(containerId, questions) {
-      const container = document.getElementById(containerId);
-      container.innerHTML = '';
-
-      questions.forEach((q) => {
+    // RENDER FUNCTIONS
+    function renderMC(containerId, questions) {
+      const el = document.getElementById(containerId);
+      el.innerHTML = '';
+      questions.forEach(q => {
         const card = document.createElement('div');
         card.className = 'quiz-card';
-        
-        let optionsHTML = '';
-        q.options.forEach((opt, idx) => {
-          optionsHTML += `<button class="option-btn" onclick="checkMC('${q.id}', ${idx}, ${q.correct}, this)">${opt}</button>`;
+        let opts = '';
+        q.opts.forEach((o, idx) => {
+          opts += `<button class="btn-option" onclick="checkMC('${q.id}', ${idx}, ${q.correct}, this)">${o}</button>`;
         });
-
         card.innerHTML = `
-          <div class="quiz-question">${q.q}</div>
-          <div class="options-grid">${optionsHTML}</div>
-          <div id="feedback-${q.id}" class="feedback"></div>
+          <div class="quiz-title">${q.q}</div>
+          <div class="options-grid">${opts}</div>
+          <div id="fb-${q.id}" class="feedback-msg"></div>
         `;
-        container.appendChild(card);
+        el.appendChild(card);
       });
     }
 
-    function checkMC(qId, selectedIdx, correctIdx, btn) {
+    function checkMC(id, sel, corr, btn) {
       const parent = btn.parentElement;
-      const buttons = parent.querySelectorAll('.option-btn');
-      const feedback = document.getElementById(`feedback-${qId}`);
+      parent.querySelectorAll('.btn-option').forEach(b => b.disabled = true);
+      const fb = document.getElementById(`fb-${id}`);
 
-      buttons.forEach(b => b.disabled = true);
-
-      if (selectedIdx === correctIdx) {
+      if (sel === corr) {
         btn.classList.add('correct');
-        feedback.innerText = '✨ Richtig! (+10 Punkte)';
-        feedback.className = 'feedback correct';
-        addScore(10, qId);
+        fb.innerText = '✨ Richtig! (+15 XP)';
+        fb.className = 'feedback-msg success';
+        addXP(15, id);
       } else {
         btn.classList.add('wrong');
-        buttons[correctIdx].classList.add('correct');
-        feedback.innerText = '❌ Leider falsch!';
-        feedback.className = 'feedback wrong';
+        parent.querySelectorAll('.btn-option')[corr].classList.add('correct');
+        fb.innerText = '❌ Leider nicht richtig!';
+        fb.className = 'feedback-msg danger';
       }
     }
 
-    // RENDER FILL IN BLANK QUIZ
-    function renderPerceptionQuiz() {
-      const container = document.getElementById('perception-quiz-container');
-      container.innerHTML = '';
-
-      perceptionQuestions.forEach((q) => {
+    function renderFill(containerId, questions) {
+      const el = document.getElementById(containerId);
+      el.innerHTML = '';
+      questions.forEach(q => {
         const card = document.createElement('div');
         card.className = 'quiz-card';
         card.innerHTML = `
-          <div class="quiz-question">${q.q}</div>
-          <input type="text" id="input-${q.id}" class="input-box" placeholder="Antwort eingeben (z.B. feeding)...">
-          <button class="btn" onclick="checkFill('${q.id}', '${q.answer}')">Prüfen</button>
-          <div id="feedback-${q.id}" class="feedback"></div>
+          <div class="quiz-title">${q.q}</div>
+          <input type="text" id="in-${q.id}" class="input-pro" placeholder="Richtige Form eingeben...">
+          <button class="btn-action" onclick="checkFill('${q.id}', '${q.ans}')">Prüfen</button>
+          <div id="fb-${q.id}" class="feedback-msg"></div>
         `;
-        container.appendChild(card);
+        el.appendChild(card);
       });
     }
 
-    function checkFill(qId, answer) {
-      const input = document.getElementById(`input-${qId}`);
-      const val = input.value.trim().toLowerCase();
-      const feedback = document.getElementById(`feedback-${qId}`);
-
-      if (val === answer.toLowerCase()) {
-        feedback.innerText = '✨ Richtig! (+10 Punkte)';
-        feedback.className = 'feedback correct';
-        input.style.borderColor = 'var(--success)';
-        addScore(10, qId);
+    function checkFill(id, ans) {
+      const val = document.getElementById(`in-${id}`).value.trim().toLowerCase();
+      const fb = document.getElementById(`fb-${id}`);
+      if (val === ans.toLowerCase()) {
+        fb.innerText = '✨ Richtig! (+15 XP)';
+        fb.className = 'feedback-msg success';
+        addXP(15, id);
       } else {
-        feedback.innerText = `❌ Falsch. Die richtige Antwort ist: ${answer}`;
-        feedback.className = 'feedback wrong';
-        input.style.borderColor = 'var(--danger)';
+        fb.innerText = `❌ Falsch. Die richtige Antwort lautet: ${ans}`;
+        fb.className = 'feedback-msg danger';
       }
     }
 
-    // SCRAMBLE GAME LOGIC
-    const scrambleWords = [
-      { word: 'OUTBACK', hint: 'Das australische Hinterland' },
-      { word: 'BARBIE', hint: 'Aussie Slang für Grillfest' },
-      { word: 'PARTICIPLE', hint: 'Grammatik-Thema der Arbeit' },
-      { word: 'SUNSCREEN', hint: 'Schützt vor der Sonne' },
-      { word: 'TESTIMONIAL', hint: 'Erfahrungsbericht (Leon)' }
-    ];
-
-    let currentScrambleIndex = 0;
-
-    function initScramble() {
-      const item = scrambleWords[currentScrambleIndex];
-      document.getElementById('scramble-hint').innerText = `Hinweis: ${item.hint}`;
+    // EXAM SIMULATION ENGINE
+    function startExam() {
+      const container = document.getElementById('exam-container');
+      container.innerHTML = '<h3 style="margin-bottom:20px;">🎓 Prüfungsmodus aktiv</h3><div id="exam-questions"></div>';
       
-      // Shuffle letters
-      let arr = item.word.split('');
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-      }
-      document.getElementById('scramble-target').innerText = arr.join(' ');
-      document.getElementById('scramble-input').value = '';
-      document.getElementById('scramble-feedback').innerText = '';
+      const pool = [
+        ...vocabQuiz,
+        ...participleQuiz,
+        ...readingQuiz,
+        ...writingQuiz
+      ].sort(() => 0.5 - Math.random()).slice(0, 8);
+
+      renderMC('exam-questions', pool);
     }
 
-    function checkScramble() {
-      const input = document.getElementById('scramble-input').value.trim().toUpperCase();
-      const target = scrambleWords[currentScrambleIndex].word;
-      const feedback = document.getElementById('scramble-feedback');
-
-      if (input === target) {
-        feedback.innerText = '🎉 Super gemacht! (+15 Punkte)';
-        feedback.className = 'feedback correct';
-        addScore(15, 'scramble-' + currentScrambleIndex);
-
-        setTimeout(() => {
-          currentScrambleIndex = (currentScrambleIndex + 1) % scrambleWords.length;
-          initScramble();
-        }, 1500);
-      } else {
-        feedback.innerText = '❌ Nicht ganz, versuche es nochmal!';
-        feedback.className = 'feedback wrong';
-      }
-    }
-
-    // INITIALIZATION
+    // INIT APP
     window.onload = function() {
-      updateCard();
-      renderMCQuiz('vocab-quiz-container', vocabQuestions);
-      renderPerceptionQuiz();
-      renderMCQuiz('participle-quiz-container', participleQuestions);
-      renderMCQuiz('reading-quiz-container', readingQuestions);
-      renderMCQuiz('writing-quiz-container', writingQuestions);
-      initScramble();
+      updateFC();
+      renderMC('vocab-quiz-list', vocabQuiz);
+      renderFill('perception-quiz-list', perceptionQuiz);
+      renderMC('participle-quiz-list', participleQuiz);
+      renderMC('reading-quiz-list', readingQuiz);
+      renderMC('writing-quiz-list', writingQuiz);
     };
   </script>
 </body>
