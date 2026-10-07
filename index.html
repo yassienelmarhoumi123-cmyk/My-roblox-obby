@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Deutsch-Klassenarbeit PRO 9. Klasse: Gedichtanalyse (Ludwig Tieck)</title>
+  <title>Deutsch-Klassenarbeit 9. Klasse: Gedichtanalyse (Ludwig Tieck)</title>
   <style>
     :root {
       --bg: #0f172a;
@@ -33,7 +33,7 @@
       min-height: 100vh;
     }
 
-    /* SIDEBAR NAVIGATION */
+    /* SIDEBAR */
     aside {
       width: 280px;
       background: #090d16;
@@ -157,7 +157,7 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* CARDS & CONTAINERS */
+    /* CARDS */
     .card {
       background: var(--card-bg);
       border: 1px solid var(--border);
@@ -212,7 +212,7 @@
       line-height: 1.6;
     }
 
-    /* QUIZ & INPUTS */
+    /* QUIZ */
     .quiz-item {
       background: #0f172a;
       border: 1px solid var(--border);
@@ -264,32 +264,6 @@
       color: white;
     }
 
-    .input-box {
-      width: 100%;
-      background: #0f172a;
-      border: 1px solid var(--border);
-      padding: 10px 14px;
-      border-radius: 8px;
-      color: white;
-      font-size: 0.95rem;
-      margin-bottom: 10px;
-    }
-
-    .btn-action {
-      background: var(--primary);
-      color: #0f172a;
-      border: none;
-      font-weight: bold;
-      padding: 9px 18px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    .btn-action:hover {
-      background: var(--primary-hover);
-      color: white;
-    }
-
     .feedback {
       margin-top: 10px;
       font-weight: bold;
@@ -324,7 +298,7 @@
     </div>
 
     <ul class="nav-menu">
-      <li><button class="nav-btn active" onclick="nav('gedicht', this)">📜 Gedicht & Überblick</button></li>
+      <li><button class="nav-btn active" onclick="nav('gedicht', this)">📜 Gedicht & Text</button></li>
       <li><button class="nav-btn" onclick="nav('einleitung', this)">✍️ 1. Einleitung & Sprecher</button></li>
       <li><button class="nav-btn" onclick="nav('inhaltform', this)">📖 2. Inhalt & Form</button></li>
       <li><button class="nav-btn" onclick="nav('stilmittel', this)">🎨 3. Stilmittel & Wirkung</button></li>
@@ -336,41 +310,36 @@
   <!-- MAIN AREA -->
   <main>
 
-    <!-- SECTION 1: GEDICHT & ÜBERBLICK -->
+    <!-- SECTION 1: GEDICHT & TEXT -->
     <section id="gedicht" class="section active">
       <header>
-        <h2>📜 Ludwig Tieck: Ungewisse Hoffnung</h2>
-        <p>Gedichttext und grundlegender Überblick für die Analyse in Klasse 9</p>
+        <h2>📜 Ludwig Tieck: Ungewisse Hoffnung (1798)</h2>
+        <p>Originaler Gedichttext & Kernaussage für die Deutscharbeit</p>
       </header>
 
       <div class="card">
-        <span class="badge">Originaltext zum Gedicht</span>
+        <span class="badge">Originaltext (3 Strophen / 12 Verse)</span>
         <div class="poem-box">
-Süße Hoffnung, lass dich schauen,
-Tritt aus deinem Nebel her!
-Soll ich länger dir vertrauen,
-Oben überm wilden Meer?
+Soll ich harren? soll mein Herz
+Endlich brechen?
+Soll ich niemals von dem Schmerz
+Meines Busens sprechen?
 
-Kommt der Frühling bald gegangen,
-Bringt er Blumen, Trost und Licht?
-Ach, mein Herz ist voll Verlangen,
-Doch die Zukunft spricht noch nicht.
+Warum Zittern? Warum Zagen?
+Träges Weilen?
+Auf! dein höchstes Glück zu wagen!
+Flügle deine Eile!
 
-Vögel singen in den Zweigen,
-Fernen Tönen lausch' ich hin;
-Doch die Zweifel wollen schweigen
-Nicht in meinem matten Sinn.
-
-Süße Hoffnung, lass dich schauen,
-Bring dem Herzen seine Ruh!
-In des Abends stillem Grauen
-Flüstert mir die Sehnsucht zu.
+Suchen werd' ich: werd' ich finden?
+Nach der Ferne Ferne,
+Treibt das Herz; durch blühnde Linden
+Lächeln dir die Sterne.
         </div>
       </div>
 
       <div class="card">
-        <h3>💡 Kurze Übersicht & Thema</h3>
-        <p>Das Gedicht <strong>„Ungewisse Hoffnung“</strong> stammt von <strong>Ludwig Tieck</strong> aus der Epoche der <strong>Romantik</strong>. Das Gedicht thematisiert die Sehnsucht nach Gewissheit, die Natur als Seelenspiegel sowie das Wechselspiel zwischen hoffnungsvoller Erwartung (Frühling) und innerem Zweifel.</p>
+        <h3>💡 Kernaussage auf den Punkt gebracht</h3>
+        <p>Das Gedicht beschreibt den Wandel des lyrischen Ichs von stummem Liebes- oder Lebensschmerz und verzagter Passivität hin zu ermutiger Entschlossenheit, sein Glück zu suchen und sich voller Sehnsucht der romantischen Natur und Ferne zu öffnen.</p>
       </div>
     </section>
 
@@ -378,39 +347,37 @@ Flüstert mir die Sehnsucht zu.
     <section id="einleitung" class="section">
       <header>
         <h2>✍️ 1. Einleitung & Sprechsituation</h2>
-        <p>So gelingt dir der perfekte Einstieg in die Gedichtanalyse</p>
+        <p>Der perfekte Einstieg mit der TATTE-Formel</p>
       </header>
 
       <div class="card">
-        <h3>📌 Die TATTE-Formel für die Einleitung</h3>
-        <p>Eine vollständige Einleitung enthält immer alle fünf Grundbausteine:</p>
+        <h3>📌 Einleitung nach der TATTE-Formel</h3>
         <div class="formula-box">
           <ul>
             <li><strong>T</strong>itel: „Ungewisse Hoffnung“</li>
             <li><strong>A</strong>utor: Ludwig Tieck</li>
-            <li><strong>T</strong>extsorte: Gedicht / Naturlyrik / Sehnsuchtslyrik</li>
-            <li><strong>T</strong>hema: Das Bangen zwischen Hoffnung auf das Lebensglück (Frühling) und innerer Ungewissheit</li>
-            <li><strong>E</strong>rscheinungsjahr/Epoche: Epoche der Romantik</li>
+            <li><strong>T</strong>extsorte: Gedicht / Sehnsuchtslyrik</li>
+            <li><strong>T</strong>hema: Der emotionale Aufbruch eines verunsicherten Ichs aus innerem Schmerz und Zögern hin zur mutigen Suche nach dem Lebensglück in der Ferne.</li>
+            <li><strong>E</strong>rscheinungsjahr/Epoche: 1798 / Romantik (Frühromantik)</li>
           </ul>
         </div>
       </div>
 
       <div class="card">
-        <h3>🗣️ Die Sprechsituation beschreiben</h3>
-        <p>Wer spricht im Gedicht und in welcher Stimmung befindet sich die Person?</p>
+        <h3>🗣️ Die Sprechsituation (Wer spricht?)</h3>
         <div class="formula-box">
           <ul>
-            <li><strong>Wer spricht?</strong> Ein <em>lyrisches Ich</em> (nicht der Autor persönlich!).</li>
-            <li><strong>An wen gerichtet?</strong> An die personifizierte „süße Hoffnung“ sowie an sich selbst.</li>
-            <li><strong>Haltung / Stimmung:</strong> Melancholisch, sehnsuchtsvoll, nachdenklich, schwankend zwischen Hoffnung und Zweifel.</li>
+            <li><strong>Sprecher:</strong> Ein <em>lyrisches Ich</em> führt ein intensives <strong>Selbstgespräch (Monolog)</strong>.</li>
+            <li><strong>Adressat:</strong> Es spricht vor allem mit sich selbst und fordert sich mit „Auf!“ selbst auf.</li>
+            <li><strong>Entwicklung:</strong> Es startet zweifelnd und schmerzerfüllt (Strophe 1), rüttelt sich dann energisch auf (Strophe 2) und blickt trotz Ungewissheit hoffnungsvoll nach vorne (Strophe 3).</li>
           </ul>
         </div>
       </div>
 
       <div class="card">
-        <h3>💬 Formulierungshilfe (Einleitungssatz)</h3>
+        <h3>💬 Beispiel für deinen Einleitungssatz</h3>
         <p style="font-style: italic; background:#0f172a; padding:12px; border-radius:8px;">
-          „Das von Ludwig Tieck verfasste romantische Gedicht ‚Ungewisse Hoffnung‘ behandelt die Sehnsucht des lyrischen Ichs nach innerem Frieden und das schmerzliche Bangen zwischen hoffnungsvoller Zukunftserwartung und Ungewissheit.“
+          „Das 1798 von Ludwig Tieck verfasste romantische Gedicht ‚Ungewisse Hoffnung‘ handelt von dem inneren Wandel eines lyrischen Ichs, das seine Verzweiflung und Passivität überwindet, um ermutigt sein persönliches Glück in der Ferne zu suchen.“
         </p>
       </div>
     </section>
@@ -418,30 +385,30 @@ Flüstert mir die Sehnsucht zu.
     <!-- SECTION 3: INHALT & FORM -->
     <section id="inhaltform" class="section">
       <header>
-        <h2>📖 2. Inhaltliche Struktur & Formanalyse</h2>
-        <p>Gliederung nach Strophen, Reimschema, Metrum und Kadenzen</p>
+        <h2>📖 2. Inhaltsangabe & Formaler Aufbau</h2>
+        <p>Strophenweise Zusammenfassung und metrische Analyse</p>
       </header>
 
       <div class="card">
-        <h3>📝 Inhaltsangabe (Strophe für Strophe in eigenen Worten)</h3>
+        <h3>📝 Inhaltsangabe (Strophe für Strophe)</h3>
         <div class="formula-box">
           <ul>
-            <li><strong>Strophe 1:</strong> Das lyrische Ich richtet sich direkt an die Hoffnung und bittet sie, aus der Ungewissheit („Nebel“) hervorzutreten, während es sich unsicher auf dem „wilden Meer“ des Lebens fühlt.</li>
-            <li><strong>Strophe 2:</strong> Es sehnt sich nach dem Frühling als Symbol für Trost und Licht, muss aber feststellen, dass die Zukunft noch ungewiss schweigt.</li>
-            <li><strong>Strophe 3:</strong> Obwohl die Natur mit Vogelsang erwacht, gelingt es dem lyrischen Ich nicht, seine inneren Zweifel zu beruhigen.</li>
-            <li><strong>Strophe 4:</strong> In der Abenddämmerung wiederholt das lyrische Ich seinen Wunsch nach Ruhe, während die Sehnsucht in ihm weiterflüstert.</li>
+            <li><strong>Strophe 1 (V. 1–4):</strong> Das lyrische Ich befindet sich in tiefer Verzweiflung. In rhetorischen Fragen hinterfragt es schmerzerfüllt, wie lange es noch untätig abwarten („harren“) muss und ob es seinen Seelenschmerz ewig verschweigen soll.</li>
+            <li><strong>Strophe 2 (V. 5–8):</strong> Es folgt ein Wendepunkt: Das lyrische Ich rüttelt sich selbst wach, hinterfragt seine Unsicherheit („Zittern“, „Zagen“) und fordert sich mit Nachdruck auf, das eigene Glück mutig zu riskieren und keine Zeit mehr zu verlieren.</li>
+            <li><strong>Strophe 3 (V. 9–12):</strong> Das lyrische Ich fasst den Entschluss zur Suche nach der unendlichen „Ferne“. Trotz leiser Zukunftsangst („werd' ich finden?“) spendet ihm die friedliche Natur (blühende Linden, lächelnde Sterne) Zuversicht.</li>
           </ul>
         </div>
       </div>
 
       <div class="card">
-        <h3>📏 Aufbau und Form bestimmen</h3>
+        <h3>📏 Aufbau, Meter & Reimschema</h3>
         <div class="formula-box">
           <ul>
-            <li><strong>Strophen & Verse:</strong> 4 Strophen mit jeweils 4 Versen (insgesamt 16 Verse).</li>
-            <li><strong>Reimschema:</strong> Durchgehender <strong>Kreuzreim (abab)</strong> [z. B. schauen / her / vertrauen / Meer].</li>
-            <li><strong>Metrum (Versmaß):</strong> Vierhebiger <strong>Trochäus</strong> (Betont – Unbetont: <em>SÜß-e HOFF-nung, LASS dich SCHAU-en</em>).</li>
-            <li><strong>Kadenzen (Versenden):</strong> Wechsel von weiblichen (klingenden/unbetonten) Versenden („schau-en“) und männlichen (stumpfen/betonten) Versenden („her“).</li>
+            <li><strong>Gliederung:</strong> 3 Strophen mit je 4 Versen (insgesamt 12 Verse).</li>
+            <li><strong>Reimschema:</strong> Durchgehender <strong>Kreuzreim (abab cdcd efef)</strong> [z. B. Herz / brechen / Schmerz / sprechen].</li>
+            <li><strong>Metrum (Versmaß):</strong> Überwiegend <strong>Trochäus</strong> (betont – unbetont): <br>
+              <em>SÓLL ich HÁR-ren? SÓLL mein HÉRZ</em> / <em> ÉND-lich BRÉCH-en?</em></li>
+            <li><strong>Kadenzen:</strong> Regelmäßiger Wechsel von männlichen (betonten) und weiblichen (unbetonten) Versenden.</li>
           </ul>
         </div>
       </div>
@@ -451,11 +418,11 @@ Flüstert mir die Sehnsucht zu.
     <section id="stilmittel" class="section">
       <header>
         <h2>🎨 3. Sprachliche Gestaltungsmittel & Funktion</h2>
-        <p>Untersuchung der Stilmittel im Hinblick auf ihre Wirkung im Gedicht</p>
+        <p>Untersuchung der wichtigsten Stilmittel mit genauer Wirkung</p>
       </header>
 
       <div class="card">
-        <h3>🔍 Wichtige Stilmittel im Gedicht</h3>
+        <h3>🔍 Stilmittel-Tabelle für die Klassenarbeit</h3>
         <table style="width:100%; border-collapse:collapse; margin-top:10px; font-size:0.95rem;">
           <tr style="border-bottom:1px solid var(--border); text-align:left;">
             <th style="padding:8px; color:var(--primary);">Stilmittel</th>
@@ -463,31 +430,36 @@ Flüstert mir die Sehnsucht zu.
             <th style="padding:8px; color:var(--primary);">Funktion & Wirkung</th>
           </tr>
           <tr style="border-bottom:1px solid #1e293b;">
+            <td style="padding:8px;"><strong>Rhetorische Fragen</strong></td>
+            <td style="padding:8px;">„Soll ich harren?“ (V. 1)<br>„Warum Zittern? Warum Zagen?“ (V. 5)</td>
+            <td style="padding:8px;">Drücken die innere Zerrissenheit, Unruhe und das kritische Hinterfragen der eigenen Passivität aus.</td>
+          </tr>
+          <tr style="border-bottom:1px solid #1e293b;">
+            <td style="padding:8px;"><strong>Anaphern</strong></td>
+            <td style="padding:8px;">„Soll ich... / Soll ich...“ (V. 1, 3)<br>„Warum... / Warum...“ (V. 5)</td>
+            <td style="padding:8px;">Verstärken den Drang nach Veränderung und verleihen dem Monolog einen drängenden Rhythmus.</td>
+          </tr>
+          <tr style="border-bottom:1px solid #1e293b;">
+            <td style="padding:8px;"><strong>Ausruf / Exclamatio</strong></td>
+            <td style="padding:8px;">„Auf! dein höchstes Glück zu wagen!“ (V. 7)</td>
+            <td style="padding:8px;">Kennzeichnet den energischen Wendepunkt; gibt dem Aufruf zum Handeln Kraft.</td>
+          </tr>
+          <tr style="border-bottom:1px solid #1e293b;">
+            <td style="padding:8px;"><strong>Wortwiederholung</strong></td>
+            <td style="padding:8px;">„Nach der Ferne Ferne“ (V. 10)</td>
+            <td style="padding:8px;">Unterstreicht das romantische Schlüsselmotiv der unendlichen Weite und Sehnsucht.</td>
+          </tr>
+          <tr style="border-bottom:1px solid #1e293b;">
             <td style="padding:8px;"><strong>Personifikation</strong></td>
-            <td style="padding:8px;">„Süße Hoffnung, lass dich schauen“ / „Zukunft spricht noch nicht“</td>
-            <td style="padding:8px;">Die Hoffnung und Zukunft werden wie Wesen angesprochen; macht die Gefühle greifbar.</td>
-          </tr>
-          <tr style="border-bottom:1px solid #1e293b;">
-            <td style="padding:8px;"><strong>Metapher</strong></td>
-            <td style="padding:8px;">„aus deinem Nebel her“ / „überm wilden Meer“</td>
-            <td style="padding:8px;">Der „Nebel“ steht für die Ungewissheit; das „wilde Meer“ symbolisiert das unruhige Leben.</td>
-          </tr>
-          <tr style="border-bottom:1px solid #1e293b;">
-            <td style="padding:8px;"><strong>Symbol</strong></td>
-            <td style="padding:8px;">„Frühling“ (V. 5) / „Blumen, Trost und Licht“</td>
-            <td style="padding:8px;">Der Frühling steht für Neuanfang, Lebensfreude und Hoffnung nach dunklen Zeiten.</td>
-          </tr>
-          <tr style="border-bottom:1px solid #1e293b;">
-            <td style="padding:8px;"><strong>Anapher / Refrain</strong></td>
-            <td style="padding:8px;">„Süße Hoffnung, lass dich schauen“ (V. 1 & V. 13)</td>
-            <td style="padding:8px;">Betont das zentrale Flehen des lyrischen Ichs und verstärkt die emotionale Drängung.</td>
+            <td style="padding:8px;">„Lächeln dir die Sterne“ (V. 12)</td>
+            <td style="padding:8px;">Die Natur wird lebendig dargestellt; die Sterne wirken wohlwollend und machen Mut.</td>
           </tr>
         </table>
       </div>
 
       <div class="card">
         <h3>💡 Zusammenfassende Deutung</h3>
-        <p>Ludwig Tieck zeigt in diesem Gedicht, dass äußere Naturschönheit (Vögel, Frühling) die inneren Zweifel einer seelisch aufgewühlten Person nicht einfach auflösen kann. Die Sehnsucht bleibt ungestillt, solange die Zukunftsangst dominiert.</p>
+        <p>Tieck verdeutlicht im Gedicht, dass wahre Besserung nicht durch stilles Erleiden entsteht, sondern erst durch den mutigen Entschluss zum Handeln. Die romantische Natur (Sterne, blühende Linden) schenkt dem Suchenden dabei Geborgenheit und Hoffnung.</p>
       </div>
     </section>
 
@@ -495,35 +467,31 @@ Flüstert mir die Sehnsucht zu.
     <section id="aufgabe2" class="section">
       <header>
         <h2>🏰 4. Vertiefung (Aufgabe 2): Überleitung, Epoche & Fazit</h2>
-        <p>Vorbereitung auf den zweiten Aufgabenteil in der Klassenarbeit</p>
+        <p>Vorbereitung auf den zweiten Aufgabenteil</p>
       </header>
 
       <div class="card">
         <h3>🔄 1. Aufgabenbezogene Überleitung</h3>
-        <p>Nach der Analyse muss eine saubere Brücke zur zweiten Aufgabe geschlagen werden:</p>
-        <p style="font-style:italic; background:#0f172a; padding:12px; border-radius:8px; margin-top:8px;">
-          „Auf der Grundlage der bisherigen Analyseergebnisse lässt sich das Gedicht im Folgenden begründet in die Epoche der Romantik einordnen.“
+        <p style="font-style:italic; background:#0f172a; padding:12px; border-radius:8px;">
+          „Im Folgenden werden die gewonnenen Analyseergebnisse genutzt, um das Gedicht begründet in die Epoche der Romantik einzuordnen.“
         </p>
       </div>
 
       <div class="card">
         <h3>🌿 2. Epochenzuordnung: Die Romantik (ca. 1795–1835)</h3>
-        <p>Weise die typischen Romantik-Merkmale mit Textstellen aus dem Gedicht nach:</p>
         <div class="formula-box">
           <ul>
-            <li><strong>Sehnsucht & Gefühle:</strong> Zelt zentrale Sehnsucht („Sehnsucht zu“, V. 16, „Herz ist voll Verlangen“, V. 7).</li>
-            <li><strong>Natur als Seelenspiegel:</strong> Frühling, Vögel, Nebel und Abenddämmerung spiegeln die Gefühlswelt wider.</li>
-            <li><strong>Ungewissheit & Traumwelt:</strong> Das Verschwommene („Nebel“, „stilles Grauen“) steht für das romantische Unfassbare.</li>
-            <li><strong>Motive:</strong> Wandermotiv / Meer als Symbol für die Lebensreise.</li>
+            <li><strong>Sehnsucht nach der Ferne:</strong> „Nach der Ferne Ferne / Treibt das Herz“ (V. 10 f.) ist das typischste Motiv der Romantik.</li>
+            <li><strong>Natur als Seelentröster:</strong> Blühende Linden und lächelnde Sterne spiegeln das Gefühl der Hoffnung wider.</li>
+            <li><strong>Gefühl & Emotion statt Vernunft:</strong> Der Buchtitel und Vokabeln wie „Herz“, „Schmerz“, „Busen“ stellen das Seelenleben komplett in den Mittelpunkt.</li>
           </ul>
         </div>
       </div>
 
       <div class="card">
-        <h3>🏁 3. Schluss / Fazit</h3>
-        <p>Fasse am Ende die Wichtigsten Erkenntnisse zusammen:</p>
-        <p style="font-style:italic; background:#0f172a; padding:12px; border-radius:8px; margin-top:8px;">
-          „Zusammenfassend gelingt es Ludwig Tieck in ‚Ungewisse Hoffnung‘ eindrucksvoll, die romantische Sehnsucht nach Gewissheit darzustellen. Durch den klaren Liedcharakter und die ausdrucksstarken Symbole spiegelt das Gedicht perfekt das Lebensgefühl der Romantik wider.“
+        <h3>🏁 3. Gelungenes Fazit / Schlusssatz</h3>
+        <p style="font-style:italic; background:#0f172a; padding:12px; border-radius:8px;">
+          „Zusammenfassend gelingt es Ludwig Tieck in ‚Ungewisse Hoffnung‘, den dramatischen Wandel von innerer Verzweiflung hin zu mutiger romantischer Sehnsucht eindrucksvoll darzustellen. Durch ausdrucksstarke Metaphern und Naturmotive verkörpert das Gedicht hervorragend das Lebensgefühl der Epoche.“
         </p>
       </div>
     </section>
@@ -532,7 +500,7 @@ Flüstert mir die Sehnsucht zu.
     <section id="quiz" class="section">
       <header>
         <h2>🧩 Interaktives Test-Quiz</h2>
-        <p>Überprüfe dein Wissen für die Deutscharbeit und sammle XP-Punkte!</p>
+        <p>Testfragen exakt zum Gedicht von Ludwig Tieck!</p>
       </header>
 
       <div id="quiz-container"></div>
@@ -541,7 +509,7 @@ Flüstert mir die Sehnsucht zu.
   </main>
 
   <script>
-    // NAVIGATION SYSTEM
+    // NAVIGATION
     function nav(id, btn) {
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -566,38 +534,38 @@ Flüstert mir die Sehnsucht zu.
     const questions = [
       {
         id: 'q1',
-        title: 'Welche Epoche passt eindeutig zum Autor Ludwig Tieck und den Motiven "Sehnsucht & Natur"?',
-        opts: ['Barock', 'Romantik', 'Aufklärung', 'Expressionismus'],
+        title: 'Wie viele Strophen und Verse hat das Gedicht "Ungewisse Hoffnung"?',
+        opts: ['4 Strophen / 16 Verse', '3 Strophen / 12 Verse', '2 Strophen / 10 Verse', '5 Strophen / 20 Verse'],
         corr: 1
       },
       {
         id: 'q2',
-        title: 'Welches Reimschema liegt im Gedicht "Ungewisse Hoffnung" durchgehend vor?',
-        opts: ['Paarreim (aabb)', 'Kreuzreim (abab)', 'Umarmender Reim (abba)', 'Haufenreim (aaaa)'],
-        corr: 1
+        title: 'Welche rhetorische Figur prägt Strophe 1 ("Soll ich harren? soll mein Herz...?")?',
+        opts: ['Anapher & Rhetorische Fragen', 'Vergleich & Metapher', 'Alliteration & Klimax', 'Hyperbel'],
+        corr: 0
       },
       {
         id: 'q3',
-        title: 'Was symbolisiert der "Frühling" in Strophe 2?',
-        opts: ['Kälte und Einsamkeit', 'Neuanfang, Trost und Hoffnung', 'Alter und Abschied', 'Krieg und Zerstörung'],
+        title: 'Welches Reimschema liegt im gesamten Gedicht vor?',
+        opts: ['Paarreim (aabb)', 'Kreuzreim (abab)', 'Umarmender Reim (abba)', 'Schweifreim'],
         corr: 1
       },
       {
         id: 'q4',
-        title: 'Was ist "Süße Hoffnung, lass dich schauen" für ein sprachliches Stilmittel?',
-        opts: ['Personifikation', 'Vergleich', 'Alliteration', 'Hyperbel'],
-        corr: 0
+        title: 'Was geschieht in Strophe 2 ("Auf! dein höchstes Glück zu wagen!")?',
+        opts: ['Das Ich gibt enttäuscht auf', 'Das Ich spornt sich mutig zum Handeln an', 'Das Ich schläft ein', 'Das Ich weint weiter'],
+        corr: 1
       },
       {
         id: 'q5',
-        title: 'Welches Metrum (Versmaß) ist vorherrschend? (SÜß-e HOFF-nung, LASS dich SCHAU-en)',
-        opts: ['Jambus (unbetont/betont)', 'Trochäus (betont/unbetont)', 'Daktylus', 'Anapäst'],
+        title: 'Welches romantische Schlüsselmotiv taucht in Strophe 3 auf?',
+        opts: ['Kritik an der Fabrikarbeit', 'Sehnsucht nach der Ferne & Natur als Tröster', 'Todesangst im Krieg', 'Spott über alte Zeiten'],
         corr: 1
       },
       {
         id: 'q6',
-        title: 'Was gehört zwingend in eine Aufgabenbezogene Überleitung zu Aufgabe 2?',
-        opts: ['Die Inhaltsangabe wiederholen', 'Eine logische Verknüpfung von den Analyseergebnissen zur Epochenzuordnung', 'Die Note der Arbeit schätzen', 'Sofort mit dem Schlusssatz beginnen'],
+        title: 'Was bedeutet die Personifikation "durch blühnde Linden / Lächeln dir die Sterne"?',
+        opts: ['Es zieht ein Unwetter auf', 'Die Natur wirkt friedlich und spendet dem Ich Mut', 'Die Sterne machen sich lustig über das Ich', 'Die Natur ist bedrohlich'],
         corr: 1
       }
     ];
