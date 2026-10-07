@@ -3,50 +3,47 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🇦🇺 English Class Test Prep PRO - Unit 1 Australia</title>
+  <title>Deutsch-Klassenarbeit PRO 9. Klasse: Gedichtanalyse (Ludwig Tieck)</title>
   <style>
     :root {
-      --bg-dark: #0a0f1d;
-      --bg-card: #151c2e;
-      --bg-sidebar: #0f172a;
-      --border-color: #1e293b;
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --border: #334155;
       --primary: #38bdf8;
       --primary-hover: #0284c7;
       --accent: #f59e0b;
       --success: #10b981;
       --danger: #ef4444;
-      --text-main: #f8fafc;
-      --text-sub: #94a3b8;
-      --radius: 16px;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --radius: 14px;
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      font-family: 'Segoe UI', Roboto, -apple-system, sans-serif;
     }
 
     body {
-      background-color: var(--bg-dark);
-      color: var(--text-main);
+      background-color: var(--bg);
+      color: var(--text);
       display: flex;
       min-height: 100vh;
-      overflow-x: hidden;
     }
 
-    /* SIDEBAR */
+    /* SIDEBAR NAVIGATION */
     aside {
       width: 280px;
-      background-color: var(--bg-sidebar);
-      border-right: 1px solid var(--border-color);
-      padding: 25px 20px;
+      background: #090d16;
+      border-right: 1px solid var(--border);
+      padding: 25px 18px;
       display: flex;
       flex-direction: column;
-      gap: 25px;
+      gap: 20px;
       position: fixed;
       height: 100vh;
-      z-index: 100;
     }
 
     .brand {
@@ -55,109 +52,97 @@
       gap: 12px;
     }
 
-    .brand-logo {
+    .brand-icon {
       font-size: 2rem;
     }
 
-    .brand-text h1 {
+    .brand-title h1 {
       font-size: 1.1rem;
       color: var(--primary);
-      font-weight: 800;
     }
 
-    .brand-text p {
+    .brand-title p {
       font-size: 0.75rem;
-      color: var(--text-sub);
+      color: var(--text-muted);
     }
 
-    /* USER PROFILE BADGE */
-    .user-stats {
-      background: rgba(56, 189, 248, 0.05);
+    .score-card {
+      background: rgba(56, 189, 248, 0.08);
       border: 1px solid rgba(56, 189, 248, 0.2);
-      border-radius: 12px;
-      padding: 15px;
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
     }
 
-    .stats-header {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.85rem;
-      font-weight: 700;
-      margin-bottom: 8px;
+    .score-card h4 {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 4px;
     }
 
-    .xp-bar-bg {
-      background: #1e293b;
-      height: 8px;
-      border-radius: 4px;
-      overflow: hidden;
+    .score-value {
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: var(--accent);
     }
 
-    .xp-bar-fill {
-      background: linear-gradient(90deg, #38bdf8, #10b981);
-      height: 100%;
-      width: 0%;
-      transition: width 0.4s ease;
-    }
-
-    /* NAV LINKS */
-    .nav-list {
+    .nav-menu {
       list-style: none;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
     }
 
-    .nav-item button {
+    .nav-btn {
       width: 100%;
       background: transparent;
       border: none;
-      color: var(--text-sub);
-      padding: 12px 16px;
+      color: var(--text-muted);
+      padding: 12px 14px;
       border-radius: 10px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 0.95rem;
+      text-align: left;
+      font-size: 0.9rem;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s ease;
-      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.2s;
     }
 
-    .nav-item button:hover {
-      background: rgba(255, 255, 255, 0.05);
-      color: var(--text-main);
+    .nav-btn:hover {
+      background: #1e293b;
+      color: var(--text);
     }
 
-    .nav-item button.active {
+    .nav-btn.active {
       background: var(--primary);
-      color: #04111d;
-      box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
+      color: #0f172a;
     }
 
-    /* MAIN CONTENT AREA */
+    /* MAIN CONTENT */
     main {
       margin-left: 280px;
       flex: 1;
-      padding: 40px;
+      padding: 35px 40px;
       max-width: 1000px;
     }
 
-    header.dashboard-header {
-      margin-bottom: 30px;
+    header {
+      margin-bottom: 25px;
     }
 
-    header.dashboard-header h2 {
+    header h2 {
       font-size: 1.8rem;
+      color: var(--primary);
       margin-bottom: 6px;
     }
 
-    header.dashboard-header p {
-      color: var(--text-sub);
+    header p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
     }
 
-    /* CONTENT SECTIONS */
     .section {
       display: none;
     }
@@ -168,108 +153,136 @@
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(12px); }
+      from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* INFO RULE BOX */
-    .rule-card {
-      background: linear-gradient(135deg, rgba(30, 41, 59, 0.6), rgba(15, 23, 42, 0.8));
-      border: 1px solid var(--border-color);
-      border-left: 4px solid var(--primary);
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 25px;
-      line-height: 1.6;
-      font-size: 0.95rem;
-    }
-
-    .rule-card strong {
-      color: var(--primary);
-    }
-
-    /* CARDS & QUIZZES */
-    .quiz-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
+    /* CARDS & CONTAINERS */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 22px;
       margin-bottom: 20px;
     }
 
-    .quiz-title {
-      font-weight: 700;
-      font-size: 1.05rem;
-      margin-bottom: 15px;
-      line-height: 1.4;
+    .card h3 {
+      font-size: 1.2rem;
+      color: var(--primary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
-    .options-grid {
+    .poem-box {
+      background: #090d16;
+      border-left: 4px solid var(--accent);
+      padding: 20px;
+      border-radius: 8px;
+      font-size: 1.05rem;
+      line-height: 1.8;
+      font-style: italic;
+      white-space: pre-line;
+      margin-bottom: 20px;
+    }
+
+    .badge {
+      display: inline-block;
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--accent);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .formula-box {
+      background: #0f172a;
+      border: 1px solid var(--border);
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+
+    .formula-box ul {
+      list-style-type: square;
+      padding-left: 20px;
+      line-height: 1.6;
+    }
+
+    /* QUIZ & INPUTS */
+    .quiz-item {
+      background: #0f172a;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 15px;
+    }
+
+    .quiz-title {
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .opts-grid {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 10px;
+      gap: 8px;
     }
 
-    @media (min-width: 650px) {
-      .options-grid {
-        grid-template-columns: 1fr 1fr;
-      }
+    @media (min-width: 600px) {
+      .opts-grid { grid-template-columns: 1fr 1fr; }
     }
 
-    .btn-option {
-      background: #0f172a;
-      border: 1px solid var(--border-color);
-      color: var(--text-main);
-      padding: 12px 18px;
-      border-radius: 10px;
-      text-align: left;
+    .opt-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 8px;
       cursor: pointer;
-      font-size: 0.95rem;
+      text-align: left;
+      font-size: 0.9rem;
       transition: all 0.2s;
     }
 
-    .btn-option:hover {
+    .opt-btn:hover {
       border-color: var(--primary);
-      background: #1e293b;
     }
 
-    .btn-option.correct {
+    .opt-btn.correct {
       background: var(--success) !important;
       border-color: var(--success) !important;
       color: white;
     }
 
-    .btn-option.wrong {
+    .opt-btn.wrong {
       background: var(--danger) !important;
       border-color: var(--danger) !important;
       color: white;
     }
 
-    .input-pro {
+    .input-box {
       width: 100%;
       background: #0f172a;
-      border: 1px solid var(--border-color);
-      padding: 12px 16px;
-      border-radius: 10px;
+      border: 1px solid var(--border);
+      padding: 10px 14px;
+      border-radius: 8px;
       color: white;
-      font-size: 1rem;
-      margin-bottom: 12px;
-      outline: none;
-    }
-
-    .input-pro:focus {
-      border-color: var(--primary);
+      font-size: 0.95rem;
+      margin-bottom: 10px;
     }
 
     .btn-action {
       background: var(--primary);
       color: #0f172a;
-      font-weight: 700;
       border: none;
-      padding: 10px 22px;
+      font-weight: bold;
+      padding: 9px 18px;
       border-radius: 8px;
       cursor: pointer;
-      transition: background 0.2s;
     }
 
     .btn-action:hover {
@@ -277,92 +290,16 @@
       color: white;
     }
 
-    .feedback-msg {
-      margin-top: 12px;
-      font-weight: 700;
-      font-size: 0.95rem;
-    }
-    .feedback-msg.success { color: var(--success); }
-    .feedback-msg.danger { color: var(--danger); }
-
-    /* FLASHCARD STYLES */
-    .flashcard-wrapper {
-      perspective: 1000px;
-      width: 100%;
-      max-width: 500px;
-      height: 260px;
-      margin: 0 auto 20px auto;
-    }
-
-    .flashcard-inner {
-      width: 100%;
-      height: 100%;
-      position: relative;
-      transform-style: preserve-3d;
-      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-      cursor: pointer;
-    }
-
-    .flashcard-inner.flipped {
-      transform: rotateY(180deg);
-    }
-
-    .fc-front, .fc-back {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      backface-visibility: hidden;
-      border-radius: var(--radius);
-      border: 1px solid var(--border-color);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      padding: 25px;
-      text-align: center;
-    }
-
-    .fc-front {
-      background: linear-gradient(145deg, #151c2e, #0f172a);
-    }
-
-    .fc-back {
-      background: linear-gradient(145deg, #1e293b, #0f172a);
-      transform: rotateY(180deg);
-    }
-
-    .fc-word {
-      font-size: 2rem;
-      color: var(--primary);
-      margin-bottom: 8px;
-      font-weight: 800;
-    }
-
-    .fc-sub {
-      color: var(--text-sub);
+    .feedback {
+      margin-top: 10px;
+      font-weight: bold;
       font-size: 0.9rem;
     }
-
-    .audio-btn {
-      background: rgba(56, 189, 248, 0.15);
-      border: none;
-      color: var(--primary);
-      padding: 6px 14px;
-      border-radius: 20px;
-      margin-top: 10px;
-      cursor: pointer;
-      font-weight: 600;
-    }
-
-    .fc-controls {
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-      margin-bottom: 30px;
-    }
+    .feedback.ok { color: var(--success); }
+    .feedback.err { color: var(--danger); }
 
     /* RESPONSIVE */
-    @media (max-width: 900px) {
+    @media (max-width: 800px) {
       body { flex-direction: column; }
       aside { width: 100%; height: auto; position: relative; }
       main { margin-left: 0; padding: 20px; }
@@ -371,374 +308,342 @@
 </head>
 <body>
 
-  <!-- SIDEBAR NAVIGATION -->
+  <!-- SIDEBAR -->
   <aside>
     <div class="brand">
-      <div class="brand-logo">🇦🇺</div>
-      <div class="brand-text">
-        <h1>Class Test PRO</h1>
-        <p>Unit 1: Australia</p>
+      <div class="brand-icon">📚</div>
+      <div class="brand-title">
+        <h1>Deutsch 9. Klasse</h1>
+        <p>Gedichtanalyse & Romantik</p>
       </div>
     </div>
 
-    <div class="user-stats">
-      <div class="stats-header">
-        <span id="user-level">Level 1: Rookie</span>
-        <span id="user-xp">0 XP</span>
-      </div>
-      <div class="xp-bar-bg">
-        <div class="xp-bar-fill" id="xp-fill"></div>
-      </div>
+    <div class="score-card">
+      <h4>Dein Lernfortschritt</h4>
+      <div class="score-value" id="score-val">0 / 100 XP</div>
     </div>
 
-    <ul class="nav-list">
-      <li class="nav-item">
-        <button class="active" onclick="showTab('vocab', this)">🔤 Vokabel-Mastery</button>
-      </li>
-      <li class="nav-item">
-        <button onclick="showTab('perception', this)">👁️ Verbs of Perception</button>
-      </li>
-      <li class="nav-item">
-        <button onclick="showTab('participles', this)">🧩 Participle Clauses</button>
-      </li>
-      <li class="nav-item">
-        <button onclick="showTab('reading', this)">🦘 Reading & Sydney</button>
-      </li>
-      <li class="nav-item">
-        <button onclick="showTab('writing', this)">✍️ Writing (Erörterung)</button>
-      </li>
-      <li class="nav-item">
-        <button onclick="showTab('exam', this)">🎓 Exam Simulation</button>
-      </li>
+    <ul class="nav-menu">
+      <li><button class="nav-btn active" onclick="nav('gedicht', this)">📜 Gedicht & Überblick</button></li>
+      <li><button class="nav-btn" onclick="nav('einleitung', this)">✍️ 1. Einleitung & Sprecher</button></li>
+      <li><button class="nav-btn" onclick="nav('inhaltform', this)">📖 2. Inhalt & Form</button></li>
+      <li><button class="nav-btn" onclick="nav('stilmittel', this)">🎨 3. Stilmittel & Wirkung</button></li>
+      <li><button class="nav-btn" onclick="nav('aufgabe2', this)">🏰 4. Aufgabe 2 (Epoche & Fazit)</button></li>
+      <li><button class="nav-btn" onclick="nav('quiz', this)">🧩 Interaktives Test-Quiz</button></li>
     </ul>
   </aside>
 
-  <!-- MAIN CONTENT -->
+  <!-- MAIN AREA -->
   <main>
 
-    <!-- SECTION 1: VOCABULARY -->
-    <section id="vocab" class="section active">
-      <header class="dashboard-header">
-        <h2>🔤 Vokabel-Mastery (Unit 1)</h2>
-        <p>Lerne Schlüsselbegriffe, Aussprache und Kontext für die Klassenarbeit.</p>
+    <!-- SECTION 1: GEDICHT & ÜBERBLICK -->
+    <section id="gedicht" class="section active">
+      <header>
+        <h2>📜 Ludwig Tieck: Ungewisse Hoffnung</h2>
+        <p>Gedichttext und grundlegender Überblick für die Analyse in Klasse 9</p>
       </header>
 
-      <div class="rule-card">
-        💡 <strong>Pro-Lernhilfe:</strong> Du musst die Worterklärungen nicht wortwörtlich auswendig lernen, sondern verstehen, in welchem Kontext sie im Satz angewendet werden!
-      </div>
+      <div class="card">
+        <span class="badge">Originaltext zum Gedicht</span>
+        <div class="poem-box">
+Süße Hoffnung, lass dich schauen,
+Tritt aus deinem Nebel her!
+Soll ich länger dir vertrauen,
+Oben überm wilden Meer?
 
-      <!-- FLASHCARD PLAYER -->
-      <div class="flashcard-wrapper" onclick="toggleFlip()">
-        <div class="flashcard-inner" id="fc-card">
-          <div class="fc-front">
-            <div class="fc-word" id="fc-en">outback</div>
-            <div class="fc-sub">Klicke zum Umdrehen 🔄</div>
-            <button class="audio-btn" onclick="event.stopPropagation(); speakWord()">🔊 Aussprache anhören</button>
-          </div>
-          <div class="fc-back">
-            <div class="fc-word" id="fc-de" style="color: var(--accent);">das Hinterland Australiens</div>
-            <div class="fc-sub" id="fc-ex" style="font-style: italic; margin-top: 10px;">"We traveled through the Australian outback."</div>
-          </div>
+Kommt der Frühling bald gegangen,
+Bringt er Blumen, Trost und Licht?
+Ach, mein Herz ist voll Verlangen,
+Doch die Zukunft spricht noch nicht.
+
+Vögel singen in den Zweigen,
+Fernen Tönen lausch' ich hin;
+Doch die Zweifel wollen schweigen
+Nicht in meinem matten Sinn.
+
+Süße Hoffnung, lass dich schauen,
+Bring dem Herzen seine Ruh!
+In des Abends stillem Grauen
+Flüstert mir die Sehnsucht zu.
         </div>
       </div>
 
-      <div class="fc-controls">
-        <button class="btn-action" onclick="prevFC()">⬅️ Zurück</button>
-        <button class="btn-action" onclick="nextFC()">Weiter ➡️</button>
+      <div class="card">
+        <h3>💡 Kurze Übersicht & Thema</h3>
+        <p>Das Gedicht <strong>„Ungewisse Hoffnung“</strong> stammt von <strong>Ludwig Tieck</strong> aus der Epoche der <strong>Romantik</strong>. Das Gedicht thematisiert die Sehnsucht nach Gewissheit, die Natur als Seelenspiegel sowie das Wechselspiel zwischen hoffnungsvoller Erwartung (Frühling) und innerem Zweifel.</p>
       </div>
-
-      <h3 style="margin-bottom: 15px;">Vokabel-Intensivtest</h3>
-      <div id="vocab-quiz-list"></div>
     </section>
 
-    <!-- SECTION 2: VERBS OF PERCEPTION -->
-    <section id="perception" class="section">
-      <header class="dashboard-header">
-        <h2>👁️ Verbs of Perception + Object + Present Participle</h2>
-        <p>Übungen zu Buchseite 19 (Aufgabe 8 & 9).</p>
+    <!-- SECTION 2: EINLEITUNG & SPRECHSITUATION -->
+    <section id="einleitung" class="section">
+      <header>
+        <h2>✍️ 1. Einleitung & Sprechsituation</h2>
+        <p>So gelingt dir der perfekte Einstieg in die Gedichtanalyse</p>
       </header>
 
-      <div class="rule-card">
-        📌 <strong>Grammatik-Formel:</strong><br>
-        <strong>Verb der Wahrnehmung</strong> (<em>see, hear, notice, watch, smell, spot, feel</em>) + <strong>Objekt</strong> + <strong>Verb mit -ing</strong>.<br>
-        <em>Beispiel:</em> Tom spotted a koala mother <strong>feeding</strong> her baby. / I saw a ferry <strong>arriving</strong>.
+      <div class="card">
+        <h3>📌 Die TATTE-Formel für die Einleitung</h3>
+        <p>Eine vollständige Einleitung enthält immer alle fünf Grundbausteine:</p>
+        <div class="formula-box">
+          <ul>
+            <li><strong>T</strong>itel: „Ungewisse Hoffnung“</li>
+            <li><strong>A</strong>utor: Ludwig Tieck</li>
+            <li><strong>T</strong>extsorte: Gedicht / Naturlyrik / Sehnsuchtslyrik</li>
+            <li><strong>T</strong>hema: Das Bangen zwischen Hoffnung auf das Lebensglück (Frühling) und innerer Ungewissheit</li>
+            <li><strong>E</strong>rscheinungsjahr/Epoche: Epoche der Romantik</li>
+          </ul>
+        </div>
       </div>
 
-      <div id="perception-quiz-list"></div>
+      <div class="card">
+        <h3>🗣️ Die Sprechsituation beschreiben</h3>
+        <p>Wer spricht im Gedicht und in welcher Stimmung befindet sich die Person?</p>
+        <div class="formula-box">
+          <ul>
+            <li><strong>Wer spricht?</strong> Ein <em>lyrisches Ich</em> (nicht der Autor persönlich!).</li>
+            <li><strong>An wen gerichtet?</strong> An die personifizierte „süße Hoffnung“ sowie an sich selbst.</li>
+            <li><strong>Haltung / Stimmung:</strong> Melancholisch, sehnsuchtsvoll, nachdenklich, schwankend zwischen Hoffnung und Zweifel.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>💬 Formulierungshilfe (Einleitungssatz)</h3>
+        <p style="font-style: italic; background:#0f172a; padding:12px; border-radius:8px;">
+          „Das von Ludwig Tieck verfasste romantische Gedicht ‚Ungewisse Hoffnung‘ behandelt die Sehnsucht des lyrischen Ichs nach innerem Frieden und das schmerzliche Bangen zwischen hoffnungsvoller Zukunftserwartung und Ungewissheit.“
+        </p>
+      </div>
     </section>
 
-    <!-- SECTION 3: PARTICIPLE CLAUSES -->
-    <section id="participles" class="section">
-      <header class="dashboard-header">
-        <h2>🧩 Participle Clauses (Verkürzung von Relativsätzen)</h2>
-        <p>Übungen zu Buchseite 18 & 172.</p>
+    <!-- SECTION 3: INHALT & FORM -->
+    <section id="inhaltform" class="section">
+      <header>
+        <h2>📖 2. Inhaltliche Struktur & Formanalyse</h2>
+        <p>Gliederung nach Strophen, Reimschema, Metrum und Kadenzen</p>
       </header>
 
-      <div class="rule-card">
-        📌 <strong>Aktiv vs. Passiv:</strong><br>
-        • <strong>Aktiv (Present Participle = -ing):</strong> The man <em>who was driving the car</em> → The man <strong>driving</strong> the car.<br>
-        • <strong>Passiv (Past Participle = -ed / 3. Form):</strong> An event <em>which is watched by millions</em> → An event <strong>watched</strong> by millions.
+      <div class="card">
+        <h3>📝 Inhaltsangabe (Strophe für Strophe in eigenen Worten)</h3>
+        <div class="formula-box">
+          <ul>
+            <li><strong>Strophe 1:</strong> Das lyrische Ich richtet sich direkt an die Hoffnung und bittet sie, aus der Ungewissheit („Nebel“) hervorzutreten, während es sich unsicher auf dem „wilden Meer“ des Lebens fühlt.</li>
+            <li><strong>Strophe 2:</strong> Es sehnt sich nach dem Frühling als Symbol für Trost und Licht, muss aber feststellen, dass die Zukunft noch ungewiss schweigt.</li>
+            <li><strong>Strophe 3:</strong> Obwohl die Natur mit Vogelsang erwacht, gelingt es dem lyrischen Ich nicht, seine inneren Zweifel zu beruhigen.</li>
+            <li><strong>Strophe 4:</strong> In der Abenddämmerung wiederholt das lyrische Ich seinen Wunsch nach Ruhe, während die Sehnsucht in ihm weiterflüstert.</li>
+          </ul>
+        </div>
       </div>
 
-      <div id="participle-quiz-list"></div>
+      <div class="card">
+        <h3>📏 Aufbau und Form bestimmen</h3>
+        <div class="formula-box">
+          <ul>
+            <li><strong>Strophen & Verse:</strong> 4 Strophen mit jeweils 4 Versen (insgesamt 16 Verse).</li>
+            <li><strong>Reimschema:</strong> Durchgehender <strong>Kreuzreim (abab)</strong> [z. B. schauen / her / vertrauen / Meer].</li>
+            <li><strong>Metrum (Versmaß):</strong> Vierhebiger <strong>Trochäus</strong> (Betont – Unbetont: <em>SÜß-e HOFF-nung, LASS dich SCHAU-en</em>).</li>
+            <li><strong>Kadenzen (Versenden):</strong> Wechsel von weiblichen (klingenden/unbetonten) Versenden („schau-en“) und männlichen (stumpfen/betonten) Versenden („her“).</li>
+          </ul>
+        </div>
+      </div>
     </section>
 
-    <!-- SECTION 4: READING & SYDNEY -->
-    <section id="reading" class="section">
-      <header class="dashboard-header">
-        <h2>🦘 Reading Comprehension: Leon & Sydney</h2>
-        <p>Fragen zu "Leon's Testimonial" & "Rosella In-Flight Tips" (S. 14–15).</p>
+    <!-- SECTION 4: STILMITTEL -->
+    <section id="stilmittel" class="section">
+      <header>
+        <h2>🎨 3. Sprachliche Gestaltungsmittel & Funktion</h2>
+        <p>Untersuchung der Stilmittel im Hinblick auf ihre Wirkung im Gedicht</p>
       </header>
 
-      <div class="rule-card">
-        📖 <strong>Fakten-Check:</strong> Leon verbrachte 6 Monate in Sydney (Manly Beach), wohnte bei Gasteltern Brian & Elvira sowie Gastbruder Nick, ging auf eine Jungen-Privatschule (Rugby ist sehr wichtig) und lernte Surfen.
+      <div class="card">
+        <h3>🔍 Wichtige Stilmittel im Gedicht</h3>
+        <table style="width:100%; border-collapse:collapse; margin-top:10px; font-size:0.95rem;">
+          <tr style="border-bottom:1px solid var(--border); text-align:left;">
+            <th style="padding:8px; color:var(--primary);">Stilmittel</th>
+            <th style="padding:8px; color:var(--primary);">Beispiel im Gedicht</th>
+            <th style="padding:8px; color:var(--primary);">Funktion & Wirkung</th>
+          </tr>
+          <tr style="border-bottom:1px solid #1e293b;">
+            <td style="padding:8px;"><strong>Personifikation</strong></td>
+            <td style="padding:8px;">„Süße Hoffnung, lass dich schauen“ / „Zukunft spricht noch nicht“</td>
+            <td style="padding:8px;">Die Hoffnung und Zukunft werden wie Wesen angesprochen; macht die Gefühle greifbar.</td>
+          </tr>
+          <tr style="border-bottom:1px solid #1e293b;">
+            <td style="padding:8px;"><strong>Metapher</strong></td>
+            <td style="padding:8px;">„aus deinem Nebel her“ / „überm wilden Meer“</td>
+            <td style="padding:8px;">Der „Nebel“ steht für die Ungewissheit; das „wilde Meer“ symbolisiert das unruhige Leben.</td>
+          </tr>
+          <tr style="border-bottom:1px solid #1e293b;">
+            <td style="padding:8px;"><strong>Symbol</strong></td>
+            <td style="padding:8px;">„Frühling“ (V. 5) / „Blumen, Trost und Licht“</td>
+            <td style="padding:8px;">Der Frühling steht für Neuanfang, Lebensfreude und Hoffnung nach dunklen Zeiten.</td>
+          </tr>
+          <tr style="border-bottom:1px solid #1e293b;">
+            <td style="padding:8px;"><strong>Anapher / Refrain</strong></td>
+            <td style="padding:8px;">„Süße Hoffnung, lass dich schauen“ (V. 1 & V. 13)</td>
+            <td style="padding:8px;">Betont das zentrale Flehen des lyrischen Ichs und verstärkt die emotionale Drängung.</td>
+          </tr>
+        </table>
       </div>
 
-      <div id="reading-quiz-list"></div>
+      <div class="card">
+        <h3>💡 Zusammenfassende Deutung</h3>
+        <p>Ludwig Tieck zeigt in diesem Gedicht, dass äußere Naturschönheit (Vögel, Frühling) die inneren Zweifel einer seelisch aufgewühlten Person nicht einfach auflösen kann. Die Sehnsucht bleibt ungestillt, solange die Zukunftsangst dominiert.</p>
+      </div>
     </section>
 
-    <!-- SECTION 5: ARGUMENTATIVE WRITING -->
-    <section id="writing" class="section">
-      <header class="dashboard-header">
-        <h2>✍️ Writing Masterclass: Argumentative Text</h2>
-        <p>Struktur & Verbindungswörter für deine Erörterung (S. 21 & 184).</p>
+    <!-- SECTION 5: AUFGABE 2 (EPOCHE & FAZIT) -->
+    <section id="aufgabe2" class="section">
+      <header>
+        <h2>🏰 4. Vertiefung (Aufgabe 2): Überleitung, Epoche & Fazit</h2>
+        <p>Vorbereitung auf den zweiten Aufgabenteil in der Klassenarbeit</p>
       </header>
 
-      <div class="rule-card">
-        ✍️ <strong>Aufbau einer Erörterung:</strong><br>
-        1. <strong>Introduction:</strong> Thema neutral vorstellen.<br>
-        2. <strong>Main Body:</strong> Gegenargumente bringen, danach eigene Argumente entkräften.<br>
-        3. <strong>Conclusion:</strong> Eigene Meinung begründet zusammenfassen.
+      <div class="card">
+        <h3>🔄 1. Aufgabenbezogene Überleitung</h3>
+        <p>Nach der Analyse muss eine saubere Brücke zur zweiten Aufgabe geschlagen werden:</p>
+        <p style="font-style:italic; background:#0f172a; padding:12px; border-radius:8px; margin-top:8px;">
+          „Auf der Grundlage der bisherigen Analyseergebnisse lässt sich das Gedicht im Folgenden begründet in die Epoche der Romantik einordnen.“
+        </p>
       </div>
 
-      <div id="writing-quiz-list"></div>
+      <div class="card">
+        <h3>🌿 2. Epochenzuordnung: Die Romantik (ca. 1795–1835)</h3>
+        <p>Weise die typischen Romantik-Merkmale mit Textstellen aus dem Gedicht nach:</p>
+        <div class="formula-box">
+          <ul>
+            <li><strong>Sehnsucht & Gefühle:</strong> Zelt zentrale Sehnsucht („Sehnsucht zu“, V. 16, „Herz ist voll Verlangen“, V. 7).</li>
+            <li><strong>Natur als Seelenspiegel:</strong> Frühling, Vögel, Nebel und Abenddämmerung spiegeln die Gefühlswelt wider.</li>
+            <li><strong>Ungewissheit & Traumwelt:</strong> Das Verschwommene („Nebel“, „stilles Grauen“) steht für das romantische Unfassbare.</li>
+            <li><strong>Motive:</strong> Wandermotiv / Meer als Symbol für die Lebensreise.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>🏁 3. Schluss / Fazit</h3>
+        <p>Fasse am Ende die Wichtigsten Erkenntnisse zusammen:</p>
+        <p style="font-style:italic; background:#0f172a; padding:12px; border-radius:8px; margin-top:8px;">
+          „Zusammenfassend gelingt es Ludwig Tieck in ‚Ungewisse Hoffnung‘ eindrucksvoll, die romantische Sehnsucht nach Gewissheit darzustellen. Durch den klaren Liedcharakter und die ausdrucksstarken Symbole spiegelt das Gedicht perfekt das Lebensgefühl der Romantik wider.“
+        </p>
+      </div>
     </section>
 
-    <!-- SECTION 6: EXAM SIMULATION -->
-    <section id="exam" class="section">
-      <header class="dashboard-header">
-        <h2>🎓 Klassenarbeits-Simulation</h2>
-        <p>10 gemischte Fragen aus allen Bereichen unter Prüfungsbedingungen.</p>
+    <!-- SECTION 6: INTERAKTIVES QUIZ -->
+    <section id="quiz" class="section">
+      <header>
+        <h2>🧩 Interaktives Test-Quiz</h2>
+        <p>Überprüfe dein Wissen für die Deutscharbeit und sammle XP-Punkte!</p>
       </header>
 
-      <div id="exam-container">
-        <button class="btn-action" style="padding: 15px 30px; font-size: 1.1rem;" onclick="startExam()">🚀 Prüfung jetzt starten</button>
-      </div>
+      <div id="quiz-container"></div>
     </section>
 
   </main>
 
   <script>
-    // GAME STATE & XP SYSTEM
-    let xp = 0;
-    let level = 1;
-    const answeredIDs = new Set();
-
-    function addXP(amount, id) {
-      if (!answeredIDs.has(id)) {
-        answeredIDs.add(id);
-        xp += amount;
-        updateXPUI();
-      }
-    }
-
-    function updateXPUI() {
-      document.getElementById('user-xp').innerText = `${xp} XP`;
-      let currentLevelName = "Level 1: Aussie Rookie";
-      let progress = (xp % 100);
-      
-      if (xp >= 300) { currentLevelName = "Level 4: Outback Master 🏆"; }
-      else if (xp >= 200) { currentLevelName = "Level 3: Sydney Explorer 🏄‍♂️"; }
-      else if (xp >= 100) { currentLevelName = "Level 2: Grammar Expert 🎓"; }
-
-      document.getElementById('user-level').innerText = currentLevelName;
-      document.getElementById('xp-fill').style.width = `${Math.min(progress, 100)}%`;
-    }
-
-    // NAVIGATION
-    function showTab(tabId, btn) {
-      document.querySelectorAll('.nav-item button').forEach(b => b.classList.remove('active'));
+    // NAVIGATION SYSTEM
+    function nav(id, btn) {
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
 
       btn.classList.add('active');
-      document.getElementById(tabId).classList.add('active');
+      document.getElementById(id).classList.add('active');
     }
 
-    // FLASHCARD PLAYER DATA & SPEECH SYNTHESIS
-    const flashcards = [
-      { en: "outback", de: "das Hinterland Australiens", ex: "The outback is remote and huge." },
-      { en: "stunning", de: "atemberaubend, umwerfend", ex: "Sydney has stunning beaches." },
-      { en: "remote", de: "abgelegen, abgeschieden", ex: "They stayed in a remote village." },
-      { en: "easy-going", de: "locker, unbeschwert, gelassen", ex: "Aussies love the easy-going lifestyle." },
-      { en: "barbie", de: "Grillfest (Aussie-Slang)", ex: "Brian cooks a lot of sausages on the barbie." },
-      { en: "homesick", de: "Heimweh haben", ex: "Leon got homesick at Christmas time." },
-      { en: "convict", de: "Sträfling, Gefangener", ex: "The first convicts arrived in the 1790s." },
-      { en: "self-confident", de: "selbstbewusst", ex: "He is much more self-confident now." },
-      { en: "flying fox", de: "Flughund (Fledermausart)", ex: "You can see flying foxes in Botanic Garden." },
-      { en: "didgeridoo", de: "Didgeridoo (Aboriginal Musikinstrument)", ex: "Aboriginal players play the didgeridoo." }
-    ];
+    // SCORE SYSTEM
+    let score = 0;
+    const answered = new Set();
 
-    let fcIdx = 0;
-
-    function toggleFlip() {
-      document.getElementById('fc-card').classList.toggle('flipped');
+    function addScore(pts, id) {
+      if (!answered.has(id)) {
+        answered.add(id);
+        score += pts;
+        document.getElementById('score-val').innerText = `${score} / 100 XP`;
+      }
     }
 
-    function speakWord() {
-      const text = flashcards[fcIdx].en;
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'en-US';
-      window.speechSynthesis.speak(utterance);
-    }
-
-    function updateFC() {
-      document.getElementById('fc-card').classList.remove('flipped');
-      setTimeout(() => {
-        document.getElementById('fc-en').innerText = flashcards[fcIdx].en;
-        document.getElementById('fc-de').innerText = flashcards[fcIdx].de;
-        document.getElementById('fc-ex').innerText = `"${flashcards[fcIdx].ex}"`;
-      }, 200);
-    }
-
-    function nextFC() {
-      fcIdx = (fcIdx + 1) % flashcards.length;
-      updateFC();
-    }
-
-    function prevFC() {
-      fcIdx = (fcIdx - 1 + flashcards.length) % flashcards.length;
-      updateFC();
-    }
-
-    // EXERCISE DATA
-    const vocabQuiz = [
-      { id: 'v1', q: 'Was bedeutet der Ausdruck "ripper snags" im Aussie-Slang?', opts: ['Gefährliche Krokodile', 'Tolle / leckere Würstchen', 'Große Surfwellen', 'Schöne Strände'], correct: 1 },
-      { id: 'v2', q: 'Ergänze den Satz: "Sydney has a lot of ________ (atemberaubend) beaches like Manly."', opts: ['remote', 'stunning', 'talkative', 'private'], correct: 1 },
-      { id: 'v3', q: 'Welches Wort beschreibt eine Person, die sehr entspannt und locker ist?', opts: ['homesick', 'easy-going', 'poisonous', 'populous'], correct: 1 },
-      { id: 'v4', q: 'Was ist "the outback"?', opts: ['Ein Restaurant in Sydney', 'Das dünn besiedelte Hinterland Australiens', 'Ein berühmter Surfer-Strand', 'Ein Festival'], correct: 1 }
+    // QUIZ DATA
+    const questions = [
+      {
+        id: 'q1',
+        title: 'Welche Epoche passt eindeutig zum Autor Ludwig Tieck und den Motiven "Sehnsucht & Natur"?',
+        opts: ['Barock', 'Romantik', 'Aufklärung', 'Expressionismus'],
+        corr: 1
+      },
+      {
+        id: 'q2',
+        title: 'Welches Reimschema liegt im Gedicht "Ungewisse Hoffnung" durchgehend vor?',
+        opts: ['Paarreim (aabb)', 'Kreuzreim (abab)', 'Umarmender Reim (abba)', 'Haufenreim (aaaa)'],
+        corr: 1
+      },
+      {
+        id: 'q3',
+        title: 'Was symbolisiert der "Frühling" in Strophe 2?',
+        opts: ['Kälte und Einsamkeit', 'Neuanfang, Trost und Hoffnung', 'Alter und Abschied', 'Krieg und Zerstörung'],
+        corr: 1
+      },
+      {
+        id: 'q4',
+        title: 'Was ist "Süße Hoffnung, lass dich schauen" für ein sprachliches Stilmittel?',
+        opts: ['Personifikation', 'Vergleich', 'Alliteration', 'Hyperbel'],
+        corr: 0
+      },
+      {
+        id: 'q5',
+        title: 'Welches Metrum (Versmaß) ist vorherrschend? (SÜß-e HOFF-nung, LASS dich SCHAU-en)',
+        opts: ['Jambus (unbetont/betont)', 'Trochäus (betont/unbetont)', 'Daktylus', 'Anapäst'],
+        corr: 1
+      },
+      {
+        id: 'q6',
+        title: 'Was gehört zwingend in eine Aufgabenbezogene Überleitung zu Aufgabe 2?',
+        opts: ['Die Inhaltsangabe wiederholen', 'Eine logische Verknüpfung von den Analyseergebnissen zur Epochenzuordnung', 'Die Note der Arbeit schätzen', 'Sofort mit dem Schlusssatz beginnen'],
+        corr: 1
+      }
     ];
 
-    const perceptionQuiz = [
-      { id: 'p1', q: 'At Taronga Zoo, Tom spotted a koala mother ________ (feed) her baby.', ans: 'feeding' },
-      { id: 'p2', q: 'Tom noticed a toy koala ________ (lie) on the ground.', ans: 'lying' },
-      { id: 'p3', q: 'He saw a little girl ________ (cry) near the otters.', ans: 'crying' },
-      { id: 'p4', q: 'Tom\'s father smelled sausages ________ (cook) on the barbecue.', ans: 'cooking' },
-      { id: 'p5', q: 'They watched the boats ________ (sail) in Sydney Harbour.', ans: 'sailing' },
-      { id: 'p6', q: 'I\'ve never seen tourists ________ (climb) Sydney Harbour Bridge.', ans: 'climbing' },
-      { id: 'p7', q: 'Your skin is red! I can feel my skin ________ (burn).', ans: 'burning' },
-      { id: 'p8', q: 'I saw the Manly ferry ________ (arrive) at Circular Quay.', ans: 'arriving' }
-    ];
+    function renderQuiz() {
+      const box = document.getElementById('quiz-container');
+      box.innerHTML = '';
 
-    const participleQuiz = [
-      { id: 'part1', q: 'Verkürze den Satz: "The city is full of people who are looking for a parking space."', opts: ['...people looked for a parking space.', '...people looking for a parking space.', '...people look for a parking space.'], correct: 1 },
-      { id: 'part2', q: 'Verkürze den Satz: "The Eurovision Song Contest is an event which is watched by millions."', opts: ['...an event watching by millions.', '...an event watched by millions.', '...an event watch by millions.'], correct: 1 },
-      { id: 'part3', q: 'Forme um: "I noticed two women who were arguing outside."', opts: ['I noticed two women argued outside.', 'I noticed two women arguing outside.', 'I noticed two women to argue outside.'], correct: 1 },
-      { id: 'part4', q: 'Wann benutzt man das Past Participle (-ed / 3. Form) bei Relativsatzverkürzungen?', opts: ['Für aktive Handlungen', 'Für passivische Bedeutungen', 'Für Handlungen in der Zukunft'], correct: 1 }
-    ];
-
-    const readingQuiz = [
-      { id: 'r1', q: 'Wie lange dauerte Leons Aufenthalt in Australien?', opts: ['3 Monate', '6 Monate', '12 Monate', '2 Jahre'], correct: 1 },
-      { id: 'r2', q: 'An welchem bekannten Strand wohnte Leons Gastfamilie?', opts: ['Bondi Beach', 'Manly Beach', 'Palm Beach', 'Byron Bay'], correct: 1 },
-      { id: 'r3', q: 'Wann hatte Leon ein einziges Mal Heimweh (homesick)?', opts: ['An seinem ersten Schultag', 'An Ostern', 'An Weihnachten (Christmas)', 'Gar nicht'], correct: 2 },
-      { id: 'r4', q: 'Was ist "Vivid Sydney"?', opts: ['Ein Zoo mit Kängurus', 'Ein bekanntes Licht- und Kunstfestival', 'Ein historisches Viertel mit Convicts', 'Ein Surf-Wettbewerb'], correct: 1 }
-    ];
-
-    const writingQuiz = [
-      { id: 'w1', q: 'Welche Wendung nutzt man zur Einleitung von Gegenargumenten?', opts: ['In conclusion, ...', 'On the one hand, some people argue that...', 'Personally, I believe that...', 'First of all, ...'], correct: 1 },
-      { id: 'w2', q: 'Was gehört NICHT in die Einleitung (Introduction) einer Erörterung?', opts: ['Das Thema vorstellen', 'Eine allgemeine Frage aufwerfen', 'Sofort die eigene finale Meinung verkünden', 'Neutral bleiben'], correct: 2 },
-      { id: 'w3', q: 'Welches Verbindungswort fügt ein weiteres ergänzendes Argument hinzu?', opts: ['Furthermore, ...', 'In contrast, ...', 'On the other hand, ...', 'However, ...'], correct: 0 }
-    ];
-
-    // RENDER FUNCTIONS
-    function renderMC(containerId, questions) {
-      const el = document.getElementById(containerId);
-      el.innerHTML = '';
-      questions.forEach(q => {
+      questions.forEach((q) => {
         const card = document.createElement('div');
-        card.className = 'quiz-card';
-        let opts = '';
+        card.className = 'quiz-item';
+        
+        let htmlOpts = '';
         q.opts.forEach((o, idx) => {
-          opts += `<button class="btn-option" onclick="checkMC('${q.id}', ${idx}, ${q.correct}, this)">${o}</button>`;
+          htmlOpts += `<button class="opt-btn" onclick="checkQ('${q.id}', ${idx}, ${q.corr}, this)">${o}</button>`;
         });
+
         card.innerHTML = `
-          <div class="quiz-title">${q.q}</div>
-          <div class="options-grid">${opts}</div>
-          <div id="fb-${q.id}" class="feedback-msg"></div>
+          <div class="quiz-title">${q.title}</div>
+          <div class="opts-grid">${htmlOpts}</div>
+          <div id="fb-${q.id}" class="feedback"></div>
         `;
-        el.appendChild(card);
+        box.appendChild(card);
       });
     }
 
-    function checkMC(id, sel, corr, btn) {
+    function checkQ(qId, selIdx, corrIdx, btn) {
       const parent = btn.parentElement;
-      parent.querySelectorAll('.btn-option').forEach(b => b.disabled = true);
-      const fb = document.getElementById(`fb-${id}`);
+      parent.querySelectorAll('.opt-btn').forEach(b => b.disabled = true);
+      const fb = document.getElementById(`fb-${qId}`);
 
-      if (sel === corr) {
+      if (selIdx === corrIdx) {
         btn.classList.add('correct');
         fb.innerText = '✨ Richtig! (+15 XP)';
-        fb.className = 'feedback-msg success';
-        addXP(15, id);
+        fb.className = 'feedback ok';
+        addScore(15, qId);
       } else {
         btn.classList.add('wrong');
-        parent.querySelectorAll('.btn-option')[corr].classList.add('correct');
-        fb.innerText = '❌ Leider nicht richtig!';
-        fb.className = 'feedback-msg danger';
+        parent.querySelectorAll('.opt-btn')[corrIdx].classList.add('correct');
+        fb.innerText = '❌ Leider falsch!';
+        fb.className = 'feedback err';
       }
     }
 
-    function renderFill(containerId, questions) {
-      const el = document.getElementById(containerId);
-      el.innerHTML = '';
-      questions.forEach(q => {
-        const card = document.createElement('div');
-        card.className = 'quiz-card';
-        card.innerHTML = `
-          <div class="quiz-title">${q.q}</div>
-          <input type="text" id="in-${q.id}" class="input-pro" placeholder="Richtige Form eingeben...">
-          <button class="btn-action" onclick="checkFill('${q.id}', '${q.ans}')">Prüfen</button>
-          <div id="fb-${q.id}" class="feedback-msg"></div>
-        `;
-        el.appendChild(card);
-      });
-    }
-
-    function checkFill(id, ans) {
-      const val = document.getElementById(`in-${id}`).value.trim().toLowerCase();
-      const fb = document.getElementById(`fb-${id}`);
-      if (val === ans.toLowerCase()) {
-        fb.innerText = '✨ Richtig! (+15 XP)';
-        fb.className = 'feedback-msg success';
-        addXP(15, id);
-      } else {
-        fb.innerText = `❌ Falsch. Die richtige Antwort lautet: ${ans}`;
-        fb.className = 'feedback-msg danger';
-      }
-    }
-
-    // EXAM SIMULATION ENGINE
-    function startExam() {
-      const container = document.getElementById('exam-container');
-      container.innerHTML = '<h3 style="margin-bottom:20px;">🎓 Prüfungsmodus aktiv</h3><div id="exam-questions"></div>';
-      
-      const pool = [
-        ...vocabQuiz,
-        ...participleQuiz,
-        ...readingQuiz,
-        ...writingQuiz
-      ].sort(() => 0.5 - Math.random()).slice(0, 8);
-
-      renderMC('exam-questions', pool);
-    }
-
-    // INIT APP
     window.onload = function() {
-      updateFC();
-      renderMC('vocab-quiz-list', vocabQuiz);
-      renderFill('perception-quiz-list', perceptionQuiz);
-      renderMC('participle-quiz-list', participleQuiz);
-      renderMC('reading-quiz-list', readingQuiz);
-      renderMC('writing-quiz-list', writingQuiz);
+      renderQuiz();
     };
   </script>
 </body>
