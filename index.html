@@ -1,618 +1,246 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Deutsch-Klassenarbeit 9. Klasse: Gedichtanalyse (Ludwig Tieck)</title>
-  <style>
-    :root {
-      --bg: #0f172a;
-      --card-bg: #1e293b;
-      --border: #334155;
-      --primary: #38bdf8;
-      --primary-hover: #0284c7;
-      --accent: #f59e0b;
-      --success: #10b981;
-      --danger: #ef4444;
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
-      --radius: 14px;
-    }
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BitLife - Life Simulator</title>
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', Roboto, -apple-system, sans-serif;
-    }
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #1a1a1a;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
 
-    body {
-      background-color: var(--bg);
-      color: var(--text);
-      display: flex;
-      min-height: 100vh;
-    }
+        /* Navigationsleiste oben */
+        #topNavBar {
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 999;
+            background: rgba(20, 20, 20, 0.75);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
 
-    /* SIDEBAR */
-    aside {
-      width: 280px;
-      background: #090d16;
-      border-right: 1px solid var(--border);
-      padding: 25px 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      position: fixed;
-      height: 100vh;
-    }
+        #topNavBar .title {
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            letter-spacing: 0.5px;
+        }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+        .nav-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
 
-    .brand-icon {
-      font-size: 2rem;
-    }
+        .btn-panic {
+            background-color: #e63946;
+            color: #ffffff;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
 
-    .brand-title h1 {
-      font-size: 1.1rem;
-      color: var(--primary);
-    }
+        .btn-panic:hover {
+            background-color: #d62839;
+            transform: scale(1.03);
+        }
 
-    .brand-title p {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-    }
+        .btn-close {
+            background: transparent;
+            color: #a0a0a0;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: color 0.2s;
+        }
 
-    .score-card {
-      background: rgba(56, 189, 248, 0.08);
-      border: 1px solid rgba(56, 189, 248, 0.2);
-      border-radius: 10px;
-      padding: 12px;
-      text-align: center;
-    }
+        .btn-close:hover {
+            color: #ffffff;
+        }
 
-    .score-card h4 {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      margin-bottom: 4px;
-    }
+        /* Canvas / Spiel Container */
+        .webgl-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+        }
 
-    .score-value {
-      font-size: 1.3rem;
-      font-weight: bold;
-      color: var(--accent);
-    }
+        #gameContainer {
+            width: 100%;
+            height: 100%;
+        }
 
-    .nav-menu {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
+        /* Panic / Tarn-Modus Container */
+        #panicOverlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #ffffff;
+            color: #000000;
+            z-index: 999999;
+            overflow-y: auto;
+            padding: 40px 20px;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
 
-    .nav-btn {
-      width: 100%;
-      background: transparent;
-      border: none;
-      color: var(--text-muted);
-      padding: 12px 14px;
-      border-radius: 10px;
-      text-align: left;
-      font-size: 0.9rem;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      transition: all 0.2s;
-    }
+        #panicOverlay h1 {
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
 
-    .nav-btn:hover {
-      background: #1e293b;
-      color: var(--text);
-    }
+        #panicOverlay h2 {
+            margin-top: 20px;
+            margin-bottom: 8px;
+            font-size: 20px;
+        }
 
-    .nav-btn.active {
-      background: var(--primary);
-      color: #0f172a;
-    }
+        #panicOverlay ul {
+            margin-left: 20px;
+            margin-bottom: 12px;
+        }
 
-    /* MAIN CONTENT */
-    main {
-      margin-left: 280px;
-      flex: 1;
-      padding: 35px 40px;
-      max-width: 1000px;
-    }
+        #panicOverlay img {
+            border-radius: 8px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            display: block;
+        }
 
-    header {
-      margin-bottom: 25px;
-    }
+        .btn-restore {
+            position: fixed;
+            top: 15px;
+            right: 20px;
+            background: #efefef;
+            color: #333;
+            border: 1px solid #ccc;
+            padding: 6px 12px;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+            opacity: 0.5;
+            transition: opacity 0.2s;
+        }
 
-    header h2 {
-      font-size: 1.8rem;
-      color: var(--primary);
-      margin-bottom: 6px;
-    }
+        .btn-restore:hover {
+            opacity: 1;
+        }
+    </style>
 
-    header p {
-      color: var(--text-muted);
-      font-size: 0.95rem;
-    }
-
-    .section {
-      display: none;
-    }
-
-    .section.active {
-      display: block;
-      animation: fadeIn 0.3s ease-out;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* CARDS */
-    .card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 22px;
-      margin-bottom: 20px;
-    }
-
-    .card h3 {
-      font-size: 1.2rem;
-      color: var(--primary);
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .poem-box {
-      background: #090d16;
-      border-left: 4px solid var(--accent);
-      padding: 20px;
-      border-radius: 8px;
-      font-size: 1.05rem;
-      line-height: 1.8;
-      font-style: italic;
-      white-space: pre-line;
-      margin-bottom: 20px;
-    }
-
-    .badge {
-      display: inline-block;
-      background: rgba(245, 158, 11, 0.15);
-      color: var(--accent);
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-size: 0.8rem;
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
-
-    .formula-box {
-      background: #0f172a;
-      border: 1px solid var(--border);
-      padding: 15px;
-      border-radius: 10px;
-      margin-top: 10px;
-    }
-
-    .formula-box ul {
-      list-style-type: square;
-      padding-left: 20px;
-      line-height: 1.6;
-    }
-
-    /* QUIZ */
-    .quiz-item {
-      background: #0f172a;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 16px;
-      margin-bottom: 15px;
-    }
-
-    .quiz-title {
-      font-weight: 600;
-      margin-bottom: 12px;
-    }
-
-    .opts-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 8px;
-    }
-
-    @media (min-width: 600px) {
-      .opts-grid { grid-template-columns: 1fr 1fr; }
-    }
-
-    .opt-btn {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 10px 14px;
-      border-radius: 8px;
-      cursor: pointer;
-      text-align: left;
-      font-size: 0.9rem;
-      transition: all 0.2s;
-    }
-
-    .opt-btn:hover {
-      border-color: var(--primary);
-    }
-
-    .opt-btn.correct {
-      background: var(--success) !important;
-      border-color: var(--success) !important;
-      color: white;
-    }
-
-    .opt-btn.wrong {
-      background: var(--danger) !important;
-      border-color: var(--danger) !important;
-      color: white;
-    }
-
-    .feedback {
-      margin-top: 10px;
-      font-weight: bold;
-      font-size: 0.9rem;
-    }
-    .feedback.ok { color: var(--success); }
-    .feedback.err { color: var(--danger); }
-
-    /* RESPONSIVE */
-    @media (max-width: 800px) {
-      body { flex-direction: column; }
-      aside { width: 100%; height: auto; position: relative; }
-      main { margin-left: 0; padding: 20px; }
-    }
-  </style>
+    <link rel="canonical" href="/">
+    <script src="https://cdn.jsdelivr.net/gh/a456pur/seraph@ae2fcc6d6a9cd051654fcc0519080db1f79cf2a7/games/bitlife/TemplateData/UnityProgress.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/a456pur/seraph@ae2fcc6d6a9cd051654fcc0519080db1f79cf2a7/games/bitlife/Build/UnityLoader.js"></script>
+    <script>
+      var unityInstance = UnityLoader.instantiate("gameContainer", "https://cdn.jsdelivr.net/gh/a456pur/seraph@ae2fcc6d6a9cd051654fcc0519080db1f79cf2a7/games/bitlife/Build/BitLife.json", {onProgress: UnityProgress});
+    </script>
 </head>
 <body>
 
-  <!-- SIDEBAR -->
-  <aside>
-    <div class="brand">
-      <div class="brand-icon">📚</div>
-      <div class="brand-title">
-        <h1>Deutsch 9. Klasse</h1>
-        <p>Gedichtanalyse & Romantik</p>
-      </div>
+    <!-- Navigationsleiste -->
+    <div id="topNavBar">
+        <a href="#" class="title">BitLife Simulator</a>
+        <div class="nav-actions">
+            <button class="btn-panic" onclick="togglePanic()">🚨 Panic (ESC)</button>
+            <button class="btn-close" onclick="closeBacklinks()">✕</button>
+        </div>
     </div>
 
-    <div class="score-card">
-      <h4>Dein Lernfortschritt</h4>
-      <div class="score-value" id="score-val">0 / 100 XP</div>
+    <!-- Spiel Container -->
+    <div class="webgl-content">
+        <div id="gameContainer"></div>
     </div>
 
-    <ul class="nav-menu">
-      <li><button class="nav-btn active" onclick="nav('gedicht', this)">📜 Gedicht & Text</button></li>
-      <li><button class="nav-btn" onclick="nav('einleitung', this)">✍️ 1. Einleitung & Sprecher</button></li>
-      <li><button class="nav-btn" onclick="nav('inhaltform', this)">📖 2. Inhalt & Form</button></li>
-      <li><button class="nav-btn" onclick="nav('stilmittel', this)">🎨 3. Stilmittel & Wirkung</button></li>
-      <li><button class="nav-btn" onclick="nav('aufgabe2', this)">🏰 4. Aufgabe 2 (Epoche & Fazit)</button></li>
-      <li><button class="nav-btn" onclick="nav('quiz', this)">🧩 Interaktives Test-Quiz</button></li>
-    </ul>
-  </aside>
+    <!-- Tarn-Seite / Panic Overlay -->
+    <div id="panicOverlay">
+        <button class="btn-restore" onclick="togglePanic()">Zurück zum Spiel</button>
 
-  <!-- MAIN AREA -->
-  <main>
+        <h1>Yassiens Steckbrief</h1>
 
-    <!-- SECTION 1: GEDICHT & TEXT -->
-    <section id="gedicht" class="section active">
-      <header>
-        <h2>📜 Ludwig Tieck: Ungewisse Hoffnung (1798)</h2>
-        <p>Originaler Gedichttext & Kernaussage für die Deutscharbeit</p>
-      </header>
-
-      <div class="card">
-        <span class="badge">Originaltext (3 Strophen / 12 Verse)</span>
-        <div class="poem-box">
-Soll ich harren? soll mein Herz
-Endlich brechen?
-Soll ich niemals von dem Schmerz
-Meines Busens sprechen?
-
-Warum Zittern? Warum Zagen?
-Träges Weilen?
-Auf! dein höchstes Glück zu wagen!
-Flügle deine Eile!
-
-Suchen werd' ich: werd' ich finden?
-Nach der Ferne Ferne,
-Treibt das Herz; durch blühnde Linden
-Lächeln dir die Sterne.
-        </div>
-      </div>
-
-      <div class="card">
-        <h3>💡 Kernaussage auf den Punkt gebracht</h3>
-        <p>Das Gedicht beschreibt den Wandel des lyrischen Ichs von stummem Liebes- oder Lebensschmerz und verzagter Passivität hin zu ermutiger Entschlossenheit, sein Glück zu suchen und sich voller Sehnsucht der romantischen Natur und Ferne zu öffnen.</p>
-      </div>
-    </section>
-
-    <!-- SECTION 2: EINLEITUNG & SPRECHSITUATION -->
-    <section id="einleitung" class="section">
-      <header>
-        <h2>✍️ 1. Einleitung & Sprechsituation</h2>
-        <p>Der perfekte Einstieg mit der TATTE-Formel</p>
-      </header>
-
-      <div class="card">
-        <h3>📌 Einleitung nach der TATTE-Formel</h3>
-        <div class="formula-box">
-          <ul>
-            <li><strong>T</strong>itel: „Ungewisse Hoffnung“</li>
-            <li><strong>A</strong>utor: Ludwig Tieck</li>
-            <li><strong>T</strong>extsorte: Gedicht / Sehnsuchtslyrik</li>
-            <li><strong>T</strong>hema: Der emotionale Aufbruch eines verunsicherten Ichs aus innerem Schmerz und Zögern hin zur mutigen Suche nach dem Lebensglück in der Ferne.</li>
-            <li><strong>E</strong>rscheinungsjahr/Epoche: 1798 / Romantik (Frühromantik)</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="card">
-        <h3>🗣️ Die Sprechsituation (Wer spricht?)</h3>
-        <div class="formula-box">
-          <ul>
-            <li><strong>Sprecher:</strong> Ein <em>lyrisches Ich</em> führt ein intensives <strong>Selbstgespräch (Monolog)</strong>.</li>
-            <li><strong>Adressat:</strong> Es spricht vor allem mit sich selbst und fordert sich mit „Auf!“ selbst auf.</li>
-            <li><strong>Entwicklung:</strong> Es startet zweifelnd und schmerzerfüllt (Strophe 1), rüttelt sich dann energisch auf (Strophe 2) und blickt trotz Ungewissheit hoffnungsvoll nach vorne (Strophe 3).</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="card">
-        <h3>💬 Beispiel für deinen Einleitungssatz</h3>
-        <p style="font-style: italic; background:#0f172a; padding:12px; border-radius:8px;">
-          „Das 1798 von Ludwig Tieck verfasste romantische Gedicht ‚Ungewisse Hoffnung‘ handelt von dem inneren Wandel eines lyrischen Ichs, das seine Verzweiflung und Passivität überwindet, um ermutigt sein persönliches Glück in der Ferne zu suchen.“
-        </p>
-      </div>
-    </section>
-
-    <!-- SECTION 3: INHALT & FORM -->
-    <section id="inhaltform" class="section">
-      <header>
-        <h2>📖 2. Inhaltsangabe & Formaler Aufbau</h2>
-        <p>Strophenweise Zusammenfassung und metrische Analyse</p>
-      </header>
-
-      <div class="card">
-        <h3>📝 Inhaltsangabe (Strophe für Strophe)</h3>
-        <div class="formula-box">
-          <ul>
-            <li><strong>Strophe 1 (V. 1–4):</strong> Das lyrische Ich befindet sich in tiefer Verzweiflung. In rhetorischen Fragen hinterfragt es schmerzerfüllt, wie lange es noch untätig abwarten („harren“) muss und ob es seinen Seelenschmerz ewig verschweigen soll.</li>
-            <li><strong>Strophe 2 (V. 5–8):</strong> Es folgt ein Wendepunkt: Das lyrische Ich rüttelt sich selbst wach, hinterfragt seine Unsicherheit („Zittern“, „Zagen“) und fordert sich mit Nachdruck auf, das eigene Glück mutig zu riskieren und keine Zeit mehr zu verlieren.</li>
-            <li><strong>Strophe 3 (V. 9–12):</strong> Das lyrische Ich fasst den Entschluss zur Suche nach der unendlichen „Ferne“. Trotz leiser Zukunftsangst („werd' ich finden?“) spendet ihm die friedliche Natur (blühende Linden, lächelnde Sterne) Zuversicht.</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="card">
-        <h3>📏 Aufbau, Meter & Reimschema</h3>
-        <div class="formula-box">
-          <ul>
-            <li><strong>Gliederung:</strong> 3 Strophen mit je 4 Versen (insgesamt 12 Verse).</li>
-            <li><strong>Reimschema:</strong> Durchgehender <strong>Kreuzreim (abab cdcd efef)</strong> [z. B. Herz / brechen / Schmerz / sprechen].</li>
-            <li><strong>Metrum (Versmaß):</strong> Überwiegend <strong>Trochäus</strong> (betont – unbetont): <br>
-              <em>SÓLL ich HÁR-ren? SÓLL mein HÉRZ</em> / <em> ÉND-lich BRÉCH-en?</em></li>
-            <li><strong>Kadenzen:</strong> Regelmäßiger Wechsel von männlichen (betonten) und weiblichen (unbetonten) Versenden.</li>
-          </ul>
-        </div>
-      </div>
-    </section>
-
-    <!-- SECTION 4: STILMITTEL -->
-    <section id="stilmittel" class="section">
-      <header>
-        <h2>🎨 3. Sprachliche Gestaltungsmittel & Funktion</h2>
-        <p>Untersuchung der wichtigsten Stilmittel mit genauer Wirkung</p>
-      </header>
-
-      <div class="card">
-        <h3>🔍 Stilmittel-Tabelle für die Klassenarbeit</h3>
-        <table style="width:100%; border-collapse:collapse; margin-top:10px; font-size:0.95rem;">
-          <tr style="border-bottom:1px solid var(--border); text-align:left;">
-            <th style="padding:8px; color:var(--primary);">Stilmittel</th>
-            <th style="padding:8px; color:var(--primary);">Beispiel im Gedicht</th>
-            <th style="padding:8px; color:var(--primary);">Funktion & Wirkung</th>
-          </tr>
-          <tr style="border-bottom:1px solid #1e293b;">
-            <td style="padding:8px;"><strong>Rhetorische Fragen</strong></td>
-            <td style="padding:8px;">„Soll ich harren?“ (V. 1)<br>„Warum Zittern? Warum Zagen?“ (V. 5)</td>
-            <td style="padding:8px;">Drücken die innere Zerrissenheit, Unruhe und das kritische Hinterfragen der eigenen Passivität aus.</td>
-          </tr>
-          <tr style="border-bottom:1px solid #1e293b;">
-            <td style="padding:8px;"><strong>Anaphern</strong></td>
-            <td style="padding:8px;">„Soll ich... / Soll ich...“ (V. 1, 3)<br>„Warum... / Warum...“ (V. 5)</td>
-            <td style="padding:8px;">Verstärken den Drang nach Veränderung und verleihen dem Monolog einen drängenden Rhythmus.</td>
-          </tr>
-          <tr style="border-bottom:1px solid #1e293b;">
-            <td style="padding:8px;"><strong>Ausruf / Exclamatio</strong></td>
-            <td style="padding:8px;">„Auf! dein höchstes Glück zu wagen!“ (V. 7)</td>
-            <td style="padding:8px;">Kennzeichnet den energischen Wendepunkt; gibt dem Aufruf zum Handeln Kraft.</td>
-          </tr>
-          <tr style="border-bottom:1px solid #1e293b;">
-            <td style="padding:8px;"><strong>Wortwiederholung</strong></td>
-            <td style="padding:8px;">„Nach der Ferne Ferne“ (V. 10)</td>
-            <td style="padding:8px;">Unterstreicht das romantische Schlüsselmotiv der unendlichen Weite und Sehnsucht.</td>
-          </tr>
-          <tr style="border-bottom:1px solid #1e293b;">
-            <td style="padding:8px;"><strong>Personifikation</strong></td>
-            <td style="padding:8px;">„Lächeln dir die Sterne“ (V. 12)</td>
-            <td style="padding:8px;">Die Natur wird lebendig dargestellt; die Sterne wirken wohlwollend und machen Mut.</td>
-          </tr>
-        </table>
-      </div>
-
-      <div class="card">
-        <h3>💡 Zusammenfassende Deutung</h3>
-        <p>Tieck verdeutlicht im Gedicht, dass wahre Besserung nicht durch stilles Erleiden entsteht, sondern erst durch den mutigen Entschluss zum Handeln. Die romantische Natur (Sterne, blühende Linden) schenkt dem Suchenden dabei Geborgenheit und Hoffnung.</p>
-      </div>
-    </section>
-
-    <!-- SECTION 5: AUFGABE 2 (EPOCHE & FAZIT) -->
-    <section id="aufgabe2" class="section">
-      <header>
-        <h2>🏰 4. Vertiefung (Aufgabe 2): Überleitung, Epoche & Fazit</h2>
-        <p>Vorbereitung auf den zweiten Aufgabenteil</p>
-      </header>
-
-      <div class="card">
-        <h3>🔄 1. Aufgabenbezogene Überleitung</h3>
-        <p style="font-style:italic; background:#0f172a; padding:12px; border-radius:8px;">
-          „Im Folgenden werden die gewonnenen Analyseergebnisse genutzt, um das Gedicht begründet in die Epoche der Romantik einzuordnen.“
-        </p>
-      </div>
-
-      <div class="card">
-        <h3>🌿 2. Epochenzuordnung: Die Romantik (ca. 1795–1835)</h3>
-        <div class="formula-box">
-          <ul>
-            <li><strong>Sehnsucht nach der Ferne:</strong> „Nach der Ferne Ferne / Treibt das Herz“ (V. 10 f.) ist das typischste Motiv der Romantik.</li>
-            <li><strong>Natur als Seelentröster:</strong> Blühende Linden und lächelnde Sterne spiegeln das Gefühl der Hoffnung wider.</li>
-            <li><strong>Gefühl & Emotion statt Vernunft:</strong> Der Buchtitel und Vokabeln wie „Herz“, „Schmerz“, „Busen“ stellen das Seelenleben komplett in den Mittelpunkt.</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="card">
-        <h3>🏁 3. Gelungenes Fazit / Schlusssatz</h3>
-        <p style="font-style:italic; background:#0f172a; padding:12px; border-radius:8px;">
-          „Zusammenfassend gelingt es Ludwig Tieck in ‚Ungewisse Hoffnung‘, den dramatischen Wandel von innerer Verzweiflung hin zu mutiger romantischer Sehnsucht eindrucksvoll darzustellen. Durch ausdrucksstarke Metaphern und Naturmotive verkörpert das Gedicht hervorragend das Lebensgefühl der Epoche.“
-        </p>
-      </div>
-    </section>
-
-    <!-- SECTION 6: INTERAKTIVES QUIZ -->
-    <section id="quiz" class="section">
-      <header>
-        <h2>🧩 Interaktives Test-Quiz</h2>
-        <p>Testfragen exakt zum Gedicht von Ludwig Tieck!</p>
-      </header>
-
-      <div id="quiz-container"></div>
-    </section>
-
-  </main>
-
-  <script>
-    // NAVIGATION
-    function nav(id, btn) {
-      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-
-      btn.classList.add('active');
-      document.getElementById(id).classList.add('active');
-    }
-
-    // SCORE SYSTEM
-    let score = 0;
-    const answered = new Set();
-
-    function addScore(pts, id) {
-      if (!answered.has(id)) {
-        answered.add(id);
-        score += pts;
-        document.getElementById('score-val').innerText = `${score} / 100 XP`;
-      }
-    }
-
-    // QUIZ DATA
-    const questions = [
-      {
-        id: 'q1',
-        title: 'Wie viele Strophen und Verse hat das Gedicht "Ungewisse Hoffnung"?',
-        opts: ['4 Strophen / 16 Verse', '3 Strophen / 12 Verse', '2 Strophen / 10 Verse', '5 Strophen / 20 Verse'],
-        corr: 1
-      },
-      {
-        id: 'q2',
-        title: 'Welche rhetorische Figur prägt Strophe 1 ("Soll ich harren? soll mein Herz...?")?',
-        opts: ['Anapher & Rhetorische Fragen', 'Vergleich & Metapher', 'Alliteration & Klimax', 'Hyperbel'],
-        corr: 0
-      },
-      {
-        id: 'q3',
-        title: 'Welches Reimschema liegt im gesamten Gedicht vor?',
-        opts: ['Paarreim (aabb)', 'Kreuzreim (abab)', 'Umarmender Reim (abba)', 'Schweifreim'],
-        corr: 1
-      },
-      {
-        id: 'q4',
-        title: 'Was geschieht in Strophe 2 ("Auf! dein höchstes Glück zu wagen!")?',
-        opts: ['Das Ich gibt enttäuscht auf', 'Das Ich spornt sich mutig zum Handeln an', 'Das Ich schläft ein', 'Das Ich weint weiter'],
-        corr: 1
-      },
-      {
-        id: 'q5',
-        title: 'Welches romantische Schlüsselmotiv taucht in Strophe 3 auf?',
-        opts: ['Kritik an der Fabrikarbeit', 'Sehnsucht nach der Ferne & Natur als Tröster', 'Todesangst im Krieg', 'Spott über alte Zeiten'],
-        corr: 1
-      },
-      {
-        id: 'q6',
-        title: 'Was bedeutet die Personifikation "durch blühnde Linden / Lächeln dir die Sterne"?',
-        opts: ['Es zieht ein Unwetter auf', 'Die Natur wirkt friedlich und spendet dem Ich Mut', 'Die Sterne machen sich lustig über das Ich', 'Die Natur ist bedrohlich'],
-        corr: 1
-      }
-    ];
-
-    function renderQuiz() {
-      const box = document.getElementById('quiz-container');
-      box.innerHTML = '';
-
-      questions.forEach((q) => {
-        const card = document.createElement('div');
-        card.className = 'quiz-item';
+        <h2>Mein Hobby:</h2>
+        <ul> 
+            <li>Fußball</li> 
+        </ul>
+        <img src="bilder/Ronaldo.jpg" width="200" alt="Ronaldo">
         
-        let htmlOpts = '';
-        q.opts.forEach((o, idx) => {
-          htmlOpts += `<button class="opt-btn" onclick="checkQ('${q.id}', ${idx}, ${q.corr}, this)">${o}</button>`;
+        <h2>Lieblingsessen:</h2>  
+        <ul> 
+            <li>Döner</li> 
+        </ul>  
+        <img src="bilder/Döner.jpg" width="200" alt="Döner">  
+        
+        <h2>Lieblingsspiele:</h2>  
+        <ul>  
+            <li>Car Parking Multiplayer</li>  
+            <li>FC27</li>  
+        </ul>
+        <img src="bilder/OIP.webp" width="200" alt="Spiel 1">  
+        <img src="bilder/Fc27.webp" width="200" alt="Spiel 2">
+        
+        <h2>Lieblingsserien:</h2>  
+        <ul>  
+            <li>Henry Danger</li>  
+            <li>Spongebob</li>  
+        </ul>
+
+        <p><a href="Döner.html">Döner Rezept</a></p>
+    </div>
+
+    <script>
+        function closeBacklinks() {
+            document.querySelector('#topNavBar').style.display = "none";
+        }
+
+        function togglePanic() {
+            const panicOverlay = document.getElementById('panicOverlay');
+            if (panicOverlay.style.display === "block") {
+                panicOverlay.style.display = "none";
+                document.title = "BitLife - Life Simulator";
+            } else {
+                panicOverlay.style.display = "block";
+                document.title = "Yassiens Steckbrief";
+            }
+        }
+
+        // Schnelles Umschalten per ESC-Taste
+        window.addEventListener('keydown', function(e) {
+            if (e.key === "Escape") {
+                togglePanic();
+            }
         });
-
-        card.innerHTML = `
-          <div class="quiz-title">${q.title}</div>
-          <div class="opts-grid">${htmlOpts}</div>
-          <div id="fb-${q.id}" class="feedback"></div>
-        `;
-        box.appendChild(card);
-      });
-    }
-
-    function checkQ(qId, selIdx, corrIdx, btn) {
-      const parent = btn.parentElement;
-      parent.querySelectorAll('.opt-btn').forEach(b => b.disabled = true);
-      const fb = document.getElementById(`fb-${qId}`);
-
-      if (selIdx === corrIdx) {
-        btn.classList.add('correct');
-        fb.innerText = '✨ Richtig! (+15 XP)';
-        fb.className = 'feedback ok';
-        addScore(15, qId);
-      } else {
-        btn.classList.add('wrong');
-        parent.querySelectorAll('.opt-btn')[corrIdx].classList.add('correct');
-        fb.innerText = '❌ Leider falsch!';
-        fb.className = 'feedback err';
-      }
-    }
-
-    window.onload = function() {
-      renderQuiz();
-    };
-  </script>
+    </script>
 </body>
 </html>
