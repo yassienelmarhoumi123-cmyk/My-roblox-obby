@@ -1,14 +1,110 @@
-<html>
+<!DOCTYPE html>
+<html lang="de">
 <head>
-    <title> Roblox login </title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roblox Login & Anmelden</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f4f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .login-box {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 320px;
+        }
+
+        /* Hier steuern wir die Bildgröße */
+        .login-box img {
+            width: 220px; /* Breite angepasst, damit es gut sichtbar ist */
+            height: auto;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #00a2ff;
+            border: none;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background-color: #0088d1;
+        }
+
+        .switch-link {
+            margin-top: 15px;
+            font-size: 13px;
+        }
+
+        .switch-link a {
+            color: #00a2ff;
+            text-decoration: none;
+        }
+    </style>
 </head>
 <body>
-   
 
-            <img src= "roblox.jpg" alt= >
+    <div class="login-box">
+        <!-- Roblox Bild / Logo -->
+        <img src="roblox.jpg" alt="Roblox Logo">
 
+        <h2>Anmelden</h2>
 
+        <form action="#" method="POST">
+            <div class="input-group">
+                <label for="username">Benutzername / E-Mail</label>
+                <input type="text" id="username" name="username" placeholder="Benutzername eingeben" required>
+            </div>
 
+            <div class="input-group">
+                <label for="password">Passwort</label>
+                <input type="password" id="password" name="password" placeholder="Passwort eingeben" required>
+            </div>
+
+            <button type="submit" class="btn">Anmelden</button>
+        </form>
+
+        <div class="switch-link">
+            Noch keinen Account? <a href="#">Registrieren</a>
+        </div>
+    </div>
 
 </body>
 </html>
