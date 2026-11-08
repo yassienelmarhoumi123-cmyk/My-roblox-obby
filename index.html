@@ -9,7 +9,7 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Hanken Grotesk', 'BlinkMacSystemFont', -apple-system, sans-serif;
+            font-family: 'Hanken Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
         body {
@@ -20,7 +20,7 @@
             position: relative;
         }
 
-        /* Hintergrund-Bild (das Bild mit den vielen Spiel-Kacheln) */
+        /* Hintergrund-Kacheln (schräg gestellt) */
         .background-overlay {
             position: fixed;
             top: -10%;
@@ -30,44 +30,95 @@
             background-image: url('roblox.jpg'); /* Deine Bilddatei */
             background-size: cover;
             background-position: center;
-            transform: rotate(-5deg) scale(1.1); /* Leicht schräg gestellt wie im Original */
-            filter: brightness(0.6);
+            transform: rotate(-5deg) scale(1.1);
+            filter: brightness(0.5);
             z-index: 1;
         }
 
-        /* Dunkler Verlauf über dem Hintergrund */
         .gradient-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.45);
+            background: rgba(0, 0, 0, 0.4);
             z-index: 2;
         }
 
-        /* Top Bar mit Log In Button */
-        .header {
+        /* Obere Navigationsleiste */
+        .top-nav {
             position: absolute;
             top: 0;
-            right: 0;
-            padding: 20px 30px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
             z-index: 10;
         }
 
-        .login-top-btn {
-            background-color: #ffffff;
-            color: #000000;
-            border: none;
-            padding: 8px 16px;
-            font-weight: 700;
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .nav-logo {
+            font-size: 22px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #ffffff;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
             font-size: 14px;
-            border-radius: 4px;
-            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .nav-links a {
+            color: #d1d5db;
             text-decoration: none;
         }
 
-        /* Hauptcontainer in der Mitte */
+        .nav-links a:hover {
+            color: #ffffff;
+        }
+
+        .nav-right {
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-btn {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            border: none;
+            padding: 8px 16px;
+            font-weight: 700;
+            font-size: 13px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .nav-btn:hover {
+            background-color: rgba(255, 255, 255, 0.25);
+        }
+
+        .nav-btn.primary {
+            background-color: #0096ff;
+        }
+
+        .nav-btn.primary:hover {
+            background-color: #007acc;
+        }
+
+        /* Hauptcontainer */
         .main-container {
             position: relative;
             z-index: 10;
@@ -76,53 +127,51 @@
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            padding: 20px;
+            padding: 80px 20px 20px 20px;
         }
 
-        /* Roblox Logo */
-        .logo {
-            font-size: 42px;
+        /* Roblox Logo in der Mitte (nur bei Registrierung) */
+        .center-logo {
+            font-size: 38px;
             font-weight: 900;
             letter-spacing: 4px;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             text-transform: uppercase;
-            font-family: Arial Black, sans-serif;
         }
 
-        /* Dunkle Registrierungs-Box */
-        .signup-card {
-            background-color: rgba(35, 37, 43, 0.95);
+        /* Formular-Karte */
+        .card {
+            background-color: #23252b;
             border-radius: 12px;
             padding: 28px 32px;
             width: 100%;
-            max-width: 400px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-            text-align: center;
+            max-width: 420px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
         }
 
-        .signup-card h2 {
-            font-size: 16px;
+        .card h2 {
+            font-size: 15px;
             font-weight: 800;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
             margin-bottom: 20px;
             text-transform: uppercase;
-            color: #e3e5e8;
+            color: #ffffff;
+            text-align: center;
         }
 
         .form-group {
             margin-bottom: 16px;
-            text-align: left;
         }
 
         .form-group label {
             display: block;
             font-size: 12px;
-            font-weight: 600;
-            color: #bdc3c7;
+            font-weight: 700;
+            color: #9ca3af;
             margin-bottom: 6px;
         }
 
-        /* Geburtsdatum Dropdowns */
+        /* Geburtstags-Dropdowns nebeneinander */
         .dob-selects {
             display: flex;
             gap: 8px;
@@ -130,9 +179,9 @@
 
         select, input[type="text"], input[type="password"] {
             width: 100%;
-            padding: 10px 12px;
+            padding: 11px 12px;
             background-color: #191b1d;
-            border: 1px solid #393b3d;
+            border: 1px solid #374151;
             border-radius: 6px;
             color: #ffffff;
             font-size: 14px;
@@ -153,41 +202,87 @@
             flex: 1;
             padding: 10px;
             background-color: #191b1d;
-            border: 1px solid #393b3d;
+            border: 1px solid #374151;
             border-radius: 6px;
             color: #ffffff;
             cursor: pointer;
             font-size: 18px;
+            transition: border-color 0.2s;
+        }
+
+        .gender-btn:hover {
+            border-color: #9ca3af;
         }
 
         .terms-text {
             font-size: 11px;
-            color: #a0a0a0;
-            margin: 18px 0;
+            color: #9ca3af;
+            margin: 16px 0;
             line-height: 1.4;
-            text-align: left;
         }
 
         .terms-text a {
-            color: #399bff;
+            color: #3b82f6;
             text-decoration: none;
         }
 
-        /* Großer weißer Sign Up Button */
-        .signup-submit-btn {
+        /* Buttons unten in der Karte */
+        .submit-btn {
             width: 100%;
             background-color: #ffffff;
             color: #000000;
             border: none;
             padding: 12px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 700;
             border-radius: 8px;
             cursor: pointer;
+            transition: background 0.2s;
         }
 
-        .signup-submit-btn:hover {
-            background-color: #e0e0e0;
+        .submit-btn:hover {
+            background-color: #e5e7eb;
+        }
+
+        /* Zusätzliche Login-Buttons (wie auf dem Screenshot) */
+        .secondary-btn {
+            width: 100%;
+            background-color: #2e3239;
+            color: #ffffff;
+            border: none;
+            padding: 11px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+
+        .secondary-btn:hover {
+            background-color: #374151;
+        }
+
+        .link-text {
+            text-align: center;
+            margin-top: 18px;
+            font-size: 13px;
+            color: #9ca3af;
+        }
+
+        .link-text a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .link-text a:hover {
+            text-decoration: underline;
+        }
+
+        /* Hilfsklasse zum Umschalten der Ansichten */
+        .hidden {
+            display: none;
         }
     </style>
 </head>
@@ -196,71 +291,158 @@
     <div class="background-overlay"></div>
     <div class="gradient-overlay"></div>
 
-    <header class="header">
-        <button class="login-top-btn">Log In</button>
+    <!-- Obere Navigation -->
+    <header class="top-nav">
+        <div class="nav-left">
+            <div class="nav-logo">ROBLOX</div>
+            <nav class="nav-links">
+                <a href="#">Charts</a>
+                <a href="#">Marktplatz</a>
+                <a href="#">Erstellen</a>
+                <a href="#">Robux</a>
+            </nav>
+        </div>
+        <div class="nav-right">
+            <button class="nav-btn primary" onclick="showView('signup')">Registrieren</button>
+            <button class="nav-btn" onclick="showView('login')">Anmelden</button>
+        </div>
     </header>
 
     <div class="main-container">
-        <!-- Logo -->
-        <div class="logo">ROBLOX</div>
-
-        <!-- Anmelde/Registrierungs-Box -->
-        <div class="signup-card">
-            <h2>Sign Up and Start Having Fun!</h2>
-
-            <form>
-                <!-- Birthday -->
+        
+        <!-- ================= ANMELDEN ANSICHT ================= -->
+        <div id="login-view" class="card hidden">
+            <h2>Bei Roblox anmelden</h2>
+            <form onsubmit="event.preventDefault(); alert('Login abgeschickt!');">
                 <div class="form-group">
-                    <label>Birthday</label>
-                    <div class="dob-selects">
-                        <select>
-                            <option value="" disabled selected>Month</option>
-                            <option>January</option>
-                            <option>February</option>
-                            <option>March</option>
-                        </select>
-                        <select>
-                            <option value="" disabled selected>Day</option>
-                            <option>1</option>
-                            <option>2</option>
-                        </select>
-                        <select>
-                            <option value="" disabled selected>Year</option>
-                            <option>2010</option>
-                            <option>2009</option>
-                        </select>
-                    </div>
+                    <label>Benutzer/E-Mail/Telefon</label>
+                    <input type="text" placeholder="Benutzer/E-Mail/Telefon" required>
                 </div>
 
-                <!-- Username -->
                 <div class="form-group">
-                    <label>Username</label>
-                    <input type="text" placeholder="Don't use your real name">
+                    <label>Passwort</label>
+                    <input type="password" placeholder="Passwort" required>
                 </div>
 
-                <!-- Password -->
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" placeholder="At least 8 characters">
-                </div>
-
-                <!-- Gender -->
-                <div class="form-group">
-                    <label>Gender (optional)</label>
-                    <div class="gender-options">
-                        <button type="button" class="gender-btn">♀</button>
-                        <button type="button" class="gender-btn">♂</button>
-                    </div>
-                </div>
-
-                <p class="terms-text">
-                    By clicking Sign Up, you are agreeing to the <a href="#">Terms of Use</a> including the arbitration clause and you are acknowledging the <a href="#">Privacy Policy</a>.
-                </p>
-
-                <button type="submit" class="signup-submit-btn">Sign Up</button>
+                <button type="submit" class="submit-btn" style="background-color: #0096ff; color: white; margin-top: 5px;">Anmelden</button>
             </form>
+
+            <div style="text-align: center; margin: 15px 0;">
+                <a href="#" style="font-size: 12px; color: #9ca3af; text-decoration: none;">Passwort oder Benutzername vergessen?</a>
+            </div>
+
+            <button class="secondary-btn">Einmaligen Code per E-Mail senden</button>
+            <button class="secondary-btn">Schnellanmeldung</button>
+            <button class="secondary-btn">Weitere Anmeldeoptionen</button>
+
+            <div class="link-text">
+                Du hast kein Konto? <a href="#" onclick="showView('signup'); return false;">Registrieren</a>
+            </div>
         </div>
+
+
+        <!-- ================= REGISTRIEREN ANSICHT ================= -->
+        <div id="signup-view">
+            <div class="center-logo">ROBLOX</div>
+            
+            <div class="card">
+                <h2>Registriere dich und dann viel Spaß!</h2>
+
+                <form onsubmit="event.preventDefault(); alert('Registrierung abgeschickt!');">
+                    <!-- Geburtstag -->
+                    <div class="form-group">
+                        <label>Geburtstag</label>
+                        <div class="dob-selects">
+                            <select id="month-select" required>
+                                <option value="" disabled selected>Monat</option>
+                            </select>
+                            <select id="day-select" required>
+                                <option value="" disabled selected>Tag</option>
+                            </select>
+                            <select id="year-select" required>
+                                <option value="" disabled selected>Jahr</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Benutzername -->
+                    <div class="form-group">
+                        <label>Benutzername</label>
+                        <input type="text" placeholder="Verwende nicht deinen echten Namen" required>
+                    </div>
+
+                    <!-- Passwort -->
+                    <div class="form-group">
+                        <label>Passwort</label>
+                        <input type="password" placeholder="Mindestens 8 Zeichen" required>
+                    </div>
+
+                    <!-- Geschlecht -->
+                    <div class="form-group">
+                        <label>Geschlecht (optional)</label>
+                        <div class="gender-options">
+                            <button type="button" class="gender-btn" title="Weiblich">♀</button>
+                            <button type="button" class="gender-btn" title="Männlich">♂</button>
+                        </div>
+                    </div>
+
+                    <p class="terms-text">
+                        Wenn du auf "Registrieren" klickst, stimmst du unseren <a href="#">Nutzungsbedingungen</a> zu und erkennst unsere <a href="#">Datenschutzrichtlinien</a> an.
+                    </p>
+
+                    <button type="submit" class="submit-btn">Registrieren</button>
+                </form>
+
+                <div class="link-text">
+                    Du hast schon ein Konto? <a href="#" onclick="showView('login'); return false;">Anmelden</a>
+                </div>
+            </div>
+        </div>
+
     </div>
 
+    <!-- JavaScript zum Generieren der Geburtstage & Umschalten der Ansichten -->
+    <script>
+        // 1. Dropdown-Werte automatisch generieren (Monate, Tage, Jahre)
+        const months = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
+        const monthSelect = document.getElementById('month-select');
+        months.forEach((m, index) => {
+            let opt = document.createElement('option');
+            opt.value = index + 1;
+            opt.textContent = m;
+            monthSelect.appendChild(opt);
+        });
+
+        const daySelect = document.getElementById('day-select');
+        for (let i = 1; i <= 31; i++) {
+            let opt = document.createElement('option');
+            opt.value = i;
+            opt.textContent = i;
+            daySelect.appendChild(opt);
+        }
+
+        const yearSelect = document.getElementById('year-select');
+        const currentYear = new Date().getFullYear();
+        for (let i = currentYear; i >= 1900; i--) {
+            let opt = document.createElement('option');
+            opt.value = i;
+            opt.textContent = i;
+            yearSelect.appendChild(opt);
+        }
+
+        // 2. Funktion zum Hin- und Herschalten zwischen Login und Registrierung
+        function showView(viewName) {
+            const loginView = document.getElementById('login-view');
+            const signupView = document.getElementById('signup-view');
+
+            if (viewName === 'login') {
+                loginView.classList.remove('hidden');
+                signupView.classList.add('hidden');
+            } else {
+                loginView.classList.add('hidden');
+                signupView.classList.remove('hidden');
+            }
+        }
+    </script>
 </body>
 </html>
