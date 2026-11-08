@@ -3,106 +3,262 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Roblox Login & Anmelden</title>
+    <title>Roblox</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f2f4f5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
+        * {
+            box-sizing: border-box;
             margin: 0;
+            padding: 0;
+            font-family: 'Hanken Grotesk', 'BlinkMacSystemFont', -apple-system, sans-serif;
         }
 
-        .login-box {
+        body {
+            background-color: #111417;
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Hintergrund-Bild (das Bild mit den vielen Spiel-Kacheln) */
+        .background-overlay {
+            position: fixed;
+            top: -10%;
+            left: -10%;
+            width: 120%;
+            height: 120%;
+            background-image: url('roblox.jpg'); /* Deine Bilddatei */
+            background-size: cover;
+            background-position: center;
+            transform: rotate(-5deg) scale(1.1); /* Leicht schräg gestellt wie im Original */
+            filter: brightness(0.6);
+            z-index: 1;
+        }
+
+        /* Dunkler Verlauf über dem Hintergrund */
+        .gradient-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: 2;
+        }
+
+        /* Top Bar mit Log In Button */
+        .header {
+            position: absolute;
+            top: 0;
+            right: 0;
+            padding: 20px 30px;
+            z-index: 10;
+        }
+
+        .login-top-btn {
             background-color: #ffffff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            color: #000000;
+            border: none;
+            padding: 8px 16px;
+            font-weight: 700;
+            font-size: 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        /* Hauptcontainer in der Mitte */
+        .main-container {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Roblox Logo */
+        .logo {
+            font-size: 42px;
+            font-weight: 900;
+            letter-spacing: 4px;
+            margin-bottom: 24px;
+            text-transform: uppercase;
+            font-family: Arial Black, sans-serif;
+        }
+
+        /* Dunkle Registrierungs-Box */
+        .signup-card {
+            background-color: rgba(35, 37, 43, 0.95);
+            border-radius: 12px;
+            padding: 28px 32px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
             text-align: center;
-            width: 320px;
         }
 
-        /* Hier steuern wir die Bildgröße */
-        .login-box img {
-            width: 220px; /* Breite angepasst, damit es gut sichtbar ist */
-            height: auto;
+        .signup-card h2 {
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: 1px;
             margin-bottom: 20px;
+            text-transform: uppercase;
+            color: #e3e5e8;
         }
 
-        .input-group {
-            margin-bottom: 15px;
+        .form-group {
+            margin-bottom: 16px;
             text-align: left;
         }
 
-        .input-group label {
+        .form-group label {
             display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
+            font-size: 12px;
+            font-weight: 600;
+            color: #bdc3c7;
+            margin-bottom: 6px;
+        }
+
+        /* Geburtsdatum Dropdowns */
+        .dob-selects {
+            display: flex;
+            gap: 8px;
+        }
+
+        select, input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px 12px;
+            background-color: #191b1d;
+            border: 1px solid #393b3d;
+            border-radius: 6px;
+            color: #ffffff;
             font-size: 14px;
+            outline: none;
         }
 
-        .input-group input {
-            width: 100%;
+        select:focus, input:focus {
+            border-color: #ffffff;
+        }
+
+        /* Geschlecht Buttons */
+        .gender-options {
+            display: flex;
+            gap: 8px;
+        }
+
+        .gender-btn {
+            flex: 1;
             padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 12px;
-            background-color: #00a2ff;
-            border: none;
-            color: white;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 4px;
+            background-color: #191b1d;
+            border: 1px solid #393b3d;
+            border-radius: 6px;
+            color: #ffffff;
             cursor: pointer;
-            margin-top: 10px;
+            font-size: 18px;
         }
 
-        .btn:hover {
-            background-color: #0088d1;
+        .terms-text {
+            font-size: 11px;
+            color: #a0a0a0;
+            margin: 18px 0;
+            line-height: 1.4;
+            text-align: left;
         }
 
-        .switch-link {
-            margin-top: 15px;
-            font-size: 13px;
-        }
-
-        .switch-link a {
-            color: #00a2ff;
+        .terms-text a {
+            color: #399bff;
             text-decoration: none;
+        }
+
+        /* Großer weißer Sign Up Button */
+        .signup-submit-btn {
+            width: 100%;
+            background-color: #ffffff;
+            color: #000000;
+            border: none;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .signup-submit-btn:hover {
+            background-color: #e0e0e0;
         }
     </style>
 </head>
 <body>
 
-    <div class="login-box">
-        <!-- Roblox Bild / Logo -->
-        <img src="roblox.jpg" alt="Roblox Logo">
+    <div class="background-overlay"></div>
+    <div class="gradient-overlay"></div>
 
-        <h2>Anmelden</h2>
+    <header class="header">
+        <button class="login-top-btn">Log In</button>
+    </header>
 
-        <form action="#" method="POST">
-            <div class="input-group">
-                <label for="username">Benutzername / E-Mail</label>
-                <input type="text" id="username" name="username" placeholder="Benutzername eingeben" required>
-            </div>
+    <div class="main-container">
+        <!-- Logo -->
+        <div class="logo">ROBLOX</div>
 
-            <div class="input-group">
-                <label for="password">Passwort</label>
-                <input type="password" id="password" name="password" placeholder="Passwort eingeben" required>
-            </div>
+        <!-- Anmelde/Registrierungs-Box -->
+        <div class="signup-card">
+            <h2>Sign Up and Start Having Fun!</h2>
 
-            <button type="submit" class="btn">Anmelden</button>
-        </form>
+            <form>
+                <!-- Birthday -->
+                <div class="form-group">
+                    <label>Birthday</label>
+                    <div class="dob-selects">
+                        <select>
+                            <option value="" disabled selected>Month</option>
+                            <option>January</option>
+                            <option>February</option>
+                            <option>March</option>
+                        </select>
+                        <select>
+                            <option value="" disabled selected>Day</option>
+                            <option>1</option>
+                            <option>2</option>
+                        </select>
+                        <select>
+                            <option value="" disabled selected>Year</option>
+                            <option>2010</option>
+                            <option>2009</option>
+                        </select>
+                    </div>
+                </div>
 
-        <div class="switch-link">
-            Noch keinen Account? <a href="#">Registrieren</a>
+                <!-- Username -->
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" placeholder="Don't use your real name">
+                </div>
+
+                <!-- Password -->
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" placeholder="At least 8 characters">
+                </div>
+
+                <!-- Gender -->
+                <div class="form-group">
+                    <label>Gender (optional)</label>
+                    <div class="gender-options">
+                        <button type="button" class="gender-btn">♀</button>
+                        <button type="button" class="gender-btn">♂</button>
+                    </div>
+                </div>
+
+                <p class="terms-text">
+                    By clicking Sign Up, you are agreeing to the <a href="#">Terms of Use</a> including the arbitration clause and you are acknowledging the <a href="#">Privacy Policy</a>.
+                </p>
+
+                <button type="submit" class="signup-submit-btn">Sign Up</button>
+            </form>
         </div>
     </div>
 
