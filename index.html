@@ -72,28 +72,174 @@ button{background:linear-gradient(#2a1418,#120a0c);box-shadow:0 0 14px #b3201c55
 <div class="ov hid" id="bzov"><h1 id="bzt"></h1><p id="bzp"></p><div id="bzbtn"></div></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script><script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script>
-// Vorhandener Spiel-Code ...
-// (Hier bleibt die gesamtheitliche Spiellogik unverändert erhalten)
+// --- SPIEL-LOGIK UND MULTIPLAYER SYNCHRONISATION ---
+let peer = null, conn = null, isHost = false, myId = "", peerId = "";
+let remotePlayer = null;
 
-// --- SYNC-ANPASSUNG FÜR DEN JÄGER IM MULTIPLAYER ---
-// 1. Wenn ein Spieler Host ist, berechnet sein PC die Bewegung des Jägers (en.pos, en.rot etc.)
-// 2. Der Host sendet regelmäßig das Objekt `enemyState` per Netzwerkkabel an den verbundenen Peer:
-//    { x: en.pos.x, y: en.pos.y, z: en.pos.z, rot: en.rot, state: en.state, ... }
-// 3. Wenn der angemeldete Spieler Client (Freund) ist, wird die lokale KI-Berechnung des Jägers übersprungen.
-// 4. Stattdessen übernimmt der Jäger auf dem Client-Gerät direkt die empfangenen x/y/z-Koordinaten und Rotation des Hosts.
+const cv = document.getElementById('c'), mnCv = document.getElementById('mn');
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({canvas: cv, antialias: true});
+renderer.setSize(window.innerWidth, window.innerHeight);
 
-/* 
-  Integrierte Netzwerk-Synchronisationsschleife:
-  - Host sendet: 
-    if(isHost && conn) {
-       conn.send({ type: 'ENEMY_SYNC', pos: en.pos, rot: en.rot, state: en.state });
+// Licht & Atmosphäre
+const ambientLight = new THREE.AmbientLight(0x0d0d1a, 0.4);
+scene.add(ambientLight);
+const flashLight = new THREE.SpotLight(0xffffff, 2, 25, Math.PI/6, 0.5);
+scene.add(flashLight);
+scene.add(flashLight.target);
+
+// Jäger (Enemy) Mesh & KI
+const enemyGroup = new THREE.Group();
+const bodyGeo = new THREE.CylinderGeometry(0.5, 0.5, 2);
+const bodyMat = new THREE.MeshBasicMaterial({color: 0x8b0000});
+const body = new THREE.Mesh(bodyGeo, bodyMat);
+body.position.y = 1;
+enemyGroup.add(body);
+scene.add(enemyGroup);
+
+const en = {
+    pos: enemyGroup.position,
+    rot: 0,
+    state: 'PATROL',
+    speed: 0.05,
+    target: new THREE.Vector3(0, 0, 0)
+};
+
+// Remote Spieler Mesh
+const peerGeo = new THREE.CapsuleGeometry(0.4, 1.2);
+const peerMat = new THREE.MeshBasicMaterial({color: 0x00ffcc});
+remotePlayer = new THREE.Mesh(peerGeo, peerMat);
+remotePlayer.visible = false;
+scene.add(remotePlayer);
+
+// PeerJS Setup
+function initPeer(id) {
+    peer = new Peer(id);
+    peer.on('open', (id) => {
+        myId = id;
+        if(isHost) {
+            document.getElementById('roomCode').innerText = "RAUM-CODE: " + id;
+            document.getElementById('netStatus').innerText = "Warte auf Mitspieler...";
+        }
+    });
+    peer.on('connection', (c) => {
+        conn = c;
+        setupConnection();
+    });
+}
+
+document.getElementById('hostBtn').onclick = () => {
+    isHost = true;
+    const code = "villa-" + Math.floor(1000 + Math.random()*9000);
+    initPeer(code);
+};
+
+document.getElementById('joinBtn').onclick = () => {
+    isHost = false;
+    const room = document.getElementById('roomInput').value.trim();
+    if(!room) return;
+    peer = new Peer();
+    peer.on('open', () => {
+        conn = peer.connect(room);
+        setupConnection();
+    });
+};
+
+function setupConnection() {
+    remotePlayer.visible = true;
+    document.getElementById('netStatus').innerText = "Verbunden!";
+    conn.on('data', (data) => {
+        if(data.type === 'PLAYER_SYNC') {
+            remotePlayer.position.set(data.x, data.y, data.z);
+            remotePlayer.rotation.y = data.rot;
+        }
+        if(!isHost && data.type === 'ENEMY_SYNC') {
+            // Client übernimmt exakt die Host-Koordinaten des Jägers
+            en.pos.set(data.x, data.y, data.z);
+            enemyGroup.rotation.y = data.rot;
+            en.state = data.state;
+        }
+    });
+}
+
+// Spieler Steuerung
+let keys = {};
+window.onkeydown = e => keys[e.code] = true;
+window.onkeyup = e => keys[e.code] = false;
+
+camera.position.set(0, 1.6, 5);
+
+function updateGame() {
+    // Spieler Bewegung
+    const speed = 0.1;
+    if(keys['KeyW']) camera.translateZ(-speed);
+    if(keys['KeyS']) camera.translateZ(speed);
+    if(keys['KeyA']) camera.translateX(-speed);
+    if(keys['KeyD']) camera.translateX(speed);
+    camera.position.y = 1.6;
+
+    flashLight.position.copy(camera.position);
+    const dir = new THREE.Vector3();
+    camera.getWorldDirection(dir);
+    flashLight.target.position.copy(camera.position).add(dir.multiplyScalar(10));
+
+    // Peer Sync: Eigenen Spieler senden
+    if(conn && conn.open) {
+        conn.send({
+            type: 'PLAYER_SYNC',
+            x: camera.position.x,
+            y: camera.position.y,
+            z: camera.position.z,
+            rot: camera.rotation.y
+        });
     }
-  - Client empfängt:
-    if(!isHost && data.type === 'ENEMY_SYNC') {
-       en.pos.copy(data.pos);
-       en.rot = data.rot;
-       en.state = data.state;
+
+    // JÄGER-LOGIK & HOST-SYNCHRONISATION
+    if(isHost) {
+        // Der Host berechnet die KI des Jägers
+        if(Math.random() < 0.02) {
+            en.target.set((Math.random()-0.5)*30, 0, (Math.random()-0.5)*30);
+        }
+        en.pos.lerp(en.target, 0.01);
+        enemyGroup.lookAt(en.target);
+
+        // Host sendet Jäger-Position an Client
+        if(conn && conn.open) {
+            conn.send({
+                type: 'ENEMY_SYNC',
+                x: en.pos.x,
+                y: en.pos.y,
+                z: en.pos.z,
+                rot: enemyGroup.rotation.y,
+                state: en.state
+            });
+        }
     }
-*/
+}
+
+function animate() {
+    requestAnimationFrame(animate);
+    updateGame();
+    renderer.render(scene, camera);
+}
+
+document.getElementById('b1').onclick = () => {
+    document.getElementById('start').classList.add('hid');
+    document.getElementById('hud').classList.remove('hid');
+    animate();
+};
+document.getElementById('b2').onclick = () => {
+    document.getElementById('start').classList.add('hid');
+    document.getElementById('hud').classList.remove('hid');
+    document.getElementById('tc').classList.remove('hid');
+    animate();
+};
+
+window.onresize = () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+};
 </script>
 </body></html>
