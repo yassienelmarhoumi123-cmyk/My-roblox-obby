@@ -49,20 +49,48 @@ button{background:linear-gradient(#2a1418,#120a0c);box-shadow:0 0 14px #b3201c55
 #bzk{position:fixed;inset:0;z-index:7;pointer-events:none;opacity:0;background:#000;transition:opacity .6s}
 #bzbtn{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
 @media(max-width:1000px){#bzb{top:calc(178px + env(safe-area-inset-top,0px))}}
+
+#start{overflow-y:auto;touch-action:pan-y}
+#mpLobby{width:min(570px,94vw);display:grid;gap:8px;margin-top:2px;font-family:Arial,sans-serif}
+#mpLobby .mpTitle{font-size:13px;letter-spacing:3px;color:#eab5ad;font-weight:bold;margin:4px 0}
+#mpLobby .mpRow{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap}
+#mpLobby input{box-sizing:border-box;min-width:0;width:min(250px,68vw);padding:11px 12px;border:1px solid #795057;border-radius:7px;background:#09080b;color:#fff;font:14px Arial,sans-serif;user-select:text}
+#mpLobby input::placeholder{color:#aaa}
+#mpLobby button{font-size:14px;padding:10px 13px;letter-spacing:.4px}
+#mpStatus{font:12px/1.4 Arial,sans-serif;color:#d3c7c7;min-height:17px}
+#mpCodeWrap{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;font:13px Arial,sans-serif}
+#mpCode{padding:6px 9px;border:1px dashed #c86e6a;border-radius:6px;background:#090609;letter-spacing:1px;color:#fff;user-select:text}
+#mpCodeWrap button{font-size:12px;padding:7px 10px}
+.soloLabel{font:11px Arial,sans-serif;letter-spacing:3px;opacity:.65;margin:3px 0 -5px}
+#netHud{position:fixed;left:14px;top:62px;z-index:3;background:#08070bdd;border:1px solid #a83b3b;border-radius:10px;padding:7px 10px;font:12px Arial,sans-serif;color:#f0e8e8;max-width:min(75vw,360px);backdrop-filter:blur(5px)}
+#netHud button{font:11px Arial,sans-serif;padding:4px 7px;margin-left:5px}
+@media(max-width:600px){#netHud{top:55px;left:8px;font-size:10px}}
 </style></head><body>
 <canvas id="c"></canvas><div id="vig"></div>
-<div id="hud" class="hid">🗝️ <span id="k">0</span>/3 &nbsp; 🔌 <span id="f">0</span>/2 &nbsp; ⚡ <span id="st">100</span>% &nbsp; 🔋 <span id="bt">100</span>% &nbsp; 📄 <span id="pgn">0</span>/4 &nbsp; 🍾 <span id="bo">3</span> &nbsp; <span id="mic">🎤✕</span></div><div id="msg"></div>
+<div id="hud" class="hid">🗝️ <span id="k">0</span>/3 &nbsp; 🔌 <span id="f">0</span>/2 &nbsp; ⚡ <span id="st">100</span>% &nbsp; 🔋 <span id="bt">100</span>% &nbsp; 📄 <span id="pgn">0</span>/4 &nbsp; 🍾 <span id="bo">3</span> &nbsp; <span id="mic">🎤✕</span></div><div id="msg"></div><div id="netHud" class="hid"><span id="netHudText">ONLINE-KOOP</span><button id="netHudCopy" type="button">Code kopieren</button></div>
 <div id="hide" class="hid"><span id="hs"></span></div><canvas id="mn" class="hid" width="288" height="216"></canvas>
 <div id="tc" class="hid"><b id="br" style="right:260px">🏃</b><b id="bs" style="right:180px">🐢</b><b id="bl" style="right:100px">🔦</b><b id="bh" style="right:20px">🫥</b><b id="bp" style="right:20px;bottom:100px">📱</b><b id="bg" style="right:100px;bottom:100px">🍾</b><b id="bm" style="right:180px;bottom:100px">🎤</b></div>
 <div id="lm" class="hid"><span>🎤</span><div id="lb"><div id="lf"></div><i class="t1"></i><i class="t2"></i></div></div><div id="ph" class="hid"></div><img id="scare" class="hid" alt="">
 <div class="ov" id="start"><h1>DIE VILLA</h1>
 <p>Finde 3 Schlüssel für das Kellertor, 2 Sicherungen und 4 Tagebuchseiten, um die Wahrheit zu erfahren. Dein Handy (P) warnt dich, aber wenn es klingelt, geh ran! G wirft eine Flasche als Ablenkung. Finde 2 Sicherungen und bringe den Strom im Sicherungskasten zurück, dann leuchtet das Ausgangstor. Etwas Gebücktes mit langen, blutigen Fingern sucht dich und holt jeden, den es findet. Beim Rennen bist du schneller als er, aber nur kurz. Doch am Tor wartet der Jäger zum letzten Kampf – wirf mit G Flaschen auf ihn! Aktiviere den Ton.</p>
 <p>PC: WASD, Maus, Shift rennen, C schleichen, F Lampe, P Handy, M Mikrofon an/aus, E verstecken und Sicherungskasten benutzen.<br>Handy: links wischen = laufen, rechts wischen = umschauen, 🏃 rennen, 🐢 schleichen, 🫥 verstecken und benutzen.</p>
-<button id="mb1">🎤 Mikrofon-Modus: AUS</button><br><button id="b1">💻 PC</button><button id="b2">📱 Handy</button></div>
+<button id="mb1">🎤 Mikrofon-Modus: AUS</button>
+<div id="mpLobby">
+  <div class="mpTitle">ONLINE-KOOP · BIS ZU 6 SPIELER</div>
+  <div class="mpRow"><input id="playerName" maxlength="18" placeholder="Dein Spielername" aria-label="Dein Spielername"><button id="createRoom" type="button">🌐 Raum erstellen</button></div>
+  <div class="mpRow"><input id="joinCode" maxlength="100" placeholder="Raumcode eingeben" aria-label="Raumcode"><button id="joinRoom" type="button">Beitreten</button></div>
+  <div id="mpStatus" role="status">Erstelle einen Raum oder gib den Code eines Freundes ein.</div>
+  <div id="mpCodeWrap" class="hid"><b>Dein Raumcode:</b><code id="mpCode"></code><button id="copyRoom" type="button">📋 Kopieren</button></div>
+</div>
+<div class="soloLabel">STEUERUNG WÄHLEN · SOLO ODER ONLINE</div>
+<button id="b1">💻 PC starten</button><button id="b2">📱 Handy starten</button></div>
 <div class="ov hid" id="intro"><img id="ii" alt="" style="height:36vh;border-radius:8px"><p id="it" style="font-size:22px;max-width:520px"></p><span id="ib" class="hid"><button onclick="nein()">Nein.</button> <button onclick="nein()">Heute nicht.</button></span></div><div class="ov hid" id="end"><h1 id="et"></h1><p id="ep"></p><button onclick="location.reload()">Nochmal spielen</button></div>
 <div id="bzb" class="hid"><div id="bzn">HANS WEIDNER · DER JÄGER</div><div id="bzr"><div id="bzf"></div><i style="left:66%"></i><i style="left:33%"></i></div><div id="bzh"></div></div><div id="bzx"></div><div id="bzk"></div>
 <div class="ov hid" id="bzov"><h1 id="bzt"></h1><p id="bzp"></p><div id="bzbtn"></div></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/SkeletonUtils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script>
 const $=id=>document.getElementById(id),L1='„Komm näher … Es ist Freitag. Du bist mein Gast. Ich habe so lange gewartet.“',NT=['Notiz im Schreibtisch: „Jeden Freitag lud er Gäste ins Haus ein. Jeden Freitag kamen weniger.“','Notiz in der Schublade: „Dann kam niemand mehr. Da ging er hinaus und holte sie selbst.“','Notiz im Safe: „Die Familie floh. Nur er blieb, und was die Trauer aus ihm gemacht hat.“','Zettel an der Sicherung: „Er ist kein Monster. Die Trauer hat ihn nur entstellt.“','Zettel am Kasten: „Wenn er schreit, hat er Angst, wieder allein zu sein.“'],TA=['Bleib hier!','Ich hol dich!','Du bist mein Gast!','Lauf nicht weg!'],TN=['Ich hole dich. Heute noch.','Ich rieche dich.','Bleib doch, es ist Freitag.','Warum rennst du? Meine Hände sind ganz kalt …','Ich sehe dich …','Heute bleibst du bei mir.'],TH=['Ich weiß, dass du hier bist …','Komm raus. Ich will dich nur halten.','Ich höre dich atmen.','Der Schrank hält meine Finger nicht auf.','Ich zähle bis drei …'];
 function say(t){try{const u=new SpeechSynthesisUtterance(t);u.lang='de-DE';u.pitch=.2;u.rate=.8;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}
@@ -206,7 +234,8 @@ addEventListener('touchstart',e=>{if(!run||!mobile)return;for(const t of e.chang
 addEventListener('touchmove',e=>{for(const t of e.changedTouches){if(js&&t.identifier==js.id)jv=[cl((t.clientX-js.x)/50),cl((t.clientY-js.y)/50)];if(lk&&t.identifier==lk.id){yaw-=(t.clientX-lk.x)*.006;pitch=Math.max(-1.2,Math.min(1.2,pitch-(t.clientY-lk.y)*.006));lk.x=t.clientX;lk.y=t.clientY}}},{passive:true});
 addEventListener('touchend',e=>{for(const t of e.changedTouches){if(js&&t.identifier==js.id){js=null;jv=[0,0]}if(lk&&t.identifier==lk.id)lk=null}});
 function lamp(){lampOn=!lampOn;fo.visible=lampOn;nse(.03,.3,3000)}
-function hideT(){if(over)return;if(boss){msg('Zum Verstecken ist es zu spät.');return}if(!hidden&&Math.hypot(BX[0]-px,BX[1]-pz)<3.2){if(power)msg('Der Strom läuft schon.');else if(fuses>=2){power=true;EM.color.set(0x3cff8a);phm('Unbekannt: Der Strom … jetzt hört er ALLES. Lauf!');tone(80,0,1,.4,'square',400);msg('Der Strom ist zurück! Das Tor leuchtet grün.')}else msg('Der Sicherungskasten braucht 2 Sicherungen ('+fuses+'/2).');return}if(hidden){hidden=false;px=hp[0];pz=hp[1];$('hide').classList.add('hid');return}
+function activatePower(){if(power||fuses<2)return;power=true;EM.color.set(0x3cff8a);phm('Unbekannt: Der Strom … jetzt hört er ALLES. Lauf!');tone(80,0,1,.4,'square',400);msg('Der Strom ist zurück! Das Tor leuchtet grün.');netMarkChanged()}
+function hideT(){if(over)return;if(boss){msg('Zum Verstecken ist es zu spät.');return}if(!hidden&&Math.hypot(BX[0]-px,BX[1]-pz)<3.2){if(power)msg('Der Strom läuft schon.');else if(fuses>=2){if(netMode&&netReady&&!netIsHost){netSend({t:'powerRequest'});msg('Die Gruppe aktiviert den Stromkasten …')}else activatePower()}else msg('Der Sicherungskasten braucht 2 Sicherungen ('+fuses+'/2).');return}if(hidden){hidden=false;px=hp[0];pz=hp[1];$('hide').classList.add('hid');return}
 const h=HC.find(([x,z])=>Math.hypot(x-px,z-pz)<3.4);if(h){hp=[px,pz];hidden=true;chase=false;{const fz=walk(h[0],h[1]+T)?1:walk(h[0],h[1]-T)?-1:0,fx=fz?0:walk(h[0]+T,h[1])?1:-1;hy=yaw=Math.atan2(-fx,-fz);pitch=0}if(Math.random()<.5)mt=[px,pz];px=h[0];pz=h[1];$('hide').classList.remove('hid');nse(.2,.2,400)}else msg('Hier ist kein Schrank.')}
 $('bl').onclick=lamp;$('mb1').onclick=micToggle;$('bm').onclick=micToggle;$('bp').onclick=phone;$('bg').onclick=throwB;$('bh').onclick=hideT;$('br').onpointerdown=()=>SB=1;$('br').onpointerup=$('br').onpointerleave=()=>SB=0;$('bs').onclick=()=>{sneak=!sneak;$('bs').style.opacity=sneak?1:.6};
 let pg=0,bo=3,pr=40,ringing=0,phOpen=false;const T0=performance.now(),pms=[],PG=['Hans Weidner, Jäger und Hausherr: „Meine Frau starb an einem Freitag. Seitdem lade ich jeden Freitag Gäste ein, damit das Haus nicht so still ist.“','„Erst kamen die Nachbarn, dann nur noch wenige. Man nannte mich verrückt. Ich ging allein auf die Jagd, um nicht reden zu müssen.“','„Ich schloss die Tore, damit niemand mehr geht. Im Wald fand ich etwas, das mich verstand. Seitdem spüre ich nur noch den Hunger nach Gesellschaft.“','„Wer das liest: Geh. Ich erkenne mich im Spiegel nicht mehr. Aber sag ihm, dass es mir leid tut.“'];
@@ -235,7 +264,7 @@ else if(!over&&rr>1&&micT<=0){micT=rr>1.8?1.2:3;tone(90,0,.6,.25,'sawtooth',60);
 if(doom){if(!hidden||over)doom=false;else{mt=[px,pz];if(dd<2.4){doom=false;msg('🚪 Er reißt die Schranktür auf …');setTimeout(()=>{if(!over)endG(false)},600)}}}}
 function throwB(){if(boss){bossThrow();return}if(!run||hidden||bo<=0)return;bo--;throwAnim();$('bo').textContent=bo;let d=11;const fx=-Math.sin(yaw),fz=-Math.cos(yaw);while(d>2&&!walk(px+fx*d,pz+fz*d))d--;nse(.35,.7,5000);tone(2600,.05,.25,.15,'triangle',1500);if(Math.hypot(mp.x-px,mp.z-pz)>6){chase=false;mt=[px+fx*d,pz+fz*d]}msg('Die Flasche zerbricht. Er horcht …')}
 function msg(t){const m=$('msg');m.textContent=t;m.style.opacity=1;clearTimeout(mto);mto=setTimeout(()=>m.style.opacity=0,Math.max(2600,t.length*60))}
-function endG(win,wt,wp,ws){if(over)return;over=true;bossHide();run=false;try{document.exitPointerLock()}catch(e){}
+function endG(win,wt,wp,ws){if(over)return;if(netMode&&netReady&&!netApplyingEnd){const packet={t:win?'teamWin':'teamLose'};if(netIsHost)netBroadcast(packet);else netSend({t:win?'winRequest':'lossRequest'})}over=true;bossHide();run=false;try{document.exitPointerLock()}catch(e){}
 const show=(t,p)=>{$('et').textContent=t;$('ep').textContent=p;$('end').classList.remove('hid')};
 if(win){[523,659,784,1047].forEach((f,i)=>tone(f,i*.18,.5,.25));show(wt||'Entkommen!',wp||'Du kennst jetzt seine Geschichte. Hinter dir hörst du ihn leise rufen: „Danke, dass du mein Gast warst … Komm nächsten Freitag wieder?“');say(ws||'Kommst du nächsten Freitag?')}
 else{const s=snJump();setTimeout(()=>{s.classList.add('hid');show('Geschnappt …','„Jetzt bleibst du. Jetzt bin ich nicht mehr allein.“')},3000)}}
@@ -283,11 +312,11 @@ bhp=4;bcool=0;bsh=0;thT=-1;thP=0;bzHearts();$('bzf').style.width='100%';$('bzn')
 bproj.splice(0).forEach(p=>S.remove(p.m));bzAll.forEach(m=>m.visible=false);bzGun.visible=false;bzKit.visible=false;
 mp.x=cen(8);mp.z=cen(14);BS.x0=mp.x;BS.z0=mp.z;BS.ang=Math.atan2(48.5-mp.x,46.5-mp.z);chase=false;AL.intensity=.5;S.fog.density=.05;bzL.forEach(l=>{l.intensity=1;l.color.set(0xff9a60)});ml.intensity=.6;
 if(re){px=48.5;pz=46.5;yaw=Math.atan2(-(mp.x-px),-(mp.z-pz));pitch=0;$('bzk').style.opacity=0}}
-function startBoss(){if(boss||bossDone)return;boss=true;bfrz=true;hidden=false;chase=false;doom=false;phOpen=false;$('ph').classList.add('hid');ringing=0;
+function startBoss(fromNetwork=false){if(netMode&&netReady&&!netIsHost&&!fromNetwork){netSend({t:'bossRequest'});msg('Die Gruppe bereitet den letzten Kampf vor …');return}if(boss||bossDone)return;boss=true;bfrz=true;hidden=false;chase=false;doom=false;phOpen=false;$('ph').classList.add('hid');ringing=0;
 bat=1;lampOn=true;fo.visible=true;$('bo').textContent='∞';$('bzk').style.opacity=1;KO.forEach(k=>k.visible=false);bzDoor.forEach(m=>m.visible=true);bzL.forEach(l=>l.visible=true);
-bossReset(0);nse(1,1,150);tone(55,0,1.4,.7,'sine',30);msg('Der Boden bebt … Er zieht dich in den Speisesaal!')}
+bossReset(0);nse(1,1,150);tone(55,0,1.4,.7,'sine',30);msg('Der Boden bebt … Er zieht dich in den Speisesaal!');netMarkChanged()}
 function bossHurt(){if(BS.inv>0||bhp<=0||BS.s==='lost')return;bhp--;BS.inv=1.1;bsh=.5;pitch+=.08;yaw+=(Math.random()-.5)*.14;const x=$('bzx');x.style.opacity=1;setTimeout(()=>x.style.opacity=0,350);nse(.3,.8,500);tone(140,0,.3,.5,'square',70);bzHearts();if(bhp<=0)bossLose();else if(bhp==1)msg('❤️ Nur noch ein Herz! Such das grüne Licht!')}
-function bossHit(head){if(['phase','kneel','won','lost','intro'].includes(BS.s))return;BS.hp-=(BS.v?6:2)*(head?1.6:1);BS.fl=.12;$('bzf').style.width=Math.max(0,BS.hp)+'%';nse(.12,.5,1200);tone(320,0,.1,.3,'square',160);if(head)msg('🎯 Kopftreffer!');if(BS.hp<=0)bossKneel()}
+function bossHit(head){if(netMode&&netReady&&!netIsHost){netSend({t:'bossDamage',head:!!head});return}if(['phase','kneel','won','lost','intro'].includes(BS.s))return;BS.hp-=(BS.v?6:2)*(head?1.6:1);BS.fl=.12;$('bzf').style.width=Math.max(0,BS.hp)+'%';nse(.12,.5,1200);tone(320,0,.1,.3,'square',160);if(head)msg('🎯 Kopftreffer!');if(BS.hp<=0)bossKneel()}
 function bossThrow(){if(bcool>0||!run||bfrz||thT>=0||['intro','kneel','won','lost'].includes(BS.s))return;bcool=.9;thP=1;thT=0}
 function bossPhase(){BS.ph++;BS.s='phase';BS.t=0;bsh=.5;BS.kc=2;nse(1.2,.9,150);tone(70,0,1.6,.5,'sawtooth',35);
 if(BS.ph==2){BS.sc=1.32;msg('📯 Das Jagdhorn ertönt … das Licht stirbt.');say('Hört ihr das Horn? Die Jagd beginnt!');AL.intensity=.12;S.fog.density=.075;bzL.forEach(l=>l.intensity=.5);ml.intensity=2.2;$('bzn').textContent='HANS WEIDNER · DAS JAGDHORN'}
@@ -298,7 +327,7 @@ function bossLose(){BS.s='lost';run=false;bzAll.forEach(m=>m.visible=false);bzGu
 const s=snJump();
 setTimeout(()=>{s.classList.add('hid');bzShow('Der Jäger hat dich …','„Jetzt lasse ich dich nie mehr los.“',[['⚔️ Nochmal kämpfen',bossRetry]])},3000)}
 function bossRetry(){bossReset(1);bfrz=true;run=true;if(!mobile)try{$('c').requestPointerLock()}catch(e){}}
-function bossWin(f){BS.s='won';BS.open=1;bossDone=true;bzDoor.forEach(m=>m.visible=false);msg('🚪 Die Türen öffnen sich …');tone(523,0,.6,.25);tone(784,.3,.8,.25);
+function bossWin(f){BS.s='won';BS.open=1;bossDone=true;netMarkChanged();bzDoor.forEach(m=>m.visible=false);msg('🚪 Die Türen öffnen sich …');tone(523,0,.6,.25);tone(784,.3,.8,.25);
 setTimeout(()=>f?endG(true,'🕊️ Frieden','Du sagst ihm, was in seinem Tagebuch steht: dass er nicht schuld ist und niemand für immer bleiben muss. Hans legt das Gewehr nieder, seine langen Finger öffnen sich. Die Türen schwingen auf. Zum ersten Mal seit Jahren ist es Freitag, und am Tisch wartet niemand auf einen Gast.','Es ist vorbei. Danke.'):endG(true,'Entkommen!','Du lässt ihn knien und rennst durch die Türen. Hinter dir hörst du ihn leise rufen: „Komm nächsten Freitag wieder … bitte.“','Kommst du nächsten Freitag?'),2800)}
 addEventListener('mousedown',e=>{if(boss&&run&&!mobile&&e.button===0&&document.pointerLockElement)bossThrow()});
 function bossU(dt,now){
@@ -399,15 +428,15 @@ const ok=(x,z)=>[[.3,.3],[-.3,.3],[.3,-.3],[-.3,-.3]].every(([a,b])=>wk(x+a,z+b)
 if(ok(px+dx,pz))px+=dx;if(ok(px,pz+dz))pz+=dz;
 stepD+=Math.hypot(dx,dz);if(stepD>(sn?1.6:1.1)){stepD=0;nse(.12,sn?.07:.25,500)}
 if(hidden){yaw=Math.max(hy-1.1,Math.min(hy+1.1,yaw));pitch=Math.max(-.5,Math.min(.5,pitch))}C.position.set(px,(hidden?1.4:sn?1.25:1.6)+Math.sin(stepD*5)*.03,pz);C.rotation.set(pitch,yaw,0,'YXZ');
-KO.forEach((k,i)=>{if(!k.visible)return;k.rotation.y+=dt*2;k.position.y=1.1+Math.sin(now/600+i)*.03;if(Math.hypot(k.position.x-px,k.position.z-pz)<1.3){k.visible=false;const ty=k.userData.t;if(ty=='k')keys++;else if(ty=='f')fuses++;else if(ty=='g')pg++;else{bat=1;nse(.1,.3,2000)}$('k').textContent=keys;$('f').textContent=fuses;$('pgn').textContent=pg;if(ty=='k'&&keys==1)phm('Unbekannt: Er hört dich, wenn du rennst. Schleich!');if(ty=='g'&&pg==4)phm('Unbekannt: Jetzt kennst du die Wahrheit. Der Ausgang wartet.');[660,880,1320].forEach((f,i)=>tone(f,i*.12,.3,.2));if(keys>=3&&!lopen){lopen=true;phm('Unbekannt: Das Kellertor ist offen. Such die Sicherungen.');LD.forEach(m=>m.visible=false);nse(.8,.5,300);msg(NT[2]+' Ein schweres Tor knackt auf …')}else msg(ty=='k'?'Schlüssel ('+keys+'/3). '+NT[keys-1]:ty=='f'?'Sicherung ('+fuses+'/2). '+NT[2+fuses]:ty=='g'?'Seite '+pg+'/4: '+PG[pg-1]:'Batterie! Die Lampe ist wieder voll.')}});
+KO.forEach((k,i)=>{if(!k.visible)return;k.rotation.y+=dt*2;k.position.y=1.1+Math.sin(now/600+i)*.03;if(Math.hypot(k.position.x-px,k.position.z-pz)<1.3){if(k.userData.t==='a'){k.visible=false;bat=1;nse(.1,.3,2000);msg('Batterie! Die Lampe ist wieder voll.')}else if(netMode&&netReady&&!netIsHost){if(!netPending.has(i)){netPending.add(i);netSend({t:'collect',id:i})}}else claimPickup(i)}});
 if(Math.hypot(EX[0]-px,EX[1]-pz)<1.7){if(power&&pg>=4)startBoss();else if(power)msg('Das Tor bleibt verschlossen. Du musst die Wahrheit kennen: Seiten ('+pg+'/4).');else msg('Das Tor hat keinen Strom. Der Sicherungskasten ist irgendwo im Haus.')}
 if(boss){bossU(dt,now);return}
 // Monster
 const dd=Math.hypot(px-mp.x,pz-mp.z),det=hidden?0:(sn?5:spr?16:11)+micB;
 if(!chase&&dd<det){chase=true;nse(.7,.5,250);tone(110,0,1,.2,'sawtooth',55);if(Math.random()<.5)say(TA[Math.floor(Math.random()*TA.length)])}
 if(chase&&(hidden||dd>15))chase=false;
-nt-=dt;if(nt<=0){nt=.35;let tg;if(chase)tg=[px,pz];else{if(!mt||Math.hypot(mt[0]-mp.x,mt[1]-mp.z)<2)mt=rnd();tg=mt}wp=next(mp.x,mp.z,tg[0],tg[1]);if(!wp)mt=null}
-if(wp){const vx=wp[0]-mp.x,vz=wp[1]-mp.z,d=Math.hypot(vx,vz),s=Math.min((chase?2.8+.3*(keys+fuses)+(power?.4:0):1.9+(doom?1.4:0))*dt,d);if(d>.02){mp.x+=vx/d*s;mp.z+=vz/d*s}}
+if(!netMode||!netReady||netIsHost){nt-=dt;if(nt<=0){nt=.35;let tg;if(chase){tg=[px,pz];if(netMode&&netIsHost){let best=Math.hypot(px-mp.x,pz-mp.z);netRemoteState.forEach(p=>{if(p.hidden)return;const d=Math.hypot(p.x-mp.x,p.z-mp.z);if(d<best){best=d;tg=[p.x,p.z]}})}}else{if(!mt||Math.hypot(mt[0]-mp.x,mt[1]-mp.z)<2)mt=rnd();tg=mt}wp=next(mp.x,mp.z,tg[0],tg[1]);if(!wp)mt=null}}
+if(wp&&(!netMode||!netReady||netIsHost)){const vx=wp[0]-mp.x,vz=wp[1]-mp.z,d=Math.hypot(vx,vz),s=Math.min((chase?2.8+.3*(keys+fuses)+(power?.4:0):1.9+(doom?1.4:0))*dt,d);if(d>.02){mp.x+=vx/d*s;mp.z+=vz/d*s}}
 mon.position.set(mp.x,Math.sin(now/180)*.03,mp.z);mon.lookAt(px,0,pz);mon.userData.a.forEach((a,i)=>a.rotation.x=chase?-1.4+Math.sin(now/110+i*3)*.25:Math.sin(now/400+i*3)*.15);mm.color.setScalar(Math.max(.5,Math.min(1,1.3-dd/12)));
 if(hidden){const vx=mp.x-px,vz=mp.z-pz,fw=-vx*Math.sin(yaw)-vz*Math.cos(yaw),rt=vx*Math.cos(yaw)-vz*Math.sin(yaw),ar=dd>14?'':Math.abs(rt)>Math.abs(fw)?(rt>0?'➡️ ':'⬅️ '):(fw>0?'⬆️ ':'⬇️ ');$('hs').textContent=ar+(dd<3.5?'😱 Er steht vor dem Schrank! ':dd<7?'😨 Er ist ganz nah! ':dd<14?'Er schleicht herum … ':'Es ist still. ')+'Umschauen · E = rauskommen'}bat=Math.max(0,bat-(lampOn?dt/90:0));$('bt').textContent=Math.round(bat*100);mini(dd);if(hidden&&dd<3.2)findT+=dt;else findT=0;ht-=dt;if(!hidden&&ht<=0&&HC.some(([x,z])=>Math.hypot(x-px,z-pz)<3.4)){ht=.6;msg('Schrank in der Nähe: E drücken zum Verstecken')}
 if(dd<1.4||findT>2.5)endG(false);
@@ -426,11 +455,180 @@ KO.forEach(k=>{if(!k.visible||Math.hypot(k.position.x-px,k.position.z-pz)>9)retu
 mc.save();mc.translate(px*s,pz*s);mc.rotate(-yaw);mc.fillStyle='#fff';mc.beginPath();mc.moveTo(0,-6);mc.lineTo(4,4);mc.lineTo(-4,4);mc.closePath();mc.fill();mc.restore();
 if(dd<14){const p=Math.sin(performance.now()/150)*1.2;mc.fillStyle='#f22';mc.beginPath();mc.arc(mp.x*s,mp.z*s,4+p,0,7);mc.fill();if(chase){mc.strokeStyle='#f228';mc.beginPath();mc.arc(mp.x*s,mp.z*s,8+p*2,0,7);mc.stroke()}}}
 function introF(now){const l=lunge?Math.min(1,(now-lunge)/1300):0,sh=lunge?.02+l*.06:0;mon.position.set(25.5-l*l*3.6,Math.sin(now/200)*.02,10.5);C.position.set(21+(Math.random()-.5)*sh+Math.sin(now/1400)*.08,1.75+(Math.random()-.5)*sh,10.5+(Math.random()-.5)*sh);C.rotation.set(.12,-Math.PI/2,0,'YXZ');mon.lookAt(C.position.x,0,C.position.z);mon.userData.a.forEach((a,i)=>a.rotation.x=lunge?-1.4+Math.sin(now/90+i*3)*.3:Math.sin(now/500+i*3)*.1);mm.color.setScalar(1);fo.intensity=2.2;ml.intensity=1.5}
+// ===================== ONLINE-KOOP =====================
+// PeerJS stellt nur die Verbindung her; Spielpositionen und Fortschritt laufen direkt zwischen den Browsern.
+let netMode=false,netIsHost=false,netReady=false,netPeer=null,netConn=null,netRoomId='';
+let netPlayerName='Gast',netSelfId='',netSendClock=0,netSnapshotClock=0;
+const netConnections=new Map(),netRemoteState=new Map(),netPending=new Set(),netAvatars=new Map();
+let gavinTemplate=null,netPlayerCount=1,netApplyingEnd=false;
+function netName(){const el=$('playerName');return (el&&el.value.trim()?el.value.trim():'Gast').slice(0,18)}
+function netStatus(t){const el=$('mpStatus');if(el)el.textContent=t}
+function netCopyRoom(){const code=netRoomId;if(!code)return;const done=()=>{netStatus('Raumcode kopiert. Teile ihn mit deinen Freunden.');msg('Raumcode kopiert!')};if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(code).then(done).catch(()=>{prompt('Kopiere diesen Raumcode:',code)});else prompt('Kopiere diesen Raumcode:',code)}
+function netHudUpdate(){
+  if(!netMode)return;
+  netPlayerCount=netIsHost?netRemoteState.size+1:Math.max(2,netPlayerCount);
+  $('netHud').classList.remove('hid');
+  $('netHudText').textContent=(netIsHost?'HOST':'ONLINE')+' · '+netPlayerCount+' Spieler'+(netRoomId?' · '+netRoomId.slice(0,13):'');
+  $('netHudCopy').style.display=netRoomId?'inline-block':'none';
+}
+function netLocalData(){return {id:netSelfId||'local',name:netPlayerName,x:px,z:pz,yaw,hidden:!!hidden}}
+function netWorldData(){
+  const collected=[];KO.forEach((o,i)=>{if(['k','f','g'].includes(o.userData.t)&&!o.visible)collected.push(i)});
+  return {collected,keys,fuses,pg,power,lopen,boss,bossDone,bossHp:BS.hp,bossPhase:BS.ph,bossState:BS.s,monster:{x:mp.x,z:mp.z,chase:!!chase}};
+}
+function netPlayersData(){const a=run?[netLocalData()]:[];netRemoteState.forEach((p,id)=>{if(p.ready)a.push({id,name:p.name,x:p.x,z:p.z,yaw:p.yaw,hidden:!!p.hidden})});return a}
+function netSend(packet){if(netConn&&netConn.open)try{netConn.send(packet)}catch(e){console.warn('Koop-Senden:',e)}}
+function netBroadcast(packet){netConnections.forEach(c=>{if(c&&c.open)try{c.send(packet)}catch(e){}})}
+function netPublishSnapshot(){if(!netIsHost||!netReady)return;const packet={t:'snapshot',world:netWorldData(),players:netPlayersData()};netHandlePlayers(packet.players);netBroadcast(packet)}
+function netMarkChanged(){if(netIsHost&&netReady)netPublishSnapshot()}
+function netApplyWorld(w){
+  if(!w)return;
+  const before=[keys,fuses,pg,power,lopen,boss];
+  const got=new Set(Array.isArray(w.collected)?w.collected:[]);
+  KO.forEach((o,i)=>{if(['k','f','g'].includes(o.userData.t)){o.visible=!got.has(i);netPending.delete(i)}});
+  keys=Number(w.keys)||0;fuses=Number(w.fuses)||0;pg=Number(w.pg)||0;power=!!w.power;lopen=!!w.lopen;
+  if(lopen)LD.forEach(m=>m.visible=false);
+  if(EM)EM.color.set(power?0x3cff8a:0x44484c);
+  $('k').textContent=keys;$('f').textContent=fuses;$('pgn').textContent=pg;
+  if(w.monster&&Number.isFinite(w.monster.x)&&Number.isFinite(w.monster.z)){mp.x=w.monster.x;mp.z=w.monster.z;chase=!!w.monster.chase}
+  if(w.boss&&!boss&&!bossDone)startBoss(true);
+  if(Number.isFinite(w.bossHp)&&boss){BS.hp=w.bossHp;$('bzf').style.width=Math.max(0,BS.hp)+'%'}
+  if(Number.isFinite(w.bossPhase)&&boss&&w.bossPhase>BS.ph){while(BS.ph<w.bossPhase)bossPhase()}
+  if(w.bossState==='kneel'&&boss&&BS.s!=='kneel')bossKneel();
+  if(w.bossDone)bossDone=true;
+  if(before[0]!==keys||before[1]!==fuses||before[2]!==pg||before[3]!==power||before[4]!==lopen||before[5]!==boss){
+    if(keys>=3&&before[0]<3)msg('🔑 Die Gruppe hat alle Schlüssel! Das Kellertor ist offen.');
+    else if(fuses>=2&&before[1]<2)msg('🔌 Die Gruppe hat beide Sicherungen gefunden!');
+    else if(pg>=4&&before[2]<4)msg('📄 Die Gruppe hat alle Tagebuchseiten gefunden!');
+  }
+}
+function netHandlePlayers(players){
+  if(!Array.isArray(players))return;
+  const seen=new Set();
+  players.forEach(p=>{
+    if(!p||!p.id||p.id===netSelfId)return;
+    seen.add(p.id);
+    let v=netAvatars.get(p.id);
+    if(!v){v=netMakeAvatar(p.id,p.name||'Mitspieler');netAvatars.set(p.id,v)}else if(v.name!==(p.name||'Mitspieler')){const old=v.root.children.find(o=>o.isSprite);if(old){v.root.remove(old);if(old.material.map)old.material.map.dispose()}v.root.add(netMakeNameSprite(p.name||'Mitspieler'));v.name=p.name||'Mitspieler'}
+    v.target.set(Number(p.x)||0,0,Number(p.z)||0);v.yaw=Number(p.yaw)||0;v.root.visible=!p.hidden;
+  });
+  netAvatars.forEach((v,id)=>{if(!seen.has(id)){S.remove(v.root);netAvatars.delete(id)}});
+  netPlayerCount=players.length||1;netHudUpdate();
+}
+function netMakeNameSprite(name){
+  const c=document.createElement('canvas');c.width=512;c.height=96;const g=c.getContext('2d');
+  g.fillStyle='rgba(5,4,8,.82)';g.beginPath();g.roundRect(8,8,496,80,18);g.fill();
+  g.strokeStyle='#c9a96a';g.lineWidth=4;g.stroke();g.fillStyle='#fff';g.font='bold 38px Arial';g.textAlign='center';g.textBaseline='middle';g.fillText(String(name).slice(0,18),256,49);
+  const tex=new THREE.CanvasTexture(c);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false}));s.scale.set(2.2,.42,1);s.position.y=2.35;return s;
+}
+function netFallbackAvatar(){
+  const g=new THREE.Group(),shirt=new THREE.MeshStandardMaterial({color:0x536f88,roughness:.9}),skin=new THREE.MeshStandardMaterial({color:0xc99a7a,roughness:.8}),pants=new THREE.MeshStandardMaterial({color:0x202633,roughness:.95});
+  const part=(geo,mat,x,y,z)=>{const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);g.add(m);return m};
+  part(new THREE.CylinderGeometry(.25,.32,.9,10),shirt,0,1.05,0);part(new THREE.SphereGeometry(.22,12,10),skin,0,1.68,0);
+  [-1,1].forEach(s=>{const a=part(new THREE.CylinderGeometry(.075,.09,.72,8),shirt,s*.34,1.12,0);a.rotation.z=s*.18;const l=part(new THREE.CylinderGeometry(.095,.11,.72,8),pants,s*.14,.38,0);l.rotation.z=-s*.06});
+  return g;
+}
+function netBuildAvatarBody(root){
+  if(root.userData.body){root.remove(root.userData.body);root.userData.body=null}
+  let body;
+  if(gavinTemplate){body=THREE.SkeletonUtils?THREE.SkeletonUtils.clone(gavinTemplate):gavinTemplate.clone(true)}else body=netFallbackAvatar();
+  body.rotation.y=Math.PI;body.position.y=0;root.add(body);root.userData.body=body;
+  if(!root.userData.ring){const ring=new THREE.Mesh(new THREE.TorusGeometry(.48,.035,8,24),new THREE.MeshBasicMaterial({color:0x79c8ff}));ring.rotation.x=Math.PI/2;ring.position.y=.05;root.add(ring);root.userData.ring=ring;}
+}
+function netMakeAvatar(id,name){
+  const root=new THREE.Group();netBuildAvatarBody(root);root.add(netMakeNameSprite(name));S.add(root);
+  return {root,target:new THREE.Vector3(),yaw:0,name};
+}
+function netRebuildAvatars(){netAvatars.forEach(v=>netBuildAvatarBody(v.root))}
+function netLoadGavin(){
+  if(!THREE.FBXLoader)return;
+  try{
+    const manager=new THREE.LoadingManager();
+    manager.setURLModifier(url=>{const file=decodeURIComponent(String(url).split(/[\\/]/).pop().split('?')[0]);return /\.(png|jpe?g|tga)$/i.test(file)?'./assets/gavin/textures/'+file:url});
+    const loader=new THREE.FBXLoader(manager);
+    loader.load('./assets/gavin/Gavin.fbx',obj=>{
+      obj.traverse(o=>{if(o.isMesh){o.frustumCulled=false;const mats=Array.isArray(o.material)?o.material:[o.material];mats.forEach(m=>{if(m){m.roughness=.88;m.metalness=0;if(m.map){m.map.encoding=THREE.sRGBEncoding;m.map.anisotropy=Math.min(4,R.capabilities.getMaxAnisotropy());m.map.needsUpdate=true}}})}});
+      const box=new THREE.Box3().setFromObject(obj),height=Math.max(.1,box.max.y-box.min.y),scale=1.75/height;
+      obj.scale.setScalar(scale);obj.position.y=-box.min.y*scale;gavinTemplate=obj;netRebuildAvatars();
+      console.info('Gavin-Spielermodell geladen.');
+    },undefined,e=>console.warn('Gavin-Modell nicht geladen; Platzhalter wird verwendet:',e));
+  }catch(e){console.warn('FBXLoader konnte nicht gestartet werden:',e)}
+}
+function netCreateHost(){
+  if(netMode){netStatus('Du bist bereits mit einem Raum verbunden.');return}
+  if(!window.Peer){netStatus('PeerJS konnte nicht geladen werden. Bitte Seite neu laden.');return}
+  netMode=true;netIsHost=true;netReady=false;netPlayerName=netName();netStatus('Erstelle Online-Raum …');$('createRoom').disabled=true;$('joinRoom').disabled=true;
+  try{netPeer=new Peer();netPeer.on('open',id=>{netSelfId=id;netRoomId=id;netReady=true;$('mpCode').textContent=id;$('mpCodeWrap').classList.remove('hid');netStatus('Raum ist offen! Teile den Code und starte dann mit PC oder Handy.');netHudUpdate()});
+    netPeer.on('connection',conn=>netAcceptConnection(conn));netPeer.on('error',e=>{console.warn('PeerJS:',e);netStatus('Verbindungsfehler: '+(e.type==='unavailable-id'?'Raum-ID nicht verfügbar.':e.type==='network'?'Netzwerkfehler.':'Bitte Verbindung prüfen.'));$('createRoom').disabled=false;$('joinRoom').disabled=false});
+  }catch(e){netMode=false;netStatus('Raum konnte nicht erstellt werden: '+e.message);$('createRoom').disabled=false;$('joinRoom').disabled=false}
+}
+function netAcceptConnection(conn){
+  conn.on('open',()=>{
+    if(netRemoteState.size>=5){conn.send({t:'full'});conn.close();return}
+    netConnections.set(conn.peer,conn);netRemoteState.set(conn.peer,{id:conn.peer,name:'Gast',x:cen(1),z:cen(1),yaw:0,hidden:false,ready:false});
+    conn.send({t:'snapshot',world:netWorldData(),players:netPlayersData()});netPublishSnapshot();netHudUpdate();
+  });
+  conn.on('data',m=>netHandleData(conn,m));
+  conn.on('close',()=>{netConnections.delete(conn.peer);netRemoteState.delete(conn.peer);netPublishSnapshot();netHudUpdate()});
+  conn.on('error',e=>console.warn('Spieler-Verbindung:',e));
+}
+function netJoinRoom(){
+  if(netMode){netStatus('Du bist bereits mit einem Raum verbunden.');return}
+  if(!window.Peer){netStatus('PeerJS konnte nicht geladen werden. Bitte Seite neu laden.');return}
+  const code=$('joinCode').value.trim();if(!code){netStatus('Bitte gib zuerst den Raumcode ein.');return}
+  netMode=true;netIsHost=false;netReady=false;netPlayerName=netName();netStatus('Verbinde mit Raum …');$('createRoom').disabled=true;$('joinRoom').disabled=true;
+  try{netPeer=new Peer();netPeer.on('open',id=>{netSelfId=id;netConn=netPeer.connect(code,{reliable:true});netConn.on('open',()=>{netReady=true;netConn.send({t:'hello',name:netPlayerName});netStatus('Verbunden! Wähle jetzt PC oder Handy.');netHudUpdate()});netConn.on('data',m=>netHandleData(netConn,m));netConn.on('close',()=>{netReady=false;netStatus('Die Verbindung zum Host wurde getrennt.')});netConn.on('error',e=>{console.warn(e);netStatus('Beitritt fehlgeschlagen. Prüfe den Raumcode.')})});
+    netPeer.on('error',e=>{console.warn('PeerJS:',e);netStatus(e.type==='peer-unavailable'?'Raum nicht gefunden. Prüfe den Code.':'Verbindungsfehler. Prüfe deine Internetverbindung.');$('createRoom').disabled=false;$('joinRoom').disabled=false});
+  }catch(e){netMode=false;netStatus('Beitritt fehlgeschlagen: '+e.message);$('createRoom').disabled=false;$('joinRoom').disabled=false}
+}
+function netHandleData(conn,m){
+  if(!m||typeof m!=='object')return;
+  if(netIsHost){
+    const p=netRemoteState.get(conn.peer);if(!p)return;
+    if(m.t==='hello'){p.name=String(m.name||'Gast').slice(0,18);netPublishSnapshot();netHudUpdate()}
+    else if(m.t==='position'){p.x=Number(m.x)||0;p.z=Number(m.z)||0;p.yaw=Number(m.yaw)||0;p.hidden=!!m.hidden;p.ready=true}
+    else if(m.t==='collect'){const i=Number(m.id),o=KO[i];if(Number.isInteger(i)&&o&&['k','f','g'].includes(o.userData.t)&&o.visible&&Math.hypot(o.position.x-p.x,o.position.z-p.z)<2.1)claimPickup(i)}
+    else if(m.t==='powerRequest'){if(fuses>=2&&!power)activatePower()}
+    else if(m.t==='bossRequest'){startBoss()}
+    else if(m.t==='bossDamage'){bossHit(!!m.head)}
+    else if(m.t==='winRequest'){endG(true)}
+    else if(m.t==='lossRequest'){endG(false)}
+  }else{
+    if(m.t==='snapshot'){netApplyWorld(m.world);netHandlePlayers(m.players)}
+    else if(m.t==='full'){netStatus('Dieser Raum ist voll (maximal 6 Spieler).');if(netConn)netConn.close()}
+    else if(m.t==='teamWin'||m.t==='teamLose'){if(!over){netApplyingEnd=true;endG(m.t==='teamWin');netApplyingEnd=false}}
+  }
+}
+function netTick(dt){
+  if(!netMode||!netReady)return;
+  if(netIsHost){netSnapshotClock+=dt;if(netSnapshotClock>=.10){netSnapshotClock=0;netPublishSnapshot()}}
+  else if(run){netSendClock+=dt;if(netSendClock>=.055){netSendClock=0;netSend({t:'position',x:px,z:pz,yaw,hidden:!!hidden})}}
+  netAvatars.forEach(v=>{v.root.position.lerp(v.target,Math.min(1,dt*12));let d=Math.atan2(Math.sin(v.yaw-v.root.rotation.y),Math.cos(v.yaw-v.root.rotation.y));v.root.rotation.y+=d*Math.min(1,dt*10)})
+}
+$('createRoom').onclick=netCreateHost;$('joinRoom').onclick=netJoinRoom;$('copyRoom').onclick=netCopyRoom;$('netHudCopy').onclick=netCopyRoom;$('joinCode').addEventListener('keydown',e=>{if(e.key==='Enter')netJoinRoom()});
+$('playerName').value='Gast-'+Math.floor(100+Math.random()*900);
+netLoadGavin();
+addEventListener('beforeunload',()=>{try{if(netPeer)netPeer.destroy()}catch(e){}});
+// =================== ENDE ONLINE-KOOP ===================
+
+function claimPickup(i){
+  const k=KO[i];if(!k||!k.visible)return;
+  k.visible=false;netPending.delete(i);const ty=k.userData.t;
+  if(ty==='k')keys++;else if(ty==='f')fuses++;else if(ty==='g')pg++;else return;
+  $('k').textContent=keys;$('f').textContent=fuses;$('pgn').textContent=pg;
+  if(ty==='k'&&keys===1)phm('Unbekannt: Er hört dich, wenn du rennst. Schleich!');
+  if(ty==='g'&&pg===4)phm('Unbekannt: Jetzt kennst du die Wahrheit. Der Ausgang wartet.');
+  [660,880,1320].forEach((f,j)=>tone(f,j*.12,.3,.2));
+  if(keys>=3&&!lopen){lopen=true;phm('Unbekannt: Das Kellertor ist offen. Such die Sicherungen.');LD.forEach(m=>m.visible=false);nse(.8,.5,300);msg(NT[2]+' Ein schweres Tor knackt auf …')}
+  else msg(ty==='k'?'Schlüssel ('+keys+'/3). '+NT[keys-1]:ty==='f'?'Sicherung ('+fuses+'/2). '+NT[2+fuses]:ty==='g'?'Seite '+pg+'/4: '+PG[pg-1]:'Batterie! Die Lampe ist wieder voll.');
+  netMarkChanged();
+}
+
 let last=performance.now();
-function loop(now){requestAnimationFrame(loop);const dt=Math.min(.05,(now-last)/1e3);last=now;if(run)upd(dt,now);else if(intro)introF(now);handU(dt,now);DP.position.set(Math.sin(now/4000)*.3,Math.sin(now/3000)*.15,Math.cos(now/5000)*.3);camR();monAnim(dt,now);R.render(S,C)}
+function loop(now){requestAnimationFrame(loop);const dt=Math.min(.05,(now-last)/1e3);last=now;if(run)upd(dt,now);else if(intro)introF(now);netTick(dt);handU(dt,now);DP.position.set(Math.sin(now/4000)*.3,Math.sin(now/3000)*.15,Math.cos(now/5000)*.3);camR();monAnim(dt,now);R.render(S,C)}
 requestAnimationFrame(loop);
 function go(m){mobile=m;audio();$('start').classList.add('hid');$('intro').classList.remove('hid');$('ii').classList.add('hid');intro=1;$('it').textContent='Du betrittst die verlassene Villa. Im Flur steht etwas Großes, Gebücktes. Es dreht langsam den Kopf und streckt die Hände nach dir aus …';setTimeout(()=>{$('it').textContent=L1;say(L1);$('ib').classList.remove('hid')},3200)}
-function nein(){$('ib').classList.add('hid');$('it').textContent='„Nein? … Dann hole ich dich. Ich hole alle, die gehen wollen!“';$('intro').style.background='linear-gradient(#5a000044 20%,#400000dd 85%)';lunge=performance.now();nse(1,1,3000);tone(120,0,1.2,.5,'sawtooth',60);say('Ich hole dich!');if(!mobile)try{$('c').requestPointerLock()}catch(e){}setTimeout(()=>{$('intro').classList.add('hid');$('hud').classList.remove('hid');$('mn').classList.remove('hid');if(mobile){$('tc').classList.remove('hid');$('bs').style.opacity=.6}run=true;intro=0;chase=true;phm('Mama: Wo bist du?? Ruf mich an!');msg('Finde 3 Schlüssel, 2 Sicherungen und 4 Tagebuchseiten. Handy: P')},3600)}
+function nein(){$('ib').classList.add('hid');$('it').textContent='„Nein? … Dann hole ich dich. Ich hole alle, die gehen wollen!“';$('intro').style.background='linear-gradient(#5a000044 20%,#400000dd 85%)';lunge=performance.now();nse(1,1,3000);tone(120,0,1.2,.5,'sawtooth',60);say('Ich hole dich!');if(!mobile)try{$('c').requestPointerLock()}catch(e){}setTimeout(()=>{$('intro').classList.add('hid');$('hud').classList.remove('hid');$('mn').classList.remove('hid');if(mobile){$('tc').classList.remove('hid');$('bs').style.opacity=.6}run=true;intro=0;chase=true;if(netIsHost)netMarkChanged();phm('Mama: Wo bist du?? Ruf mich an!');msg('Finde 3 Schlüssel, 2 Sicherungen und 4 Tagebuchseiten. Handy: P')},3600)}
 $('b1').onclick=()=>go(false);$('b2').onclick=()=>go(true);
 
 // ===== Neuer Jäger: Snatcher-Modell (ersetzt die alte Figur, alte bleibt nur als Fallback) =====
