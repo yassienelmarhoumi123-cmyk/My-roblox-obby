@@ -634,11 +634,11 @@ function netJoinRoom(){
     netMode=true;netIsHost=false;netReady=false;netPlayerName=netName();netStatus('Verbinde mit Raum …');netButtonsEnabled(false);
     netStartPeer(id=>{
       netConn=netPeer.connect(code,{reliable:true,serialization:'json'});
-      netJoinTimer=setTimeout(()=>{if(netMode&&!netReady)netResetAfterFail('Zeitüberschreitung: Der Host hat nicht bestätigt. Prüfe den Code und ob der Host im Spiel geblieben ist.')},20000);
+      netJoinTimer=setTimeout(()=>{if(netMode&&!netReady)netResetAfterFail('Zeitüberschreitung: Der Raum ist nicht erreichbar. Prüfe den Code und ob der Host online ist.')},20000);
       netConn.on('open',()=>{
         if(netJoinTimer)clearTimeout(netJoinTimer);
         netJoinTimer=setTimeout(()=>{if(netMode&&!netReady)netResetAfterFail('Der Host hat nicht geantwortet. Bitte Raumcode neu kopieren und erneut versuchen.')},12000);
-        netConn.send({t:'hello',name:netPlayerName});netStatus('Verbindung aufgebaut – warte auf Bestätigung des Hosts …');
+        netConn.send({t:'hello',name:netPlayerName});netStatus('Verbindung aufgebaut – trete dem Raum bei …');
       });
       netConn.on('data',m=>netHandleData(netConn,m));
       netConn.on('close',()=>{if(netMode)netResetAfterFail('Die Verbindung zum Host wurde getrennt. Er muss den Raum offen lassen.')});
@@ -660,7 +660,7 @@ function netHandleData(conn,m){
     else if(m.t==='lossRequest'){endG(false)}
   }else{
     if(m.t==='welcome'){
-      if(netJoinTimer)clearTimeout(netJoinTimer);netJoinTimer=0;netReady=true;netRoomId=m.roomId||$('joinCode').value.trim();netStatus('Bestätigt! Du bist im Online-Raum. Wähle PC oder Handy.');netHudUpdate();
+      if(netJoinTimer)clearTimeout(netJoinTimer);netJoinTimer=0;netReady=true;netRoomId=m.roomId||$('joinCode').value.trim();netStatus('Du bist jetzt im Online-Raum. Wähle PC oder Handy.');netHudUpdate();
     }
     else if(m.t==='snapshot'){netApplyWorld(m.world);netHandlePlayers(m.players)}
     else if(m.t==='full'){netResetAfterFail('Dieser Raum ist voll (maximal 6 Spieler).')}
