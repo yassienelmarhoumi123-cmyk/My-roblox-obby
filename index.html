@@ -90,7 +90,7 @@ button{background:linear-gradient(#2a1418,#120a0c);box-shadow:0 0 14px #b3201c55
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/SkeletonUtils.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js"></script>
 <script>
 const $=id=>document.getElementById(id),L1='„Komm näher … Es ist Freitag. Du bist mein Gast. Ich habe so lange gewartet.“',NT=['Notiz im Schreibtisch: „Jeden Freitag lud er Gäste ins Haus ein. Jeden Freitag kamen weniger.“','Notiz in der Schublade: „Dann kam niemand mehr. Da ging er hinaus und holte sie selbst.“','Notiz im Safe: „Die Familie floh. Nur er blieb, und was die Trauer aus ihm gemacht hat.“','Zettel an der Sicherung: „Er ist kein Monster. Die Trauer hat ihn nur entstellt.“','Zettel am Kasten: „Wenn er schreit, hat er Angst, wieder allein zu sein.“'],TA=['Bleib hier!','Ich hol dich!','Du bist mein Gast!','Lauf nicht weg!'],TN=['Ich hole dich. Heute noch.','Ich rieche dich.','Bleib doch, es ist Freitag.','Warum rennst du? Meine Hände sind ganz kalt …','Ich sehe dich …','Heute bleibst du bei mir.'],TH=['Ich weiß, dass du hier bist …','Komm raus. Ich will dich nur halten.','Ich höre dich atmen.','Der Schrank hält meine Finger nicht auf.','Ich zähle bis drei …'];
 function say(t){try{const u=new SpeechSynthesisUtterance(t);u.lang='de-DE';u.pitch=.2;u.rate=.8;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}
@@ -433,8 +433,11 @@ if(Math.hypot(EX[0]-px,EX[1]-pz)<1.7){if(power&&pg>=4)startBoss();else if(power)
 if(boss){bossU(dt,now);return}
 // Monster
 const dd=Math.hypot(px-mp.x,pz-mp.z),det=hidden?0:(sn?5:spr?16:11)+micB;
-if(!chase&&dd<det){chase=true;nse(.7,.5,250);tone(110,0,1,.2,'sawtooth',55);if(Math.random()<.5)say(TA[Math.floor(Math.random()*TA.length)])}
-if(chase&&(hidden||dd>15))chase=false;
+const teamThreats=netMode&&netReady&&netIsHost?[{x:px,z:pz,hidden:!!hidden,sneak:!!sn,sprint:!!spr},...Array.from(netRemoteState.values()).filter(p=>p.ready)]:[{x:px,z:pz,hidden:!!hidden,sneak:!!sn,sprint:!!spr}];
+const activeThreats=teamThreats.filter(p=>!p.hidden),teamNear=activeThreats.reduce((best,p)=>Math.min(best,Math.hypot(p.x-mp.x,p.z-mp.z)),Infinity);
+const teamDetected=activeThreats.some(p=>Math.hypot(p.x-mp.x,p.z-mp.z)<(p.sneak?5:p.sprint?16:11));
+if(!chase&&teamDetected){chase=true;nse(.7,.5,250);tone(110,0,1,.2,'sawtooth',55);if(Math.random()<.5)say(TA[Math.floor(Math.random()*TA.length)])}
+if(chase&&teamNear>15)chase=false;
 if(!netMode||!netReady||netIsHost){nt-=dt;if(nt<=0){nt=.35;let tg;if(chase){tg=[px,pz];if(netMode&&netIsHost){let best=Math.hypot(px-mp.x,pz-mp.z);netRemoteState.forEach(p=>{if(p.hidden)return;const d=Math.hypot(p.x-mp.x,p.z-mp.z);if(d<best){best=d;tg=[p.x,p.z]}})}}else{if(!mt||Math.hypot(mt[0]-mp.x,mt[1]-mp.z)<2)mt=rnd();tg=mt}wp=next(mp.x,mp.z,tg[0],tg[1]);if(!wp)mt=null}}
 if(wp&&(!netMode||!netReady||netIsHost)){const vx=wp[0]-mp.x,vz=wp[1]-mp.z,d=Math.hypot(vx,vz),s=Math.min((chase?2.8+.3*(keys+fuses)+(power?.4:0):1.9+(doom?1.4:0))*dt,d);if(d>.02){mp.x+=vx/d*s;mp.z+=vz/d*s}}
 mon.position.set(mp.x,Math.sin(now/180)*.03,mp.z);mon.lookAt(px,0,pz);mon.userData.a.forEach((a,i)=>a.rotation.x=chase?-1.4+Math.sin(now/110+i*3)*.25:Math.sin(now/400+i*3)*.15);mm.color.setScalar(Math.max(.5,Math.min(1,1.3-dd/12)));
@@ -471,12 +474,12 @@ function netHudUpdate(){
   $('netHudText').textContent=(netIsHost?'HOST':'ONLINE')+' · '+netPlayerCount+' Spieler'+(netRoomId?' · '+netRoomId.slice(0,13):'');
   $('netHudCopy').style.display=netRoomId?'inline-block':'none';
 }
-function netLocalData(){return {id:netSelfId||'local',name:netPlayerName,x:px,z:pz,yaw,hidden:!!hidden}}
+function netLocalData(){return {id:netSelfId||'local',name:netPlayerName,x:px,z:pz,yaw,hidden:!!hidden,sneak:!!(sneak||K.KeyC||K.ControlLeft),sprint:!!(SB||K.ShiftLeft||K.ShiftRight)}}
 function netWorldData(){
   const collected=[];KO.forEach((o,i)=>{if(['k','f','g'].includes(o.userData.t)&&!o.visible)collected.push(i)});
   return {collected,keys,fuses,pg,power,lopen,boss,bossDone,bossHp:BS.hp,bossPhase:BS.ph,bossState:BS.s,monster:{x:mp.x,z:mp.z,chase:!!chase}};
 }
-function netPlayersData(){const a=run?[netLocalData()]:[];netRemoteState.forEach((p,id)=>{if(p.ready)a.push({id,name:p.name,x:p.x,z:p.z,yaw:p.yaw,hidden:!!p.hidden})});return a}
+function netPlayersData(){const a=netReady&&netIsHost?[netLocalData()]:[];netRemoteState.forEach((p,id)=>{if(p.ready)a.push({id,name:p.name,x:p.x,z:p.z,yaw:p.yaw,hidden:!!p.hidden,sneak:!!p.sneak,sprint:!!p.sprint})});return a}
 function netSend(packet){if(netConn&&netConn.open)try{netConn.send(packet)}catch(e){console.warn('Koop-Senden:',e)}}
 function netBroadcast(packet){netConnections.forEach(c=>{if(c&&c.open)try{c.send(packet)}catch(e){}})}
 function netPublishSnapshot(){if(!netIsHost||!netReady)return;const packet={t:'snapshot',world:netWorldData(),players:netPlayersData()};netHandlePlayers(packet.players);netBroadcast(packet)}
@@ -509,7 +512,7 @@ function netHandlePlayers(players){
     if(!p||!p.id||p.id===netSelfId)return;
     seen.add(p.id);
     let v=netAvatars.get(p.id);
-    if(!v){v=netMakeAvatar(p.id,p.name||'Mitspieler');netAvatars.set(p.id,v)}else if(v.name!==(p.name||'Mitspieler')){const old=v.root.children.find(o=>o.isSprite);if(old){v.root.remove(old);if(old.material.map)old.material.map.dispose()}v.root.add(netMakeNameSprite(p.name||'Mitspieler'));v.name=p.name||'Mitspieler'}
+    if(!v){v=netMakeAvatar(p.id,p.name||'Mitspieler');netAvatars.set(p.id,v)}else if(v.name!==(p.name||'Mitspieler')){const old=v.root.children.find(o=>o.isSprite);if(old){v.root.remove(old);if(old.material.map)old.material.map.dispose();old.material.dispose()}v.root.add(netMakeNameSprite(p.name||'Mitspieler'));v.name=p.name||'Mitspieler'}
     v.target.set(Number(p.x)||0,0,Number(p.z)||0);v.yaw=Number(p.yaw)||0;v.root.visible=!p.hidden;
   });
   netAvatars.forEach((v,id)=>{if(!seen.has(id)){S.remove(v.root);netAvatars.delete(id)}});
@@ -517,7 +520,7 @@ function netHandlePlayers(players){
 }
 function netMakeNameSprite(name){
   const c=document.createElement('canvas');c.width=512;c.height=96;const g=c.getContext('2d');
-  g.fillStyle='rgba(5,4,8,.82)';g.beginPath();g.roundRect(8,8,496,80,18);g.fill();
+  g.fillStyle='rgba(5,4,8,.82)';g.beginPath();g.moveTo(26,8);g.lineTo(486,8);g.quadraticCurveTo(504,8,504,26);g.lineTo(504,70);g.quadraticCurveTo(504,88,486,88);g.lineTo(26,88);g.quadraticCurveTo(8,88,8,70);g.lineTo(8,26);g.quadraticCurveTo(8,8,26,8);g.closePath();g.fill();
   g.strokeStyle='#c9a96a';g.lineWidth=4;g.stroke();g.fillStyle='#fff';g.font='bold 38px Arial';g.textAlign='center';g.textBaseline='middle';g.fillText(String(name).slice(0,18),256,49);
   const tex=new THREE.CanvasTexture(c);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false}));s.scale.set(2.2,.42,1);s.position.y=2.35;return s;
 }
@@ -554,61 +557,126 @@ function netLoadGavin(){
     },undefined,e=>console.warn('Gavin-Modell nicht geladen; Platzhalter wird verwendet:',e));
   }catch(e){console.warn('FBXLoader konnte nicht gestartet werden:',e)}
 }
+let netOpenTimer=0,netJoinTimer=0,netAttempt=0;
+function netButtonsEnabled(on){$('createRoom').disabled=!on;$('joinRoom').disabled=!on}
+function netClearTimers(){if(netOpenTimer)clearTimeout(netOpenTimer);if(netJoinTimer)clearTimeout(netJoinTimer);netOpenTimer=netJoinTimer=0}
+function netPeerErrorText(e,joining){
+  const type=e&&e.type||'';
+  if(type==='peer-unavailable')return 'Raum nicht gefunden. Prüfe den Code und ob der Host noch online ist.';
+  if(type==='unavailable-id')return 'Diese Raum-ID ist bereits vergeben. Bitte erstelle den Raum erneut.';
+  if(type==='browser-incompatible')return 'Dieser Browser unterstützt WebRTC nicht. Bitte nutze einen aktuellen Chrome, Edge, Firefox oder Safari.';
+  if(type==='network'||type==='server-error'||type==='socket-error')return 'PeerJS-Server nicht erreichbar. Prüfe Internet, VPN oder Schul-/WLAN-Filter.';
+  if(type==='webrtc')return 'WebRTC-Verbindung fehlgeschlagen. Dein Netzwerk benötigt eventuell eine TURN-Verbindung.';
+  return (joining?'Beitritt':'Raum-Erstellung')+' fehlgeschlagen ('+(type||'unbekannter Fehler')+'). '+(e&&e.message?String(e.message):'Bitte erneut versuchen.');
+}
+function netResetAfterFail(message){
+  // Reset flags first: close/destroy can synchronously fire their own events.
+  netAttempt++;netMode=false;netIsHost=false;netReady=false;
+  netClearTimers();netSendClock=0;netSnapshotClock=0;
+  const oldConn=netConn,oldPeer=netPeer;netConn=null;netPeer=null;
+  netRoomId='';netSelfId='';
+  try{if(oldConn&&oldConn.open)oldConn.close()}catch(e){}
+  try{if(oldPeer&&!oldPeer.destroyed)oldPeer.destroy()}catch(e){}
+  netConnections.clear();netRemoteState.clear();netPending.clear();
+  netAvatars.forEach(v=>{S.remove(v.root);v.root.traverse(o=>{if(o.material){const mats=Array.isArray(o.material)?o.material:[o.material];mats.forEach(m=>{if(m.map)m.map.dispose();m.dispose()})}})});netAvatars.clear();
+  $('netHud').classList.add('hid');$('mpCodeWrap').classList.add('hid');netButtonsEnabled(true);netStatus(message);
+}
+function netEnsurePeer(cb){
+  if(window.Peer){cb();return}
+  netStatus('PeerJS wird geladen …');
+  const urls=['https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js','https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js'];
+  let i=0;
+  const next=()=>{
+    if(window.Peer){cb();return}
+    if(i>=urls.length){netStatus('PeerJS konnte nicht geladen werden. Ein CDN wird blockiert. Bitte Seite neu laden oder ein anderes Netzwerk testen.');netButtonsEnabled(true);return}
+    const script=document.createElement('script');script.src=urls[i++];script.onload=()=>window.Peer?cb():next();script.onerror=next;document.head.appendChild(script);
+  };
+  next();
+}
+function netStartPeer(onOpen,joining){
+  const attempt=++netAttempt;
+  netClearTimers();
+  netOpenTimer=setTimeout(()=>{if(attempt===netAttempt)netResetAfterFail('Zeitüberschreitung: Der PeerJS-Server antwortet nicht. Prüfe Internet/VPN oder versuche ein anderes Netzwerk.')},18000);
+  try{
+    // Explicit PeerJS Cloud endpoint. ICE servers remain the PeerJS defaults (STUN + TURN).
+    netPeer=new Peer({host:'0.peerjs.com',port:443,path:'/',secure:true,debug:1});
+    netPeer.on('open',id=>{if(attempt!==netAttempt)return;netClearTimers();netSelfId=id;onOpen(id)});
+    netPeer.on('error',e=>{if(attempt!==netAttempt)return;console.warn('PeerJS:',e);netResetAfterFail(netPeerErrorText(e,joining))});
+    netPeer.on('disconnected',()=>{if(attempt===netAttempt)netStatus('Signalisierungsserver getrennt. Bestehende Spielverbindung wird geprüft …')});
+    netPeer.on('close',()=>{if(attempt===netAttempt&&netMode)netResetAfterFail('Die PeerJS-Verbindung wurde geschlossen. Bitte erneut verbinden.')});
+  }catch(e){netResetAfterFail((joining?'Beitritt':'Raum-Erstellung')+' fehlgeschlagen: '+e.message)}
+}
 function netCreateHost(){
   if(netMode){netStatus('Du bist bereits mit einem Raum verbunden.');return}
-  if(!window.Peer){netStatus('PeerJS konnte nicht geladen werden. Bitte Seite neu laden.');return}
-  netMode=true;netIsHost=true;netReady=false;netPlayerName=netName();netStatus('Erstelle Online-Raum …');$('createRoom').disabled=true;$('joinRoom').disabled=true;
-  try{netPeer=new Peer();netPeer.on('open',id=>{netSelfId=id;netRoomId=id;netReady=true;$('mpCode').textContent=id;$('mpCodeWrap').classList.remove('hid');netStatus('Raum ist offen! Teile den Code und starte dann mit PC oder Handy.');netHudUpdate()});
-    netPeer.on('connection',conn=>netAcceptConnection(conn));netPeer.on('error',e=>{console.warn('PeerJS:',e);netStatus('Verbindungsfehler: '+(e.type==='unavailable-id'?'Raum-ID nicht verfügbar.':e.type==='network'?'Netzwerkfehler.':'Bitte Verbindung prüfen.'));$('createRoom').disabled=false;$('joinRoom').disabled=false});
-  }catch(e){netMode=false;netStatus('Raum konnte nicht erstellt werden: '+e.message);$('createRoom').disabled=false;$('joinRoom').disabled=false}
+  netEnsurePeer(()=>{
+    netMode=true;netIsHost=true;netReady=false;netPlayerName=netName();netStatus('Erstelle Online-Raum …');netButtonsEnabled(false);
+    netStartPeer(id=>{netRoomId=id;netReady=true;$('mpCode').textContent=id;$('mpCodeWrap').classList.remove('hid');netStatus('Raum ist offen! Teile den Code. Deine Freunde können jetzt beitreten.');netHudUpdate();netPublishSnapshot()},false);
+  });
 }
 function netAcceptConnection(conn){
+  const id=conn.peer;
+  if(netRemoteState.size>=5){conn.on('open',()=>{try{conn.send({t:'full'})}catch(e){}setTimeout(()=>conn.close(),150)});return}
+  // Reserve a slot as soon as the incoming connection is announced, avoiding a hello/open race.
+  if(!netRemoteState.has(id))netRemoteState.set(id,{id,name:'Gast',x:cen(1),z:cen(1),yaw:0,hidden:false,sneak:false,sprint:false,ready:false});
   conn.on('open',()=>{
-    if(netRemoteState.size>=5){conn.send({t:'full'});conn.close();return}
-    netConnections.set(conn.peer,conn);netRemoteState.set(conn.peer,{id:conn.peer,name:'Gast',x:cen(1),z:cen(1),yaw:0,hidden:false,ready:false});
-    conn.send({t:'snapshot',world:netWorldData(),players:netPlayersData()});netPublishSnapshot();netHudUpdate();
+    netConnections.set(id,conn);
+    try{conn.send({t:'welcome',roomId:netRoomId})}catch(e){}
+    netPublishSnapshot();netHudUpdate();
   });
   conn.on('data',m=>netHandleData(conn,m));
-  conn.on('close',()=>{netConnections.delete(conn.peer);netRemoteState.delete(conn.peer);netPublishSnapshot();netHudUpdate()});
+  conn.on('close',()=>{netConnections.delete(id);netRemoteState.delete(id);netPublishSnapshot();netHudUpdate()});
   conn.on('error',e=>console.warn('Spieler-Verbindung:',e));
 }
 function netJoinRoom(){
   if(netMode){netStatus('Du bist bereits mit einem Raum verbunden.');return}
-  if(!window.Peer){netStatus('PeerJS konnte nicht geladen werden. Bitte Seite neu laden.');return}
   const code=$('joinCode').value.trim();if(!code){netStatus('Bitte gib zuerst den Raumcode ein.');return}
-  netMode=true;netIsHost=false;netReady=false;netPlayerName=netName();netStatus('Verbinde mit Raum …');$('createRoom').disabled=true;$('joinRoom').disabled=true;
-  try{netPeer=new Peer();netPeer.on('open',id=>{netSelfId=id;netConn=netPeer.connect(code,{reliable:true});netConn.on('open',()=>{netReady=true;netConn.send({t:'hello',name:netPlayerName});netStatus('Verbunden! Wähle jetzt PC oder Handy.');netHudUpdate()});netConn.on('data',m=>netHandleData(netConn,m));netConn.on('close',()=>{netReady=false;netStatus('Die Verbindung zum Host wurde getrennt.')});netConn.on('error',e=>{console.warn(e);netStatus('Beitritt fehlgeschlagen. Prüfe den Raumcode.')})});
-    netPeer.on('error',e=>{console.warn('PeerJS:',e);netStatus(e.type==='peer-unavailable'?'Raum nicht gefunden. Prüfe den Code.':'Verbindungsfehler. Prüfe deine Internetverbindung.');$('createRoom').disabled=false;$('joinRoom').disabled=false});
-  }catch(e){netMode=false;netStatus('Beitritt fehlgeschlagen: '+e.message);$('createRoom').disabled=false;$('joinRoom').disabled=false}
+  netEnsurePeer(()=>{
+    netMode=true;netIsHost=false;netReady=false;netPlayerName=netName();netStatus('Verbinde mit Raum …');netButtonsEnabled(false);
+    netStartPeer(id=>{
+      netConn=netPeer.connect(code,{reliable:true,serialization:'json'});
+      netJoinTimer=setTimeout(()=>{if(netMode&&!netReady)netResetAfterFail('Zeitüberschreitung: Der Host hat nicht bestätigt. Prüfe den Code und ob der Host im Spiel geblieben ist.')},20000);
+      netConn.on('open',()=>{
+        if(netJoinTimer)clearTimeout(netJoinTimer);
+        netJoinTimer=setTimeout(()=>{if(netMode&&!netReady)netResetAfterFail('Der Host hat nicht geantwortet. Bitte Raumcode neu kopieren und erneut versuchen.')},12000);
+        netConn.send({t:'hello',name:netPlayerName});netStatus('Verbindung aufgebaut – warte auf Bestätigung des Hosts …');
+      });
+      netConn.on('data',m=>netHandleData(netConn,m));
+      netConn.on('close',()=>{if(netMode)netResetAfterFail('Die Verbindung zum Host wurde getrennt. Er muss den Raum offen lassen.')});
+      netConn.on('error',e=>{console.warn('Spieler-Verbindung:',e);if(netMode)netResetAfterFail('Spielverbindung fehlgeschlagen: '+(e.message||'Netzwerkfehler'))});
+    },true);
+  });
 }
 function netHandleData(conn,m){
   if(!m||typeof m!=='object')return;
   if(netIsHost){
     const p=netRemoteState.get(conn.peer);if(!p)return;
-    if(m.t==='hello'){p.name=String(m.name||'Gast').slice(0,18);netPublishSnapshot();netHudUpdate()}
-    else if(m.t==='position'){p.x=Number(m.x)||0;p.z=Number(m.z)||0;p.yaw=Number(m.yaw)||0;p.hidden=!!m.hidden;p.ready=true}
-    else if(m.t==='collect'){const i=Number(m.id),o=KO[i];if(Number.isInteger(i)&&o&&['k','f','g'].includes(o.userData.t)&&o.visible&&Math.hypot(o.position.x-p.x,o.position.z-p.z)<2.1)claimPickup(i)}
+    if(m.t==='hello'){p.name=String(m.name||'Gast').slice(0,18);try{conn.send({t:'welcome',roomId:netRoomId})}catch(e){}netPublishSnapshot();netHudUpdate()}
+    else if(m.t==='position'){p.x=Number(m.x)||0;p.z=Number(m.z)||0;p.yaw=Number(m.yaw)||0;p.hidden=!!m.hidden;p.sneak=!!m.sneak;p.sprint=!!m.sprint;p.ready=true}
+    else if(m.t==='collect'){const i=Number(m.id),o=KO[i];if(Number.isInteger(i)&&o&&['k','f','g'].includes(o.userData.t)&&o.visible&&Math.hypot(o.position.x-p.x,o.position.z-p.z)<2.5)claimPickup(i)}
     else if(m.t==='powerRequest'){if(fuses>=2&&!power)activatePower()}
     else if(m.t==='bossRequest'){startBoss()}
     else if(m.t==='bossDamage'){bossHit(!!m.head)}
     else if(m.t==='winRequest'){endG(true)}
     else if(m.t==='lossRequest'){endG(false)}
   }else{
-    if(m.t==='snapshot'){netApplyWorld(m.world);netHandlePlayers(m.players)}
-    else if(m.t==='full'){netStatus('Dieser Raum ist voll (maximal 6 Spieler).');if(netConn)netConn.close()}
+    if(m.t==='welcome'){
+      if(netJoinTimer)clearTimeout(netJoinTimer);netJoinTimer=0;netReady=true;netRoomId=m.roomId||$('joinCode').value.trim();netStatus('Bestätigt! Du bist im Online-Raum. Wähle PC oder Handy.');netHudUpdate();
+    }
+    else if(m.t==='snapshot'){netApplyWorld(m.world);netHandlePlayers(m.players)}
+    else if(m.t==='full'){netResetAfterFail('Dieser Raum ist voll (maximal 6 Spieler).')}
     else if(m.t==='teamWin'||m.t==='teamLose'){if(!over){netApplyingEnd=true;endG(m.t==='teamWin');netApplyingEnd=false}}
   }
 }
 function netTick(dt){
   if(!netMode||!netReady)return;
   if(netIsHost){netSnapshotClock+=dt;if(netSnapshotClock>=.10){netSnapshotClock=0;netPublishSnapshot()}}
-  else if(run){netSendClock+=dt;if(netSendClock>=.055){netSendClock=0;netSend({t:'position',x:px,z:pz,yaw,hidden:!!hidden})}}
+  else{netSendClock+=dt;if(netSendClock>=.055){netSendClock=0;netSend({t:'position',x:px,z:pz,yaw,hidden:!!hidden,sneak:!!(sneak||K.KeyC||K.ControlLeft),sprint:!!(SB||K.ShiftLeft||K.ShiftRight)})}}
   netAvatars.forEach(v=>{v.root.position.lerp(v.target,Math.min(1,dt*12));let d=Math.atan2(Math.sin(v.yaw-v.root.rotation.y),Math.cos(v.yaw-v.root.rotation.y));v.root.rotation.y+=d*Math.min(1,dt*10)})
 }
 $('createRoom').onclick=netCreateHost;$('joinRoom').onclick=netJoinRoom;$('copyRoom').onclick=netCopyRoom;$('netHudCopy').onclick=netCopyRoom;$('joinCode').addEventListener('keydown',e=>{if(e.key==='Enter')netJoinRoom()});
 $('playerName').value='Gast-'+Math.floor(100+Math.random()*900);
 netLoadGavin();
-addEventListener('beforeunload',()=>{try{if(netPeer)netPeer.destroy()}catch(e){}});
+addEventListener('beforeunload',()=>{netClearTimers();try{if(netPeer)netPeer.destroy()}catch(e){}});
 // =================== ENDE ONLINE-KOOP ===================
 
 function claimPickup(i){
