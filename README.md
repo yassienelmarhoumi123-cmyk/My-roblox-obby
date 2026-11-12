@@ -11,7 +11,7 @@
 
 1. Ein Spieler klickt auf **Raum erstellen** und teilt den angezeigten Raumcode.
 2. Die anderen geben den Code ein und klicken **Beitreten**.
-3. Der Beitritt ist erst abgeschlossen, wenn der Host ihn bestätigt. Danach kann jeder PC oder Handy starten.
+3. Der Beitritt erfolgt automatisch, sobald die Verbindung steht. Es gibt keine manuelle Bestätigung durch den Host. Danach kann jeder PC oder Handy starten.
 4. Schlüssel, Sicherungen und Tagebuchseiten werden für das ganze Team gezählt. Andere Spieler erscheinen als 3D-Figuren mit Namen.
 
 Der Host muss den Tab offen lassen. Bis zu 6 Spieler können einem Raum beitreten.
