@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mein Roblox Obby Spiel</title>
+  <title>Dragon Simulator 3D</title>
   <style>
     body, html {
       margin: 0;
@@ -13,35 +13,24 @@
       background-color: #000;
       overflow: hidden;
     }
-    .game-container {
-      position: relative;
+    iframe {
       width: 100%;
       height: 100vh;
-    }
-    iframe {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
       border: none;
+      display: block;
     }
   </style>
 </head>
 <body>
 
-  <div class="game-container">
-    <iframe id="game-frame" scrolling="no" allowfullscreen></iframe>
-  </div>
-
-  <script>
-    const frame = document.getElementById('game-frame');
-    const gameId = "16d311a9e4bd49be950a2f630e522234";
-    // Übergibt deine echte GitHub-Domain als Referrer an GameDistribution
-    const referrerUrl = encodeURIComponent(window.location.href);
-    
-    frame.src = `https://html5.gamedistribution.com/${gameId}/?gd_sdk_referrer_url=${referrerUrl}`;
-  </script>
+  <iframe 
+    id="iframehtml5" 
+    class="game-iframe" 
+    title="play game" 
+    src="https://ub-g.github.io/embed/dragon-simulator-3d" 
+    scrolling="no" 
+    allowfullscreen>
+  </iframe>
 
 </body>
 </html>
