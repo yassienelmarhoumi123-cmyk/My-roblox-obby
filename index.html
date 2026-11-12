@@ -1,1 +1,34 @@
-<iframe src="https://html5.gamedistribution.com/16d311a9e4bd49be950a2f630e522234/?gd_sdk_referrer_url=https://www.example.com/games/{game-path}" width="1280" height="720" scrolling="none" frameborder="0"></iframe>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spiel</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #000;
+      overflow: hidden;
+    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+
+  <iframe id="gd-game-frame" scrolling="no" allowfullscreen></iframe>
+
+  <script>
+    const frame = document.getElementById('gd-game-frame');
+    const currentUrl = encodeURIComponent(window.location.href);
+    frame.src = "https://html5.gamedistribution.com/16d311a9e4bd49be950a2f630e522234/?gd_sdk_referrer_url=" + currentUrl;
+  </script>
+
+</body>
+</html>
