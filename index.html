@@ -104,20 +104,34 @@
         <button onclick="loadGame('https://ubghyper.github.io/GameList.github.io/How-To-Fish/')">Spielen</button>
       </div>
 
+      <!-- Spiel 4 -->
+      <div class="game-card">
+        <h3>Granny</h3>
+        <button onclick="loadGame('https://ubghyper.github.io/GameList.github.io/Granny/', true)">Spielen</button>
+      </div>
+
     </div>
   </div>
 
   <!-- Vollbild-Player, wenn ein Spiel gestartet wird -->
   <div id="player-container">
     <button class="back-btn" onclick="closeGame()">← Zurück zur Übersicht</button>
-    <iframe id="game-iframe" src="" allowfullscreen></iframe>
+    <iframe id="game-iframe" src="" allow="fullscreen; autoplay" allowfullscreen></iframe>
   </div>
 
   <script>
-    function loadGame(url) {
+    function loadGame(url, useGrannyPermissions = false) {
       document.getElementById('menu').style.display = 'none';
       const container = document.getElementById('player-container');
       const iframe = document.getElementById('game-iframe');
+
+      // Granny benötigt zusätzliche iframe-Berechtigungen (z. B. Pointer Lock).
+      if (useGrannyPermissions) {
+        iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-top-navigation-by-user-activation allow-popups');
+      } else {
+        iframe.removeAttribute('sandbox');
+      }
+
       iframe.src = url;
       container.style.display = 'block';
     }
@@ -126,6 +140,7 @@
       const container = document.getElementById('player-container');
       const iframe = document.getElementById('game-iframe');
       iframe.src = ""; // Stoppt das Spiel im Hintergrund
+      iframe.removeAttribute('sandbox');
       container.style.display = 'none';
       document.getElementById('menu').style.display = 'block';
     }
