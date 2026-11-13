@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Meine Spiele Sammlung</title>
+  <title>Arcade Hub – Deine Spielewelt</title>
   <style>
     :root {
       color-scheme: dark;
@@ -137,6 +137,112 @@
       .game-card button { padding: 10px 8px; font-size: 12px; }
     }
     @media (max-width: 360px) { .game-grid { grid-template-columns: 1fr; } .game-cover { height: 165px; } }
+
+    /* Arcade Hub – überarbeitetes Premium-Layout */
+    body {
+      background:
+        radial-gradient(ellipse at 8% 5%, rgba(69, 103, 255, .20), transparent 34rem),
+        radial-gradient(ellipse at 92% 20%, rgba(30, 229, 190, .12), transparent 32rem),
+        linear-gradient(180deg, #080d19 0%, #0b1222 55%, #080d18 100%);
+      background-attachment: fixed;
+    }
+    .topbar { padding: 27px 0; }
+    .brand { font-size: 15px; letter-spacing: .12em; }
+    .brand-mark {
+      width: 43px; height: 43px; border-radius: 14px;
+      background: linear-gradient(145deg, #75ffe0, #6f8cff);
+      box-shadow: 0 0 34px rgba(97,245,209,.25);
+    }
+    .top-note { letter-spacing: .03em; }
+    .hero {
+      margin-top: 16px; margin-bottom: 44px; min-height: 320px;
+      padding: clamp(34px, 7vw, 78px) clamp(25px, 6vw, 70px);
+      border-radius: 32px;
+      border-color: rgba(132, 160, 220, .22);
+      background:
+        radial-gradient(ellipse at 85% 25%, rgba(97,245,209,.14), transparent 24rem),
+        linear-gradient(120deg, rgba(25, 39, 72, .98), rgba(12, 22, 40, .94));
+      box-shadow: 0 28px 90px rgba(0,0,0,.32), inset 0 1px rgba(255,255,255,.05);
+    }
+    .hero:before {
+      content: "🎮"; position: absolute; right: 9%; top: 50%;
+      transform: translateY(-50%) rotate(-12deg);
+      font-size: clamp(80px, 13vw, 160px); opacity: .10;
+      filter: drop-shadow(0 18px 30px rgba(97,245,209,.3));
+    }
+    .hero:after { right: 4%; bottom: -48px; color: rgba(255,255,255,.025); }
+    .eyebrow { letter-spacing: .2em; }
+    h1 { max-width: 760px; font-size: clamp(37px, 6.5vw, 70px); }
+    .hero-gradient {
+      background: linear-gradient(90deg, #75ffe0, #8ea5ff 75%);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .hero p { font-size: 16px; max-width: 590px; }
+    .game-count {
+      padding: 11px 16px; border-color: rgba(97,245,209,.24);
+      background: rgba(97,245,209,.08); color: #aaffeb;
+      letter-spacing: .08em; font-size: 11px;
+    }
+    .section-head { margin-bottom: 18px; }
+    .section-head h2 { font-size: 26px; }
+    .section-head p { font-size: 13px; }
+    #game-search {
+      padding-top: 14px; padding-bottom: 14px; border-radius: 15px;
+      background: rgba(17, 27, 47, .92);
+    }
+    .game-grid {
+      grid-template-columns: repeat(auto-fit, minmax(245px, 1fr));
+      gap: 22px; padding-top: 10px;
+    }
+    .game-card {
+      padding: 11px; border-radius: 22px;
+      border-color: rgba(142, 165, 210, .16);
+      background: linear-gradient(155deg, rgba(25, 38, 64, .96), rgba(12, 20, 36, .98));
+      box-shadow: 0 16px 36px rgba(0,0,0,.20);
+      overflow: hidden;
+    }
+    .game-card:hover {
+      transform: translateY(-8px);
+      border-color: rgba(97,245,209,.55);
+      box-shadow: 0 24px 48px rgba(0,0,0,.32), 0 0 28px rgba(97,245,209,.09);
+    }
+    .game-cover {
+      height: 178px; margin-bottom: 16px; border-radius: 15px;
+      object-fit: cover; background: #111b2d;
+      transition: transform .35s ease, filter .35s ease;
+    }
+    .game-card:hover .game-cover { transform: scale(1.025); filter: saturate(1.12); }
+    .game-card h3 {
+      min-height: 42px; margin: 0 4px 13px;
+      font-size: 16px; letter-spacing: -.015em;
+    }
+    .game-card button {
+      padding: 13px 16px; border-radius: 13px;
+      background: linear-gradient(100deg, #72f6d5, #a4ffc3);
+      box-shadow: 0 8px 22px rgba(97,245,209,.12);
+      letter-spacing: .015em;
+    }
+    .game-card button:hover { box-shadow: 0 10px 26px rgba(97,245,209,.22); }
+    footer { padding-top: 42px; letter-spacing: .12em; text-transform: uppercase; }
+    #player-container { background: #03050a; }
+    .back-btn {
+      top: 18px; left: 18px; padding: 12px 18px; border-radius: 13px;
+      box-shadow: 0 8px 26px rgba(0,0,0,.3);
+    }
+    @media (max-width: 640px) {
+      .hero { min-height: 280px; margin-bottom: 34px; padding: 34px 22px; }
+      .hero:before { right: 4%; top: 76%; font-size: 76px; }
+      .hero:after { font-size: 110px; }
+      .game-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; }
+      .game-cover { height: 125px; }
+      .game-card { padding: 9px; }
+      .game-card h3 { font-size: 13px; }
+    }
+    @media (max-width: 380px) {
+      .game-grid { grid-template-columns: 1fr; }
+      .game-cover { height: 185px; }
+    }
+
   </style>
 </head>
 <body>
@@ -148,9 +254,9 @@
       <div class="top-note">Deine Spiele. Ein Ort. Unendlich Spaß.</div>
     </header>
     <section class="hero">
-      <div class="eyebrow">Deine persönliche Spielewelt</div>
-      <h1>Finde dein nächstes<br>Lieblingsspiel.</h1>
-      <p>Stöbere durch deine Sammlung und starte dein Spiel direkt im Vollbild.</p>
+      <div class="eyebrow">✦ Deine persönliche Spielewelt</div>
+      <h1>Dein nächstes<br><span class="hero-gradient">Gaming-Abenteuer</span> wartet.</h1>
+      <p>Entdecke deine Lieblingsspiele, finde neue Herausforderungen und starte direkt los – alles an einem Ort.</p>
       <div class="hero-bottom"><span class="game-count" id="game-count">9 SPIELE IN DER SAMMLUNG</span></div>
     </section>
     <div class="section-head">
@@ -182,7 +288,7 @@
 
       <!-- Spiel 4 -->
       <div class="game-card">
-        <img class="game-cover granny-cover" src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Granny_Game_Logo.png" alt="Granny Spiellogo" loading="lazy">
+        <img class="game-cover" src="https://onlyup-game.io/data/image/game/granny.jpg" alt="Granny Horror-Spiel Cover" loading="lazy">
         <h3>Granny</h3>
         <button onclick="loadGame('https://ubghyper.github.io/GameList.github.io/Granny/', true)">Spielen</button>
       </div>
