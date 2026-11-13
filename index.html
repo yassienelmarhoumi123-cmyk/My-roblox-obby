@@ -134,13 +134,20 @@
         <button onclick="loadGame('https://ubghyper.github.io/GameList.github.io/Bitlife/', true)">Spielen</button>
       </div>
 
+      <!-- Spiel 6 -->
+      <div class="game-card">
+        <img class="game-cover" src="https://bloxgames.io/data/image/game/escapewaves-io-bloxgames.io.png" alt="EscapeWaves.io Titelbild" loading="lazy">
+        <h3>EscapeWaves.io</h3>
+        <button onclick="loadGame('https://escapewaves.io/')">Spielen</button>
+      </div>
+
     </div>
   </div>
 
   <!-- Vollbild-Player, wenn ein Spiel gestartet wird -->
   <div id="player-container">
     <button class="back-btn" onclick="closeGame()">← Zurück zur Übersicht</button>
-    <iframe id="game-iframe" src="" allow="fullscreen; autoplay" allowfullscreen></iframe>
+    <iframe id="game-iframe" src="" allow="autoplay; fullscreen; gamepad; clipboard-write" allowfullscreen></iframe>
   </div>
 
   <script>
