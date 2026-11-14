@@ -257,7 +257,7 @@
       <div class="eyebrow">✦ Deine persönliche Spielewelt</div>
       <h1>Dein nächstes<br><span class="hero-gradient">Gaming-Abenteuer</span> wartet.</h1>
       <p>Entdecke deine Lieblingsspiele, finde neue Herausforderungen und starte direkt los – alles an einem Ort.</p>
-      <div class="hero-bottom"><span class="game-count" id="game-count">11 SPIELE IN DER SAMMLUNG</span></div>
+      <div class="hero-bottom"><span class="game-count" id="game-count">12 SPIELE IN DER SAMMLUNG</span></div>
     </section>
     <div class="section-head">
       <div><h2>Alle Spiele</h2><p>Wähle ein Spiel und leg direkt los.</p></div>
@@ -341,6 +341,13 @@
         <button onclick="loadGame('https://kdata1.com/2022/05/baby-in-yellow1/', true)">Spielen</button>
       </div>
 
+      <!-- Spiel 12 -->
+      <div class="game-card">
+        <div class="game-cover" role="img" aria-label="Hungry Shark Evolution Titelbild" style="display:grid;place-items:center;font-size:76px;background:radial-gradient(circle at 50% 35%, #247ca0, #071a35 72%);">🦈</div>
+        <h3>Hungry Shark Evolution</h3>
+        <button onclick="loadGame('https://hungry-shark-evolution.com/wp-content/uploads/hungry-shark-evolution-youtube-local-v1/hungry-shark-evolution-youtube-local-v1/index.html')">Spielen</button>
+      </div>
+
     </div>
     <div id="no-results">Keine Spiele gefunden. Probiere einen anderen Suchbegriff.</div>
     <footer>ARCADE HUB · Deine persönliche Spielesammlung</footer>
@@ -349,7 +356,7 @@
   <!-- Vollbild-Player, wenn ein Spiel gestartet wird -->
   <div id="player-container">
     <button class="back-btn" onclick="closeGame()">← Zurück zur Übersicht</button>
-    <iframe id="game-iframe" src="" allow="autoplay; fullscreen; gamepad; clipboard-write" allowfullscreen></iframe>
+    <iframe id="game-iframe" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture; fullscreen; gamepad; xr-spatial-tracking" allowfullscreen></iframe>
   </div>
 
   <script>
