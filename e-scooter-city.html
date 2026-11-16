@@ -224,6 +224,16 @@ button:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
   <button class="tb" id="t-pause" data-k="pause">II</button>
 </div>
 
+<div id="s-firstpick" class="screen dim" hidden>
+  <div class="sheet" style="width:min(100%,620px)">
+    <div><div class="kicker">Willkommen in der Stadt</div><h2 class="logo" style="font-size:clamp(42px,8vw,72px)">Wähle deinen<br><span>Start-Scooter</span></h2><p class="note">Du kannst am Anfang einen von zwei Scootern kostenlos auswählen. Alle anderen Fahrzeuge bleiben in der Garage kaufbar.</p></div>
+    <div class="menu" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+      <button class="btn primary" id="pick-zt3" style="display:block;text-align:left"><b>Segway ZT3 Pro</b><small style="display:block">40 km/h · Kostenlos</small></button>
+      <button class="btn primary" id="pick-g3" style="display:block;text-align:left"><b>Ninebot G3 Max</b><small style="display:block">45 km/h · Kostenlos</small></button>
+    </div>
+  </div>
+</div>
+
 <div id="s-main" class="screen" hidden>
   <div class="sheet">
     <div><div class="kicker">Open World · Elektro</div><h1 class="logo">E-Scooter<br><span>City</span></h1></div>
@@ -350,18 +360,18 @@ const VEHICLES=[
  {id:'ultrabee',name:'Sur-Ron Ultra Bee',price:6500,kind:'moto',top:90,accel:6.5,brake:10.5,grip:9.0,steer:1.2,range:100,mass:62,
   color:'#c4161c',accent:'#15181d',wr:.335,scale:1.07,snd:{type:'square',base:104,mul:5.4},
   desc:'Größer, stärker, mehr Federweg. Stärkere Batterie und kräftige Bremsen. Die Straßenwaffe für Verfolgungen.'},
- {id:'g2max',name:'Ninebot G2 Max',price:0,kind:'scooter',top:40,accel:3.0,brake:7.5,grip:7.0,steer:1.0,range:60,mass:30,
+ {id:'g2max',name:'Ninebot G2 Max',price:1200,kind:'scooter',top:40,accel:3.0,brake:7.5,grip:7.0,steer:1.0,range:60,mass:30,
   color:'#d8dde3',accent:'#ff4a3d',tread:true,wr:.127,tw:.09,deckW:.2,deckL:.5,L:.48,clear:.17,bar:.95,barW:.6,susp:'spring',stem:'rect',display:'touch',skeleton:true,seat:true,snd:{type:'triangle',base:165,mul:4.4},
-  desc:'Ninebot Max G2 mit Federung und breiten Reifen. Kostenlos in deiner Garage.'},
+  desc:'Ninebot Max G2 mit Federung und breiten Reifen.'},
  {id:'zt3pro',name:'Segway ZT3 Pro',price:0,kind:'scooter',top:40,accel:3.2,brake:8.2,grip:7.8,steer:1.0,range:70,mass:30,
   color:'#242a31',accent:'#ff5a35',tread:true,wr:.15,tw:.105,deckW:.24,deckL:.56,L:.53,clear:.19,bar:1.02,barW:.64,susp:'hyd',stem:'round',display:'touch',fullFender:true,snd:{type:'triangle',base:158,mul:4.5},
   desc:'ZT3 Pro mit kräftiger Optik, groben Reifen und Federung. Kostenlos auswählbar.'},
  {id:'g3max',name:'Ninebot G3 Max',price:0,kind:'scooter',top:45,accel:3.5,brake:8.3,grip:7.6,steer:1.0,range:75,mass:31,
   color:'#cbd2d9',accent:'#18a7b5',tread:true,wr:.14,tw:.1,deckW:.23,deckL:.55,L:.52,clear:.18,bar:1.0,barW:.63,susp:'hyd',stem:'rect',display:'touch',fullFender:true,snd:{type:'triangle',base:168,mul:4.7},
   desc:'G3 Max mit ausgewogener Beschleunigung und guter Reichweite. Kostenlos auswählbar.'},
- {id:'gt3d',name:'Segway GT3 D',price:0,kind:'scooter',top:60,accel:4.1,brake:9.2,grip:7.8,steer:.92,range:95,mass:40,
+ {id:'gt3d',name:'Segway GT3 D',price:3000,kind:'scooter',top:60,accel:4.1,brake:9.2,grip:7.8,steer:.92,range:95,mass:40,
   color:'#181c22',accent:'#e7b83f',tread:true,wr:.17,tw:.12,deckW:.29,deckL:.64,L:.57,clear:.16,bar:1.08,barW:.7,dual:true,susp:'hyd',stem:'round',display:'round',led:true,fullFender:true,snd:{type:'sawtooth',base:178,mul:4.9},
-  desc:'GT3 D mit großem Rahmen, Doppel-Federung und markanten LED-Details. Kostenlos auswählbar.'},
+  desc:'GT3 D mit großem Rahmen, Doppel-Federung und markanten LED-Details.'},
  {id:'gt3pro',name:'Segway GT3 Pro · Dual Motor',price:0,codeOnly:true,kind:'scooter',top:80,accel:5.4,brake:10.2,grip:8.0,steer:.9,range:90,mass:53,
   color:'#101318',accent:'#f3c84b',tread:true,wr:.18,tw:.13,deckW:.32,deckL:.68,L:.6,clear:.17,bar:1.1,barW:.72,dual:true,susp:'hyd',stem:'round',display:'round',led:true,fullFender:true,snd:{type:'sawtooth',base:195,mul:5.1},
   desc:'Geheimes GT3-Pro-Modell mit zwei Motoren und 80 km/h Spielgeschwindigkeit. Wird mit einem Code freigeschaltet.'},
@@ -383,13 +393,13 @@ const vById=id=>VEHICLES.find(v=>v.id===id)||VEHICLES[4];
 /* Tempo-Balancing: alle Fahrzeuge langsamer, ausser Aventador; Varg 120 km/h */
 {const TOP={g2max:40,g4:32,lightbee:45,thunder:50,ultrabee:58,xlimited:65,dt2pro:80,varg:120};
  for(const v of VEHICLES){if(TOP[v.id]){v.top=TOP[v.id];if(v.id!=='varg')v.accel=Math.round(v.accel*.75*10)/10;}}}
-const FREE_SCOOTERS=['zt3pro','g3max','g2max','gt3d'];
-const save={money:CONFIG.START_MONEY,owned:[...FREE_SCOOTERS],selected:'g2max',totalKm:0,escapes:0,redeemedCodes:[]};
-function loadSave(){try{const s=JSON.parse(localStorage.getItem('escooter-city-v1')||'null');if(s&&typeof s.money==='number'&&Array.isArray(s.owned)&&s.owned.length){Object.assign(save,s);}}catch(e){}
+const FREE_SCOOTERS=['zt3pro','g3max'];
+const save={money:CONFIG.START_MONEY,owned:[...FREE_SCOOTERS],selected:'zt3pro',totalKm:0,escapes:0,redeemedCodes:[]};
+function loadSave(){let hasSave=false;try{const s=JSON.parse(localStorage.getItem('escooter-city-v1')||'null');if(s&&typeof s.money==='number'&&Array.isArray(s.owned)&&s.owned.length){Object.assign(save,s);hasSave=true;if((s.version||0)<3){save.owned=save.owned.filter(id=>id!=='g2max'&&id!=='gt3d');}}}catch(e){}
   if(!Array.isArray(save.redeemedCodes))save.redeemedCodes=[];
   for(const id of FREE_SCOOTERS)if(!save.owned.includes(id))save.owned.push(id);
-  if(!save.owned.includes(save.selected))save.selected='g2max';
-  writeSave();}
+  if(!save.owned.includes(save.selected))save.selected='zt3pro';
+  save.version=3;writeSave();return hasSave;}
 function writeSave(){
  try{
   save.version=2;
@@ -1405,7 +1415,7 @@ const camNames=['Ich-Sicht','Dritte Person','Kino','Frei'];
 /* ============================ UI HELPERS ============================ */
 const hc={};function setT(id,v){if(hc[id]!==v){hc[id]=v;$(id).textContent=v;}}
 function toast(msg,cls,ttl){const t=document.createElement('div');t.className='toast '+(cls||'');t.textContent=msg;const box=$('toasts');box.appendChild(t);while(box.children.length>4)box.removeChild(box.firstChild);setTimeout(()=>{if(t.parentNode)t.parentNode.removeChild(t);},(ttl||2.4)*1000);}
-const SCREENS={main:'s-main',pause:'s-pause',garage:'s-garage',help:'s-help',busted:'s-busted'};
+const SCREENS={firstpick:'s-firstpick',main:'s-main',pause:'s-pause',garage:'s-garage',help:'s-help',busted:'s-busted'};
 function setState(s){
  state=s;for(const k in SCREENS)$(SCREENS[k]).hidden=(k!==s);
  $('hud').hidden=!(s==='play'||s==='pause'||s==='busted');$('touch').hidden=(s!=='play');$('phone-open').style.display=(s==='play'||s==='pause')?'block':'none';if(s!=='play'&&s!=='pause'&&typeof phoneClose==='function')phoneClose(); 
@@ -1996,12 +2006,19 @@ $('g-close').onclick=()=>{Snd.click();closeGarage();};
 
 /* ============================ MENUS ============================ */
 function closeHelp(){setState(helpFrom);}
+function chooseStarter(id){
+ if(!['zt3pro','g3max'].includes(id))return;
+ save.owned=[...new Set([...save.owned,id])];save.selected=id;writeSave();
+ spawnVehicle(vById(id));resetToPad();refreshMain();setState('main');
+}
+$('pick-zt3').onclick=()=>chooseStarter('zt3pro');
+$('pick-g3').onclick=()=>chooseStarter('g3max');
 $('b-play').onclick=()=>{mpLeave();Snd.init();if(Snd.ok)Snd.setVehicle(vdef);const sel=vById(save.selected);if(sel.id!==vdef.id)spawnVehicle(sel);resetToPad();trip.km=0;V.batt=100;setState('play');Snd.click();};
 $('b-garage').onclick=()=>{Snd.init();Snd.click();openGarage('main');};
 $('b-help').onclick=()=>{helpFrom='main';setState('help');};
 let resetArm=0;
 $('b-reset').onclick=()=>{
- if(performance.now()-resetArm<3000){save.money=CONFIG.START_MONEY;save.admin=false;save.owned=[...FREE_SCOOTERS];save.selected='g2max';save.totalKm=0;save.escapes=0;save.redeemedCodes=[];writeSave();spawnVehicle(vById('g2max'));resetToPad();refreshMain();$('b-reset').firstChild.textContent='Spielstand zurücksetzen';resetArm=0;}
+ if(performance.now()-resetArm<3000){save.money=CONFIG.START_MONEY;save.admin=false;save.owned=[...FREE_SCOOTERS];save.selected='zt3pro';save.totalKm=0;save.escapes=0;save.redeemedCodes=[];writeSave();spawnVehicle(vById('zt3pro'));resetToPad();refreshMain();$('b-reset').firstChild.textContent='Spielstand zurücksetzen';resetArm=0;}
  else{resetArm=performance.now();$('b-reset').firstChild.textContent='Wirklich löschen? Nochmal klicken';setTimeout(()=>{if(resetArm&&performance.now()-resetArm>=2900)$('b-reset').firstChild.textContent='Spielstand zurücksetzen';},3100);}
 };
 $('p-resume').onclick=()=>setState('play');
@@ -2288,14 +2305,14 @@ function frame(now){
 /* ============================ BOOT ============================ */
 addEventListener('error',e=>{const l=$('loading');if(l&&!l.hidden){l.lastElementChild.textContent='Fehler: '+(e.message||'unbekannt');}});
 setTimeout(()=>{
- loadSave();startAutoSave();vdef=vById(save.selected);
+ const hadSave=loadSave();startAutoSave();vdef=vById(save.selected);
  buildCity();makeMapBase();
  spawnVehicle(vdef);buildPlayerExtras();buildTraffic();buildPeds();buildShopMarkers();
  setT('p-time-v',TIMES[timeI][0]);
  setupPost();
  updateSky(0,camera.position);pinSun(_tgt.set(V.x,0,V.z));updateEnv();
  cam.pos.set(V.x+4,2,V.z-5);cam.look.set(V.x,1,V.z);
- $('loading').hidden=true;setState('main');
+ $('loading').hidden=true;setState(hadSave?'main':'firstpick');
  requestAnimationFrame(frame);
 },60);
 
