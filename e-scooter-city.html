@@ -1345,8 +1345,51 @@ function makeVehicle(v){
    }
   }
   if(v.id==='g2master'){
-   for(const z of[-L,L]){body.add(part(CYL(wr*.39,wr*.39,tw*.92,24,'x'),dark,tw*.46,wr,z));body.add(part(CYL(wr*.19,wr*.19,tw*.98,20,'x'),chrome,tw*.48,wr,z));}
-   for(const side of[-1,1])body.add(part(RB(.025,.055,.24,.012,3),accP,side*(dW/2+.025),dt-.015,-.02));
+   /* G2 Master: dual hub motors, angular battery deck and exposed hydraulic hardware. */
+   const g2Gun=mc('#747c86',.3,.86),g2Black=mc('#171a1e',.68,.42),g2Silver=mc('#c2c8ce',.22,.9),g2Glow=new THREE.MeshBasicMaterial({color:0x38d9ff});
+   for(const z of[-L,L]){
+    /* Distinctive motor-side covers and axle collars at both wheels. */
+    body.add(part(CYL(wr*.42,wr*.42,tw*.92,28,'x'),g2Black,tw*.46,wr,z));
+    body.add(part(CYL(wr*.28,wr*.28,tw*.98,24,'x'),g2Gun,tw*.48,wr,z));
+    body.add(part(CYL(wr*.13,wr*.13,tw*1.01,20,'x'),g2Silver,tw*.50,wr,z));
+    for(let k=0;k<8;k++){const a=k*Math.PI/4;body.add(part(CYL(.009,.009,.012,8,'x'),g2Black,tw*.51,wr+Math.sin(a)*wr*.34,z+Math.cos(a)*wr*.34));}
+   }
+   for(const side of[-1,1]){
+    /* Broad angular side panels and continuous cyan ambient strip. */
+    body.add(part(RB(.025,.055,.24,.012,3),accP,side*(dW/2+.025),dt-.015,-.02));
+    body.add(part(RB(.018,.075,dL*.66,.012,3),g2Black,side*(dW/2+.026),dh+.015,-.015));
+    body.add(part(RB(.008,.012,dL*.58,.004,2),g2Glow,side*(dW/2+.038),dh+.02,-.015));
+    /* Rear hydraulic damper body, polished rod and spring seat. */
+    link(body,side*(dW/2-.025),dt+.02,-dL*.34,side*(axX+.025),wr+.12,-L+.015,.032,g2Gun,10);
+    link(body,side*(dW/2-.025),dt+.02,-dL*.34,side*(axX+.025),wr+.12,-L+.015,.012,g2Silver,8);
+    body.add(part(CYL(.038,.038,.045,14,'x'),g2Black,side*(axX+.045),wr+.12,-L+.015));
+    /* Rear disc-brake caliper and hose detail. */
+    body.add(part(RB(.055,.075,.09,.012,3),g2Black,side*(tw/2+.052),wr+.04,-L+.11));
+    link(body,side*(tw/2+.078),wr+.075,-L+.12,side*(dW/2+.025),dt+.07,-dL*.25,.006,g2Gun,6);
+    /* Deck bolts and traction-panel divisions. */
+    for(const z of[-dL*.39,dL*.39])body.add(part(CYL(.009,.009,.008,10,'x'),g2Silver,side*(dW/2+.045),dt+.004,z));
+   }
+   body.add(part(RB(dW*.82,.055,dL*.74,.018,4),g2Black,0,dh-.025,-.015));
+   body.add(part(RB(dW*.74,.012,dL*.62,.006,3),rub,0,dt+.006,-.015));
+   /* Front fork bridge, hydraulic reservoirs and fork guards. */
+   steer.add(part(RB(.23,.05,.075,.014,3),g2Gun,0,.34,-.075));
+   for(const side of[-1,1]){
+    steer.add(part(RB(.045,.18,.06,.012,3),g2Black,side*(axX-.012),.19,-.055));
+    steer.add(part(CYL(.018,.018,.12,12,'x'),g2Silver,side*(axX+.018),.25,-.055));
+    steer.add(part(CYL(.026,.026,.035,12,'x'),g2Gun,side*(axX+.018),.16,-.055));
+    steer.add(part(RB(.035,.075,.035,.009,3),g2Black,side*.105,topY-.12,topZ+.015));
+   }
+   /* Wide angular headlight surround and paired front indicators. */
+   steer.add(part(RB(.19,.075,.045,.018,4),g2Black,0,topY-.3,topZ+.045));
+   steer.add(part(RB(.13,.028,.012,.008,3),g2Glow,0,topY-.29,topZ+.071));
+   for(const side of[-1,1])steer.add(part(RB(.045,.025,.025,.008,3),orgM,side*.13,topY-.3,topZ+.045));
+   /* G2 Master display bezel and handlebar control blocks. */
+   steer.add(part(RB(.13,.045,.085,.014,3),g2Black,0,topY+.065,topZ+.025));
+   steer.add(part(RB(.09,.003,.052,.006,2),g2Glow,0,topY+.09,topZ+.071));
+   for(const side of[-1,1]){
+    steer.add(part(RB(.045,.035,.075,.012,3),g2Gun,side*.19,topY+.005,topZ-.005));
+    link(steer,side*.15,topY+.005,topZ,side*.23,topY-.045,topZ+.035,.006,g2Silver,6);
+   }
   }
   if(v.id==='thunder'){
    for(const side of[-1,1]){link(body,side*(dW/2+.025),dt-.01,-dL*.38,side*(axX+.035),wr+.04,-L,.026,alu,10);body.add(part(CYL(.035,.035,.13,12,'x'),accP,side*(axX+.045),wr+.12,-L+.04));body.add(part(RB(.012,.025,dL*.65,.005,2),ledM,side*(dW/2+.045),dt+.02,0));}
