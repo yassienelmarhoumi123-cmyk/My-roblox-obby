@@ -1305,8 +1305,44 @@ function makeVehicle(v){
   ud.seat=new THREE.Vector3(0,dt,-.04);ud.grip={y:wr+topY,z:L+topZ};ud.eye=new THREE.Vector3(0,dt+1.62,.03);ud.rider='stand';ud.wheelbase=2*L;
   /* Lightweight model-specific geometry: unique chassis and trim for each scooter. */
   if(v.id==='joyort10'){
-   for(const side of[-1,1]){body.add(part(CYL(.032,.032,.11,12,'x'),accP,side*(dW/2+.035),dt-.005,-dL/2+.03));link(body,side*(dW/2+.04),dt+.02,-dL/2+.04,side*(axX+.01),wr+.06,-L+.02,.012,accP,8);}
-   body.add(part(RB(dW*.72,.025,.13,.012,3),dark,0,dt+.018,.12));
+   /* T10-specific reinforced deck, hydraulic rear suspension and dual-motor details. */
+   const t10Orange=paintM('#f07820'),t10Metal=mc('#aeb5bd',.28,.88),t10Black=mc('#202328',.62,.48),t10Rubber=mc('#111315',.9,.08);
+   for(const side of[-1,1]){
+    const sx=side*(dW/2+.035);
+    body.add(part(CYL(.032,.032,.11,12,'x'),t10Orange,sx,dt-.005,-dL/2+.03));
+    link(body,side*(dW/2+.04),dt+.02,-dL/2+.04,side*(axX+.01),wr+.06,-L+.02,.012,t10Orange,8);
+    /* Stiff side rails and the characteristic rear swingarm. */
+    link(body,side*(dW/2+.025),dh+.015,-dL*.34,side*(axX+.025),wr+.025,-L+.015,.024,t10Metal,10);
+    link(body,side*(dW/2+.025),dh+.015,-dL*.34,side*(axX+.025),wr+.19,-L+.015,.012,t10Black,8);
+    body.add(part(CYL(.022,.022,.045,12,'x'),t10Metal,side*(axX+.04),wr+.03,-L+.015));
+    /* Hydraulic rear brake caliper and visible hose run. */
+    body.add(part(RB(.055,.075,.09,.012,3),t10Black,side*(tw/2+.045),wr+.035,-L+.12));
+    link(body,side*(tw/2+.075),wr+.08,-L+.13,side*(dW/2+.025),dt+.055,-dL*.27,.006,t10Black,6);
+    /* Deck edge trim and individual fasteners. */
+    body.add(part(RB(.018,.025,dL*.72,.006,2),t10Orange,side*(dW/2+.041),dh+.035,-.015));
+    for(const z of[-dL*.36,dL*.36])body.add(part(CYL(.009,.009,.008,10,'x'),t10Metal,side*(dW/2+.05),dt+.004,z));
+   }
+   body.add(part(RB(dW*.72,.025,.13,.012,3),t10Black,0,dt+.018,.12));
+   /* Rear motor housings: the T10 uses a motor at each wheel. */
+   for(const z of[-L,L])for(const side of[-1,1]){
+    body.add(part(CYL(wr*.31,wr*.31,.018,24,'x'),t10Black,side*(tw*.48),wr,z));
+    body.add(part(CYL(wr*.19,wr*.19,.022,20,'x'),t10Metal,side*(tw*.495),wr,z));
+   }
+   /* Front fork bridge, orange spring accents and folding latch. */
+   steer.add(part(RB(.22,.045,.07,.012,3),t10Metal,0,.31,-.075));
+   for(const side of[-1,1]){
+    steer.add(part(RB(.035,.12,.045,.009,3),t10Black,side*(axX-.012),.18,-.055));
+    steer.add(part(CYL(.014,.014,.035,10,'x'),t10Orange,side*(axX+.01),.22,-.055));
+   }
+   steer.add(part(RB(.12,.075,.045,.012,3),t10Black,0,baseY+.055,baseZ+.015));
+   steer.add(part(RB(.055,.025,.018,.006,2),t10Metal,0,baseY+.09,baseZ+.045));
+   /* Compact LCD/NFC control pod and brake levers. */
+   steer.add(part(RB(.105,.035,.065,.012,3),t10Black,0,topY+.055,topZ+.025));
+   steer.add(bx(.072,.003,.038,new THREE.MeshBasicMaterial({color:0x35c9ed}),0,topY+.075,topZ+.06));
+   for(const side of[-1,1]){
+    link(steer,side*.13,topY+.005,topZ,side*.21,topY-.045,topZ+.035,.006,t10Metal,6);
+    steer.add(part(CYL(.012,.012,.055,8,'x'),t10Black,side*.19,topY-.025,topZ+.02));
+   }
   }
   if(v.id==='g2master'){
    for(const z of[-L,L]){body.add(part(CYL(wr*.39,wr*.39,tw*.92,24,'x'),dark,tw*.46,wr,z));body.add(part(CYL(wr*.19,wr*.19,tw*.98,20,'x'),chrome,tw*.48,wr,z));}
