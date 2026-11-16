@@ -1257,12 +1257,20 @@ function makeVehicle(v){
    link(body,0,wr+.015,-L,0,dt+.015,-dL*.34,.035,alu,10);
    coil(body,0,wr+.08,-L,0,dt+.035,-dL*.34,.038,10,dark);
    body.add(part(CYL(.042,.042,.075,14,'x'),dark,.045,wr+.09,-L));
+  }else if(v.id==='gt3d'){
+   /* GT3 D hydraulic trailing-arm rear suspension: swingarms plus damper bodies, no exposed coil. */
+   for(const side of[-1,1]){
+    link(body,side*(dW*.48),dt+.025,-dL*.34,side*(axX+.035),wr+.025,-L,.035,alu,10);
+    link(body,side*(dW*.48),dt+.025,-dL*.34,side*(axX+.035),wr+.12,-L+.015,.018,chrome,8);
+    link(body,side*(dW*.48),dt+.025,-dL*.34,side*(axX+.035),wr+.12,-L+.015,.011,accP,7);
+    body.add(part(CYL(.04,.04,.06,14,'x'),dark,side*(axX+.045),wr+.12,-L+.015));
+   }
   }else for(const s of[-1,1]){
    if(v.susp==='swing'){link(body,s*(dW/2-.02),dh+.03,-dL/2+.03,s*axX,wr,-L,.02,alu,6);body.add(part(CYL(.04,.04,.12,12,'x'),rub,s*(dW/2-.02),dh+.03,-dL/2+.03));}
    else if(v.id==='g4'){link(body,s*axX,wr,-L,s*(dW/2-.02),dh+.04,-dL/2+.02,.024,frame,6);}
    else{link(body,s*axX,wr,-L,s*(dW/2-.03),dt+.01,-dL/2+.02,v.susp==='hyd'?.024:.018,chrome,8);coil(body,s*axX,wr+.02,-L,s*(dW/2-.03),dt-.01,-dL/2+.02,v.susp==='hyd'?.042:.03,v.susp==='hyd'?9:7,v.susp==='hyd'?accP:acc);}
   }
-  if(v.skeleton)for(const s of[-1,1]){link(body,s*(dW/2),dh+.03,-dL/2+.05,s*.04,dh+.35,dL/2-.12,.014,frame,6);}
+  if(v.skeleton)for(const s of[-1,1])  if(v.skeleton)for(const s of[-1,1]){link(body,s*(dW/2),dh+.03,-dL/2+.05,s*.04,dh+.35,dL/2-.12,.014,frame,6);}
   if(v.seat){link(body,0,dt,-dL/2+.12,0,dt+.4,-dL/2+.08,.018,chrome,8);body.add(part(RB(.2,.07,.3,.03,3),rub,0,dt+.42,-dL/2+.06));}
   body.add(part(CYL(.014,.014,.2,8,'x'),chrome,0,dh+.014,dL/2-.04));
   if(v.id==='g4'){link(body,-(dW/2+.04),dh+.02,.02,-(dW/2+.1),0,.1,.015,rub,6);body.add(bx(.06,.01,.04,rub,-(dW/2+.1),.005,.1));}
@@ -1278,7 +1286,7 @@ function makeVehicle(v){
     baseY=.14;baseZ=-.2;
    }else{
     link(steer,s*axX,0,0,s*.07,.34,-.07,v.susp==='hyd'?.024:.015,chrome,8);
-    if(!['g2max','g3max','zt3pro'].includes(v.id))coil(steer,s*axX,.08,-.01,s*.07,.3,-.06,v.susp==='hyd'?.045:.032,v.susp==='hyd'?8:6,v.susp==='hyd'?accP:acc);
+    if(!['g2max','g3max','zt3pro','gt3d'].includes(v.id))coil(steer,s*axX,.08,-.01,s*.07,.3,-.06,v.susp==='hyd'?.045:.032,v.susp==='hyd'?8:6,v.susp==='hyd'?accP:acc);
     baseY=.36;baseZ=-.08;
    }
   }
@@ -1575,9 +1583,46 @@ function makeVehicle(v){
     link(steer,side*.14,topY-.01,topZ+.01,side*.13,topY-.21,topZ+.02,.004,gDark,6);
    }
   }
-  if(v.id==='gt3d'||v.id==='gt3pro'){
-   body.add(part(RB(dW*.92,.12,dL*.5,.035,4),dark,0,dh-.035,-.015));
-   for(const side of[-1,1]){body.add(part(RB(.028,.1,.34,.012,3),frame,side*(dW/2+.018),dh+.01,-.02));body.add(part(RB(.012,.035,.22,.006,2),ledM,side*(dW/2+.034),dh+.025,-.02));}
+  if(v.id==='gt3d'){
+   /* Segway GT3 D: wide premium chassis, hydraulic double front suspension and hydraulic rear trailing arms. */
+   const gtShell=mc('#252a31',.42,.64),gtBlack=mc('#11151a',.62,.42),gtMetal=mc('#aeb7c1',.2,.9),gtGold=mc('#d6ad43',.3,.68),gtAmber=new THREE.MeshBasicMaterial({color:0xffa42b}),gtWhite=new THREE.MeshBasicMaterial({color:0xf6f7fa}),gtRed=new THREE.MeshBasicMaterial({color:0xe32e39});
+   body.add(part(RB(dW*1.04,.16,dL*.92,.045,6),gtShell,0,dh-.035,-.012));
+   body.add(part(RB(dW*.94,.025,dL*.78,.014,5),gtBlack,0,dh+.045,-.012));
+   body.add(part(RB(dW*.76,.012,dL*.54,.008,3),dark,0,dh+.061,-.018));
+   for(const side of[-1,1]){
+    body.add(part(RB(.032,.12,dL*.76,.016,5),gtBlack,side*(dW/2+.025),dh+.002,-.01));
+    body.add(part(RB(.012,.026,dL*.58,.006,3),gtGold,side*(dW/2+.044),dh+.052,-.012));
+    body.add(part(RB(.018,.04,.085,.008,3),gtAmber,side*(dW/2+.048),dh+.035,dL*.36));
+    body.add(part(RB(.018,.04,.085,.008,3),gtAmber,side*(dW/2+.048),dh+.035,-dL*.36));
+    link(steer,side*(axX-.012),.33,-.065,side*(axX-.012),.055,-.065,.038,gtBlack,11);
+    link(steer,side*(axX-.012),.25,-.045,side*(axX-.012),.055,-.045,.021,gtMetal,10);
+    steer.add(part(RB(.055,.14,.075,.016,4),gtShell,side*(axX-.012),.13,-.055));
+    steer.add(part(CYL(.025,.025,.065,14,'x'),gtMetal,side*(axX-.012),.08,-.06));
+   }
+   steer.add(part(RB(.31,.07,.11,.025,5),gtBlack,0,.34,-.075));
+   for(const side of[-1,1]){
+    steer.add(part(CYL(wr*.43,wr*.43,tw*.085,30,'x'),gtMetal,side*tw*.52,0,0));
+    steer.add(part(CYL(wr*.32,wr*.32,tw*.1,26,'x'),gtBlack,side*tw*.59,0,0));
+    steer.add(part(RB(.065,.12,.075,.014,4),gtShell,side*tw*.68,.045,.12));
+    body.add(part(CYL(wr*.43,wr*.43,tw*.085,30,'x'),gtMetal,side*tw*.52,wr,-L));
+    body.add(part(CYL(wr*.32,wr*.32,tw*.1,26,'x'),gtBlack,side*tw*.59,wr,-L));
+    body.add(part(RB(.065,.12,.075,.014,4),gtShell,side*tw*.68,wr+.045,-L+.12));
+    body.add(part(CYL(wr*.31,wr*.31,tw*.95,28,'x'),gtBlack,side*tw*.45,wr,-L));
+    body.add(part(CYL(wr*.19,wr*.19,tw*.99,24,'x'),gtMetal,side*tw*.49,wr,-L));
+   }
+   body.add(part(RB(dW*.7,.05,.36,.02,5),gtBlack,0,wr*2+.12,-L-.14));
+   body.add(part(RB(.15,.035,.04,.01,4),gtRed,0,wr*2+.15,-L-.3));
+   body.add(part(RB(.1,.018,.018,.006,3),gtWhite,0,wr*2+.17,-L-.32));
+   steer.add(part(RB(.13,.16,.105,.025,5),gtShell,0,baseY+.09,baseZ-.025));
+   steer.add(part(RB(.19,.085,.11,.022,5),gtBlack,0,topY+.075,topZ+.03));
+   steer.add(part(RB(.135,.008,.075,.006,3),gtGold,0,topY+.105,topZ+.085));
+   steer.add(part(RB(.25,.115,.09,.025,5),gtBlack,0,topY-.3,topZ+.05));
+   steer.add(part(RB(.18,.045,.016,.009,4),gtWhite,0,topY-.29,topZ+.102));
+   for(const side of[-1,1]){
+    steer.add(part(RB(.055,.03,.035,.009,3),gtAmber,side*.16,topY-.29,topZ+.055));
+    link(steer,side*.14,topY+.005,topZ,side*.25,topY-.045,topZ+.04,.009,gtMetal,8);
+    link(steer,side*.13,topY-.005,topZ+.015,side*.12,topY-.22,topZ+.025,.004,gtBlack,6);
+   }
   }
   if(v.id==='xlimited'){
    for(const side of[-1,1]){link(body,side*(dW/2+.06),dt+.06,-dL*.4,side*(axX+.08),wr+.07,-L,.04,alu,10);link(body,side*(dW/2+.06),dt+.06,dL*.36,side*(axX+.08),wr+.07,L,.04,alu,10);body.add(part(CYL(.045,.045,.16,14,'x'),gold,side*(axX+.09),wr+.1,-L));body.add(part(RB(.045,.09,dL*.58,.018,3),dark,side*(dW/2+.04),dh+.005,0));}
