@@ -377,10 +377,10 @@ const VEHICLES=[
   color:'#242a31',accent:'#ff5a35',tread:true,wr:.14,tw:.105,deckW:.24,deckL:.56,L:.53,clear:.19,bar:1.02,barW:.64,susp:'hyd',stem:'round',display:'touch',fullFender:true,snd:{type:'triangle',base:158,mul:4.5},
   desc:'ZT3 Pro mit kräftiger Optik, groben Reifen und Federung. Kostenlos auswählbar.'},
  {id:'g3max',name:'Ninebot G3 Max',price:0,kind:'scooter',top:45,accel:3.5,brake:8.3,grip:7.6,steer:1.0,range:75,mass:31,
-  color:'#cbd2d9',accent:'#18a7b5',tread:true,wr:.14,tw:.1,deckW:.2,deckL:.55,L:.52,clear:.18,bar:1.0,barW:.63,susp:'hyd',stem:'rect',display:'touch',fullFender:true,snd:{type:'triangle',base:168,mul:4.7},
+  color:'#20252b',accent:'#d92d36',tread:true,wr:.14,tw:.1,deckW:.215,deckL:.57,L:.52,clear:.18,bar:1.0,barW:.63,susp:'hyd',stem:'rect',display:'touch',dual:true,led:true,fullFender:true,snd:{type:'triangle',base:168,mul:4.7},
   desc:'G3 Max mit ausgewogener Beschleunigung und guter Reichweite. Kostenlos auswählbar.'},
  {id:'gt3d',name:'Segway GT3 D',price:3000,kind:'scooter',top:60,accel:4.1,brake:9.2,grip:7.8,steer:.92,range:95,mass:40,
-  color:'#181c22',accent:'#e7b83f',tread:true,wr:.17,tw:.12,deckW:.29,deckL:.64,L:.57,clear:.16,bar:1.08,barW:.7,dual:true,susp:'hyd',stem:'round',display:'touch',led:true,fullFender:true,snd:{type:'sawtooth',base:178,mul:4.9},
+  color:'#181c22',accent:'#e7b83f',tread:true,wr:.17,tw:.12,deckW:.29,deckL:.64,L:.57,clear:.16,bar:1.08,barW:.7,dual:false,susp:'hyd',stem:'round',display:'touch',led:true,fullFender:true,snd:{type:'sawtooth',base:178,mul:4.9},
   desc:'GT3 D mit großem Rahmen, Doppel-Federung und markanten LED-Details.'},
  {id:'gt3pro',name:'Segway GT3 Pro · Dual Motor',price:0,codeOnly:true,kind:'scooter',top:80,accel:5.4,brake:10.2,grip:8.0,steer:.9,range:90,mass:53,
   color:'#101318',accent:'#f3c84b',tread:true,wr:.18,tw:.13,deckW:.32,deckL:.68,L:.6,clear:.17,bar:1.1,barW:.72,dual:true,susp:'hyd',stem:'round',display:'round',led:true,fullFender:true,snd:{type:'sawtooth',base:195,mul:5.1},
@@ -1252,7 +1252,8 @@ function makeVehicle(v){
   const wR=wheelGroup(wr,tw,'scooter',acc,v.tread);wR.position.set(0,wr,-L);body.add(wR);ud.wheels.push(wR);
   /* rear suspension */
   const axX=tw/2+.035;
-  if(v.id==='zt3pro'){
+  if(v.id==='g3max'){ /* Dedicated MAX G3 twin hydraulic shocks are built in its model block. */
+  }else if(v.id==='zt3pro'){
    /* ZT3 Pro uses a single rear coil shock on a distinct swingarm. */
    link(body,0,wr+.015,-L,0,dt+.015,-dL*.34,.035,alu,10);
    coil(body,0,wr+.08,-L,0,dt+.035,-dL*.34,.038,10,dark);
@@ -1539,48 +1540,54 @@ function makeVehicle(v){
    }
   }
   if(v.id==='g3max'){
-   /* MAX G3: compact 11-inch commuter frame, twin hydraulic shocks and dual disc brakes. */
-   const gBody=mc('#262a30',.48,.58),gSilver=mc('#bbc2c9',.2,.9),gDark=mc('#171a1f',.62,.48),gRed=mc('#d83a3f',.32,.62),gAmber=new THREE.MeshBasicMaterial({color:0xffa32b}),gWhite=new THREE.MeshBasicMaterial({color:0xf6f7fa}),gTail=new THREE.MeshBasicMaterial({color:0xe52e3b});
-   body.add(part(RB(dW*1.04,.12,dL*.88,.038,7),frame,0,dh-.025,-.012));
-   body.add(part(RB(dW*.96,.025,dL*.77,.012,5),gBody,0,dh+.038,-.012));
-   body.add(part(RB(dW*.72,.012,dL*.5,.008,3),gDark,0,dh+.055,-.02));
+   /* Ninebot MAX G3: own sharper commuter body, twin hydraulic front and rear suspension. */
+   const g3Shell=mc('#252a30',.4,.7),g3Black=mc('#11151a',.68,.38),g3Metal=mc('#aeb7c1',.2,.9),g3Red=mc('#d92d36',.32,.62),g3Rubber=mc('#17191c',.92,.08);
+   const g3Amber=new THREE.MeshBasicMaterial({color:0xffa32b}),g3White=new THREE.MeshBasicMaterial({color:0xf5f7fa}),g3Tail=new THREE.MeshBasicMaterial({color:0xe52e3b}),g3Screen=new THREE.MeshBasicMaterial({color:0x39c5e8});
+   /* G3's longer, more angular battery deck and sharply stepped side fairings. */
+   body.add(part(RB(dW*1.08,.145,dL*.94,.042,6),g3Shell,0,dh-.028,-.012));
+   body.add(part(RB(dW*.94,.025,dL*.79,.012,5),g3Black,0,dh+.045,-.012));
+   body.add(part(RB(dW*.76,.012,dL*.58,.007,3),g3Rubber,0,dh+.061,-.02));
+   for(let i=-3;i<=3;i++)body.add(bx(dW*.58,.003,.012,g3Metal,i*.012,dh+.068,-.018));
    for(const side of[-1,1]){
-    body.add(part(RB(.025,.085,dL*.73,.012,4),gBody,side*(dW/2+.025),dh+.008,-.01));
-    body.add(part(RB(.012,.022,dL*.48,.006,3),gRed,side*(dW/2+.04),dh+.048,-.015));
-    body.add(part(RB(.014,.035,.075,.007,3),gAmber,side*(dW/2+.042),dh+.025,dL*.34));
-    body.add(part(RB(.014,.035,.075,.007,3),gAmber,side*(dW/2+.042),dh+.025,-dL*.34));
-    link(body,side*.12,wr+.02,-L,side*(dW/2-.025),dt+.02,-dL*.34,.028,gSilver,10);
-    coil(body,side*.12,wr+.055,-L,side*(dW/2-.025),dt+.045,-dL*.34,.03,9,gDark);
-    body.add(part(CYL(.03,.03,.05,12,'x'),gDark,side*.13,wr+.055,-L));
-    body.add(part(RB(.035,.095,.055,.009,3),gBody,side*.15,wr+.15,-L+.03));
+    body.add(part(RB(.03,.105,dL*.76,.014,5),g3Black,side*(dW/2+.025),dh+.008,-.008));
+    body.add(part(RB(.012,.028,dL*.58,.006,3),g3Red,side*(dW/2+.043),dh+.048,-.012));
+    body.add(part(RB(.018,.035,.075,.007,3),g3Amber,side*(dW/2+.045),dh+.032,dL*.36));
+    body.add(part(RB(.018,.035,.075,.007,3),g3Amber,side*(dW/2+.045),dh+.032,-dL*.36));
+    /* Twin rear hydraulic shock units: distinct body, slider and red adjuster. */
+    link(body,side*.12,wr+.025,-L,side*(dW/2-.02),dt+.025,-dL*.34,.032,g3Black,10);
+    link(body,side*.12,wr+.08,-L,side*(dW/2-.02),dt+.045,-dL*.34,.016,g3Metal,9);
+    coil(body,side*.12,wr+.065,-L,side*(dW/2-.02),dt+.04,-dL*.34,.031,9,g3Red);
+    body.add(part(CYL(.031,.031,.052,14,'x'),g3Black,side*.13,wr+.06,-L));
+    body.add(part(RB(.04,.1,.065,.01,4),g3Shell,side*.15,wr+.14,-L+.025));
    }
-   body.add(part(RB(dW*.68,.05,.34,.018,5),gDark,0,wr*2+.115,-L-.13));
-   body.add(part(RB(.145,.032,.035,.009,4),gTail,0,wr*2+.145,-L-.29));
-   body.add(part(RB(.095,.018,.018,.006,3),gWhite,0,wr*2+.16,-L-.312));
-   steer.add(part(RB(.27,.075,.09,.02,5),gBody,0,.35,-.075));
+   /* Rear wheel cover and compact integrated brake/tail-light cluster. */
+   body.add(part(RB(dW*.72,.05,.36,.02,5),g3Black,0,wr*2+.12,-L-.14));
+   body.add(part(RB(.15,.035,.045,.01,4),g3Tail,0,wr*2+.15,-L-.31));
+   body.add(part(RB(.11,.018,.018,.006,3),g3White,0,wr*2+.17,-L-.335));
+   /* MAX G3 dual hydraulic front fork with visible red lower adjuster details. */
+   steer.add(part(RB(.29,.07,.105,.022,5),g3Black,0,.35,-.075));
    for(const side of[-1,1]){
-    link(steer,side*.115,.36,-.06,side*.115,.065,-.06,.04,gDark,11);
-    link(steer,side*.115,.23,-.045,side*.115,.065,-.045,.022,gSilver,10);
-    steer.add(part(RB(.055,.14,.07,.014,4),frame,side*.115,.13,-.055));
-    steer.add(part(RB(.045,.04,.018,.008,3),gAmber,side*.15,.06,.03));
+    link(steer,side*.115,.36,-.06,side*.115,.055,-.06,.041,g3Black,12);
+    link(steer,side*.115,.24,-.06,side*.115,.055,-.06,.022,g3Metal,10);
+    steer.add(part(RB(.06,.145,.082,.016,4),g3Shell,side*.115,.13,-.055));
+    steer.add(part(CYL(.026,.026,.065,16,'x'),g3Red,side*.115,.075,-.06));
    }
-   /* Front and rear dual-piston disc brake hardware. */
+   /* Single disc and caliper at each wheel, not a fictitious twin-disc setup. */
+   steer.add(part(CYL(wr*.4,wr*.4,.009,36,'x'),g3Metal,tw*.54,0,0));
+   steer.add(part(CYL(wr*.29,wr*.29,.012,32,'x'),g3Black,tw*.55,0,0));
+   steer.add(part(RB(.065,.115,.075,.012,4),g3Red,tw*.77,.06,.1));
+   body.add(part(CYL(wr*.4,wr*.4,.009,36,'x'),g3Metal,tw*.54,wr,-L));
+   body.add(part(CYL(wr*.29,wr*.29,.012,32,'x'),g3Black,tw*.55,wr,-L));
+   body.add(part(RB(.065,.115,.075,.012,4),g3Red,tw*.77,wr+.06,-L+.1));
+   /* Characteristic MAX front lamp, TFT screen and handlebar controls. */
+   steer.add(part(RB(.24,.105,.115,.026,5),g3Black,0,topY-.3,topZ+.05));
+   steer.add(part(RB(.19,.052,.014,.01,4),g3White,0,topY-.29,topZ+.112));
+   steer.add(part(RB(.19,.085,.115,.022,5),g3Black,0,topY+.075,topZ+.025));
+   steer.add(part(RB(.145,.052,.01,.008,4),g3Screen,0,topY+.09,topZ+.09));
+   steer.add(part(RB(.13,.12,.085,.018,4),g3Shell,0,baseY+.09,baseZ-.025));
    for(const side of[-1,1]){
-    steer.add(part(CYL(wr*.42,wr*.42,tw*.09,28,'x'),gSilver,side*tw*.51,0,0));
-    steer.add(part(CYL(wr*.31,wr*.31,tw*.1,24,'x'),gDark,side*tw*.58,0,0));
-    steer.add(part(RB(.06,.12,.075,.012,4),gBody,side*tw*.68,.045,.12));
-    body.add(part(CYL(wr*.42,wr*.42,tw*.09,28,'x'),gSilver,side*tw*.51,wr,-L));
-    body.add(part(CYL(wr*.31,wr*.31,tw*.1,24,'x'),gDark,side*tw*.58,wr,-L));
-    body.add(part(RB(.06,.12,.075,.012,4),gBody,side*tw*.68,wr+.045,-L+.12));
-   }
-   steer.add(part(RB(.22,.09,.075,.018,5),gDark,0,topY-.29,topZ+.05));
-   steer.add(part(RB(.16,.035,.014,.008,4),gWhite,0,topY-.285,topZ+.09));
-   steer.add(part(RB(.17,.055,.095,.016,4),gDark,0,topY+.07,topZ+.025));
-   steer.add(part(RB(.12,.008,.06,.006,3),gRed,0,topY+.1,topZ+.075));
-   steer.add(part(RB(.12,.12,.08,.016,4),gBody,0,baseY+.09,baseZ-.025));
-   for(const side of[-1,1]){
-    link(steer,side*.14,topY+.005,topZ,side*.24,topY-.035,topZ+.035,.007,gSilver,8);
-    link(steer,side*.14,topY-.01,topZ+.01,side*.13,topY-.21,topZ+.02,.004,gDark,6);
+    link(steer,side*.14,topY+.005,topZ,side*.25,topY-.04,topZ+.04,.009,g3Metal,8);
+    link(steer,side*.13,topY-.01,topZ+.015,side*.12,topY-.21,topZ+.025,.004,g3Black,6);
    }
   }
   if(v.id==='gt3d'){
@@ -1604,16 +1611,17 @@ function makeVehicle(v){
     link(body,side*(dW*.43),dh+.045,-dL*.31,side*(axX+.025),wr+.16,-L+.015,.009,gtMetal,8);
     body.add(part(CYL(.035,.035,.055,14,'x'),gtBlack,side*(axX+.035),wr+.16,-L+.015));
     body.add(part(CYL(.024,.024,.06,14,'x'),gtMetal,side*(axX+.035),wr+.16,-L+.015));
-    /* Front and rear ventilated disc rotors with compact calipers. */
-    body.add(part(CYL(wr*.35,wr*.35,.009,36,'x'),gtMetal,side*(tw*.55),wr,-L));
-    body.add(part(CYL(wr*.24,wr*.24,.012,32,'x'),gtBlack,side*(tw*.56),wr,-L));
-    body.add(part(RB(.075,.105,.085,.012,4),gtBlack,side*(tw*.78),wr+.13,-L+.08));
-    link(body,side*(tw*.78),wr+.16,-L+.1,side*(dW*.47),dh+.09,-dL*.23,.004,gtBlack,6);
-    /* Front rotor, caliper and hydraulic brake hose. */
-    steer.add(part(CYL(wr*.35,wr*.35,.009,36,'x'),gtMetal,side*(tw*.55),0,0));
-    steer.add(part(CYL(wr*.24,wr*.24,.012,32,'x'),gtBlack,side*(tw*.56),0,0));
-    steer.add(part(RB(.07,.105,.08,.012,4),gtBlack,side*(tw*.78),.14,.075));
-    link(steer,side*(tw*.78),.16,.08,side*(axX*.82),.31,-.07,.004,gtBlack,6);
+    /* One disc rotor and one caliper per wheel, matching the GT3 D spec. */
+    if(side===1){
+     body.add(part(CYL(wr*.35,wr*.35,.009,36,'x'),gtMetal,side*(tw*.55),wr,-L));
+     body.add(part(CYL(wr*.24,wr*.24,.012,32,'x'),gtBlack,side*(tw*.56),wr,-L));
+     body.add(part(RB(.075,.105,.085,.012,4),gtBlack,side*(tw*.78),wr+.13,-L+.08));
+     link(body,side*(tw*.78),wr+.16,-L+.1,side*(dW*.47),dh+.09,-dL*.23,.004,gtBlack,6);
+     steer.add(part(CYL(wr*.35,wr*.35,.009,36,'x'),gtMetal,side*(tw*.55),0,0));
+     steer.add(part(CYL(wr*.24,wr*.24,.012,32,'x'),gtBlack,side*(tw*.56),0,0));
+     steer.add(part(RB(.07,.105,.08,.012,4),gtBlack,side*(tw*.78),.14,.075));
+     link(steer,side*(tw*.78),.16,.08,side*(axX*.82),.31,-.07,.004,gtBlack,6);
+    }
     /* Hydraulic double front shocks: dark outer bodies and exposed metal sliders. */
     link(steer,side*(axX-.012),.33,-.065,side*(axX-.012),.055,-.065,.041,gtBlack,12);
     link(steer,side*(axX-.012),.23,-.065,side*(axX-.012),.055,-.065,.022,gtMetal,10);
