@@ -1407,10 +1407,10 @@ function makeVehicle(v){
     for(const z of[-dL*.36,dL*.36])body.add(part(CYL(.01,.01,.009,10,'x'),thMetal,side*(dW/2+.052),dt+.004,z));
     /* Front/rear shock reservoirs and visible spring details. */
     link(body,side*(dW/2-.02),dt+.015,-dL*.34,side*(axX+.03),wr+.15,-L+.02,.035,thMetal,10);
-    coil(body,side*(dW/2-.02),dt+.015,-dL*.34,side*(axX+.03),wr+.15,-L+.02,.043,9,thRed);
+    body.add(part(RB(.075,.065,.075,.012,3),thBlack,side*(axX+.035),wr+.15,-L+.02));
     body.add(part(CYL(.027,.027,.06,12,'x'),thBlack,side*(axX+.045),wr+.17,-L+.02));
     link(body,side*(dW/2-.02),dt+.01,dL*.32,side*(axX+.025),wr+.12,L-.02,.03,thMetal,10);
-    coil(body,side*(dW/2-.02),dt+.01,dL*.32,side*(axX+.025),wr+.12,L-.02,.038,8,thRed);
+    body.add(part(RB(.07,.06,.07,.012,3),thBlack,side*(axX+.03),wr+.12,L-.02));
    }
    /* Broad central battery/deck cover and rear lamp cluster. */
    body.add(part(RB(dW*.88,.065,dL*.68,.022,4),thBlack,0,dh-.018,-.015));
