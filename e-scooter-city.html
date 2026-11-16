@@ -2126,12 +2126,14 @@ function mpUpdateRemote(){
    const def=vById(p.vehicle||'g2max'),g=makeVehicle(def),r=attachRider(g,def);
    const label=document.createElement('canvas');label.width=256;label.height=64;const cx=label.getContext('2d');cx.fillStyle='rgba(10,14,20,.8)';cx.fillRect(0,0,256,64);cx.fillStyle='#ffffff';cx.font='bold 30px Arial';cx.textAlign='center';cx.fillText(String(p.name||'Spieler').slice(0,18),128,43);
    const tex=new THREE.CanvasTexture(label),spr=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false}));spr.scale.set(2.5,.62,1);spr.position.y=2.4;
-   g.add(spr);scene.add(g);MP.remote=MP.remote||new Map();q={g,r,vehicle:def.id,avatar:null,label:spr};MP.remote.set(id,q);
+   scene.add(spr);const av=makePlayer();av.visible=false;scene.add(av);scene.add(g);MP.remote=MP.remote||new Map();q={g,r,vehicle:def.id,avatar:av,label:spr};MP.remote.set(id,q);
   }
   const def=vById(p.vehicle||'g2max');
-  if(q.vehicle!==def.id){scene.remove(q.g);q.g=makeVehicle(def);q.r=attachRider(q.g,def);q.g.add(q.label);scene.add(q.g);q.vehicle=def.id;}
+  if(q.vehicle!==def.id){scene.remove(q.g);q.g=makeVehicle(def);q.r=attachRider(q.g,def);scene.add(q.g);q.vehicle=def.id;}
   q.g.visible=!!p.mounted;q.g.position.set(p.x||0,p.y||0,p.z||0);q.g.rotation.y=p.h||0;
   if(q.r)q.r.visible=!!p.mounted;
+  if(q.avatar){q.avatar.visible=!p.mounted;q.avatar.position.set(p.x||0,.15,p.z||0);q.avatar.rotation.y=p.h||0;}
+  q.label.position.set(p.x||0,(p.y||0)+2.5,p.z||0);
  }
  if(MP.remote)for(const[id,q]of MP.remote)if(!active.has(id)){scene.remove(q.g);if(q.avatar)scene.remove(q.avatar);MP.remote.delete(id);}
 }
