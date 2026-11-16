@@ -1371,7 +1371,7 @@ function toast(msg,cls,ttl){const t=document.createElement('div');t.className='t
 const SCREENS={main:'s-main',pause:'s-pause',garage:'s-garage',help:'s-help',busted:'s-busted'};
 function setState(s){
  state=s;for(const k in SCREENS)$(SCREENS[k]).hidden=(k!==s);
- $('hud').hidden=!(s==='play'||s==='pause'||s==='busted');$('touch').hidden=(s!=='play');
+ $('hud').hidden=!(s==='play'||s==='pause'||s==='busted');$('touch').hidden=(s!=='play');$('phone-open').style.display=(s==='play'||s==='pause')?'block':'none';if(s!=='play'&&s!=='pause')$('phone').classList.remove('open');
  if(s==='main')refreshMain();
 }
 function refreshMain(){
