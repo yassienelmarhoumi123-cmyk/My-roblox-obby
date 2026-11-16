@@ -243,9 +243,58 @@
       .game-cover { height: 185px; }
     }
 
+  
+    /* Zugangssperre */
+    #access-gate {
+      position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center;
+      padding: 22px; background:
+        radial-gradient(ellipse at 15% 10%, rgba(69,103,255,.22), transparent 35rem),
+        radial-gradient(ellipse at 90% 80%, rgba(30,229,190,.13), transparent 30rem),
+        #080d18;
+    }
+    .gate-panel {
+      width: min(420px, 100%); padding: 34px 28px; border-radius: 24px;
+      border: 1px solid rgba(132,160,220,.25);
+      background: linear-gradient(145deg, rgba(25,39,72,.98), rgba(12,22,40,.98));
+      box-shadow: 0 28px 90px rgba(0,0,0,.45); text-align: center;
+    }
+    .gate-icon { font-size: 38px; margin-bottom: 12px; }
+    .gate-panel h2 { margin: 0 0 9px; font-size: 26px; }
+    .gate-panel p { color: #b7c5dc; line-height: 1.55; margin: 0 0 22px; }
+    #access-code {
+      width: 100%; padding: 14px 15px; border-radius: 12px;
+      border: 1px solid rgba(148,170,205,.28); outline: none;
+      background: rgba(5,12,25,.8); color: white; font: inherit;
+      font-size: 18px; letter-spacing: .22em; text-align: center;
+    }
+    #access-code:focus { border-color: #61f5d1; box-shadow: 0 0 0 3px rgba(97,245,209,.12); }
+    #access-submit {
+      width: 100%; margin-top: 12px; padding: 14px; border: 0; border-radius: 12px;
+      color: #06151a; font: inherit; font-weight: 850; cursor: pointer;
+      background: linear-gradient(100deg, #72f6d5, #a4ffc3);
+    }
+    #access-error { min-height: 20px; margin-top: 12px; color: #ff9caa; font-size: 13px; }
+    .gate-footnote { display: block; margin-top: 15px; color: #8292ad; font-size: 11px; }
+
   </style>
 </head>
 <body>
+
+  <section id="access-gate" aria-labelledby="gate-title">
+    <div class="gate-panel">
+      <div class="gate-icon" aria-hidden="true">🔒</div>
+      <h2 id="gate-title">Willkommen im Arcade Hub</h2>
+      <p>Diese Spielewelt ist geschützt. Gib den Zugangscode ein, um fortzufahren.</p>
+      <form id="access-form">
+        <input id="access-code" type="password" inputmode="numeric" autocomplete="off"
+          placeholder="Zugangscode" aria-label="Zugangscode" required>
+        <button id="access-submit" type="submit">Freischalten</button>
+      </form>
+      <div id="access-error" role="status" aria-live="polite"></div>
+      <span class="gate-footnote">Privater Spielbereich</span>
+    </div>
+  </section>
+
 
   <!-- Hauptmenü mit allen Spielen -->
   <div id="menu">
@@ -360,6 +409,39 @@
   </div>
 
   <script>
+
+    // Zugangscode-Prüfung (SHA-256); Freigabe gilt bis zum Schließen des Tabs.
+    const accessGate = document.getElementById('access-gate');
+    const accessForm = document.getElementById('access-form');
+    const accessCode = document.getElementById('access-code');
+    const accessError = document.getElementById('access-error');
+    const protectedAreas = [document.getElementById('menu'), document.getElementById('player-container')];
+    function setAccessGranted() {
+      accessGate.style.display = 'none';
+      protectedAreas.forEach(area => area.inert = false);
+      sessionStorage.setItem('arcadeHubAccess', 'granted');
+    }
+    if (sessionStorage.getItem('arcadeHubAccess') === 'granted') {
+      setAccessGranted();
+    } else {
+      protectedAreas.forEach(area => area.inert = true);
+      accessCode.focus();
+    }
+    accessForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const entered = accessCode.value;
+      const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(entered));
+      const hash = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+      if (hash === '7a7f04c0aa384e6ed4890273c07683c942e373f23e78e39e9418f9792e9a798d') {
+        accessError.textContent = '';
+        setAccessGranted();
+      } else {
+        accessError.textContent = 'Der Code ist leider falsch. Versuch es noch einmal.';
+        accessCode.value = '';
+        accessCode.focus();
+      }
+    });
+
     const searchInput = document.getElementById('game-search');
     const gameCards = Array.from(document.querySelectorAll('.game-card'));
     const noResults = document.getElementById('no-results');
