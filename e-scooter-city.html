@@ -529,12 +529,12 @@ function updateSky(dt,camPos){
   wx.wet=damp(wx.wet,wx.cur.rain>.4?1:0,wx.cur.rain>.4?.15:.03,dt);
   const th=(day.hour-6)/24*TAU,e=Math.sin(th);day.e=e;
   const dayness=smooth(-.12,.38,e);const night=smooth(.1,-.2,e);day.night=night;
-  const top=_c1,hor=_c2;
-  if(e>=0){const t=smooth(0,.45,e);top.copy(PAL.goldTop).lerp(PAL.dayTop,t);hor.copy(PAL.goldHor).lerp(PAL.dayHor,t);}
+  const skyTop=_c1,hor=_c2;
+  if(e>=0){const t=smooth(0,.45,e);skyTop.copy(PAL.goldTop).lerp(PAL.dayTop,t);hor.copy(PAL.goldHor).lerp(PAL.dayHor,t);}
   else{const t=smooth(0,-.22,e);top.copy(PAL.goldTop).lerp(PAL.nightTop,t);hor.copy(PAL.goldHor).lerp(PAL.nightHor,t);}
   const g=_c3.setRGB(.52,.56,.62).multiplyScalar(.08+.92*dayness);
-  top.lerp(g,wx.cur.dark*.85);hor.lerp(g,wx.cur.dark*.75);
-  skyUni.topC.value.copy(top);skyUni.horC.value.copy(hor);
+  skyTop.lerp(g,wx.cur.dark*.85);hor.lerp(g,wx.cur.dark*.75);
+  skyUni.topC.value.copy(skyTop);skyUni.horC.value.copy(hor);
   const sd=skyUni.sunDir.value.set(Math.cos(th),Math.sin(th),.4).normalize();
   skyUni.sunC.value.copy(PAL.goldSun).lerp(PAL.whiteSun,smooth(0,.4,e));skyUni.night.value=night;skyUni.cover.value=wx.cur.cover;skyUni.dark.value=wx.cur.dark;skyUni.time.value+=dt;
   scene.fog.color.copy(hor);scene.fog.density=wx.cur.fog;
@@ -753,12 +753,12 @@ function bDowntown(B){
  for(const L of lotGrid(2,4)){
   const x=B.cx+L.ox,z=B.cz+L.oz;
   if(R()<.06){for(let k=0;k<3;k++)addTree(x+rr(-8,8),z+rr(-8,8),1.1);continue;}
-  const c=col(pick(GLASS));let top=0;
+  const c=col(pick(GLASS));let roofTop=0;
   if(R()<.5){const ph=rr(8,14);addFacade(x,.15,z,L.s,ph,L.s,col(pick(CONC)),'bld');addSolid(x-L.s/2,z-L.s/2,x+L.s/2,z+L.s/2,true);
-   const h=rr(40,80)+near*rr(20,95),tw=L.s*.7;addFacade(x,.15+ph,z,tw,h,tw,c,'glass');top=.15+ph+h;}
-  else{const h=rr(36,78)+near*rr(20,95),w=L.s-1;addFacade(x,.15,z,w,h,w,c,'glass');addSolid(x-w/2,z-w/2,x+w/2,z+w/2,true);top=.15+h;}
-  addBox(M.prop,x+rr(-3,3),top+1,z+rr(-3,3),4.5,2,4.5,col('#6d737a'));
-  if(top>95)addBox(M.prop,x,top+7,z,.5,14,.5,col('#c33'));
+   const h=rr(40,80)+near*rr(20,95),tw=L.s*.7;addFacade(x,.15+ph,z,tw,h,tw,c,'glass');roofTop=.15+ph+h;}
+  else{const h=rr(36,78)+near*rr(20,95),w=L.s-1;addFacade(x,.15,z,w,h,w,c,'glass');addSolid(x-w/2,z-w/2,x+w/2,z+w/2,true);roofTop=.15+h;}
+  addBox(M.prop,x+rr(-3,3),roofTop+1,z+rr(-3,3),4.5,2,4.5,col('#6d737a'));
+  if(roofTop>95)addBox(M.prop,x,roofTop+7,z,.5,14,.5,col('#c33'));
  }
 }
 function bCommercial(B){
