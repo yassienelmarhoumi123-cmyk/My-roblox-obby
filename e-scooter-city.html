@@ -1274,11 +1274,6 @@ function makeVehicle(v){
   const steer=new THREE.Group();steer.position.set(0,wr,L);body.add(steer);ud.steer=steer;
   const wF=wheelGroup(wr,tw,'scooter',acc,v.tread);steer.add(wF);ud.wheels.push(wF);
   if(v.dual){for(const side of[-1,1]){steer.add(part(CYL(wr*.3,wr*.3,.018,18,'x'),dark,side*(tw*.5+.022),0,0));}}
-  /* layered headlight bezel and indicator lenses */
-  steer.add(part(RB(.105,.075,.026,.012,3),dark,0,topY-.3,topZ+.085));
-  steer.add(bx(.07,.038,.012,lightM,0,topY-.3,topZ+.103));
-  for(const side of[-1,1]){steer.add(part(CYL(wr*.43,wr*.43,.007,28,'x'),chrome,side*(tw*.5+.005),0,0));steer.add(part(CYL(wr*.1,wr*.1,.012,14,'x'),gold,side*(tw*.5+.01),0,0));}
-  steer.add(part(arcFender(wr*1.2,tw+.06,Math.PI*.36,Math.PI*(v.fullFender?.99:.9)),frame,0,0,0));
   const hb=v.bar,sTilt=v.id==='g4'?-.2:-.1;
   let baseY=.2,baseZ=-.04;
   for(const s of[-1,1]){
@@ -1298,6 +1293,11 @@ function makeVehicle(v){
   const stemMat=v.id==='g4'?g4StemMat:frame;
   steer.add(part(stemG,stemMat,0,baseY+hs/2*Math.cos(sTilt),baseZ+hs/2*Math.sin(sTilt),sTilt));
   const topY=baseY+hs*Math.cos(sTilt),topZ=baseZ+hs*Math.sin(sTilt);
+  /* layered headlight bezel and indicator lenses */
+  steer.add(part(RB(.105,.075,.026,.012,3),dark,0,topY-.3,topZ+.085));
+  steer.add(bx(.07,.038,.012,lightM,0,topY-.3,topZ+.103));
+  for(const side of[-1,1]){steer.add(part(CYL(wr*.43,wr*.43,.007,28,'x'),chrome,side*(tw*.5+.005),0,0));steer.add(part(CYL(wr*.1,wr*.1,.012,14,'x'),gold,side*(tw*.5+.01),0,0));}
+  steer.add(part(arcFender(wr*1.2,tw+.06,Math.PI*.36,Math.PI*(v.fullFender?.99:.9)),frame,0,0,0));
   steer.add(part(RB(.09,.1,.07,.015,2),v.id==='g4'?dark:accP,0,baseY+.05,baseZ+.01));        /* fold hinge */
   if(v.id==='g4'){steer.add(part(RB(.075,.22,.065,.012,2),frame,0,baseY+.08,baseZ-.005));steer.add(bx(.085,.11,.015,lightM,0,baseY+.2,baseZ+.035));steer.add(bx(.1,.13,.01,dark,0,baseY+.2,baseZ+.027));}
   steer.add(bx(.012,.1,.012,chrome,.05,baseY+.07,baseZ+.045));
