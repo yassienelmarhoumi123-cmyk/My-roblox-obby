@@ -1344,12 +1344,11 @@ const camNames=['Ich-Sicht','Dritte Person','Kino','Frei'];
 /* ============================ UI HELPERS ============================ */
 const hc={};function setT(id,v){if(hc[id]!==v){hc[id]=v;$(id).textContent=v;}}
 function toast(msg,cls,ttl){const t=document.createElement('div');t.className='toast '+(cls||'');t.textContent=msg;const box=$('toasts');box.appendChild(t);while(box.children.length>4)box.removeChild(box.firstChild);setTimeout(()=>{if(t.parentNode)t.parentNode.removeChild(t);},(ttl||2.4)*1000);}
-const SCREENS={main:'s-main',multi:'s-multi',pause:'s-pause',garage:'s-garage',help:'s-help',busted:'s-busted'};
+const SCREENS={main:'s-main',pause:'s-pause',garage:'s-garage',help:'s-help',busted:'s-busted'};
 function setState(s){
  state=s;for(const k in SCREENS)$(SCREENS[k]).hidden=(k!==s);
  $('hud').hidden=!(s==='play'||s==='pause'||s==='busted');$('touch').hidden=(s!=='play');
  if(s==='main')refreshMain();
- if(s==='multi')mpOpenBrowser();
 }
 function refreshMain(){
  setT('m-vehicle',vById(save.selected).name);setT('m-owned',save.owned.length+' / '+VEHICLES.filter(v=>!v.admin||save.admin).length);setT('m-money',money(save.money));setT('m-esc',String(save.escapes));setT('m-km',num1(save.totalKm)+' km');
