@@ -2336,7 +2336,7 @@ function frame(now){
 }
 
 /* ============================ BOOT ============================ */
-addEventListener('error',e=>{const l=$('loading');if(l&&!l.hidden){l.lastElementChild.textContent='Fehler: '+(e.message||'unbekannt');}});
+addEventListener('error',e=>{const l=$('loading');const detail=(e.error&&e.error.stack)?e.error.stack:(e.message||'unbekannt');console.error('STARTUP ERROR',detail);if(l&&!l.hidden){l.lastElementChild.textContent='Fehler: '+detail;}});addEventListener('unhandledrejection',e=>{const l=$('loading');const detail=(e.reason&&e.reason.stack)?e.reason.stack:String(e.reason||'Promise-Fehler');console.error('STARTUP REJECTION',detail);if(l&&!l.hidden){l.lastElementChild.textContent='Fehler: '+detail;}});
 setTimeout(()=>{
  const hadSave=loadSave();startAutoSave();vdef=vById(save.selected);
  buildCity();makeMapBase();
