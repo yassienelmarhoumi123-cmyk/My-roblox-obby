@@ -369,6 +369,12 @@ const VEHICLES=[
  {id:'g3max',name:'Ninebot G3 Max',price:0,kind:'scooter',top:45,accel:3.5,brake:8.3,grip:7.6,steer:1.0,range:75,mass:31,
   color:'#cbd2d9',accent:'#18a7b5',tread:true,wr:.14,tw:.1,deckW:.23,deckL:.55,L:.52,clear:.18,bar:1.0,barW:.63,susp:'hyd',stem:'rect',display:'touch',fullFender:true,snd:{type:'triangle',base:168,mul:4.7},
   desc:'G3 Max mit ausgewogener Beschleunigung und guter Reichweite. Kostenlos auswählbar.'},
+ {id:'joyort10',name:'Joyor T10',price:3500,kind:'scooter',top:70,accel:4.8,brake:9.0,grip:7.8,steer:.96,range:90,mass:36,
+  color:'#20252b',accent:'#e4a62b',tread:true,wr:.16,tw:.115,deckW:.27,deckL:.6,L:.55,clear:.17,bar:1.04,barW:.67,susp:'hyd',stem:'round',display:'round',dual:true,fullFender:true,snd:{type:'sawtooth',base:182,mul:4.8},
+  desc:'Joyor T10 mit sportlichem Design, kräftiger Federung und 70 km/h Spielgeschwindigkeit.'},
+ {id:'g2master',name:'KuKirin G2 Master',price:3500,kind:'scooter',top:70,accel:4.9,brake:9.1,grip:7.9,steer:.98,range:85,mass:37,
+  color:'#171a1f',accent:'#f04b35',tread:true,wr:.16,tw:.115,deckW:.27,deckL:.6,L:.55,clear:.17,bar:1.03,barW:.66,susp:'spring',stem:'round',display:'touch',dual:true,fullFender:true,snd:{type:'sawtooth',base:188,mul:4.9},
+  desc:'KuKirin G2 Master mit zwei Motoren, sportlicher Optik und 70 km/h Spielgeschwindigkeit.'},
  {id:'gt3d',name:'Segway GT3 D',price:3000,kind:'scooter',top:60,accel:4.1,brake:9.2,grip:7.8,steer:.92,range:95,mass:40,
   color:'#181c22',accent:'#e7b83f',tread:true,wr:.17,tw:.12,deckW:.29,deckL:.64,L:.57,clear:.16,bar:1.08,barW:.7,dual:true,susp:'hyd',stem:'round',display:'round',led:true,fullFender:true,snd:{type:'sawtooth',base:178,mul:4.9},
   desc:'GT3 D mit großem Rahmen, Doppel-Federung und markanten LED-Details.'},
@@ -403,7 +409,7 @@ function loadSave(){let hasSave=false;try{const s=JSON.parse(localStorage.getIte
   save.version=3;writeSave();return hasSave&&!save.needsStarterChoice;}
 function writeSave(){
  try{
-  save.version=2;
+  save.version=3;
   save.lastSavedAt=Date.now();
   localStorage.setItem('escooter-city-v1',JSON.stringify(save));
  }catch(e){console.warn('Spielstand konnte nicht gespeichert werden:',e);}
@@ -1637,9 +1643,9 @@ function updateTraffic(dt,f,sg){
  }
 }
 function buildTraffic(){
- const nCar=MOBILE?36:72;
+ const nCar=MOBILE?44:88;
  for(let i=0;i<nCar;i++){const c=spawnCar(i%8===0?'taxi':pick(['hatch','sedan','suv','van','sedan','hatch','sport','suv']));for(let t=0;t<12&&cars.some(o=>o!==c&&o.axis===c.axis&&o.k===c.k&&o.dir===c.dir&&Math.abs(o.s-c.s)<14);t++){c.s=rr(-HALF,HALF);carTarget(c);}c.g.position.set(c.tx,0,c.tz);c.g.rotation.y=c.th;}
- for(let i=0;i<(MOBILE?3:6);i++)spawnCar('bus');
+ for(let i=0;i<(MOBILE?4:7);i++)spawnCar('bus');
  for(let i=0;i<(MOBILE?12:24);i++)spawnCar('police');
  /* first patrol close to the garage so the first chase is easy to start */
  const p0=cars.find(c=>c.cop);if(p0){p0.axis=0;p0.k=5;p0.dir=1;p0.s=GARAGE.x+70;carTarget(p0);p0.g.position.set(p0.tx,0,p0.tz);p0.g.rotation.y=p0.th;}
