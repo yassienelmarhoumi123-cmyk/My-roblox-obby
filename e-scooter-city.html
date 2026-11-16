@@ -1931,9 +1931,9 @@ function camShake(dt){if(shake>0){camera.position.x+=(Math.random()-.5)*shake*.3
 
 /* ============================ HUD ============================ */
 const gctx=$('gauge').getContext('2d'),mctx=$('minimap').getContext('2d');let lastG=-1;
-function drawGauge(kmh,top){
+function drawGauge(kmh,maxSpeed){
  const cx=300,cy=296,R0=270;gctx.clearRect(0,0,600,316);
- const maxK=Math.ceil(top*1.12/20)*20,f=clamp(kmh/maxK,0,1);
+ const maxK=Math.ceil(maxSpeed*1.12/20)*20,f=clamp(kmh/maxK,0,1);
  gctx.lineWidth=24;gctx.strokeStyle='rgba(15,20,27,.78)';gctx.beginPath();gctx.arc(cx,cy,R0-12,Math.PI,TAU);gctx.stroke();
  gctx.strokeStyle=kmh>CONFIG.SPEED_LIMIT?'#ffd400':'#f3f4ef';gctx.beginPath();gctx.arc(cx,cy,R0-12,Math.PI,Math.PI+f*Math.PI);gctx.stroke();
  gctx.fillStyle='#9aa6b4';gctx.font='700 22px "Barlow Condensed",Arial Narrow,Arial';gctx.textAlign='center';gctx.textBaseline='middle';gctx.strokeStyle='rgba(243,244,239,.6)';
@@ -1956,9 +1956,9 @@ function drawMap(f){
  mctx.fillStyle='#fff';mctx.strokeStyle='#0f141b';mctx.lineWidth=2;mctx.beginPath();mctx.moveTo(176,162);mctx.lineTo(186,188);mctx.lineTo(176,182);mctx.lineTo(166,188);mctx.closePath();mctx.fill();mctx.stroke();
 }
 function updateHUD(dt,f,vf){
- const kmh=Math.abs(mounted?vf*3.6:F.spd*3.6),top=vdef.top;
+ const kmh=Math.abs(mounted?vf*3.6:F.spd*3.6),vehicleTop=vdef.top;
  setT('kmh',String(Math.round(kmh)));
- const kr=Math.round(kmh);if(kr!==lastG){lastG=kr;drawGauge(kmh,top);}
+ const kr=Math.round(kmh);if(kr!==lastG){lastG=kr;drawGauge(kmh,vehicleTop);}
  setT('vname',vdef.name);setT('battpct',Math.round(V.batt)+' %');
  $('battfill').style.width=V.batt+'%';$('battfill').style.background=V.batt<15?'var(--alarm)':V.batt<35?'var(--signal)':'var(--ok)';
  setT('trip1','Fahrt '+num1(trip.km)+' km');setT('odo','Gesamt '+Math.round(save.totalKm).toLocaleString('de-DE')+' km');
