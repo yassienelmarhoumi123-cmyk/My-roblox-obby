@@ -371,7 +371,7 @@ const VEHICLES=[
   color:'#c4161c',accent:'#15181d',wr:.335,scale:1.07,snd:{type:'square',base:104,mul:5.4},
   desc:'Größer, stärker, mehr Federweg. Stärkere Batterie und kräftige Bremsen. Die Straßenwaffe für Verfolgungen.'},
  {id:'g2max',name:'Ninebot G2 Max',price:1200,kind:'scooter',top:40,accel:3.0,brake:7.5,grip:7.0,steer:1.0,range:60,mass:30,
-  color:'#d8dde3',accent:'#ff4a3d',tread:true,wr:.127,tw:.09,deckW:.2,deckL:.5,L:.48,clear:.17,bar:.95,barW:.6,susp:'spring',stem:'rect',display:'touch',skeleton:true,seat:true,snd:{type:'triangle',base:165,mul:4.4},
+  color:'#d8dde3',accent:'#ff4a3d',tread:true,wr:.127,tw:.09,deckW:.2,deckL:.5,L:.48,clear:.17,bar:.95,barW:.6,susp:'spring',stem:'rect',display:'touch',skeleton:true,snd:{type:'triangle',base:165,mul:4.4},
   desc:'Ninebot Max G2 mit Federung und breiten Reifen.'},
  {id:'zt3pro',name:'Segway ZT3 Pro',price:0,kind:'scooter',top:40,accel:3.2,brake:8.2,grip:7.8,steer:1.0,range:70,mass:30,
   color:'#242a31',accent:'#ff5a35',tread:true,wr:.15,tw:.105,deckW:.24,deckL:.56,L:.53,clear:.19,bar:1.02,barW:.64,susp:'hyd',stem:'round',display:'touch',fullFender:true,snd:{type:'triangle',base:158,mul:4.5},
@@ -1303,6 +1303,37 @@ function makeVehicle(v){
   steer.add(part(RB(.13,.06,.05,.015,2),frame,0,topY-.3,topZ+(topY-.3-baseY)*sTilt*.5+.02));
   for(const s of[-1,1])steer.add(bx(.04,.02,.02,orgM,s*.1,topY-.3,topZ+.07+(topY-.3-baseY)*sTilt*.5));
   ud.seat=new THREE.Vector3(0,dt,-.04);ud.grip={y:wr+topY,z:L+topZ};ud.eye=new THREE.Vector3(0,dt+1.62,.03);ud.rider='stand';ud.wheelbase=2*L;
+  /* Lightweight model-specific geometry: unique chassis and trim for each scooter. */
+  if(v.id==='joyort10'){
+   for(const side of[-1,1]){body.add(part(CYL(.032,.032,.11,12,'x'),accP,side*(dW/2+.035),dt-.005,-dL/2+.03));link(body,side*(dW/2+.04),dt+.02,-dL/2+.04,side*(axX+.01),wr+.06,-L+.02,.012,accP,8);}
+   body.add(part(RB(dW*.72,.025,.13,.012,3),dark,0,dt+.018,.12));
+  }
+  if(v.id==='g2master'){
+   for(const z of[-L,L]){body.add(part(CYL(wr*.39,wr*.39,tw*.92,24,'x'),dark,tw*.46,wr,z));body.add(part(CYL(wr*.19,wr*.19,tw*.98,20,'x'),chrome,tw*.48,wr,z));}
+   for(const side of[-1,1])body.add(part(RB(.025,.055,.24,.012,3),accP,side*(dW/2+.025),dt-.015,-.02));
+  }
+  if(v.id==='thunder'){
+   for(const side of[-1,1]){link(body,side*(dW/2+.025),dt-.01,-dL*.38,side*(axX+.035),wr+.04,-L,.026,alu,10);body.add(part(CYL(.035,.035,.13,12,'x'),accP,side*(axX+.045),wr+.12,-L+.04));body.add(part(RB(.012,.025,dL*.65,.005,2),ledM,side*(dW/2+.045),dt+.02,0));}
+  }
+  if(v.id==='zt3pro'){
+   const fy=topY-.3,fz=topZ+.055;
+   link(steer,-.105,fy-.055,fz,.105,fy+.055,fz,.012,dark,8);link(steer,.105,fy-.055,fz,-.105,fy+.055,fz,.012,dark,8);
+   steer.add(part(RB(.16,.035,.025,.008,2),lightM,0,fy-.09,fz+.012));
+   body.add(part(RB(dW*.76,.07,.16,.018,3),dark,0,dt-.01,-dL*.38));
+  }
+  if(v.id==='g2max'||v.id==='g3max'){
+   for(const side of[-1,1]){body.add(part(RB(.025,.085,dL*.56,.018,4),frame,side*(dW/2+.012),dh+.005,.015));body.add(part(RB(.012,.018,dL*.34,.006,2),accP,side*(dW/2+.03),dh+.02,-.015));}
+  }
+  if(v.id==='gt3d'||v.id==='gt3pro'){
+   body.add(part(RB(dW*.92,.12,dL*.5,.035,4),dark,0,dh-.035,-.015));
+   for(const side of[-1,1]){body.add(part(RB(.028,.1,.34,.012,3),frame,side*(dW/2+.018),dh+.01,-.02));body.add(part(RB(.012,.035,.22,.006,2),ledM,side*(dW/2+.034),dh+.025,-.02));}
+  }
+  if(v.id==='xlimited'){
+   for(const side of[-1,1]){link(body,side*(dW/2+.06),dt+.06,-dL*.4,side*(axX+.08),wr+.07,-L,.04,alu,10);link(body,side*(dW/2+.06),dt+.06,dL*.36,side*(axX+.08),wr+.07,L,.04,alu,10);body.add(part(CYL(.045,.045,.16,14,'x'),gold,side*(axX+.09),wr+.1,-L));body.add(part(RB(.045,.09,dL*.58,.018,3),dark,side*(dW/2+.04),dh+.005,0));}
+  }
+  if(v.id==='dt2pro'){
+   for(const side of[-1,1]){link(body,side*(dW/2+.035),dt-.01,-dL*.35,side*(axX+.03),wr+.05,-L,.025,gold,8);body.add(part(RB(.018,.045,.18,.008,2),accP,side*(dW/2+.028),dh+.035,.05));}
+  }
  }else{
   const bike=new THREE.Group();body.add(bike);const sc=v.scale||1;bike.scale.setScalar(sc);
   const wr=.335,RZ=-.62,FZ=.64;
@@ -1343,6 +1374,25 @@ function makeVehicle(v){
   const hl=part(hg('mhl',()=>new THREE.SphereGeometry(.055,12,8).scale(1.7,1.4,.5)),lightM,0,.5,.025);steer.add(hl);ud.headlamp=hl;
   steer.add(part(RB(.14,.15,.02,.01,1),mc('#e8e8e4',.5,0),0,.72,-.1,-.2));
   ud.seat=new THREE.Vector3(0,.84*sc,-.33*sc);ud.peg=new THREE.Vector3(0,.32*sc,-.04*sc);ud.grip={y:(wr+.78)*sc,z:(FZ-.34)*sc};ud.eye=new THREE.Vector3(0,1.58,-.05);ud.rider='sit';ud.wheelbase=(FZ-RZ)*sc;
+  /* Model-specific electric dirt-bike bodywork and visible drivetrain details. */
+  if(v.id==='lightbee'){
+   for(const side of[-1,1]){link(bike,side*.14,.72,.18,side*.095,.42,-.12,.018,chrome,8);bike.add(part(RB(.025,.3,.38,.015,3),plast,side*.145,.62,.1,-.12));}
+   bike.add(part(CYL(.105,.105,.23,24,'x'),dark,.12,.4,-.1));bike.add(part(CYL(.055,.055,.24,20,'x'),gold,.125,.4,-.1));
+  }else if(v.id==='ultrabee'){
+   for(const side of[-1,1]){bike.add(part(RB(.055,.34,.47,.035,4),plast2,side*.15,.64,.09,-.08));link(bike,side*.16,.8,.3,side*.11,.48,-.2,.025,alu,8);}
+   bike.add(part(RB(.27,.3,.4,.055,5),plast,0,.65,.08));
+   bike.add(part(CYL(.13,.13,.24,28,'x'),dark,.13,.4,-.1));
+  }else if(v.id==='varg'){
+   for(const side of[-1,1]){bike.add(part(RB(.045,.32,.52,.035,5),plast2,side*.145,.66,.07,-.12));bike.add(part(RB(.035,.22,.32,.025,4),plast,side*.16,.55,-.25,.12));link(bike,side*.12,.85,.35,side*.1,.42,-.15,.022,chrome,8);}
+   bike.add(part(RB(.25,.34,.4,.045,5),plast,0,.66,.04,-.08));
+   bike.add(part(RB(.16,.22,.22,.035,4),dark,0,.38,-.13));
+  }
+  if(v.id==='lightbee'||v.id==='ultrabee'){
+   const chainMat=mc('#777d84',.55,.75),cx=-.125;
+   bike.add(part(CYL(.105,.105,.012,28,'x'),dark,cx,.4,-.1));bike.add(part(CYL(.055,.055,.018,24,'x'),chrome,cx-.01,.4,-.1));
+   for(let i=0;i<24;i++){const t=i/23,z=RZ+.13+(FZ-RZ-.26)*t,y=.4-.02*Math.sin(t*Math.PI);bike.add(part(RB(.012,.012,.028,.003,1),chainMat,cx,y,z,0,.15,0));}
+   link(bike,cx,.4,RZ+.1,cx,.4,FZ-.12,.006,chainMat,6);
+  }
  }
  body.traverse(o=>{if(o.isMesh)o.castShadow=true;});
  root.userData=ud;
