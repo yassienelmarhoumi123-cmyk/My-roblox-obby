@@ -1397,7 +1397,7 @@ function setState(s){
  if(s==='main')refreshMain();
 }
 function refreshMain(){
- setT('m-vehicle',vById(save.selected).name);setT('m-owned',save.owned.length+' / '+VEHICLES.filter(v=>!v.admin||save.admin).length);setT('m-money',money(save.money));setT('m-esc',String(save.escapes));setT('m-km',num1(save.totalKm)+' km');
+ setT('m-vehicle',vById(save.selected).name);setT('m-owned',save.owned.length+' / '+VEHICLES.filter(v=>(!v.admin||save.admin)&&(!v.codeOnly||save.owned.includes(v.id))).length);setT('m-money',money(save.money));setT('m-esc',String(save.escapes));setT('m-km',num1(save.totalKm)+' km');
 }
 
 /* ============================ INPUT ============================ */
@@ -1957,20 +1957,22 @@ function renderGarage(){
   if(v.admin&&!save.admin)return;
   const own=save.owned.includes(v.id),eq=save.selected===v.id;
   const b=document.createElement('button');b.className='vcard'+(i===gSel?' sel':'');
-  b.innerHTML='<span class="n">'+v.name+(eq?'<span class="tag eq">Aktiv</span>':own?'<span class="tag own">Besitz</span>':'')+'</span><span class="p">'+(own?'':money(v.price))+'</span><span class="s">'+(v.kind==='moto'?'Elektro-Motorrad':'E-Scooter')+' · '+v.top+' km/h · '+v.range+' km</span>';
+  b.innerHTML='<span class="n">'+v.name+(eq?'<span class="tag eq">Aktiv</span>':own?'<span class="tag own">Besitz</span>':v.codeOnly?'<span class="tag">CODE</span>':'')+'</span><span class="p">'+(own?'':v.codeOnly?'CODE':money(v.price))+'</span><span class="s">'+(v.kind==='moto'?'Elektro-Motorrad':'E-Scooter')+' · '+v.top+' km/h · '+v.range+' km</span>';
   b.onclick=()=>{gSel=i;Snd.click();renderGarage();};list.appendChild(b);
  });
  const v=VEHICLES[gSel],own=save.owned.includes(v.id),eq=save.selected===v.id;
  setT('g-name',v.name);setT('g-desc',v.desc);
- $('g-stats').innerHTML=stat('Höchstgeschwindigkeit',v.top+' km/h',v.top/100)+stat('Beschleunigung','0–50 km/h in '+num1(13.9/v.accel)+' s',v.accel/7.6)+stat('Reichweite',v.range+' km',v.range/150)+stat('Bremsleistung',num1(v.brake)+' m/s²',v.brake/11)+stat('Preis',v.admin?'Admin':money(v.price),v.price/8000);
+ $('g-stats').innerHTML=stat('Höchstgeschwindigkeit',v.top+' km/h',v.top/100)+stat('Beschleunigung','0–50 km/h in '+num1(13.9/v.accel)+' s',v.accel/7.6)+stat('Reichweite',v.range+' km',v.range/150)+stat('Bremsleistung',num1(v.brake)+' m/s²',v.brake/11)+stat('Preis',v.codeOnly?'Code erforderlich':v.admin?'Admin':money(v.price),v.price/8000);
  const a=$('g-action');
  if(eq){a.textContent='Aktiv';a.disabled=true;}
  else if(own){a.textContent='Auswählen';a.disabled=false;}
+ else if(v.codeOnly){a.textContent='Code erforderlich';a.disabled=true;}
  else{a.textContent='Kaufen · '+money(v.price);a.disabled=save.money<v.price;if(a.disabled)a.textContent='Zu wenig Geld · '+money(v.price);}
  setPreview();
 }
 $('g-action').onclick=()=>{
  const v=VEHICLES[gSel],own=save.owned.includes(v.id);
+ if(!own&&v.codeOnly)return;
  if(!own){if(save.money<v.price)return;save.money-=v.price;save.owned.push(v.id);save.selected=v.id;Snd.buy();toast('Gekauft: '+v.name,'good');}
  else{save.selected=v.id;Snd.click();}
  writeSave();renderGarage();
