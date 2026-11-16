@@ -529,12 +529,12 @@ function updateSky(dt,camPos){
   wx.wet=damp(wx.wet,wx.cur.rain>.4?1:0,wx.cur.rain>.4?.15:.03,dt);
   const th=(day.hour-6)/24*TAU,e=Math.sin(th);day.e=e;
   const dayness=smooth(-.12,.38,e);const night=smooth(.1,-.2,e);day.night=night;
-  const skyTop=_c1,hor=_c2;
-  if(e>=0){const t=smooth(0,.45,e);skyTop.copy(PAL.goldTop).lerp(PAL.dayTop,t);hor.copy(PAL.goldHor).lerp(PAL.dayHor,t);}
-  else{const t=smooth(0,-.22,e);skyTop.copy(PAL.goldTop).lerp(PAL.nightTop,t);hor.copy(PAL.goldHor).lerp(PAL.nightHor,t);}
+  const top=_c1,hor=_c2;
+  if(e>=0){const t=smooth(0,.45,e);top.copy(PAL.goldTop).lerp(PAL.dayTop,t);hor.copy(PAL.goldHor).lerp(PAL.dayHor,t);}
+  else{const t=smooth(0,-.22,e);top.copy(PAL.goldTop).lerp(PAL.nightTop,t);hor.copy(PAL.goldHor).lerp(PAL.nightHor,t);}
   const g=_c3.setRGB(.52,.56,.62).multiplyScalar(.08+.92*dayness);
-  skyTop.lerp(g,wx.cur.dark*.85);hor.lerp(g,wx.cur.dark*.75);
-  skyUni.topC.value.copy(skyTop);skyUni.horC.value.copy(hor);
+  top.lerp(g,wx.cur.dark*.85);hor.lerp(g,wx.cur.dark*.75);
+  skyUni.topC.value.copy(top);skyUni.horC.value.copy(hor);
   const sd=skyUni.sunDir.value.set(Math.cos(th),Math.sin(th),.4).normalize();
   skyUni.sunC.value.copy(PAL.goldSun).lerp(PAL.whiteSun,smooth(0,.4,e));skyUni.night.value=night;skyUni.cover.value=wx.cur.cover;skyUni.dark.value=wx.cur.dark;skyUni.time.value+=dt;
   scene.fog.color.copy(hor);scene.fog.density=wx.cur.fog;
@@ -753,12 +753,12 @@ function bDowntown(B){
  for(const L of lotGrid(2,4)){
   const x=B.cx+L.ox,z=B.cz+L.oz;
   if(R()<.06){for(let k=0;k<3;k++)addTree(x+rr(-8,8),z+rr(-8,8),1.1);continue;}
-  const c=col(pick(GLASS));let roofTop=0;
+  const c=col(pick(GLASS));let top=0;
   if(R()<.5){const ph=rr(8,14);addFacade(x,.15,z,L.s,ph,L.s,col(pick(CONC)),'bld');addSolid(x-L.s/2,z-L.s/2,x+L.s/2,z+L.s/2,true);
-   const h=rr(40,80)+near*rr(20,95),tw=L.s*.7;addFacade(x,.15+ph,z,tw,h,tw,c,'glass');roofTop=.15+ph+h;}
-  else{const h=rr(36,78)+near*rr(20,95),w=L.s-1;addFacade(x,.15,z,w,h,w,c,'glass');addSolid(x-w/2,z-w/2,x+w/2,z+w/2,true);roofTop=.15+h;}
-  addBox(M.prop,x+rr(-3,3),roofTop+1,z+rr(-3,3),4.5,2,4.5,col('#6d737a'));
-  if(roofTop>95)addBox(M.prop,x,roofTop+7,z,.5,14,.5,col('#c33'));
+   const h=rr(40,80)+near*rr(20,95),tw=L.s*.7;addFacade(x,.15+ph,z,tw,h,tw,c,'glass');top=.15+ph+h;}
+  else{const h=rr(36,78)+near*rr(20,95),w=L.s-1;addFacade(x,.15,z,w,h,w,c,'glass');addSolid(x-w/2,z-w/2,x+w/2,z+w/2,true);top=.15+h;}
+  addBox(M.prop,x+rr(-3,3),top+1,z+rr(-3,3),4.5,2,4.5,col('#6d737a'));
+  if(top>95)addBox(M.prop,x,top+7,z,.5,14,.5,col('#c33'));
  }
 }
 function bCommercial(B){
@@ -1251,11 +1251,6 @@ function makeVehicle(v){
   body.add(bx(.14,.03,.05,tailM,0,wr*2+.03,-L-wr*1.3));body.add(bx(.06,.03,.02,mc('#f0f0f0',.3,.2),0,wr*2+.07,-L-wr*1.35));
   for(const s of[-1,1])body.add(bx(.05,.025,.03,orgM,s*.09,wr*2+.05,-L-wr*1.28));
   const wR=wheelGroup(wr,tw,'scooter',acc,v.tread);wR.position.set(0,wr,-L);body.add(wR);ud.wheels.push(wR);
-  /* Brand-specific deck panels, reflectors and motor housings. */
-  if(/g2master|joyort10|thunder|xlimited|dt2pro/.test(v.id)){for(const side of[-1,1]){body.add(part(RB(dW*.22,.075,dL*.48,.018,3),dark,side*(dW*.48),dh+.005,.015));body.add(bx(.012,.018,dL*.38,accP,side*(dW*.5+.006),dh+.008,.015));}}
-  if(/g2max|g3max|zt3pro|gt3d|gt3pro/.test(v.id)){for(const side of[-1,1]){body.add(part(RB(.018,.105,.22,.008,2),frame,side*(dW*.5+.016),dh+.02,-.015));body.add(bx(.012,.035,.06,orgM,side*(dW*.5+.027),dh+.025,-.1));}}
-  if(v.dual){for(const side of[-1,1])body.add(part(CYL(wr*.32,wr*.32,.024,20,'x'),dark,side*(tw*.5+.025),wr,-L));}
-  for(const side of[-1,1]){body.add(bx(.025,.018,.045,mc('#f4f2e9',.25,.15),side*(dW*.5+.025),dh+.025,dL*.39));}
   /* Disc-brake hardware and axle caps add visible mechanical detail. */
   for(const side of[-1,1]){body.add(part(CYL(wr*.48,wr*.48,.008,28,'x'),chrome,side*(tw*.5+.006),wr,-L));body.add(part(CYL(wr*.12,wr*.12,.014,16,'x'),gold,side*(tw*.5+.012),wr,-L));}
   body.add(bx(dW*.72,.018,.012,mc('#f5f0d8',.2,.25),0,dh+.015,-dL*.43));
@@ -1273,7 +1268,8 @@ function makeVehicle(v){
   /* steering assembly (pivot = front axle) */
   const steer=new THREE.Group();steer.position.set(0,wr,L);body.add(steer);ud.steer=steer;
   const wF=wheelGroup(wr,tw,'scooter',acc,v.tread);steer.add(wF);ud.wheels.push(wF);
-  if(v.dual){for(const side of[-1,1]){steer.add(part(CYL(wr*.3,wr*.3,.018,18,'x'),dark,side*(tw*.5+.022),0,0));}}
+  for(const side of[-1,1]){steer.add(part(CYL(wr*.43,wr*.43,.007,28,'x'),chrome,side*(tw*.5+.005),0,0));steer.add(part(CYL(wr*.1,wr*.1,.012,14,'x'),gold,side*(tw*.5+.01),0,0));}
+  steer.add(part(arcFender(wr*1.2,tw+.06,Math.PI*.36,Math.PI*(v.fullFender?.99:.9)),frame,0,0,0));
   const hb=v.bar,sTilt=v.id==='g4'?-.2:-.1;
   let baseY=.2,baseZ=-.04;
   for(const s of[-1,1]){
@@ -1293,11 +1289,6 @@ function makeVehicle(v){
   const stemMat=v.id==='g4'?g4StemMat:frame;
   steer.add(part(stemG,stemMat,0,baseY+hs/2*Math.cos(sTilt),baseZ+hs/2*Math.sin(sTilt),sTilt));
   const topY=baseY+hs*Math.cos(sTilt),topZ=baseZ+hs*Math.sin(sTilt);
-  /* layered headlight bezel and indicator lenses */
-  steer.add(part(RB(.105,.075,.026,.012,3),dark,0,topY-.3,topZ+.085));
-  steer.add(bx(.07,.038,.012,lightM,0,topY-.3,topZ+.103));
-  for(const side of[-1,1]){steer.add(part(CYL(wr*.43,wr*.43,.007,28,'x'),chrome,side*(tw*.5+.005),0,0));steer.add(part(CYL(wr*.1,wr*.1,.012,14,'x'),gold,side*(tw*.5+.01),0,0));}
-  steer.add(part(arcFender(wr*1.2,tw+.06,Math.PI*.36,Math.PI*(v.fullFender?.99:.9)),frame,0,0,0));
   steer.add(part(RB(.09,.1,.07,.015,2),v.id==='g4'?dark:accP,0,baseY+.05,baseZ+.01));        /* fold hinge */
   if(v.id==='g4'){steer.add(part(RB(.075,.22,.065,.012,2),frame,0,baseY+.08,baseZ-.005));steer.add(bx(.085,.11,.015,lightM,0,baseY+.2,baseZ+.035));steer.add(bx(.1,.13,.01,dark,0,baseY+.2,baseZ+.027));}
   steer.add(bx(.012,.1,.012,chrome,.05,baseY+.07,baseZ+.045));
@@ -1334,15 +1325,11 @@ function makeVehicle(v){
    bike.add(part(RB(.035,.24,.55,.015,2),plast,s*.125,.62,.08));          /* side panels */
   }
   bike.add(part(RB(.2,.42,.46,.04,3),plast2,0,.62,.08));                   /* battery */
-  /* More recognisable electric enduro silhouette: sculpted battery shrouds, frame rails and guards. */
-  for(const side of[-1,1]){bike.add(part(RB(.045,.31,.43,.025,3),plast,side*.145,.66,.1,.12));bike.add(part(RB(.025,.18,.35,.012,2),plast2,side*.172,.64,.1,-.08));link(bike,side*.1,.92,.28,side*.12,.53,-.22,.018,chrome,8);}
   bike.add(part(CYL(.105,.105,.2,22,'x'),mc('#2a2e34',.4,.8),0,.4,-.1));bike.add(part(CYL(.06,.06,.22,18,'x'),chrome,0,.4,-.1));
   bike.add(part(RB(.12,.1,.24,.02,2),dark,0,.55,-.3));                    /* controller */
   link(bike,0,.4,-.1,0,wr,RZ,.012,dark,6);
   link(bike,0,.78,-.3,0,.44,-.46,.024,chrome,8);coil(bike,0,.76,-.31,0,.46,-.45,.04,8,acc);   /* rear shock */
   bike.add(part(RB(.2,.1,.8,.045,3),rub,0,.79,-.33,.03));                  /* seat */
-  bike.add(part(RB(.23,.025,.68,.012,3),dark,0,.735,-.34,.03));
-  for(const side of[-1,1]){link(bike,side*.08,.43,-.08,side*.09,.37,-.45,.012,chrome,8);bike.add(bx(.025,.035,.08,accP,side*.19,.56,.02));}
   bike.add(part(RB(.19,.07,.5,.03,2),plast,0,.86,-.68,.25));              /* tail */
   bike.add(part(RB(.12,.02,.2,.01,1),mc('#e8e8e4',.5,0),0,.74,-.94,.3));bike.add(bx(.14,.04,.05,tailM,0,.8,-.93));
   if(v.id==='ultrabee'){bike.add(part(RB(.24,.2,.44,.05,3),plast,0,.8,.12));bike.add(part(RB(.26,.14,.4,.05,3),plast2,0,.66,-.1));}
@@ -1361,8 +1348,6 @@ function makeVehicle(v){
   steer.add(part(RB(.2,.2,.1,.04,3),plast,0,.5,-.03));
   const hl=part(hg('mhl',()=>new THREE.SphereGeometry(.055,12,8).scale(1.7,1.4,.5)),lightM,0,.5,.025);steer.add(hl);ud.headlamp=hl;
   steer.add(part(RB(.14,.15,.02,.01,1),mc('#e8e8e4',.5,0),0,.72,-.1,-.2));
-  steer.add(part(RB(.16,.045,.035,.012,2),dark,0,.58,.03));
-  for(const side of[-1,1]){steer.add(bx(.035,.025,.035,orgM,side*.105,.52,.045));}
   ud.seat=new THREE.Vector3(0,.84*sc,-.33*sc);ud.peg=new THREE.Vector3(0,.32*sc,-.04*sc);ud.grip={y:(wr+.78)*sc,z:(FZ-.34)*sc};ud.eye=new THREE.Vector3(0,1.58,-.05);ud.rider='sit';ud.wheelbase=(FZ-RZ)*sc;
  }
  body.traverse(o=>{if(o.isMesh)o.castShadow=true;});
@@ -1931,9 +1916,9 @@ function camShake(dt){if(shake>0){camera.position.x+=(Math.random()-.5)*shake*.3
 
 /* ============================ HUD ============================ */
 const gctx=$('gauge').getContext('2d'),mctx=$('minimap').getContext('2d');let lastG=-1;
-function drawGauge(kmh,maxSpeed){
+function drawGauge(kmh,top){
  const cx=300,cy=296,R0=270;gctx.clearRect(0,0,600,316);
- const maxK=Math.ceil(maxSpeed*1.12/20)*20,f=clamp(kmh/maxK,0,1);
+ const maxK=Math.ceil(top*1.12/20)*20,f=clamp(kmh/maxK,0,1);
  gctx.lineWidth=24;gctx.strokeStyle='rgba(15,20,27,.78)';gctx.beginPath();gctx.arc(cx,cy,R0-12,Math.PI,TAU);gctx.stroke();
  gctx.strokeStyle=kmh>CONFIG.SPEED_LIMIT?'#ffd400':'#f3f4ef';gctx.beginPath();gctx.arc(cx,cy,R0-12,Math.PI,Math.PI+f*Math.PI);gctx.stroke();
  gctx.fillStyle='#9aa6b4';gctx.font='700 22px "Barlow Condensed",Arial Narrow,Arial';gctx.textAlign='center';gctx.textBaseline='middle';gctx.strokeStyle='rgba(243,244,239,.6)';
@@ -1956,9 +1941,9 @@ function drawMap(f){
  mctx.fillStyle='#fff';mctx.strokeStyle='#0f141b';mctx.lineWidth=2;mctx.beginPath();mctx.moveTo(176,162);mctx.lineTo(186,188);mctx.lineTo(176,182);mctx.lineTo(166,188);mctx.closePath();mctx.fill();mctx.stroke();
 }
 function updateHUD(dt,f,vf){
- const kmh=Math.abs(mounted?vf*3.6:F.spd*3.6),vehicleTop=vdef.top;
+ const kmh=Math.abs(mounted?vf*3.6:F.spd*3.6),top=vdef.top;
  setT('kmh',String(Math.round(kmh)));
- const kr=Math.round(kmh);if(kr!==lastG){lastG=kr;drawGauge(kmh,vehicleTop);}
+ const kr=Math.round(kmh);if(kr!==lastG){lastG=kr;drawGauge(kmh,top);}
  setT('vname',vdef.name);setT('battpct',Math.round(V.batt)+' %');
  $('battfill').style.width=V.batt+'%';$('battfill').style.background=V.batt<15?'var(--alarm)':V.batt<35?'var(--signal)':'var(--ok)';
  setT('trip1','Fahrt '+num1(trip.km)+' km');setT('odo','Gesamt '+Math.round(save.totalKm).toLocaleString('de-DE')+' km');
@@ -2336,7 +2321,7 @@ function frame(now){
 }
 
 /* ============================ BOOT ============================ */
-addEventListener('error',e=>{const l=$('loading');const detail=(e.error&&e.error.stack)?e.error.stack:(e.message||'unbekannt');console.error('STARTUP ERROR',detail);if(l&&!l.hidden){l.lastElementChild.textContent='Fehler: '+detail;}});addEventListener('unhandledrejection',e=>{const l=$('loading');const detail=(e.reason&&e.reason.stack)?e.reason.stack:String(e.reason||'Promise-Fehler');console.error('STARTUP REJECTION',detail);if(l&&!l.hidden){l.lastElementChild.textContent='Fehler: '+detail;}});
+addEventListener('error',e=>{const l=$('loading');if(l&&!l.hidden){l.lastElementChild.textContent='Fehler: '+(e.message||'unbekannt');}});
 setTimeout(()=>{
  const hadSave=loadSave();startAutoSave();vdef=vById(save.selected);
  buildCity();makeMapBase();
