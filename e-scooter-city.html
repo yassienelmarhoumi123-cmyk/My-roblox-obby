@@ -179,7 +179,31 @@ button:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
   </div>
   <div id="camname"></div>
 </div>
-<div id="flash"></div><div id="sirenfx"></div>
+
+<style>
+#phone-open{position:absolute;right:max(18px,env(safe-area-inset-right,0px));top:calc(190px + env(safe-area-inset-top,0px));pointer-events:auto;background:#18202b;border:2px solid var(--cyan);color:#fff;padding:10px 15px;font:800 17px var(--display);letter-spacing:.1em;box-shadow:0 5px 22px #0008;border-radius:12px}
+#phone{position:fixed;z-index:30;right:22px;bottom:18px;width:min(360px,calc(100vw - 28px));max-height:min(620px,88vh);overflow:auto;background:#101722;border:8px solid #303a48;border-radius:30px;padding:18px;box-shadow:0 18px 60px #000b;color:#f3f4ef;display:none;touch-action:pan-y}
+#phone.open{display:block}#phone-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+#phone-title{font:800 28px var(--display);letter-spacing:.08em}#phone-close{border:0;background:#303a48;padding:8px 13px;border-radius:9px}
+.phone-app{width:100%;text-align:left;padding:13px;margin:7px 0;border:1px solid #ffffff30;background:#1c2938;color:#fff;border-radius:12px;font:700 18px var(--display)}
+.phone-app small{display:block;font:400 13px var(--body);color:#aab7c6;margin-top:4px}
+#phone-status{font-size:14px;color:#43d1ff;line-height:1.5;min-height:42px;margin:8px 0}
+#phone .upgrade{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px 0}
+#phone .upgrade button{background:#ffd400;color:#1a1500;border:0;border-radius:8px;padding:8px;font-weight:800}
+@media(max-width:600px){#phone-open{top:calc(180px + env(safe-area-inset-top,0px));right:12px;padding:8px 10px;font-size:14px}#phone{right:10px;bottom:10px}}
+</style>
+<button id="phone-open" type="button">📱 HANDY</button>
+<div id="phone" aria-label="Smartphone">
+ <div id="phone-top"><div><div class="kicker">E-SCOOTER CITY</div><div id="phone-title">SMARTPHONE</div></div><button id="phone-close" type="button">✕</button></div>
+ <div class="meta"><span>Wallet <b id="phone-money">0 €</b></span></div>
+ <button class="phone-app" id="delivery-start">🍔 Lieferdienst starten <small>Hole eine Bestellung ab und bringe sie zum Kunden. Belohnung: 250 €</small></button>
+ <button class="phone-app" id="delivery-cancel">✕ Lieferung abbrechen <small>Beendet deinen aktuellen Auftrag</small></button>
+ <div class="phone-app" style="background:#111d29"><strong>🛠️ Scooter-Tuning</strong>
+  <div class="upgrade"><span>Motor +10 % <small>Beschleunigung · 400 €</small></span><button id="tune-motor">Kaufen</button></div>
+  <div class="upgrade"><span>Akku +10 % <small>Reichweite · 300 €</small></span><button id="tune-battery">Kaufen</button></div>
+  <div class="upgrade"><span>Bremsen +10 % <small>Bremskraft · 350 €</small></span><button id="tune-brakes">Kaufen</button></div>
+ </div><div id="phone-status">Willkommen! Wähle eine App.</div>
+</div><div id="flash"></div><div id="sirenfx"></div>
 
 <div id="touch">
   <button class="tb" id="t-left" data-k="left" aria-label="Links">◀</button>
@@ -1584,12 +1608,12 @@ function updatePeds(dt,f){
   const dd=Math.hypot(x-f.x,z-f.z);
   if(dd>170){p.mesh.visible=false;if(p.fall<=0)p.s+=p.spd*dt*.2;continue;}
   p.mesh.visible=true;
-  if(p.fall>0){p.fall-=dt;p.mesh.rotation.x=-1.4*clamp(p.fall,0,1);p.mesh.position.y=.15+.05;if(p.fall<=0)p.mesh.rotation.x=0;}
+  if(p.fall>0){p.fall-=dt;p.ragT=(p.ragT||0)+dt;p.ragVY=(p.ragVY===undefined?2.8:p.ragVY)-9.8*dt;p.ragY=Math.max(.08,(p.ragY||.2)+p.ragVY*dt);if(p.ragY<=.081)p.ragVY=Math.abs(p.ragVY)*.22;p.mesh.position.y=p.ragY;p.mesh.rotation.x=-1.25*Math.sin(Math.min(1,p.ragT*3.2))*clamp(p.fall,0,1);p.mesh.rotation.z=.45*Math.sin(p.ragT*5)*clamp(p.fall,0,1);const R=p.mesh.userData.rig;if(R){R.spine.rotation.x=-.65;R.head.rotation.x=.25;R.shL.rotation.x=-1.8;R.shR.rotation.x=1.5;R.hipL.rotation.x=1.1;R.hipR.rotation.x=-.8;R.kneeL.rotation.x=-.7;R.kneeR.rotation.x=-.5;}if(p.fall<=0){p.mesh.rotation.x=0;p.mesh.rotation.z=0;p.mesh.position.y=.15;p.ragY=.15;p.ragVY=0;walkAnim(R,0,0);}}
   else{
    p.s+=p.spd*dt;const[x2,z2]=ringXZ(p.B,p.s+p.spd*.3,half);p.mesh.rotation.y=Math.atan2(x2-x,z2-z);
    p.ph+=dt*5.2;walkAnim(p.mesh.userData.rig,p.ph,.8,false);
    p.mesh.position.set(x,.15,z);
-   if(mounted&&dd<1.3&&Math.hypot(V.vx,V.vz)>3.5){p.fall=4;Snd.thud(6);shake=Math.max(shake,.5);toast('Fußgänger getroffen','bad');crime('ped');}
+   if(mounted&&dd<1.3&&Math.hypot(V.vx,V.vz)>3.5){p.fall=4;p.ragY=.3;p.ragVY=3.2;p.ragT=0;Snd.thud(6);shake=Math.max(shake,.5);toast('Fußgänger getroffen','bad');crime('ped');}
   }
  }
 }
@@ -2098,6 +2122,44 @@ function mpLeave(){
  mpCleanRemote();mpDestroyPeer();MP.host=false;MP.room=-1;MP.code='';MP.players.clear();MP.busy=false;MP.joining=false;
 }
 $('b-multi').onclick=()=>mpQuickJoin();
+
+/* ============================ PHONE: DELIVERY & TUNING ============================ */
+const phoneState={job:null,marker:null,tune:{motor:0,battery:0,brakes:0}};
+function phoneMessage(t){$('phone-status').textContent=t;}
+function phoneOpen(){if(state!=='play'&&state!=='pause'){toast('Starte zuerst eine Fahrt');return;}$('phone').classList.add('open');$('phone-money').textContent=money(save.money);Snd.click();}
+function phoneClose(){$('phone').classList.remove('open');Snd.click();}
+$('phone-open').onclick=phoneOpen;$('phone-close').onclick=phoneClose;
+function deliveryStart(){
+ if(state!=='play'){phoneMessage('Du musst zuerst spielen.');return;}
+ if(phoneState.job){phoneMessage('Du hast bereits einen Lieferauftrag.');return;}
+ const o=mounted?V:F,angle=Math.random()*Math.PI*2,dist=150+Math.random()*170;
+ const target={x:clamp(o.x+Math.sin(angle)*dist,-560,560),z:clamp(o.z+Math.cos(angle)*dist,-560,560)};
+ const marker=new THREE.Mesh(new THREE.ConeGeometry(1.15,3,8),new THREE.MeshBasicMaterial({color:0xffd400}));
+ marker.position.set(target.x,3,target.z);scene.add(marker);
+ const ring=new THREE.Mesh(new THREE.TorusGeometry(2.1,.12,8,24),new THREE.MeshBasicMaterial({color:0x43d1ff}));
+ ring.rotation.x=Math.PI/2;ring.position.set(target.x,.2,target.z);scene.add(ring);
+ phoneState.marker={marker,ring};phoneState.job=target;phoneMessage('Bestellung angenommen! Fahre zum gelben Lieferpunkt.');toast('Lieferauftrag angenommen','good');phoneClose();
+}
+function deliveryCancel(){if(phoneState.marker){scene.remove(phoneState.marker.marker);scene.remove(phoneState.marker.ring);}phoneState.marker=null;phoneState.job=null;phoneMessage('Lieferung abgebrochen.');}
+$('delivery-start').onclick=deliveryStart;$('delivery-cancel').onclick=deliveryCancel;
+function phoneTune(kind){
+ const prices={motor:400,battery:300,brakes:350},max=3;
+ if(phoneState.tune[kind]>=max){phoneMessage('Dieses Upgrade ist bereits auf Maximum.');return;}
+ const price=prices[kind];if(save.money<price){phoneMessage('Nicht genug Geld für dieses Upgrade.');return;}
+ save.money-=price;phoneState.tune[kind]++;
+ if(kind==='motor')vdef.accel*=1.1;
+ if(kind==='battery'){vdef.range*=1.1;V.batt=Math.min(100,V.batt+10);}
+ if(kind==='brakes')vdef.brake*=1.1;
+ writeSave();$('phone-money').textContent=money(save.money);setT('money',money(save.money));phoneMessage('Upgrade eingebaut! '+phoneState.tune[kind]+'/'+max+' gekauft.');Snd.buy();toast('Scooter verbessert','good');
+}
+$('tune-motor').onclick=()=>phoneTune('motor');$('tune-battery').onclick=()=>phoneTune('battery');$('tune-brakes').onclick=()=>phoneTune('brakes');
+function updatePhoneWorld(dt){
+ if(phoneState.marker){const m=phoneState.marker;m.marker.rotation.y+=dt*1.5;m.marker.position.y=3+Math.sin(simT*3)*.35;m.ring.rotation.z+=dt*.8;
+  const o=mounted?V:F,d=Math.hypot(o.x-phoneState.job.x,o.z-phoneState.job.z);
+  if(d<5){scene.remove(m.marker);scene.remove(m.ring);phoneState.marker=null;phoneState.job=null;save.money+=250;writeSave();$('phone-money').textContent=money(save.money);setT('money',money(save.money));phoneMessage('Lieferung abgeschlossen! +250 €');toast('Lieferung geschafft · +250 €','good',4);Snd.buy();}
+ }
+ if($('phone').classList.contains('open'))$('phone-money').textContent=money(save.money);
+}
 /* ============================ POST PROCESSING ============================ */
 const toneU={tDiffuse:{value:null},exposure:{value:1}},gradeU={tDiffuse:{value:null},time:{value:0}};
 function setupPost(){
@@ -2136,7 +2198,7 @@ function update(dt){
  rider.visible=mounted&&!(camMode===0&&play)&&state!=='garage';
  if(state!=='garage')veh.visible=!(play&&mounted&&camMode===0&&vdef.kind==='car');
  spot.intensity=lightsOn?clamp(day.night*1.6+(wx.cur.dark>.5?.7:0),0,2.2):0; if(sim){updateTraffic(dt,f,sg);updatePeds(dt,f);}
- if(play){mpTick(dt);updateRob(dt);updateWanted(dt,f);trip.save+=dt;if(trip.save>6){trip.save=0;writeSave();}}
+ if(play){mpTick(dt);updatePhoneWorld(dt);updateRob(dt);updateWanted(dt,f);trip.save+=dt;if(trip.save>6){trip.save=0;writeSave();}}
  if(marker){marker.visible=play&&!mounted&&Math.hypot(F.x-V.x,F.z-V.z)>6;marker.position.set(V.x,3.4+Math.sin(simT*3)*.25,V.z);marker.rotation.y=simT*2;}
  if(prevMesh){prevMesh.rotation.y+=dt*.5;}
  if(GARAGE.beam)GARAGE.beam.visible=true;
