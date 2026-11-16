@@ -1223,6 +1223,15 @@ function makeCar(type,color){
 }
 
 /* ---------- e-scooters and e-motorbikes (modelled after the real machines) ---------- */
+const brandMaterialCache={};
+function brandMat(label,color){
+ const key=label+'_'+color;if(brandMaterialCache[key])return brandMaterialCache[key];
+ const c=document.createElement('canvas');c.width=512;c.height=128;const x=c.getContext('2d');
+ x.clearRect(0,0,512,128);x.fillStyle=color;x.font='900 88px Arial, sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(label,256,66);
+ const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=Math.min(8,MAXANISO);
+ const m=new THREE.MeshBasicMaterial({map:t,transparent:true,side:THREE.DoubleSide,depthWrite:false});
+ brandMaterialCache[key]=m;return m;
+}
 function makeVehicle(v){
  if(v.id==='g4')return makeG4(v);
  const root=new THREE.Group(),body=new THREE.Group();root.add(body);
@@ -1563,6 +1572,7 @@ function makeVehicle(v){
     body.add(part(CYL(.031,.031,.052,14,'x'),g3Black,side*.13,wr+.06,-L));
     body.add(part(RB(.04,.1,.065,.01,4),g3Shell,side*.15,wr+.14,-L+.025));
    }
+      for(const side of[-1,1])body.add(part(new THREE.PlaneGeometry(dL*.5,.034),brandMat('SEGWAY','#f0f2f4'),side*(dW/2+.052),dh+.012,0,0,side*Math.PI/2,0));
    /* Rear wheel cover and compact integrated brake/tail-light cluster. */
    body.add(part(RB(dW*.72,.05,.36,.02,5),g3Black,0,wr*2+.12,-L-.14));
    body.add(part(RB(.15,.035,.045,.01,4),g3Tail,0,wr*2+.15,-L-.31));
@@ -1597,6 +1607,7 @@ function makeVehicle(v){
    /* Segway GT3 Pro: heavier dual-hub GT chassis, adjustable front linkage and rear hydraulic trailing arms. */
    const pShell=mc('#171b20',.42,.66),pBlack=mc('#090c10',.72,.35),pGold=mc('#b79a60',.28,.82),pMetal=mc('#aeb7c1',.2,.9),pRed=mc('#c52c34',.35,.58),pRubber=mc('#151719',.94,.06);
    const pAmber=new THREE.MeshBasicMaterial({color:0xffa52e}),pWhite=new THREE.MeshBasicMaterial({color:0xf5f7fb}),pScreen=new THREE.MeshBasicMaterial({color:0x42c9ed}),pTail=new THREE.MeshBasicMaterial({color:0xe52e3a});
+      for(const side of[-1,1])body.add(part(new THREE.PlaneGeometry(dL*.52,.04),brandMat('SEGWAY','#e23b42'),side*(dW/2+.058),dh+.014,0,0,side*Math.PI/2,0));
    /* Long, deep battery deck with stepped black side armor and metallic gold lower rails. */
    body.add(part(RB(dW*1.1,.19,dL*.96,.05,7),pShell,0,dh-.04,-.012));
    body.add(part(RB(dW*.96,.028,dL*.82,.014,5),pBlack,0,dh+.055,-.012));
@@ -1695,6 +1706,7 @@ function makeVehicle(v){
     steer.add(part(RB(.06,.13,.085,.018,4),gtShell,side*(axX-.012),.13,-.055));
     steer.add(part(CYL(.027,.027,.07,16,'x'),gtMetal,side*(axX-.012),.075,-.06));
    }
+      for(const side of[-1,1])body.add(part(new THREE.PlaneGeometry(dL*.52,.038),brandMat('SEGWAY','#e23b42'),side*(dW/2+.054),dh+.014,0,0,side*Math.PI/2,0));
    /* Broad rear mudguard, integrated tail/brake lamp and plate bracket. */
    body.add(part(RB(dW*.72,.055,.39,.025,5),gtBlack,0,wr*2+.105,-L-.14));
    body.add(part(RB(.16,.035,.045,.01,4),gtRed,0,wr*2+.145,-L-.31));
@@ -1718,6 +1730,7 @@ function makeVehicle(v){
    /* Dualtron X Limited: oversized 13x5 chassis, full coil-over suspension and signature X lighting. */
    const xShell=mc('#17191d',.42,.68),xBlack=mc('#090b0e',.72,.32),xMetal=mc('#b6bdc5',.2,.9),xTeal=mc('#00a9bd',.28,.65),xRed=mc('#c52d38',.34,.58),xRubber=mc('#121416',.96,.05);
    const xWhite=new THREE.MeshBasicMaterial({color:0xf6f7fb}),xAmber=new THREE.MeshBasicMaterial({color:0xffa52e}),xTail=new THREE.MeshBasicMaterial({color:0xe52e3a});
+      for(const side of[-1,1])body.add(part(new THREE.PlaneGeometry(dL*.55,.042),brandMat('DUALTRON','#00b2c7'),side*(dW/2+.08),dh+.02,0,0,side*Math.PI/2,0));
    /* Oversized battery deck, raised foot platforms and continuous side LED rails. */
    body.add(part(RB(dW*1.13,.22,dL*1.02,.055,7),xShell,0,dh-.045,-.015));
    body.add(part(RB(dW*.94,.03,dL*.83,.016,5),xBlack,0,dh+.075,-.015));
@@ -1779,6 +1792,7 @@ function makeVehicle(v){
    /* AUSOM DT2 Pro: exact 10x3 tyre/deck proportions, dual swingarms and charcoal/yellow trim. */
    const aShell=mc('#282b2e',.48,.58),aBlack=mc('#111315',.7,.38),aMetal=mc('#aeb4bb',.24,.88),aYellow=mc('#e3b51d',.32,.62),aRubber=mc('#17191b',.95,.06);
    const aAmber=new THREE.MeshBasicMaterial({color:0xffa52e}),aWhite=new THREE.MeshBasicMaterial({color:0xf4f6f8}),aBlue=new THREE.MeshBasicMaterial({color:0x55b9ed}),aRed=new THREE.MeshBasicMaterial({color:0xe42e38});
+      for(const side of[-1,1])body.add(part(new THREE.PlaneGeometry(dL*.52,.036),brandMat('AUSOM','#e3b51d'),side*(dW/2+.047),dh+.012,0,0,side*Math.PI/2,0));
    /* Long 525 mm deck with grooved upper pad, angular side shells and yellow brand accents. */
    body.add(part(RB(dW+.055,.13,dL*1.02,.035,6),aShell,0,dh-.025,-.012));
    body.add(part(RB(dW*.94,.025,dL*.83,.012,5),aBlack,0,dh+.044,-.012));
@@ -1879,6 +1893,7 @@ function makeVehicle(v){
   }else if(v.id==='varg'){
    /* Stark VARG MX: genuine motocross proportions, electric center case, slim plastics and MX suspension. */
    const vWhite=paintM('#eceff1'),vBlack=mc('#101317',.58,.42),vCarbon=mc('#171a1e',.72,.32),vGold=mc('#b89b61',.25,.88),vMetal=mc('#b6bdc5',.2,.9),vRed=paintM('#bd3039'),vRubber=mc('#101214',.96,.04);
+      for(const side of[-1,1])bike.add(part(new THREE.PlaneGeometry(.3,.065),brandMat('STARK','#15191d'),side*.174,.69,.12,0,side*Math.PI/2,0));
    /* High, narrow motocross seat and tapered rear fender. */
    bike.add(part(RB(.16,.085,.68,.035,5),vBlack,0,.88,-.36,.02));
    bike.add(part(RB(.15,.06,.54,.025,4),vWhite,0,.91,-.42,.025));
