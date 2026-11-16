@@ -380,7 +380,7 @@ const VEHICLES=[
   color:'#cbd2d9',accent:'#18a7b5',tread:true,wr:.14,tw:.1,deckW:.2,deckL:.55,L:.52,clear:.18,bar:1.0,barW:.63,susp:'hyd',stem:'rect',display:'touch',fullFender:true,snd:{type:'triangle',base:168,mul:4.7},
   desc:'G3 Max mit ausgewogener Beschleunigung und guter Reichweite. Kostenlos auswählbar.'},
  {id:'gt3d',name:'Segway GT3 D',price:3000,kind:'scooter',top:60,accel:4.1,brake:9.2,grip:7.8,steer:.92,range:95,mass:40,
-  color:'#181c22',accent:'#e7b83f',tread:true,wr:.17,tw:.12,deckW:.29,deckL:.64,L:.57,clear:.16,bar:1.08,barW:.7,dual:true,susp:'hyd',stem:'round',display:'round',led:true,fullFender:true,snd:{type:'sawtooth',base:178,mul:4.9},
+  color:'#181c22',accent:'#e7b83f',tread:true,wr:.17,tw:.12,deckW:.29,deckL:.64,L:.57,clear:.16,bar:1.08,barW:.7,dual:true,susp:'hyd',stem:'round',display:'touch',led:true,fullFender:true,snd:{type:'sawtooth',base:178,mul:4.9},
   desc:'GT3 D mit großem Rahmen, Doppel-Federung und markanten LED-Details.'},
  {id:'gt3pro',name:'Segway GT3 Pro · Dual Motor',price:0,codeOnly:true,kind:'scooter',top:80,accel:5.4,brake:10.2,grip:8.0,steer:.9,range:90,mass:53,
   color:'#101318',accent:'#f3c84b',tread:true,wr:.18,tw:.13,deckW:.32,deckL:.68,L:.6,clear:.17,bar:1.1,barW:.72,dual:true,susp:'hyd',stem:'round',display:'round',led:true,fullFender:true,snd:{type:'sawtooth',base:195,mul:5.1},
@@ -1584,43 +1584,58 @@ function makeVehicle(v){
    }
   }
   if(v.id==='gt3d'){
-   /* Segway GT3 D: wide premium chassis, hydraulic double front suspension and hydraulic rear trailing arms. */
-   const gtShell=mc('#252a31',.42,.64),gtBlack=mc('#11151a',.62,.42),gtMetal=mc('#aeb7c1',.2,.9),gtGold=mc('#d6ad43',.3,.68),gtAmber=new THREE.MeshBasicMaterial({color:0xffa42b}),gtWhite=new THREE.MeshBasicMaterial({color:0xf6f7fa}),gtRed=new THREE.MeshBasicMaterial({color:0xe32e39});
-   body.add(part(RB(dW*1.04,.16,dL*.92,.045,6),gtShell,0,dh-.035,-.012));
-   body.add(part(RB(dW*.94,.025,dL*.78,.014,5),gtBlack,0,dh+.045,-.012));
-   body.add(part(RB(dW*.76,.012,dL*.54,.008,3),dark,0,dh+.061,-.018));
+   /* GT3 D: model-specific wide chassis, hydraulic suspension, dual discs and TFT cockpit. */
+   const gtShell=mc('#242a31',.42,.66),gtBlack=mc('#101419',.68,.4),gtMetal=mc('#aeb7c1',.2,.9),gtGold=mc('#b99a4d',.34,.72),gtRubber=mc('#17191c',.92,.08);
+   const gtAmber=new THREE.MeshBasicMaterial({color:0xffa52e}),gtWhite=new THREE.MeshBasicMaterial({color:0xf5f7fb}),gtRed=new THREE.MeshBasicMaterial({color:0xe52e3a}),gtScreen=new THREE.MeshBasicMaterial({color:0x42c9ed});
+   /* Deep, broad battery deck with a separate top traction pad and sculpted side cheeks. */
+   body.add(part(RB(dW*1.08,.17,dL*.94,.045,6),gtShell,0,dh-.035,-.012));
+   body.add(part(RB(dW*.91,.026,dL*.79,.014,5),gtBlack,0,dh+.052,-.012));
+   body.add(part(RB(dW*.72,.009,dL*.56,.006,3),gtRubber,0,dh+.069,-.025));
+   for(let i=-3;i<=3;i++)body.add(bx(dW*.58,.003,.012,gtMetal,i*.012,dh+.075,-.015));
    for(const side of[-1,1]){
-    body.add(part(RB(.032,.12,dL*.76,.016,5),gtBlack,side*(dW/2+.025),dh+.002,-.01));
-    body.add(part(RB(.012,.026,dL*.58,.006,3),gtGold,side*(dW/2+.044),dh+.052,-.012));
-    body.add(part(RB(.018,.04,.085,.008,3),gtAmber,side*(dW/2+.048),dh+.035,dL*.36));
-    body.add(part(RB(.018,.04,.085,.008,3),gtAmber,side*(dW/2+.048),dh+.035,-dL*.36));
-    link(steer,side*(axX-.012),.33,-.065,side*(axX-.012),.055,-.065,.038,gtBlack,11);
-    link(steer,side*(axX-.012),.25,-.045,side*(axX-.012),.055,-.045,.021,gtMetal,10);
-    steer.add(part(RB(.055,.14,.075,.016,4),gtShell,side*(axX-.012),.13,-.055));
-    steer.add(part(CYL(.025,.025,.065,14,'x'),gtMetal,side*(axX-.012),.08,-.06));
+    const sx=side*(dW/2+.028);
+    body.add(part(RB(.034,.125,dL*.77,.016,5),gtBlack,sx,dh+.005,-.01));
+    body.add(part(RB(.012,.035,dL*.61,.006,3),gtGold,side*(dW/2+.047),dh+.045,-.012));
+    body.add(part(RB(.02,.035,.082,.008,3),gtAmber,side*(dW/2+.05),dh+.036,dL*.36));
+    body.add(part(RB(.02,.035,.082,.008,3),gtAmber,side*(dW/2+.05),dh+.036,-dL*.36));
+    /* Rear hydraulic trailing arms and their separate damper bodies. */
+    link(body,side*(dW*.43),dh+.015,-dL*.31,side*(axX+.025),wr+.02,-L+.01,.031,gtShell,10);
+    link(body,side*(dW*.43),dh+.045,-dL*.31,side*(axX+.025),wr+.16,-L+.015,.018,gtBlack,9);
+    link(body,side*(dW*.43),dh+.045,-dL*.31,side*(axX+.025),wr+.16,-L+.015,.009,gtMetal,8);
+    body.add(part(CYL(.035,.035,.055,14,'x'),gtBlack,side*(axX+.035),wr+.16,-L+.015));
+    body.add(part(CYL(.024,.024,.06,14,'x'),gtMetal,side*(axX+.035),wr+.16,-L+.015));
+    /* Front and rear ventilated disc rotors with compact calipers. */
+    body.add(part(CYL(wr*.35,wr*.35,.009,36,'x'),gtMetal,side*(tw*.55),wr,-L));
+    body.add(part(CYL(wr*.24,wr*.24,.012,32,'x'),gtBlack,side*(tw*.56),wr,-L));
+    body.add(part(RB(.075,.105,.085,.012,4),gtBlack,side*(tw*.78),wr+.13,-L+.08));
+    link(body,side*(tw*.78),wr+.16,-L+.1,side*(dW*.47),dh+.09,-dL*.23,.004,gtBlack,6);
+    /* Front rotor, caliper and hydraulic brake hose. */
+    steer.add(part(CYL(wr*.35,wr*.35,.009,36,'x'),gtMetal,side*(tw*.55),0,0));
+    steer.add(part(CYL(wr*.24,wr*.24,.012,32,'x'),gtBlack,side*(tw*.56),0,0));
+    steer.add(part(RB(.07,.105,.08,.012,4),gtBlack,side*(tw*.78),.14,.075));
+    link(steer,side*(tw*.78),.16,.08,side*(axX*.82),.31,-.07,.004,gtBlack,6);
+    /* Hydraulic double front shocks: dark outer bodies and exposed metal sliders. */
+    link(steer,side*(axX-.012),.33,-.065,side*(axX-.012),.055,-.065,.041,gtBlack,12);
+    link(steer,side*(axX-.012),.23,-.065,side*(axX-.012),.055,-.065,.022,gtMetal,10);
+    steer.add(part(RB(.06,.13,.085,.018,4),gtShell,side*(axX-.012),.13,-.055));
+    steer.add(part(CYL(.027,.027,.07,16,'x'),gtMetal,side*(axX-.012),.075,-.06));
    }
-   steer.add(part(RB(.31,.07,.11,.025,5),gtBlack,0,.34,-.075));
+   /* Broad rear mudguard, integrated tail/brake lamp and plate bracket. */
+   body.add(part(RB(dW*.72,.055,.39,.025,5),gtBlack,0,wr*2+.105,-L-.14));
+   body.add(part(RB(.16,.035,.045,.01,4),gtRed,0,wr*2+.145,-L-.31));
+   body.add(part(RB(.11,.018,.018,.006,3),gtWhite,0,wr*2+.165,-L-.335));
+   body.add(part(RB(.14,.07,.055,.012,4),gtBlack,0,wr*2+.07,-L-.39));
+   /* Reinforced steering head, broad clamp and angular TFT dashboard. */
+   steer.add(part(RB(.14,.18,.12,.026,5),gtShell,0,baseY+.11,baseZ-.025));
+   steer.add(part(RB(.22,.09,.13,.024,5),gtBlack,0,topY+.075,topZ+.025));
+   steer.add(part(RB(.16,.055,.009,.008,4),gtScreen,0,topY+.105,topZ+.094));
+   steer.add(part(RB(.18,.018,.012,.006,3),gtGold,0,topY+.139,topZ+.09));
+   /* Distinctive high-output headlight pod and integrated front indicators. */
+   steer.add(part(RB(.27,.13,.12,.03,5),gtBlack,0,topY-.3,topZ+.05));
+   steer.add(part(RB(.19,.055,.014,.01,4),gtWhite,0,topY-.29,topZ+.115));
    for(const side of[-1,1]){
-    steer.add(part(CYL(wr*.43,wr*.43,tw*.085,30,'x'),gtMetal,side*tw*.52,0,0));
-    steer.add(part(CYL(wr*.32,wr*.32,tw*.1,26,'x'),gtBlack,side*tw*.59,0,0));
-    steer.add(part(RB(.065,.12,.075,.014,4),gtShell,side*tw*.68,.045,.12));
-    body.add(part(CYL(wr*.43,wr*.43,tw*.085,30,'x'),gtMetal,side*tw*.52,wr,-L));
-    body.add(part(CYL(wr*.32,wr*.32,tw*.1,26,'x'),gtBlack,side*tw*.59,wr,-L));
-    body.add(part(RB(.065,.12,.075,.014,4),gtShell,side*tw*.68,wr+.045,-L+.12));
-    body.add(part(CYL(wr*.31,wr*.31,tw*.95,28,'x'),gtBlack,side*tw*.45,wr,-L));
-    body.add(part(CYL(wr*.19,wr*.19,tw*.99,24,'x'),gtMetal,side*tw*.49,wr,-L));
-   }
-   body.add(part(RB(dW*.7,.05,.36,.02,5),gtBlack,0,wr*2+.12,-L-.14));
-   body.add(part(RB(.15,.035,.04,.01,4),gtRed,0,wr*2+.15,-L-.3));
-   body.add(part(RB(.1,.018,.018,.006,3),gtWhite,0,wr*2+.17,-L-.32));
-   steer.add(part(RB(.13,.16,.105,.025,5),gtShell,0,baseY+.09,baseZ-.025));
-   steer.add(part(RB(.19,.085,.11,.022,5),gtBlack,0,topY+.075,topZ+.03));
-   steer.add(part(RB(.135,.008,.075,.006,3),gtGold,0,topY+.105,topZ+.085));
-   steer.add(part(RB(.25,.115,.09,.025,5),gtBlack,0,topY-.3,topZ+.05));
-   steer.add(part(RB(.18,.045,.016,.009,4),gtWhite,0,topY-.29,topZ+.102));
-   for(const side of[-1,1]){
-    steer.add(part(RB(.055,.03,.035,.009,3),gtAmber,side*.16,topY-.29,topZ+.055));
-    link(steer,side*.14,topY+.005,topZ,side*.25,topY-.045,topZ+.04,.009,gtMetal,8);
+    steer.add(part(RB(.065,.03,.04,.01,3),gtAmber,side*.17,topY-.29,topZ+.055));
+    link(steer,side*.14,topY+.005,topZ,side*.25,topY-.045,topZ+.04,.01,gtMetal,8);
     link(steer,side*.13,topY-.005,topZ+.015,side*.12,topY-.22,topZ+.025,.004,gtBlack,6);
    }
   }
