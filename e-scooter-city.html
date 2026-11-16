@@ -393,7 +393,7 @@ const VEHICLES=[
   color:'#14110a',accent:'#ffc107',tread:true,wr:.127,tw:.076,deckW:.18,deckL:.525,L:.49,clear:.18,bar:1.02,barW:.68,dual:true,susp:'hyd',stem:'round',display:'round',led:true,fullFender:true,snd:{type:'sawtooth',base:220,mul:5.2},
   desc:'Admin-Roller. Zwei starke Motoren, Hydraulik-Federung und LED-Leisten.'},
  {id:'varg',name:'Stark Varg',price:0,admin:true,kind:'moto',top:195,accel:12,brake:13,grip:10,steer:1.15,range:120,mass:110,
-  color:'#eef0f2',accent:'#ff5a00',wr:.335,scale:1.1,snd:{type:'square',base:96,mul:6.5},
+  color:'#eef0f2',accent:'#c5a15a',wr:.335,scale:1,snd:{type:'square',base:96,mul:6.5},
   desc:'Admin-Elektromotorrad. Fast 200 km/h und brutale Beschleunigung.'},
  {id:'aventador',name:'Lamborghini Aventador',price:0,admin:true,kind:'car',top:320,accel:11,brake:15,grip:12,steer:.7,range:200,mass:1600,cr:1.0,
   color:'#f2c500',accent:'#111111',wr:.36,snd:{type:'sawtooth',base:70,mul:9},
@@ -1830,9 +1830,9 @@ function makeVehicle(v){
   }
  }else{
   const bike=new THREE.Group();body.add(bike);const sc=v.scale||1;bike.scale.setScalar(sc);
-  const wr=.335,RZ=-.62,FZ=.64;
-  const plast=frame,plast2=v.id==='ultrabee'?mc('#15181d',.4,.4):accP;
-  const wR=wheelGroup(wr,.1,'moto');wR.position.set(0,wr,RZ);bike.add(wR);ud.wheels.push(wR);
+  const wr=.335,wrF=v.id==='varg'?.39:wr,RZ=v.id==='varg'?-.744:-.62,FZ=v.id==='varg'?.744:.64;
+  const plast=frame,plast2=v.id==='ultrabee'?mc('#15181d',.4,.4):v.id==='varg'?mc('#17191c',.52,.42):accP;
+  const wR=wheelGroup(wr,v.id==='varg'?.14:.1,'moto');wR.position.set(0,wr,RZ);bike.add(wR);ud.wheels.push(wR);
   const P=[0,.4,-.1],H=[0,.93,.34];
   for(const s of[-1,1]){
    link(bike,s*.085,P[1],P[2],s*.07,wr,RZ,.026,alu,8);                    /* swingarm */
@@ -1853,8 +1853,8 @@ function makeVehicle(v){
   bike.add(part(RB(.12,.02,.2,.01,1),mc('#e8e8e4',.5,0),0,.74,-.94,.3));bike.add(bx(.14,.04,.05,tailM,0,.8,-.93));
   if(v.id==='ultrabee'){bike.add(part(RB(.24,.2,.44,.05,3),plast,0,.8,.12));bike.add(part(RB(.26,.14,.4,.05,3),plast2,0,.66,-.1));}
   else bike.add(part(RB(.2,.13,.3,.04,3),plast,0,.8,.14));
-  const steer=new THREE.Group();steer.position.set(0,wr,FZ);bike.add(steer);ud.steer=steer;
-  const wF=wheelGroup(wr,.09,'moto');steer.add(wF);ud.wheels.push(wF);
+  const steer=new THREE.Group();steer.position.set(0,wrF,FZ);bike.add(steer);ud.steer=steer;
+  const wF=wheelGroup(wrF,.09,'moto');steer.add(wF);ud.wheels.push(wF);
   for(const s of[-1,1]){
    link(steer,s*.075,0,0,s*.075,.3,-.15,.024,gold,8);link(steer,s*.075,.3,-.15,s*.075,.62,-.31,.031,dark,8);
   }
@@ -1863,11 +1863,11 @@ function makeVehicle(v){
   steer.add(part(CYL(.013,.013,.78,10,'x'),dark,0,.78,-.34));
   for(const s of[-1,1]){steer.add(part(CYL(.018,.018,.12,10,'x'),rub,s*.34,.78,-.34));steer.add(bx(.012,.012,.12,chrome,s*.3,.8,-.28));steer.add(bx(.03,.03,.05,accP,s*.2,.77,-.3));}
   steer.add(part(RB(.1,.07,.04,.015,2),dark,0,.86,-.3,.4));
-  steer.add(part(arcFender(wr*1.17,.12,Math.PI*.28,Math.PI*.93),mc('#e8e8e4',.4,.1),0,0,0));
+  steer.add(part(arcFender(wrF*1.17,.12,Math.PI*.28,Math.PI*.93),mc('#e8e8e4',.4,.1),0,0,0));
   steer.add(part(RB(.2,.2,.1,.04,3),plast,0,.5,-.03));
   const hl=part(hg('mhl',()=>new THREE.SphereGeometry(.055,12,8).scale(1.7,1.4,.5)),lightM,0,.5,.025);steer.add(hl);ud.headlamp=hl;
   steer.add(part(RB(.14,.15,.02,.01,1),mc('#e8e8e4',.5,0),0,.72,-.1,-.2));
-  ud.seat=new THREE.Vector3(0,.84*sc,-.33*sc);ud.peg=new THREE.Vector3(0,.32*sc,-.04*sc);ud.grip={y:(wr+.78)*sc,z:(FZ-.34)*sc};ud.eye=new THREE.Vector3(0,1.58,-.05);ud.rider='sit';ud.wheelbase=(FZ-RZ)*sc;
+  ud.seat=new THREE.Vector3(0,.84*sc,-.33*sc);ud.peg=new THREE.Vector3(0,.32*sc,-.04*sc);ud.grip={y:(wrF+.78)*sc,z:(FZ-.34)*sc};ud.eye=new THREE.Vector3(0,1.58,-.05);ud.rider='sit';ud.wheelbase=(FZ-RZ)*sc;
   /* Model-specific electric dirt-bike bodywork and visible drivetrain details. */
   if(v.id==='lightbee'){
    for(const side of[-1,1]){link(bike,side*.14,.72,.18,side*.095,.42,-.12,.018,chrome,8);bike.add(part(RB(.025,.3,.38,.015,3),plast,side*.145,.62,.1,-.12));}
@@ -1877,9 +1877,78 @@ function makeVehicle(v){
    bike.add(part(RB(.27,.3,.4,.055,5),plast,0,.65,.08));
    bike.add(part(CYL(.13,.13,.24,28,'x'),dark,.13,.4,-.1));
   }else if(v.id==='varg'){
-   for(const side of[-1,1]){bike.add(part(RB(.045,.32,.52,.035,5),plast2,side*.145,.66,.07,-.12));bike.add(part(RB(.035,.22,.32,.025,4),plast,side*.16,.55,-.25,.12));link(bike,side*.12,.85,.35,side*.1,.42,-.15,.022,chrome,8);}
-   bike.add(part(RB(.25,.34,.4,.045,5),plast,0,.66,.04,-.08));
-   bike.add(part(RB(.16,.22,.22,.035,4),dark,0,.38,-.13));
+   /* Stark VARG MX: genuine motocross proportions, electric center case, slim plastics and MX suspension. */
+   const vWhite=paintM('#eceff1'),vBlack=mc('#101317',.58,.42),vCarbon=mc('#171a1e',.72,.32),vGold=mc('#b89b61',.25,.88),vMetal=mc('#b6bdc5',.2,.9),vRed=paintM('#bd3039'),vRubber=mc('#101214',.96,.04);
+   /* High, narrow motocross seat and tapered rear fender. */
+   bike.add(part(RB(.16,.085,.68,.035,5),vBlack,0,.88,-.36,.02));
+   bike.add(part(RB(.15,.06,.54,.025,4),vWhite,0,.91,-.42,.025));
+   bike.add(part(RB(.14,.035,.48,.018,4),vWhite,0,.86,-.78,.12));
+   /* White side shrouds, battery covers and black lower motor protection. */
+   for(const side of[-1,1]){
+    bike.add(part(RB(.045,.3,.48,.035,5),vWhite,side*.145,.69,.12,-.12));
+    bike.add(part(RB(.04,.22,.34,.025,4),vWhite,side*.15,.55,-.23,.1));
+    bike.add(part(RB(.025,.18,.22,.016,4),vBlack,side*.17,.48,-.16,-.1));
+    /* Lightweight chromoly frame tubes and footpeg brackets. */
+    link(bike,side*.09,.84,.34,side*.09,.45,-.12,.024,vMetal,9);
+    link(bike,side*.09,.45,-.12,side*.09,.74,.04,.022,vMetal,9);
+    link(bike,side*.09,.74,.04,side*.09,.82,-.29,.02,vMetal,8);
+    bike.add(part(RB(.055,.035,.13,.012,3),vMetal,side*.18,.31,-.03));
+    bike.add(part(RB(.05,.025,.12,.01,3),vBlack,side*.19,.29,-.04));
+   }
+   /* Sculpted central battery pack with ribbed honeycomb-like protective casing. */
+   bike.add(part(RB(.24,.36,.43,.045,5),vCarbon,0,.63,.02,-.08));
+   for(let i=-2;i<=2;i++)bike.add(part(RB(.012,.24,.31,.006,2),vMetal,i*.038,.63,.02,-.08));
+   /* Exposed electric motor case and integrated inverter housing; no exhaust or radiator. */
+   bike.add(part(RB(.22,.27,.29,.035,5),vMetal,0,.39,-.13,-.08));
+   bike.add(part(CYL(.11,.11,.19,28,'x'),vBlack,.13,.4,-.13));
+   bike.add(part(CYL(.07,.07,.2,24,'x'),vGold,.135,.4,-.13));
+   bike.add(part(RB(.2,.08,.38,.025,4),vBlack,0,.25,-.1));
+   /* Rear cast-aluminium swingarm and progressive linkage. */
+   for(const side of[-1,1]){
+    link(bike,side*.085,.4,-.1,side*.085,wr,RZ,.032,vMetal,10);
+    link(bike,side*.085,.4,-.1,side*.085,.52,-.45,.022,vBlack,8);
+    link(bike,side*.085,.52,-.45,side*.085,wr,RZ,.018,vGold,8);
+   }
+   link(bike,0,.83,.16,0,.48,-.35,.028,vBlack,10);
+   coil(bike,0,.8,.13,0,.49,-.32,.038,10,vGold);
+   link(bike,0,.48,-.35,0,.4,-.1,.022,vMetal,8);
+   /* Visible chain and sprockets on the left side, characteristic of the VARG drivetrain. */
+   const vChain=mc('#777d84',.5,.78),vCx=-.145;
+   bike.add(part(CYL(.115,.115,.018,32,'x'),vBlack,vCx,.4,-.13));
+   bike.add(part(CYL(.075,.075,.022,28,'x'),vGold,vCx-.012,.4,-.13));
+   bike.add(part(CYL(.15,.15,.018,32,'x'),vBlack,vCx,wr,RZ));
+   bike.add(part(CYL(.105,.105,.022,28,'x'),vMetal,vCx-.012,wr,RZ));
+   link(bike,vCx,.4,-.13,vCx,wr,RZ,.008,vChain,8);
+   for(let i=0;i<28;i++){const t=i/27,z=-.2-(.52*t),y=.4-(.4-wr)*t;bike.add(part(RB(.012,.012,.025,.003,1),vChain,vCx,y,z,0,.15,0));}
+   /* MX-specific large front USD fork with Kashima-gold outer tubes and dark lower sliders. */
+   for(const side of[-1,1]){
+    link(steer,side*.09,.02,-.02,side*.09,.43,-.23,.045,vBlack,12);
+    link(steer,side*.09,.1,-.06,side*.09,.58,-.31,.028,vGold,12);
+    link(steer,side*.09,.42,-.22,side*.09,.62,-.33,.018,vMetal,10);
+   }
+   /* Motocross front number plate and long high-clearance fender. */
+   steer.add(part(RB(.22,.3,.07,.035,5),vWhite,0,.55,-.12,-.16));
+   steer.add(part(RB(.12,.06,.012,.01,3),vBlack,0,.58,-.075,-.16));
+   steer.add(part(RB(.17,.05,.52,.025,5),vWhite,0,.12,.14,-.04));
+   /* Handlebars, grips, brake levers and minimal integrated cockpit. */
+   steer.add(part(CYL(.016,.016,.76,14,'x'),vBlack,0,.79,-.34));
+   for(const side of[-1,1]){
+    steer.add(part(CYL(.022,.022,.13,12,'x'),vRubber,side*.34,.79,-.34));
+    link(steer,side*.29,.8,-.33,side*.22,.83,-.24,.008,vMetal,7);
+    link(steer,side*.24,.8,-.32,side*.18,.7,-.2,.006,vBlack,6);
+    steer.add(part(RB(.07,.025,.07,.01,3),vBlack,side*.23,.8,-.31));
+   }
+   steer.add(part(RB(.13,.09,.045,.015,3),vBlack,0,.88,-.31));
+   steer.add(part(RB(.1,.12,.045,.015,3),vBlack,0,.97,-.29));
+   /* Front and rear wave discs with compact calipers. */
+   steer.add(part(CYL(wrF*.33,wrF*.33,.009,36,'x'),vMetal,.055,.0,.0));
+   steer.add(part(RB(.045,.09,.065,.01,3),vBlack,.1,.12,.08));
+   bike.add(part(CYL(wr*.33,wr*.33,.009,36,'x'),vMetal,.055,wr,RZ));
+   bike.add(part(RB(.04,.08,.06,.01,3),vBlack,.1,wr+.1,RZ+.08));
+   /* Rear MX fender and clean white tail plastics. */
+   bike.add(part(RB(.15,.045,.56,.025,4),vWhite,0,.91,-.82,.12));
+   bike.add(part(RB(.08,.025,.035,.008,3),vRed,0,.9,-1.08));
+   ud.seat=new THREE.Vector3(0,.91*sc,-.4*sc);
   }
   if(v.id==='lightbee'||v.id==='ultrabee'){
    const chainMat=mc('#777d84',.55,.75),cx=-.125;
