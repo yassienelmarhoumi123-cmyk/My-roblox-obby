@@ -399,7 +399,8 @@ function loadSave(){let hasSave=false;try{const s=JSON.parse(localStorage.getIte
   if(!Array.isArray(save.redeemedCodes))save.redeemedCodes=[];
   for(const id of FREE_SCOOTERS)if(!save.owned.includes(id))save.owned.push(id);
   if(!save.owned.includes(save.selected))save.selected='zt3pro';
-  save.version=3;writeSave();return hasSave;}
+  if(!hasSave)save.needsStarterChoice=true;
+  save.version=3;writeSave();return hasSave&&!save.needsStarterChoice;}
 function writeSave(){
  try{
   save.version=2;
@@ -2008,7 +2009,7 @@ $('g-close').onclick=()=>{Snd.click();closeGarage();};
 function closeHelp(){setState(helpFrom);}
 function chooseStarter(id){
  if(!['zt3pro','g3max'].includes(id))return;
- save.owned=[...new Set([...save.owned,id])];save.selected=id;writeSave();
+ save.owned=[...new Set([...save.owned,id])];save.selected=id;save.needsStarterChoice=false;writeSave();
  spawnVehicle(vById(id));resetToPad();refreshMain();setState('main');
 }
 $('pick-zt3').onclick=()=>chooseStarter('zt3pro');
