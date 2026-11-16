@@ -1443,6 +1443,46 @@ function makeVehicle(v){
   if(v.id==='g2max'||v.id==='g3max'){
    for(const side of[-1,1]){body.add(part(RB(.025,.085,dL*.56,.018,4),frame,side*(dW/2+.012),dh+.005,.015));body.add(part(RB(.012,.018,dL*.34,.006,2),accP,side*(dW/2+.03),dh+.02,-.015));}
   }
+  if(v.id==='g2max'){
+   /* Ninebot MAX G2-specific silhouette: wide deck, rear twin springs and front hydraulic fork. */
+   const maxChar=mc('#34383d',.52,.52),maxSilver=mc('#b8bec5',.24,.9),maxAmber=mc('#ff9a24',.28,.65),maxWhite=new THREE.MeshBasicMaterial({color:0xf4f6fa}),maxRed=new THREE.MeshBasicMaterial({color:0xe63238});
+   /* Wider, softly squared battery/deck shell with dark lower edge. */
+   body.add(part(RB(dW*.94,.105,dL*.82,.032,5),frame,0,dh-.035,-.015));
+   body.add(part(RB(dW*.88,.018,dL*.7,.009,3),maxChar,0,dh+.025,-.015));
+   for(const side of[-1,1]){
+    body.add(part(RB(.014,.055,dL*.7,.008,3),maxChar,side*(dW/2+.025),dh+.012,-.015));
+    /* Front/rear side reflectors and integrated amber indicators. */
+    body.add(part(RB(.012,.025,.055,.006,2),maxAmber,side*(dW/2+.035),dh+.045,dL*.34));
+    body.add(part(RB(.012,.025,.055,.006,2),maxAmber,side*(dW/2+.035),dh+.045,-dL*.34));
+    /* Twin rear spring units, separate from the central rear motor. */
+    link(body,side*(dW/2-.025),dt+.01,-dL*.32,side*(axX+.035),wr+.12,-L+.02,.024,maxSilver,8);
+    coil(body,side*(dW/2-.025),dt+.01,-dL*.32,side*(axX+.035),wr+.12,-L+.02,.031,8,maxChar);
+    body.add(part(CYL(.025,.025,.045,12,'x'),maxChar,side*(axX+.045),wr+.12,-L+.02));
+   }
+   /* Rear fender extension, license-plate tab and tail-light lens. */
+   body.add(part(RB(dW*.58,.035,.28,.014,3),frame,0,wr*2+.095,-L-.13));
+   body.add(part(RB(.11,.025,.025,.008,3),maxRed,0,wr*2+.12,-L-.275));
+   body.add(part(RB(.075,.018,.018,.006,2),maxWhite,0,wr*2+.12,-L-.294));
+   /* Front hydraulic fork bridge, drum-brake hub cover and fork guards. */
+   steer.add(part(RB(.22,.055,.07,.014,4),maxChar,0,.34,-.075));
+   for(const side of[-1,1]){
+    steer.add(part(RB(.045,.18,.06,.012,3),frame,side*(axX-.012),.19,-.055));
+    steer.add(part(CYL(.018,.018,.13,12,'x'),maxSilver,side*(axX+.018),.25,-.055));
+    steer.add(part(RB(.035,.11,.045,.01,3),maxChar,side*(axX-.012),.18,-.045));
+    steer.add(part(RB(.025,.045,.012,.006,2),maxAmber,side*.12,.05,.055));
+   }
+   steer.add(part(CYL(wr*.31,wr*.31,tw*.96,24,'x'),maxSilver,tw*.48,0,0));
+   steer.add(part(CYL(wr*.22,wr*.22,tw,24,'x'),maxChar,tw*.50,0,0));
+   /* Characteristic broad headlamp surround and compact coloured dashboard. */
+   steer.add(part(RB(.18,.075,.055,.016,4),maxChar,0,topY-.3,topZ+.05));
+   steer.add(part(RB(.12,.028,.012,.008,3),maxWhite,0,topY-.29,topZ+.079));
+   steer.add(part(RB(.14,.045,.085,.014,3),maxChar,0,topY+.065,topZ+.025));
+   steer.add(part(RB(.095,.003,.052,.006,2),maxWhite,0,topY+.09,topZ+.071));
+   for(const side of[-1,1]){
+    steer.add(part(RB(.04,.025,.025,.007,3),maxAmber,side*.13,topY-.3,topZ+.045));
+    link(steer,side*.14,topY+.005,topZ,side*.22,topY-.04,topZ+.035,.006,maxSilver,6);
+   }
+  }
   if(v.id==='gt3d'||v.id==='gt3pro'){
    body.add(part(RB(dW*.92,.12,dL*.5,.035,4),dark,0,dh-.035,-.015));
    for(const side of[-1,1]){body.add(part(RB(.028,.1,.34,.012,3),frame,side*(dW/2+.018),dh+.01,-.02));body.add(part(RB(.012,.035,.22,.006,2),ledM,side*(dW/2+.034),dh+.025,-.02));}
