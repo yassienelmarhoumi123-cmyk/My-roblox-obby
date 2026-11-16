@@ -1252,6 +1252,11 @@ function makeVehicle(v){
   body.add(bx(.14,.03,.05,tailM,0,wr*2+.03,-L-wr*1.3));body.add(bx(.06,.03,.02,mc('#f0f0f0',.3,.2),0,wr*2+.07,-L-wr*1.35));
   for(const s of[-1,1])body.add(bx(.05,.025,.03,orgM,s*.09,wr*2+.05,-L-wr*1.28));
   const wR=wheelGroup(wr,tw,'scooter',acc,v.tread);wR.position.set(0,wr,-L);body.add(wR);ud.wheels.push(wR);
+  /* Brand-specific deck panels, reflectors and motor housings. */
+  if(/g2master|joyort10|thunder|xlimited|dt2pro/.test(v.id)){for(const side of[-1,1]){body.add(part(RB(dW*.22,.075,dL*.48,.018,3),dark,side*(dW*.48),dh+.005,.015));body.add(bx(.012,.018,dL*.38,accP,side*(dW*.5+.006),dh+.008,.015));}}
+  if(/g2max|g3max|zt3pro|gt3d|gt3pro/.test(v.id)){for(const side of[-1,1]){body.add(part(RB(.018,.105,.22,.008,2),frame,side*(dW*.5+.016),dh+.02,-.015));body.add(bx(.012,.035,.06,orgM,side*(dW*.5+.027),dh+.025,-.1));}}
+  if(v.dual){for(const side of[-1,1])body.add(part(CYL(wr*.32,wr*.32,.024,20,'x'),dark,side*(tw*.5+.025),wr,-L));}
+  for(const side of[-1,1]){body.add(bx(.025,.018,.045,mc('#f4f2e9',.25,.15),side*(dW*.5+.025),dh+.025,dL*.39));}
   /* Disc-brake hardware and axle caps add visible mechanical detail. */
   for(const side of[-1,1]){body.add(part(CYL(wr*.48,wr*.48,.008,28,'x'),chrome,side*(tw*.5+.006),wr,-L));body.add(part(CYL(wr*.12,wr*.12,.014,16,'x'),gold,side*(tw*.5+.012),wr,-L));}
   body.add(bx(dW*.72,.018,.012,mc('#f5f0d8',.2,.25),0,dh+.015,-dL*.43));
@@ -1269,6 +1274,10 @@ function makeVehicle(v){
   /* steering assembly (pivot = front axle) */
   const steer=new THREE.Group();steer.position.set(0,wr,L);body.add(steer);ud.steer=steer;
   const wF=wheelGroup(wr,tw,'scooter',acc,v.tread);steer.add(wF);ud.wheels.push(wF);
+  if(v.dual){for(const side of[-1,1]){steer.add(part(CYL(wr*.3,wr*.3,.018,18,'x'),dark,side*(tw*.5+.022),0,0));}}
+  /* layered headlight bezel and indicator lenses */
+  steer.add(part(RB(.105,.075,.026,.012,3),dark,0,topY-.3,topZ+.085));
+  steer.add(bx(.07,.038,.012,lightM,0,topY-.3,topZ+.103));
   for(const side of[-1,1]){steer.add(part(CYL(wr*.43,wr*.43,.007,28,'x'),chrome,side*(tw*.5+.005),0,0));steer.add(part(CYL(wr*.1,wr*.1,.012,14,'x'),gold,side*(tw*.5+.01),0,0));}
   steer.add(part(arcFender(wr*1.2,tw+.06,Math.PI*.36,Math.PI*(v.fullFender?.99:.9)),frame,0,0,0));
   const hb=v.bar,sTilt=v.id==='g4'?-.2:-.1;
@@ -1326,11 +1335,15 @@ function makeVehicle(v){
    bike.add(part(RB(.035,.24,.55,.015,2),plast,s*.125,.62,.08));          /* side panels */
   }
   bike.add(part(RB(.2,.42,.46,.04,3),plast2,0,.62,.08));                   /* battery */
+  /* More recognisable electric enduro silhouette: sculpted battery shrouds, frame rails and guards. */
+  for(const side of[-1,1]){bike.add(part(RB(.045,.31,.43,.025,3),plast,side*.145,.66,.1,.12));bike.add(part(RB(.025,.18,.35,.012,2),plast2,side*.172,.64,.1,-.08));link(bike,side*.1,.92,.28,side*.12,.53,-.22,.018,chrome,8);}
   bike.add(part(CYL(.105,.105,.2,22,'x'),mc('#2a2e34',.4,.8),0,.4,-.1));bike.add(part(CYL(.06,.06,.22,18,'x'),chrome,0,.4,-.1));
   bike.add(part(RB(.12,.1,.24,.02,2),dark,0,.55,-.3));                    /* controller */
   link(bike,0,.4,-.1,0,wr,RZ,.012,dark,6);
   link(bike,0,.78,-.3,0,.44,-.46,.024,chrome,8);coil(bike,0,.76,-.31,0,.46,-.45,.04,8,acc);   /* rear shock */
   bike.add(part(RB(.2,.1,.8,.045,3),rub,0,.79,-.33,.03));                  /* seat */
+  bike.add(part(RB(.23,.025,.68,.012,3),dark,0,.735,-.34,.03));
+  for(const side of[-1,1]){link(bike,side*.08,.43,-.08,side*.09,.37,-.45,.012,chrome,8);bike.add(bx(.025,.035,.08,accP,side*.19,.56,.02));}
   bike.add(part(RB(.19,.07,.5,.03,2),plast,0,.86,-.68,.25));              /* tail */
   bike.add(part(RB(.12,.02,.2,.01,1),mc('#e8e8e4',.5,0),0,.74,-.94,.3));bike.add(bx(.14,.04,.05,tailM,0,.8,-.93));
   if(v.id==='ultrabee'){bike.add(part(RB(.24,.2,.44,.05,3),plast,0,.8,.12));bike.add(part(RB(.26,.14,.4,.05,3),plast2,0,.66,-.1));}
@@ -1349,6 +1362,8 @@ function makeVehicle(v){
   steer.add(part(RB(.2,.2,.1,.04,3),plast,0,.5,-.03));
   const hl=part(hg('mhl',()=>new THREE.SphereGeometry(.055,12,8).scale(1.7,1.4,.5)),lightM,0,.5,.025);steer.add(hl);ud.headlamp=hl;
   steer.add(part(RB(.14,.15,.02,.01,1),mc('#e8e8e4',.5,0),0,.72,-.1,-.2));
+  steer.add(part(RB(.16,.045,.035,.012,2),dark,0,.58,.03));
+  for(const side of[-1,1]){steer.add(bx(.035,.025,.035,orgM,side*.105,.52,.045));}
   ud.seat=new THREE.Vector3(0,.84*sc,-.33*sc);ud.peg=new THREE.Vector3(0,.32*sc,-.04*sc);ud.grip={y:(wr+.78)*sc,z:(FZ-.34)*sc};ud.eye=new THREE.Vector3(0,1.58,-.05);ud.rider='sit';ud.wheelbase=(FZ-RZ)*sc;
  }
  body.traverse(o=>{if(o.isMesh)o.castShadow=true;});
@@ -1424,10 +1439,13 @@ function makeG4(v){
 const V={wh:0,whT:0,whD:0,x:GARAGE.x,z:GARAGE.z-2,h:GARAGE.h,y:.15,vx:0,vz:0,steer:0,yaw:0,lean:0,pitch:0,thr:0,slip:0,batt:100,pvf:0};
 const F={x:0,z:0,h:0,y:0,spd:0,ph:0};
 let mounted=true,state='loading',camMode=1,helpFrom='main',simT=0,shake=0,lightsOn=true,gSel=0,helpBack=null;
-let driveMode=0;const DRIVE_PROFILES={segway:[['Walk',6,.24],['Eco',22,.48],['Drive',34,.76],['Sport',1,1]],sport:[['Eco',30,.5],['Sport',.78,.82],['Race',1,1]],moto:[['Stufe 1',.52,.52],['Stufe 2',.76,.78],['Stufe 3',1,1]]};
-function driveFamily(d){if(!d||d.kind==='car')return null;if(d.kind==='moto')return 'moto';if(/^ausom/i.test(d.name)||d.name.toLowerCase().includes('dualtron')||d.id==='g4'||d.id==='g2master')return 'sport';if(/ninebot|segway/i.test(d.name))return 'segway';return 'sport';}
+let driveMode=0;
+/* Every mode uses a fraction of this vehicle's own top speed (0..1). */
+const DRIVE_PROFILES={segway:[['Walk',0,.2],['Eco',.42,.42],['Drive',.68,.7],['Sport',1,1]],sport:[['Eco',.45,.45],['Sport',.74,.76],['Race',1,1]],moto:[['Stufe 1',.45,.45],['Stufe 2',.72,.72],['Stufe 3',1,1]]};
+function driveFamily(d){if(!d||d.kind==='car')return null;if(d.kind==='moto')return 'moto';if(/ninebot|segway/i.test(d.name))return 'segway';if(/ausom|dualtron|kukirin/i.test(d.name)||d.id==='g4'||d.id==='g2master')return 'sport';return 'sport';}
 function driveProfile(d){const family=driveFamily(d);return family?DRIVE_PROFILES[family]:null;}
-function renderDriveModes(){const box=$('drive-modes'),profiles=driveProfile(vdef);box.innerHTML='';if(!profiles||!mounted){box.hidden=true;return;}box.hidden=false;driveMode=clamp(driveMode,0,profiles.length-1);profiles.forEach((p,i)=>{const b=document.createElement('button');b.className=i===driveMode?'active':'';b.innerHTML=p[0]+'<small>'+Math.round((p[1]===1?vdef.top:vdef.top*p[1]))+' km/h</small>';b.onclick=()=>{driveMode=i;renderDriveModes();toast('Fahrmodus: '+p[0]);};box.appendChild(b);});}
+function profileTop(d,p){return p[0]==='Walk'?Math.min(5,d.top):d.top*p[1];}
+function renderDriveModes(){const box=$('drive-modes'),profiles=driveProfile(vdef);box.innerHTML='';if(!profiles||!mounted){box.hidden=true;return;}box.hidden=false;driveMode=clamp(driveMode,0,profiles.length-1);profiles.forEach((p,i)=>{const b=document.createElement('button');b.className=i===driveMode?'active':'';b.innerHTML=p[0]+'<small>'+Math.round(profileTop(vdef,p))+' km/h</small>';b.onclick=()=>{driveMode=i;renderDriveModes();toast('Fahrmodus: '+p[0]);};box.appendChild(b);});}
 function activeDriveProfile(d){const profiles=driveProfile(d);return profiles?profiles[driveMode]||profiles[0]:null;}
 const trip={km:0,save:0};
 let vdef=vById('g2max'),veh=null,rider=null,avatar=null,spot=null,marker=null,prevMesh=null;
@@ -1525,7 +1543,7 @@ function toggleMount(){
  }
 }
 function stepVehicle(dt,live){
- const d=vdef,profile=activeDriveProfile(d),modeTop=profile?(profile[1]===1?d.top:d.top*profile[1]):d.top,modeAccel=d.accel*(profile?profile[2]:1),modeBrake=d.brake*(profile?(0.88+profile[2]*.12):1);
+ const d=vdef,profile=activeDriveProfile(d),modeTop=profile?profileTop(d,profile):d.top,modeAccel=d.accel*(profile?profile[2]:1),modeBrake=d.brake*(profile?(0.9+profile[2]*.1):1);
  const th=live?inp.gas:0,br=live?inp.brake:0,hb=live?inp.hand:0,st=live?(inp.left-inp.right):0;
  let f0=Math.sin(V.h),f1=Math.cos(V.h);
  let vf=V.vx*f0+V.vz*f1;
