@@ -531,7 +531,7 @@ function updateSky(dt,camPos){
   const dayness=smooth(-.12,.38,e);const night=smooth(.1,-.2,e);day.night=night;
   const skyTop=_c1,hor=_c2;
   if(e>=0){const t=smooth(0,.45,e);skyTop.copy(PAL.goldTop).lerp(PAL.dayTop,t);hor.copy(PAL.goldHor).lerp(PAL.dayHor,t);}
-  else{const t=smooth(0,-.22,e);top.copy(PAL.goldTop).lerp(PAL.nightTop,t);hor.copy(PAL.goldHor).lerp(PAL.nightHor,t);}
+  else{const t=smooth(0,-.22,e);skyTop.copy(PAL.goldTop).lerp(PAL.nightTop,t);hor.copy(PAL.goldHor).lerp(PAL.nightHor,t);}
   const g=_c3.setRGB(.52,.56,.62).multiplyScalar(.08+.92*dayness);
   skyTop.lerp(g,wx.cur.dark*.85);hor.lerp(g,wx.cur.dark*.75);
   skyUni.topC.value.copy(skyTop);skyUni.horC.value.copy(hor);
