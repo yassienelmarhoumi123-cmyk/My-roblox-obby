@@ -167,7 +167,7 @@ button:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
   </div>
   <div id="mapbox"><canvas id="minimap" width="352" height="352"></canvas><div id="district">Innenstadt</div></div>
   <div id="tr"><div id="money">1.500 $</div><div id="clock" class="panel">10:30 · Sonnig</div></div>
-  <div id="toasts"></div>
+  <div id="toasts"></div><div id="delivery-nav" hidden><span id="delivery-arrow">➤</span><span><b>ROUTE ZUM KUNDEN</b><small id="delivery-distance">Ziel wird gesucht …</small></span></div>
   <div id="prompt" hidden></div>
   <div id="bustbar"><span>Festnahme</span><div><i id="bustfill"></i></div></div>
   <div id="speedo">
@@ -181,7 +181,7 @@ button:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
 </div>
 
 <style>
-#phone-open{position:fixed;z-index:100000;right:18px;bottom:24px;top:auto;pointer-events:auto;background:#18202b;border:2px solid var(--cyan);color:#fff;padding:10px 15px;font:800 17px var(--display);letter-spacing:.1em;box-shadow:0 5px 22px #0008;border-radius:12px}
+#delivery-nav{position:fixed;z-index:900;top:calc(14px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:10px;padding:8px 14px;background:rgba(8,16,26,.9);border:1px solid #43d1ff;border-radius:12px;box-shadow:0 5px 20px #0008;pointer-events:none;white-space:nowrap}#delivery-nav[hidden]{display:none}#delivery-arrow{font-size:25px;color:#ffd400;display:inline-block;transform-origin:center}#delivery-nav b{display:block;font:800 12px var(--display);letter-spacing:.12em}#delivery-nav small{display:block;font:600 13px var(--display);color:#43d1ff}#phone-open{position:fixed;z-index:100000;right:18px;top:132px;bottom:auto;pointer-events:auto;background:rgba(15,20,27,.82);border:1px solid var(--cyan);color:#fff;padding:6px 9px;font:800 12px var(--display);letter-spacing:.05em;box-shadow:0 3px 12px #0007;border-radius:9px}
 #phone{position:fixed;z-index:100001;pointer-events:auto;right:22px;bottom:18px;width:min(360px,calc(100vw - 28px));max-height:min(650px,88vh);overflow:auto;background:radial-gradient(ellipse at 50% 0%,#263d60 0%,#111a2a 48%,#080d16 100%);border:7px solid #aeb5c0;border-radius:48px;padding:48px 17px 24px;box-shadow:inset 0 0 0 2px #e8edf5,0 18px 60px #000c;color:#f3f4ef;display:none;touch-action:pan-y}#phone:before{content:"";position:absolute;top:12px;left:50%;transform:translateX(-50%);width:112px;height:29px;border-radius:20px;background:#020306;box-shadow:inset 0 1px 2px #333;z-index:2;pointer-events:none}#phone:after{content:"";position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:105px;height:4px;border-radius:5px;background:#fff9;pointer-events:none}
 #phone.open{display:block}.phone-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.phone-grid .phone-app{margin:0;min-height:78px;text-align:center;font-size:25px}.phone-grid .phone-app small{font-size:12px}#phone-page h3{margin:12px 0;color:#43d1ff}#phone-back{background:#303a48;color:white;border:0;border-radius:8px;padding:8px 12px}#phone-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
 #phone-title{font:800 28px var(--display);letter-spacing:.04em}#phone-top .kicker{font-size:10px;letter-spacing:.22em;color:#b7c9e4}#phone-close{border:0;background:#303a48;padding:8px 13px;border-radius:9px}
@@ -190,7 +190,7 @@ button:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
 #phone-status{font-size:14px;color:#43d1ff;line-height:1.5;min-height:42px;margin:8px 0}
 #phone .upgrade{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px 0}
 #phone .upgrade button{background:#ffd400;color:#1a1500;border:0;border-radius:8px;padding:8px;font-weight:800}
-@media(max-width:600px){#phone-open{bottom:18px;right:12px;padding:8px 10px;font-size:14px}#phone{right:10px;bottom:10px}}
+@media(max-width:600px){#phone-open{top:126px;right:10px;padding:5px 7px;font-size:11px}#phone{right:10px;bottom:10px}}
 </style>
 <button id="phone-open" type="button">📱 HANDY</button>
 <div id="phone" aria-label="Smartphone">
@@ -202,8 +202,8 @@ button:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
  <button class="phone-app" data-app="weather">🌦️<small>Wetter</small></button><button class="phone-app" data-app="clock">🕒<small>Uhrzeit</small></button>
  <button class="phone-app" data-app="stats">📊<small>Statistik</small></button><button class="phone-app" data-app="profile">👤<small>Profil</small></button>
  </div></div><div id="phone-page" hidden><button id="phone-back" type="button">← Zurück</button><h3 id="phone-page-title">App</h3><div id="phone-page-content"></div></div>
- <div id="phone-delivery" hidden><button class="phone-app" id="delivery-start">🍔 Lieferdienst starten <small>Hole eine Bestellung ab und bringe sie zum Kunden. Belohnung: 250 €</small></button><button class="phone-app" id="delivery-cancel">✕ Lieferung abbrechen</button></div>
- <div id="phone-tuning" hidden><div class="phone-app" style="background:#111d29"><strong>🛠️ Scooter-Tuning</strong>
+ <div id="phone-delivery" hidden><button class="phone-back phone-section-back" type="button">← Zurück zu Apps</button><button class="phone-app" id="delivery-start">🍔 Lieferdienst starten <small>Hole eine Bestellung ab und bringe sie zum Kunden. Belohnung: 250 €</small></button><button class="phone-app" id="delivery-cancel">✕ Lieferung abbrechen</button></div>
+ <div id="phone-tuning" hidden><button class="phone-back phone-section-back" type="button">← Zurück zu Apps</button><div class="phone-app" style="background:#111d29"><strong>🛠️ Scooter-Tuning</strong>
   <div class="upgrade"><span>Motor +10 % <small>Beschleunigung · 400 €</small></span><button id="tune-motor">Kaufen</button></div>
   <div class="upgrade"><span>Akku +10 % <small>Reichweite · 300 €</small></span><button id="tune-battery">Kaufen</button></div>
   <div class="upgrade"><span>Bremsen +10 % <small>Bremskraft · 350 €</small></span><button id="tune-brakes">Kaufen</button></div>
@@ -1377,7 +1377,7 @@ function toast(msg,cls,ttl){const t=document.createElement('div');t.className='t
 const SCREENS={main:'s-main',pause:'s-pause',garage:'s-garage',help:'s-help',busted:'s-busted'};
 function setState(s){
  state=s;for(const k in SCREENS)$(SCREENS[k]).hidden=(k!==s);
- $('hud').hidden=!(s==='play'||s==='pause'||s==='busted');$('touch').hidden=(s!=='play');$('phone-open').style.display=(s==='play'||s==='pause')?'block':'none'; 
+ $('hud').hidden=!(s==='play'||s==='pause'||s==='busted');$('touch').hidden=(s!=='play');$('phone-open').style.display=(s==='play'||s==='pause')?'block':'none';if(s!=='play'&&s!=='pause'&&typeof phoneClose==='function')phoneClose(); 
  if(s==='main')refreshMain();
 }
 function refreshMain(){
@@ -1387,7 +1387,7 @@ function refreshMain(){
 /* ============================ INPUT ============================ */
 const inp={gas:0,brake:0,left:0,right:0,hand:0,run:0};
 const KMAP={KeyW:'gas',ArrowUp:'gas',KeyS:'brake',ArrowDown:'brake',KeyA:'left',ArrowLeft:'left',KeyD:'right',ArrowRight:'right',Space:'hand',ShiftLeft:'run',ShiftRight:'run'};
-const PRESS={KeyP:'post',KeyE:'mount',KeyC:'cam',Escape:'pause',KeyH:'horn',KeyL:'light',KeyG:'garage',KeyR:'rob',KeyT:'time',KeyK:'weather'};
+const PRESS={KeyP:'phone',KeyO:'post',KeyE:'mount',KeyC:'cam',Escape:'pause',KeyH:'horn',KeyL:'light',KeyG:'garage',KeyR:'rob',KeyT:'time',KeyK:'weather'};
 addEventListener('keydown',e=>{
  if(e.target&&e.target.tagName==='INPUT')return;
  Snd.init();const a=KMAP[e.code];
@@ -1417,6 +1417,7 @@ function onPress(p){
   if(state==='play')setState('pause');else if(state==='pause')setState('play');
   else if(state==='garage')closeGarage();else if(state==='help')closeHelp();return;
  }
+ if(p==='phone'){if(state==='play'||state==='pause')phoneOpen();return;}
  if(p==='post'){togglePost();return;}
  if(state!=='play')return;
  if(p==='mount')toggleMount();
@@ -1876,6 +1877,7 @@ function drawMap(f){
  for(const c of chasers){mctx.fillStyle=blink?'#ff453a':'#3b7bff';mctx.beginPath();mctx.arc(c.x,c.z,5.5,0,TAU);mctx.fill();}
  for(const s of shops)if(s.cd<=0){mctx.fillStyle=s.bank?'#ffd400':'#3dff7a';mctx.strokeStyle='#0f141b';mctx.lineWidth=1.5;mctx.beginPath();mctx.arc(s.x,s.z,s.bank?6:4.5,0,TAU);mctx.fill();mctx.stroke();}
  if(!mounted){mctx.strokeStyle='#ffd400';mctx.lineWidth=3;mctx.beginPath();mctx.arc(V.x,V.z,6,0,TAU);mctx.stroke();mctx.fillStyle='#ffd400';mctx.beginPath();mctx.arc(V.x,V.z,2.5,0,TAU);mctx.fill();}
+ if(phoneState.job){mctx.save();mctx.setLineDash([7,5]);mctx.strokeStyle='#43d1ff';mctx.lineWidth=3;mctx.beginPath();mctx.moveTo(f.x,f.z);mctx.lineTo(phoneState.job.x,phoneState.job.z);mctx.stroke();mctx.setLineDash([]);mctx.fillStyle='#ff453a';mctx.strokeStyle='#fff';mctx.lineWidth=2;mctx.beginPath();mctx.arc(phoneState.job.x,phoneState.job.z,7,0,TAU);mctx.fill();mctx.stroke();mctx.restore();}
  mctx.restore();
  mctx.fillStyle='#fff';mctx.strokeStyle='#0f141b';mctx.lineWidth=2;mctx.beginPath();mctx.moveTo(176,162);mctx.lineTo(186,188);mctx.lineTo(176,182);mctx.lineTo(166,188);mctx.closePath();mctx.fill();mctx.stroke();
 }
@@ -2132,8 +2134,9 @@ $('b-multi').onclick=()=>mpQuickJoin();
 /* ============================ PHONE: DELIVERY & TUNING ============================ */
 const phoneState={job:null,marker:null,tune:{motor:0,battery:0,brakes:0}};
 function phoneMessage(t){$('phone-status').textContent=t;}
-function phoneOpen(){$('phone').classList.toggle('open');$('phone-money').textContent=money(save.money);Snd.init();Snd.click();}
-function phoneClose(){$('phone').classList.remove('open');Snd.click();}
+function phoneOpen(){const p=$('phone');p.classList.toggle('open');$('phone-money').textContent=money(save.money);Snd.init();Snd.click();}
+function phoneClose(){if($('phone').classList.contains('open')){$('phone').classList.remove('open');Snd.click();}}
+function phoneHome(){ $('phone-home').hidden=false;$('phone-page').hidden=true;$('phone-delivery').hidden=true;$('phone-tuning').hidden=true; }
 $('phone-open').onclick=phoneOpen;$('phone-close').onclick=phoneClose;
 function phoneShowApp(app){
  const home=$('phone-home'),page=$('phone-page'),delivery=$('phone-delivery'),tuning=$('phone-tuning');
@@ -2150,7 +2153,7 @@ function phoneShowApp(app){
  else if(app==='profile'){title.textContent='👤 Fahrerprofil';content.textContent='Aktives Fahrzeug: '+vdef.name+' · Kontostand: '+money(save.money)+'. Viel Spaß in E-Scooter City!';}
 }
 document.querySelectorAll('#phone-home [data-app]').forEach(b=>b.addEventListener('click',()=>{phoneShowApp(b.dataset.app);Snd.click();}));
-$('phone-back').onclick=()=>{$('phone-home').hidden=false;$('phone-page').hidden=true;$('phone-delivery').hidden=true;$('phone-tuning').hidden=true;};
+$('phone-back').onclick=phoneHome;document.querySelectorAll('.phone-section-back').forEach(b=>b.onclick=phoneHome);
 function deliveryStart(){
  if(state!=='play'){phoneMessage('Du musst zuerst spielen.');return;}
  if(phoneState.job){phoneMessage('Du hast bereits einen Lieferauftrag.');return;}
@@ -2160,9 +2163,9 @@ function deliveryStart(){
  marker.position.set(target.x,3,target.z);scene.add(marker);
  const ring=new THREE.Mesh(new THREE.TorusGeometry(2.1,.12,8,24),new THREE.MeshBasicMaterial({color:0x43d1ff}));
  ring.rotation.x=Math.PI/2;ring.position.set(target.x,.2,target.z);scene.add(ring);
- phoneState.marker={marker,ring};phoneState.job=target;phoneMessage('Bestellung angenommen! Fahre zum gelben Lieferpunkt.');toast('Lieferauftrag angenommen','good');phoneClose();
+ phoneState.marker={marker,ring};phoneState.job=target;phoneMessage('Bestellung angenommen! Die Navigation zeigt dir Richtung und Entfernung.');$('delivery-nav').hidden=false;toast('Lieferauftrag angenommen · Navigation aktiv','good');phoneClose();
 }
-function deliveryCancel(){if(phoneState.marker){scene.remove(phoneState.marker.marker);scene.remove(phoneState.marker.ring);}phoneState.marker=null;phoneState.job=null;phoneMessage('Lieferung abgebrochen.');}
+function deliveryCancel(){if(phoneState.marker){scene.remove(phoneState.marker.marker);scene.remove(phoneState.marker.ring);}phoneState.marker=null;phoneState.job=null;$('delivery-nav').hidden=true;phoneMessage('Lieferung abgebrochen.');}
 $('delivery-start').onclick=deliveryStart;$('delivery-cancel').onclick=deliveryCancel;
 function phoneTune(kind){
  const prices={motor:400,battery:300,brakes:350},max=3;
@@ -2177,8 +2180,9 @@ function phoneTune(kind){
 $('tune-motor').onclick=()=>phoneTune('motor');$('tune-battery').onclick=()=>phoneTune('battery');$('tune-brakes').onclick=()=>phoneTune('brakes');
 function updatePhoneWorld(dt){
  if(phoneState.marker){const m=phoneState.marker;m.marker.rotation.y+=dt*1.5;m.marker.position.y=3+Math.sin(simT*3)*.35;m.ring.rotation.z+=dt*.8;
-  const o=mounted?V:F,d=Math.hypot(o.x-phoneState.job.x,o.z-phoneState.job.z);
-  if(d<5){scene.remove(m.marker);scene.remove(m.ring);phoneState.marker=null;phoneState.job=null;save.money+=250;writeSave();$('phone-money').textContent=money(save.money);setT('money',money(save.money));phoneMessage('Lieferung abgeschlossen! +250 €');toast('Lieferung geschafft · +250 €','good',4);Snd.buy();}
+  const o=mounted?V:F,dx=phoneState.job.x-o.x,dz=phoneState.job.z-o.z,d=Math.hypot(dx,dz),bearing=Math.atan2(dx,dz),relative=Math.atan2(Math.sin(bearing-(o.h||0)),Math.cos(bearing-(o.h||0)));
+  $('delivery-nav').hidden=false;$('delivery-arrow').style.transform='rotate('+relative+'rad)';$('delivery-distance').textContent=Math.round(d)+' m bis zum Lieferpunkt';
+  if(d<5){scene.remove(m.marker);scene.remove(m.ring);phoneState.marker=null;phoneState.job=null;$('delivery-nav').hidden=true;save.money+=250;writeSave();$('phone-money').textContent=money(save.money);setT('money',money(save.money));phoneMessage('Lieferung abgeschlossen! +250 €');toast('Lieferung geschafft · +250 €','good',4);Snd.buy();}
  }
  if($('phone').classList.contains('open'))$('phone-money').textContent=money(save.money);
 }
