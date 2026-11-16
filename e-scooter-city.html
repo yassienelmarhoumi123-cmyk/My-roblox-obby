@@ -1254,6 +1254,7 @@ function makeVehicle(v){
   const axX=tw/2+.035;
   if(v.id==='g3max'){ /* Dedicated MAX G3 twin hydraulic shocks are built in its model block. */
   }else if(v.id==='gt3pro'){ /* GT3 Pro trailing-arm dampers are model-specific below. */
+  }else if(v.id==='xlimited'){ /* X Limited coil-over units are built in its model block. */
   }else if(v.id==='zt3pro'){
    /* ZT3 Pro uses a single rear coil shock on a distinct swingarm. */
    link(body,0,wr+.015,-L,0,dt+.015,-dL*.34,.035,alu,10);
@@ -1288,7 +1289,7 @@ function makeVehicle(v){
     baseY=.14;baseZ=-.2;
    }else{
     link(steer,s*axX,0,0,s*.07,.34,-.07,v.susp==='hyd'?.024:.015,chrome,8);
-    if(!['g2max','g3max','zt3pro','gt3d','gt3pro'].includes(v.id))coil(steer,s*axX,.08,-.01,s*.07,.3,-.06,v.susp==='hyd'?.045:.032,v.susp==='hyd'?8:6,v.susp==='hyd'?accP:acc);
+    if(!['g2max','g3max','zt3pro','gt3d','gt3pro','xlimited'].includes(v.id))coil(steer,s*axX,.08,-.01,s*.07,.3,-.06,v.susp==='hyd'?.045:.032,v.susp==='hyd'?8:6,v.susp==='hyd'?accP:acc);
     baseY=.36;baseZ=-.08;
    }
   }
@@ -1713,7 +1714,65 @@ function makeVehicle(v){
    }
   }
   if(v.id==='xlimited'){
-   for(const side of[-1,1]){link(body,side*(dW/2+.06),dt+.06,-dL*.4,side*(axX+.08),wr+.07,-L,.04,alu,10);link(body,side*(dW/2+.06),dt+.06,dL*.36,side*(axX+.08),wr+.07,L,.04,alu,10);body.add(part(CYL(.045,.045,.16,14,'x'),gold,side*(axX+.09),wr+.1,-L));body.add(part(RB(.045,.09,dL*.58,.018,3),dark,side*(dW/2+.04),dh+.005,0));}
+   /* Dualtron X Limited: oversized 13x5 chassis, full coil-over suspension and signature X lighting. */
+   const xShell=mc('#17191d',.42,.68),xBlack=mc('#090b0e',.72,.32),xMetal=mc('#b6bdc5',.2,.9),xTeal=mc('#00a9bd',.28,.65),xRed=mc('#c52d38',.34,.58),xRubber=mc('#121416',.96,.05);
+   const xWhite=new THREE.MeshBasicMaterial({color:0xf6f7fb}),xAmber=new THREE.MeshBasicMaterial({color:0xffa52e}),xTail=new THREE.MeshBasicMaterial({color:0xe52e3a});
+   /* Oversized battery deck, raised foot platforms and continuous side LED rails. */
+   body.add(part(RB(dW*1.13,.22,dL*1.02,.055,7),xShell,0,dh-.045,-.015));
+   body.add(part(RB(dW*.94,.03,dL*.83,.016,5),xBlack,0,dh+.075,-.015));
+   body.add(part(RB(dW*.72,.012,dL*.62,.008,3),xRubber,0,dh+.092,-.025));
+   for(const side of[-1,1]){
+    body.add(part(RB(.05,.16,dL*.84,.022,5),xBlack,side*(dW/2+.045),dh+.012,-.01));
+    body.add(part(RB(.012,.025,dL*.76,.006,3),xTeal,side*(dW/2+.073),dh+.045,-.015));
+    body.add(part(RB(.012,.018,dL*.72,.005,3),xRed,side*(dW/2+.075),dh+.018,-.015));
+    body.add(part(RB(.12,.055,.18,.018,4),xBlack,side*(dW*.36),dh+.105,-dL*.36));
+    body.add(part(RB(.13,.05,.17,.018,4),xBlack,side*(dW*.36),dh+.105,dL*.36));
+    /* Heavy rear swingarm and large adjustable coil-over unit on both sides. */
+    link(body,side*(dW*.48),dh+.025,-dL*.34,side*(axX+.09),wr+.02,-L,.055,xShell,12);
+    link(body,side*(dW*.48),dh+.055,-dL*.34,side*(axX+.09),wr+.22,-L+.015,.026,xBlack,10);
+    link(body,side*(dW*.48),dh+.055,-dL*.34,side*(axX+.09),wr+.22,-L+.015,.014,xMetal,8);
+    coil(body,side*(dW*.48),dh+.055,-dL*.34,side*(axX+.09),wr+.22,-L+.015,.048,12,xRed);
+    body.add(part(CYL(.052,.052,.075,16,'x'),xBlack,side*(axX+.1),wr+.22,-L+.015));
+   }
+   /* Large 160 mm-class hydraulic rotors and four-piston caliper housings. */
+   body.add(part(CYL(wr*.52,wr*.52,.012,40,'x'),xMetal,tw*.68,wr,-L));
+   body.add(part(CYL(wr*.37,wr*.37,.014,36,'x'),xBlack,tw*.7,wr,-L));
+   body.add(part(RB(.105,.15,.105,.018,5),xRed,tw*.9,wr+.15,-L+.1));
+   link(body,tw*.9,wr+.18,-L+.12,dW*.47,dh+.12,-dL*.22,.006,xBlack,7);
+   steer.add(part(CYL(wr*.52,wr*.52,.012,40,'x'),xMetal,tw*.68,0,0));
+   steer.add(part(CYL(wr*.37,wr*.37,.014,36,'x'),xBlack,tw*.7,0,0));
+   steer.add(part(RB(.105,.15,.105,.018,5),xRed,tw*.9,.15,.1));
+   link(steer,tw*.9,.18,.12,axX*.86,.34,-.07,.006,xBlack,7);
+   /* Massive front hydraulic coil-over pair with visible spring and adjuster collars. */
+   for(const side of[-1,1]){
+    link(steer,side*(axX+.035),.36,-.075,side*(axX+.035),.045,-.075,.052,xBlack,12);
+    link(steer,side*(axX+.035),.27,-.075,side*(axX+.035),.045,-.075,.03,xMetal,10);
+    coil(steer,side*(axX+.035),.34,-.075,side*(axX+.035),.07,-.075,.045,12,xRed);
+    steer.add(part(RB(.08,.18,.105,.022,5),xShell,side*(axX+.035),.14,-.06));
+    steer.add(part(CYL(.035,.035,.075,16,'x'),xMetal,side*(axX+.035),.075,-.06));
+   }
+   /* Oversized front mudguard, twin auxiliary lamps and main headlight cluster. */
+   steer.add(part(RB(.3,.1,.16,.03,5),xBlack,0,.055,.12));
+   steer.add(part(RB(.12,.09,.08,.02,4),xBlack,-.15,.18,.16));
+   steer.add(part(RB(.12,.09,.08,.02,4),xBlack,.15,.18,.16));
+   steer.add(part(RB(.09,.07,.012,.008,4),xWhite,-.15,.18,.205));
+   steer.add(part(RB(.09,.07,.012,.008,4),xWhite,.15,.18,.205));
+   /* Tall reinforced stem, steering damper, X emblem and EY4-style screen. */
+   link(steer,0,.14,-.04,0,baseY+.15,baseZ-.015,.06,xShell,12);
+   steer.add(part(RB(.25,.11,.13,.028,5),xBlack,0,topY+.08,topZ+.025));
+   steer.add(part(RB(.18,.055,.012,.008,4),xTeal,0,topY+.11,topZ+.105));
+   steer.add(part(RB(.12,.12,.08,.018,4),xShell,0,baseY+.1,baseZ-.025));
+   steer.add(part(RB(.12,.025,.012,.006,3),xTeal,0,topY+.24,topZ+.04));
+   steer.add(part(RB(.3,.13,.12,.03,5),xBlack,0,topY-.3,topZ+.05));
+   steer.add(part(RB(.22,.06,.014,.01,4),xWhite,0,topY-.29,topZ+.12));
+   for(const side of[-1,1]){
+    steer.add(part(RB(.065,.035,.04,.01,3),xAmber,side*.19,topY-.29,topZ+.06));
+    link(steer,side*.15,topY+.005,topZ,side*.28,topY-.05,topZ+.04,.012,xMetal,8);
+   }
+   /* Wide rear fender and distinctive tail lamp. */
+   body.add(part(RB(dW*.82,.07,.48,.03,5),xBlack,0,wr*2+.14,-L-.18));
+   body.add(part(RB(.18,.045,.055,.012,4),xTail,0,wr*2+.18,-L-.38));
+   body.add(part(RB(.13,.02,.02,.006,3),xWhite,0,wr*2+.2,-L-.405));
   }
   if(v.id==='dt2pro'){
    for(const side of[-1,1]){link(body,side*(dW/2+.035),dt-.01,-dL*.35,side*(axX+.03),wr+.05,-L,.025,gold,8);body.add(part(RB(.018,.045,.18,.008,2),accP,side*(dW/2+.028),dh+.035,.05));}
