@@ -447,7 +447,7 @@ const Snd={
   }catch(e){this.ok=false;}
  },
  setVehicle(d){this.def=d||vById(save.selected);if(!this.ok)return;
-  const electric=this.def.kind!=='car'&&this.def.id!=='policeBike';
+  const electric=this.def.kind!=='car'&&this.def.id!=='policeBike'&&this.def.id!=='policeGS';
   this.driveA.o.type=electric?'sine':'sawtooth';this.driveB.o.type=electric?'triangle':'square';
   this.iceA.o.type=electric?'sine':(this.def.id==='policeBike'?'sawtooth':'sawtooth');
   this.iceB.o.type=electric?'triangle':'triangle';
@@ -460,7 +460,7 @@ const Snd={
  click(){this.tone(420,.05,.12,'square');},
  horn(){this.tone(392,.35,.18,'sawtooth');this.tone(494,.35,.14,'sawtooth');},
  update(dt,s){
-  if(!this.ok)return;const c=this.ctx,t=c.currentTime,d=this.def||vById(save.selected),isICE=d.kind==='car'||d.id==='policeBike';
+  if(!this.ok)return;const c=this.ctx,t=c.currentTime,d=this.def||vById(save.selected),isICE=d.kind==='car'||d.id==='policeBike'||d.id==='policeGS';
   const rpm=clamp(.1+s.speedFrac*.66+s.throttle*.62-s.brake*.16,0,1.35),base=d.snd.base||150,mul=d.snd.mul||4.5;
   const fundamental=base*(isICE?.72+rpm*mul:.48+rpm*mul);
   const load=isICE?(s.throttle*.09+s.speedFrac*.035):(s.throttle*.045+s.speedFrac*.025);
@@ -1922,6 +1922,18 @@ function makeVehicle(v){
    const redLamp=part(RB(.09,.045,.04,.01,3),pRed,-.18,.83,-.25),blueLamp=part(RB(.09,.045,.04,.01,3),pBlueLamp,.18,.83,-.25);
    steer.add(redLamp,blueLamp);ud.sirens=[redLamp,blueLamp];
    bike.add(part(new THREE.PlaneGeometry(.3,.055),brandMat('POLIZEI','#174b91'),-.19,.7,.53,0,-Math.PI/2,0));
+  }else if(v.id==='policeGS'){
+   /* BMW F 850 GS-style patrol variant: taller adventure stance, hand guards and compact panniers. */
+   const gsWhite=paintM('#f1f3f4'),gsBlue=paintM('#174b91'),gsYellow=paintM('#d9e52c'),gsBlack=mc('#15191e',.62,.4),gsGlass=mc('#2c4054',.22,.2),gsRed=new THREE.MeshBasicMaterial({color:0xff2638}),gsBlueLamp=new THREE.MeshBasicMaterial({color:0x287cff});
+   bike.add(part(RB(.36,.38,.32,.055,6),gsWhite,0,.69,.28,-.12));
+   bike.add(part(RB(.31,.12,.26,.025,4),gsBlue,0,.52,.34,-.12));
+   bike.add(part(RB(.25,.055,.2,.018,4),gsYellow,0,.44,.36));
+   for(const side of[-1,1]){bike.add(part(RB(.2,.22,.28,.035,4),gsWhite,side*.27,.58,-.24,-.1));bike.add(part(RB(.2,.04,.25,.016,3),gsBlue,side*.27,.48,-.24,-.1));link(bike,side*.18,.62,.26,side*.2,.34,-.12,.018,gsBlack,8);}
+   bike.add(part(RB(.24,.17,.22,.035,4),gsBlack,0,1.0,-.49));
+   steer.add(part(RB(.29,.31,.04,.02,4),gsGlass,0,.65,-.27,-.08));steer.add(part(RB(.24,.13,.09,.02,4),gsWhite,0,.43,-.12));
+   for(const side of[-1,1]){steer.add(part(RB(.075,.045,.09,.015,3),gsBlack,side*.34,.78,-.34));steer.add(part(RB(.08,.045,.045,.01,3),gsYellow,side*.4,.79,-.34));}
+   const gsRedLamp=part(RB(.08,.04,.035,.008,3),gsRed,-.15,.83,-.25),gsBlueLampMesh=part(RB(.08,.04,.035,.008,3),gsBlueLamp,.15,.83,-.25);steer.add(gsRedLamp,gsBlueLampMesh);ud.sirens=[gsRedLamp,gsBlueLampMesh];
+   bike.add(part(new THREE.PlaneGeometry(.27,.05),brandMat('POLIZEI','#174b91'),-.17,.7,.5,0,-Math.PI/2,0));
   }else if(v.id==='lightbee'){
    for(const side of[-1,1]){link(bike,side*.14,.72,.18,side*.095,.42,-.12,.018,chrome,8);bike.add(part(RB(.025,.3,.38,.015,3),plast,side*.145,.62,.1,-.12));}
    bike.add(part(CYL(.105,.105,.23,24,'x'),dark,.12,.4,-.1));bike.add(part(CYL(.055,.055,.24,20,'x'),gold,.125,.4,-.1));
@@ -2300,10 +2312,13 @@ function carsPush(x,z,r,vx,vz){
  return cp.any;
 }
 function carTarget(c){const L=lineAt(c.k);if(c.axis===0){c.tx=c.s;c.tz=L+c.dir*4;c.th=c.dir*Math.PI/2;}else{c.tx=L-c.dir*4;c.tz=c.s;c.th=c.dir>0?0:Math.PI;}}
-const POLICE_BIKE_DEF={id:'policeBike',name:'BMW R 1250 RT-P',kind:'moto',color:'#f1f3f4',accent:'#174b91',scale:1.12,wr:.36,snd:{type:'sawtooth',base:82,mul:5.8}};
+const POLICE_BIKE_DEFS=[
+ {id:'policeBike',name:'BMW R 1250 RT-P',kind:'moto',color:'#f1f3f4',accent:'#174b91',scale:1.12,wr:.36,snd:{type:'sawtooth',base:82,mul:5.8}},
+ {id:'policeGS',name:'BMW F 850 GS · Polizei-Optik',kind:'moto',color:'#f1f3f4',accent:'#174b91',scale:1.04,wr:.35,snd:{type:'sawtooth',base:96,mul:5.2}}
+];
 function spawnPatrolBike(){
- const g=makeVehicle(POLICE_BIKE_DEF),r=attachRider(g,POLICE_BIKE_DEF);scene.add(g);
- const p={g,r,axis:R()<.5?0:1,k:Math.floor(R()*(N+1)),dir:R()<.5?1:-1,s:rr(-HALF,HALF),v:0,vmax:rr(7.5,10),hold:0,ox:0,oz:0,oh:0,tx:0,tz:0,th:0,len:2.35};
+ const def=POLICE_BIKE_DEFS[patrolBikes.length%POLICE_BIKE_DEFS.length],g=makeVehicle(def),r=attachRider(g,def);scene.add(g);
+ const p={g,r,def,axis:R()<.5?0:1,k:Math.floor(R()*(N+1)),dir:R()<.5?1:-1,s:rr(-HALF,HALF),v:0,vmax:rr(7.5,10),hold:0,ox:0,oz:0,oh:0,tx:0,tz:0,th:0,len:2.35};
  carTarget(p);g.position.set(p.tx,0,p.tz);g.rotation.y=p.th;patrolBikes.push(p);return p;
 }
 function spawnCar(type,opts){
