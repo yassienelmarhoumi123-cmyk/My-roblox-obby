@@ -390,7 +390,7 @@ const VEHICLES=[
   desc:'13x5-Zoll-Reifen, hydraulische Federung, Lenkungsdämpfer und Vollschutzbleche. Das Flaggschiff.'}
 ,
  {id:'dt2pro',name:'Ausom DT2 Pro',price:0,admin:true,kind:'scooter',top:120,accel:9.5,brake:11,grip:7,steer:.9,range:130,mass:50,
-  color:'#14110a',accent:'#ffc107',tread:true,wr:.15,tw:.11,deckW:.3,deckL:.62,L:.54,clear:.15,bar:1.02,barW:.68,dual:true,susp:'hyd',stem:'round',display:'round',led:true,fullFender:true,snd:{type:'sawtooth',base:220,mul:5.2},
+  color:'#14110a',accent:'#ffc107',tread:true,wr:.127,tw:.076,deckW:.18,deckL:.525,L:.49,clear:.18,bar:1.02,barW:.68,dual:true,susp:'hyd',stem:'round',display:'round',led:true,fullFender:true,snd:{type:'sawtooth',base:220,mul:5.2},
   desc:'Admin-Roller. Zwei starke Motoren, Hydraulik-Federung und LED-Leisten.'},
  {id:'varg',name:'Stark Varg',price:0,admin:true,kind:'moto',top:195,accel:12,brake:13,grip:10,steer:1.15,range:120,mass:110,
   color:'#eef0f2',accent:'#ff5a00',wr:.335,scale:1.1,snd:{type:'square',base:96,mul:6.5},
@@ -1255,6 +1255,7 @@ function makeVehicle(v){
   if(v.id==='g3max'){ /* Dedicated MAX G3 twin hydraulic shocks are built in its model block. */
   }else if(v.id==='gt3pro'){ /* GT3 Pro trailing-arm dampers are model-specific below. */
   }else if(v.id==='xlimited'){ /* X Limited coil-over units are built in its model block. */
+  }else if(v.id==='dt2pro'){ /* DT2 Pro dual swingarm dampers are built in its model block. */
   }else if(v.id==='zt3pro'){
    /* ZT3 Pro uses a single rear coil shock on a distinct swingarm. */
    link(body,0,wr+.015,-L,0,dt+.015,-dL*.34,.035,alu,10);
@@ -1289,7 +1290,7 @@ function makeVehicle(v){
     baseY=.14;baseZ=-.2;
    }else{
     link(steer,s*axX,0,0,s*.07,.34,-.07,v.susp==='hyd'?.024:.015,chrome,8);
-    if(!['g2max','g3max','zt3pro','gt3d','gt3pro','xlimited'].includes(v.id))coil(steer,s*axX,.08,-.01,s*.07,.3,-.06,v.susp==='hyd'?.045:.032,v.susp==='hyd'?8:6,v.susp==='hyd'?accP:acc);
+    if(!['g2max','g3max','zt3pro','gt3d','gt3pro','xlimited','dt2pro'].includes(v.id))coil(steer,s*axX,.08,-.01,s*.07,.3,-.06,v.susp==='hyd'?.045:.032,v.susp==='hyd'?8:6,v.susp==='hyd'?accP:acc);
     baseY=.36;baseZ=-.08;
    }
   }
@@ -1775,7 +1776,57 @@ function makeVehicle(v){
    body.add(part(RB(.13,.02,.02,.006,3),xWhite,0,wr*2+.2,-L-.405));
   }
   if(v.id==='dt2pro'){
-   for(const side of[-1,1]){link(body,side*(dW/2+.035),dt-.01,-dL*.35,side*(axX+.03),wr+.05,-L,.025,gold,8);body.add(part(RB(.018,.045,.18,.008,2),accP,side*(dW/2+.028),dh+.035,.05));}
+   /* AUSOM DT2 Pro: exact 10x3 tyre/deck proportions, dual swingarms and charcoal/yellow trim. */
+   const aShell=mc('#282b2e',.48,.58),aBlack=mc('#111315',.7,.38),aMetal=mc('#aeb4bb',.24,.88),aYellow=mc('#e3b51d',.32,.62),aRubber=mc('#17191b',.95,.06);
+   const aAmber=new THREE.MeshBasicMaterial({color:0xffa52e}),aWhite=new THREE.MeshBasicMaterial({color:0xf4f6f8}),aBlue=new THREE.MeshBasicMaterial({color:0x55b9ed}),aRed=new THREE.MeshBasicMaterial({color:0xe42e38});
+   /* Long 525 mm deck with grooved upper pad, angular side shells and yellow brand accents. */
+   body.add(part(RB(dW+.055,.13,dL*1.02,.035,6),aShell,0,dh-.025,-.012));
+   body.add(part(RB(dW*.94,.025,dL*.83,.012,5),aBlack,0,dh+.044,-.012));
+   body.add(part(RB(dW*.72,.01,dL*.64,.006,3),aRubber,0,dh+.06,-.02));
+   for(let i=-3;i<=3;i++)body.add(bx(dW*.55,.003,.012,aMetal,i*.012,dh+.066,-.015));
+   for(const side of[-1,1]){
+    body.add(part(RB(.027,.095,dL*.8,.013,5),aBlack,side*(dW/2+.027),dh+.004,-.01));
+    body.add(part(RB(.012,.025,dL*.63,.006,3),aYellow,side*(dW/2+.045),dh+.04,-.012));
+    /* Twin-arm rear suspension, with a separate hydraulic shock and pivot on each side. */
+    link(body,side*(dW/2+.025),dh+.02,-dL*.34,side*(axX+.02),wr+.02,-L,.032,aShell,10);
+    link(body,side*(dW/2+.025),dh+.035,-dL*.34,side*(axX+.02),wr+.15,-L+.015,.019,aBlack,9);
+    link(body,side*(dW/2+.025),dh+.035,-dL*.34,side*(axX+.02),wr+.15,-L+.015,.01,aMetal,8);
+    coil(body,side*(dW/2+.025),dh+.035,-dL*.34,side*(axX+.02),wr+.15,-L+.015,.029,9,aYellow);
+    body.add(part(CYL(.03,.03,.052,14,'x'),aBlack,side*(axX+.025),wr+.15,-L+.015));
+    /* Front swingarm arms and compact hydraulic dampers. */
+    link(steer,side*(dW/2+.02),.07,.04,side*(axX+.015),.02,0,.03,aShell,10);
+    link(steer,side*(dW/2+.02),.11,.035,side*(axX+.015),.27,-.08,.016,aBlack,8);
+    coil(steer,side*(dW/2+.02),.11,.035,side*(axX+.015),.27,-.08,.027,8,aYellow);
+    steer.add(part(CYL(.026,.026,.05,12,'x'),aMetal,side*(axX+.025),.27,-.08));
+   }
+   /* One hydraulic disc brake per wheel with hose runs to the frame. */
+   body.add(part(CYL(wr*.43,wr*.43,.009,32,'x'),aMetal,tw*.68,wr,-L));
+   body.add(part(CYL(wr*.29,wr*.29,.012,28,'x'),aBlack,tw*.69,wr,-L));
+   body.add(part(RB(.07,.105,.075,.012,4),aBlack,tw*.88,wr+.12,-L+.07));
+   link(body,tw*.88,wr+.15,-L+.09,dW*.45,dh+.08,-dL*.22,.004,aBlack,6);
+   steer.add(part(CYL(wr*.43,wr*.43,.009,32,'x'),aMetal,tw*.68,0,0));
+   steer.add(part(CYL(wr*.29,wr*.29,.012,28,'x'),aBlack,tw*.69,0,0));
+   steer.add(part(RB(.07,.105,.075,.012,4),aBlack,tw*.88,.12,.07));
+   link(steer,tw*.88,.15,.09,axX*.82,.29,-.06,.004,aBlack,6);
+   /* Distinctive angled folding head, yellow lock lever and stem cable. */
+   steer.add(part(RB(.13,.18,.12,.025,5),aShell,0,baseY+.1,baseZ-.02));
+   steer.add(part(RB(.07,.13,.035,.012,4),aYellow,0,baseY+.12,baseZ+.055));
+   link(steer,0,baseY+.12,baseZ+.08,0,topY-.14,topZ+.045,.006,aBlack,6);
+   /* 4.5-inch LCD control pod, front lamp and compact amber indicators. */
+   steer.add(part(RB(.19,.085,.12,.02,5),aBlack,0,topY+.075,topZ+.025));
+   steer.add(part(RB(.145,.048,.01,.008,4),aBlue,0,topY+.09,topZ+.09));
+   steer.add(part(RB(.18,.12,.12,.025,5),aBlack,0,topY-.3,topZ+.05));
+   steer.add(part(RB(.12,.05,.014,.01,4),aWhite,0,topY-.29,topZ+.115));
+   for(const side of[-1,1]){
+    steer.add(part(RB(.045,.035,.035,.009,3),aAmber,side*.16,topY-.28,topZ+.055));
+    link(steer,side*.14,topY+.005,topZ,side*.25,topY-.04,topZ+.04,.009,aMetal,8);
+   }
+   /* Rear footrest wing, broad fender and integrated red stop lamp. */
+   body.add(part(RB(dW*.82,.06,.25,.025,5),aBlack,0,dh+.075,-dL*.43));
+   body.add(part(RB(.15,.045,.05,.012,4),aRed,0,wr*2+.13,-L-.29));
+   body.add(part(RB(.1,.02,.018,.006,3),aWhite,0,wr*2+.15,-L-.315));
+   /* Blue ambient deck strip is the DT2 Pro's own lighting signature. */
+   for(const side of[-1,1])body.add(part(RB(.008,.018,dL*.65,.004,3),aBlue,side*(dW/2+.052),dh+.025,0));
   }
  }else{
   const bike=new THREE.Group();body.add(bike);const sc=v.scale||1;bike.scale.setScalar(sc);
