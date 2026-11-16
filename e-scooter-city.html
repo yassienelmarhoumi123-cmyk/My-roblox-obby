@@ -368,8 +368,8 @@ const VEHICLES=[
   color:'#161a20',accent:'#2f7dff',wr:.335,scale:1,snd:{type:'square',base:118,mul:5.0},
   desc:'Leichtes Elektro-Enduro mit Alu-Rahmen, 19-Zoll-Rädern und viel Federweg. Sehr viel Grip, schnelle Richtungswechsel.'},
  {id:'ultrabee',name:'Sur-Ron Ultra Bee',price:6500,kind:'moto',top:90,accel:6.5,brake:10.5,grip:9.0,steer:1.2,range:100,mass:62,
-  color:'#c4161c',accent:'#15181d',wr:.335,scale:1.07,snd:{type:'square',base:104,mul:5.4},
-  desc:'Größer, stärker, mehr Federweg. Stärkere Batterie und kräftige Bremsen. Die Straßenwaffe für Verfolgungen.'},
+  color:'#263a32',accent:'#15191b',wr:.335,scale:1.07,snd:{type:'square',base:104,mul:5.4},
+  desc:'Größeres elektrisches Offroad-Bike mit eigenständigem Rahmen und einstellbarem Fahrwerk.'},
  {id:'g2max',name:'Ninebot G2 Max',price:1200,kind:'scooter',top:40,accel:3.0,brake:7.5,grip:7.0,steer:1.0,range:60,mass:30,
   color:'#d8dde3',accent:'#ff4a3d',tread:true,wr:.127,tw:.09,deckW:.2,deckL:.5,L:.48,clear:.17,bar:.95,barW:.6,susp:'spring',stem:'rect',display:'touch',skeleton:true,snd:{type:'triangle',base:165,mul:4.4},
   desc:'Ninebot Max G2 mit Federung und breiten Reifen.'},
@@ -391,10 +391,10 @@ const VEHICLES=[
 ,
  {id:'dt2pro',name:'Ausom DT2 Pro',price:0,kind:'scooter',top:120,accel:9.5,brake:11,grip:7,steer:.9,range:130,mass:50,
   color:'#14110a',accent:'#ffc107',tread:true,wr:.127,tw:.076,deckW:.18,deckL:.525,L:.49,clear:.18,bar:1.02,barW:.68,dual:true,susp:'hyd',stem:'round',display:'round',led:true,fullFender:true,snd:{type:'sawtooth',base:220,mul:5.2},
-  desc:'Admin-Roller. Zwei starke Motoren, Hydraulik-Federung und LED-Leisten.'},
+  desc:'Elektrischer Dual-Motor-Scooter mit Schwingen-Federung und gelben Akzenten.'},
  {id:'varg',name:'Stark Varg',price:0,kind:'moto',top:195,accel:12,brake:13,grip:10,steer:1.15,range:120,mass:110,
   color:'#eef0f2',accent:'#c5a15a',wr:.335,scale:1,snd:{type:'square',base:96,mul:6.5},
-  desc:'Admin-Elektromotorrad. Fast 200 km/h und brutale Beschleunigung.'},
+  desc:'Elektrisches Motocross-Bike mit schmaler Sitzbank, Chromoly-Rahmen und MX-Fahrwerk.'},
  {id:'aventador',name:'Lamborghini Aventador',price:0,admin:true,kind:'car',top:320,accel:11,brake:15,grip:12,steer:.7,range:200,mass:1600,cr:1.0,
   color:'#f2c500',accent:'#111111',wr:.36,snd:{type:'sawtooth',base:70,mul:9},
   desc:'Admin-Supersportwagen. V12-Leistung und über 300 km/h.'}
@@ -429,38 +429,56 @@ function startAutoSave(){
 }
 
 /* ============================ AUDIO ============================ */
-const Snd={ctx:null,ok:false,t:0,
+const Snd={
+ ctx:null,ok:false,t:0,def:null,
  init(){
   if(this.ctx){if(this.ctx.state==='suspended')this.ctx.resume();return;}
   try{
    const C=window.AudioContext||window.webkitAudioContext;if(!C)return;
-   const c=this.ctx=new C();const m=this.master=c.createGain();m.gain.value=.7;m.connect(c.destination);
-   const nb=c.createBuffer(1,c.sampleRate*2,c.sampleRate),d=nb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;this.nb=nb;
-   const noise=(type,f,q)=>{const s=c.createBufferSource();s.buffer=nb;s.loop=true;const fl=c.createBiquadFilter();fl.type=type;fl.frequency.value=f;fl.Q.value=q||1;const g=c.createGain();g.gain.value=0;s.connect(fl);fl.connect(g);g.connect(m);s.start();return{g,fl};};
-   this.wind=noise('bandpass',500,.6);this.rain=noise('highpass',2500,.4);this.skid=noise('bandpass',1700,3);this.amb=noise('lowpass',260,.5);this.amb.g.gain.value=.05;
-   const eg=this.eg=c.createGain();eg.gain.value=0;const lp=this.elp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.value=2200;
-   this.o1=c.createOscillator();this.o2=c.createOscillator();this.o1.connect(lp);this.o2.connect(lp);lp.connect(eg);eg.connect(m);this.o1.start();this.o2.start();
-   const sg=this.sg=c.createGain();sg.gain.value=0;this.so=c.createOscillator();this.so.type='square';const sl=c.createBiquadFilter();sl.type='lowpass';sl.frequency.value=1800;this.so.connect(sl);sl.connect(sg);sg.connect(m);this.so.start();
+   const c=this.ctx=new C(),master=this.master=c.createGain();master.gain.value=.62;master.connect(c.destination);
+   const nb=c.createBuffer(1,c.sampleRate*2,c.sampleRate),data=nb.getChannelData(0);
+   for(let i=0;i<data.length;i++)data[i]=Math.random()*2-1;this.nb=nb;
+   const noise=(type,f,q)=>{const src=c.createBufferSource();src.buffer=nb;src.loop=true;const fl=c.createBiquadFilter();fl.type=type;fl.frequency.value=f;fl.Q.value=q||1;const g=c.createGain();g.gain.value=0;src.connect(fl);fl.connect(g);g.connect(master);src.start();return{g,fl};};
+   this.wind=noise('bandpass',650,.65);this.road=noise('lowpass',190,.7);this.rain=noise('highpass',2600,.4);this.skid=noise('bandpass',1650,3);
+   const makeTone=(type)=>{const o=c.createOscillator(),f=c.createBiquadFilter(),g=c.createGain();o.type=type;f.type='lowpass';f.frequency.value=1800;g.gain.value=0;o.connect(f);f.connect(g);g.connect(master);o.start();return{o,f,g};};
+   this.driveA=makeTone('sine');this.driveB=makeTone('triangle');this.iceA=makeTone('sawtooth');this.iceB=makeTone('square');
+   this.sirenA=c.createOscillator();this.sirenA.type='triangle';this.sirenGain=c.createGain();this.sirenGain.gain.value=0;const sf=c.createBiquadFilter();sf.type='bandpass';sf.frequency.value=950;sf.Q.value=1.1;this.sirenA.connect(sf);sf.connect(this.sirenGain);this.sirenGain.connect(master);this.sirenA.start();
    this.ok=true;this.setVehicle(vById(save.selected));
   }catch(e){this.ok=false;}
  },
- setVehicle(d){if(!this.ok)return;this.def=d;this.o1.type=d.snd.type;this.o2.type=d.kind==='moto'?'sawtooth':'triangle';},
- tone(f,dur,vol,type,slide){if(!this.ok)return;const c=this.ctx,o=c.createOscillator(),g=c.createGain();o.type=type||'sine';o.frequency.value=f;if(slide)o.frequency.linearRampToValueAtTime(slide,c.currentTime+dur);
-  g.gain.value=vol;g.gain.exponentialRampToValueAtTime(.001,c.currentTime+dur);o.connect(g);g.connect(this.master);o.start();o.stop(c.currentTime+dur+.05);},
- thud(v){if(!this.ok)return;const c=this.ctx,s=c.createBufferSource();s.buffer=this.nb;const f=c.createBiquadFilter();f.type='lowpass';f.frequency.value=380+v*30;const g=c.createGain();g.gain.value=clamp(v/14,.1,.9);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.4);s.connect(f);f.connect(g);g.connect(this.master);s.start();s.stop(c.currentTime+.45);},
+ setVehicle(d){this.def=d||vById(save.selected);if(!this.ok)return;
+  const electric=this.def.kind!=='car'&&this.def.id!=='policeBike';
+  this.driveA.o.type=electric?'sine':'sawtooth';this.driveB.o.type=electric?'triangle':'square';
+  this.iceA.o.type=electric?'sine':(this.def.id==='policeBike'?'sawtooth':'sawtooth');
+  this.iceB.o.type=electric?'triangle':'triangle';
+ },
+ tone(f,dur,vol,type,slide){if(!this.ok)return;const c=this.ctx,o=c.createOscillator(),g=c.createGain();o.type=type||'sine';o.frequency.value=f;if(slide)o.frequency.linearRampToValueAtTime(slide,c.currentTime+dur);g.gain.value=vol;g.gain.exponentialRampToValueAtTime(.001,c.currentTime+dur);o.connect(g);g.connect(this.master);o.start();o.stop(c.currentTime+dur+.05);},
+ power(on){if(!this.ok)return;const d=this.def||vById(save.selected);if(d.kind==='car'||d.id==='policeBike'){this.tone(on?105:150,.42,.07,'sawtooth',on?58:70);}else{this.tone(on?420:560,.22,.035,'sine',on?780:180);this.tone(on?210:280,.3,.025,'triangle',on?330:90);}},
+ thud(v){if(!this.ok)return;const c=this.ctx,src=c.createBufferSource();src.buffer=this.nb;const f=c.createBiquadFilter();f.type='lowpass';f.frequency.value=380+v*30;const g=c.createGain();g.gain.value=clamp(v/14,.1,.9);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.4);src.connect(f);f.connect(g);g.connect(this.master);src.start();src.stop(c.currentTime+.45);},
  chime(){this.tone(660,.18,.2,'triangle');setTimeout(()=>this.tone(880,.18,.2,'triangle'),120);setTimeout(()=>this.tone(1320,.35,.2,'triangle'),250);},
  buy(){this.tone(520,.12,.2,'square');setTimeout(()=>this.tone(780,.2,.2,'square'),110);},
  click(){this.tone(420,.05,.12,'square');},
  horn(){this.tone(392,.35,.18,'sawtooth');this.tone(494,.35,.14,'sawtooth');},
  update(dt,s){
-  if(!this.ok)return;const c=this.ctx,t=c.currentTime,d=this.def||VEHICLES[4];
-  const f=d.snd.base*(1+s.speedFrac*d.snd.mul)+s.throttle*18;
-  this.o1.frequency.setTargetAtTime(f,t,.05);this.o2.frequency.setTargetAtTime(f*(d.kind==='moto'?1.5:2.01),t,.05);
-  this.elp.frequency.setTargetAtTime(900+s.speedFrac*2600+s.throttle*600,t,.08);
-  this.eg.gain.setTargetAtTime(s.mounted?(.035+.05*s.throttle+.035*s.speedFrac)*(d.kind==='moto'?1.2:1):0,t,.08);
-  this.wind.g.gain.setTargetAtTime(s.mounted?s.speedFrac*s.speedFrac*.22:0,t,.1);this.wind.fl.frequency.setTargetAtTime(350+s.speedFrac*1800,t,.1);
-  this.rain.g.gain.setTargetAtTime(s.rain*.07,t,.4);this.skid.g.gain.setTargetAtTime(s.slip,t,.05);
-  this.t+=dt;const hi=(this.t%1.1)<.55;this.so.frequency.setTargetAtTime(hi?640:480,t,.03);this.sg.gain.setTargetAtTime(s.siren*.06,t,.1);
+  if(!this.ok)return;const c=this.ctx,t=c.currentTime,d=this.def||vById(save.selected),isICE=d.kind==='car'||d.id==='policeBike';
+  const rpm=clamp(.1+s.speedFrac*.66+s.throttle*.62-s.brake*.16,0,1.35),base=d.snd.base||150,mul=d.snd.mul||4.5;
+  const fundamental=base*(isICE?.72+rpm*mul:.48+rpm*mul);
+  const load=isICE?(s.throttle*.09+s.speedFrac*.035):(s.throttle*.045+s.speedFrac*.025);
+  this.driveA.o.frequency.setTargetAtTime(fundamental,t,.055);
+  this.driveB.o.frequency.setTargetAtTime(fundamental*(isICE?2.02:1.51),t,.065);
+  this.iceA.o.frequency.setTargetAtTime(fundamental*.5,t,.07);
+  this.iceB.o.frequency.setTargetAtTime(fundamental*(isICE?3.02:2.26),t,.07);
+  for(const n of[this.driveA,this.driveB,this.iceA,this.iceB])n.f.frequency.setTargetAtTime(isICE?2400:3200,t,.12);
+  const active=s.mounted?1:0;
+  this.driveA.g.gain.setTargetAtTime(active*(isICE?.012:.026+load),t,.08);
+  this.driveB.g.gain.setTargetAtTime(active*(isICE?.009:.014+s.throttle*.018),t,.09);
+  this.iceA.g.gain.setTargetAtTime(active*(isICE?.045+s.throttle*.035:0),t,.08);
+  this.iceB.g.gain.setTargetAtTime(active*(isICE?.018+s.throttle*.018:0),t,.1);
+  this.wind.g.gain.setTargetAtTime(active*s.speedFrac*s.speedFrac*.2,t,.12);
+  this.wind.fl.frequency.setTargetAtTime(300+s.speedFrac*1900,t,.12);
+  this.road.g.gain.setTargetAtTime(active*(.008+s.speedFrac*.025),t,.16);
+  this.rain.g.gain.setTargetAtTime(s.rain*.055,t,.4);this.skid.g.gain.setTargetAtTime(s.slip,t,.06);
+  this.t+=dt;const hi=(this.t%1.05)<.52;this.sirenA.frequency.setTargetAtTime(hi?880:660,t,.035);this.sirenGain.gain.setTargetAtTime(s.siren*.055,t,.12);
  }
 };
 
@@ -1461,6 +1479,8 @@ function makeVehicle(v){
    }
   }
   if(v.id==='zt3pro'){
+   const zFork=mc('#30363d',.48,.58),zSlider=mc('#aeb7c0',.22,.9);
+   for(const side of[-1,1]){link(steer,side*.105,.33,-.065,side*.105,.055,-.065,.041,zFork,12);link(steer,side*.105,.22,-.065,side*.105,.055,-.065,.022,zSlider,10);steer.add(part(RB(.072,.18,.085,.016,4),zFork,side*.105,.15,-.06));}
    const fy=topY-.3,fz=topZ+.055;
    link(steer,-.105,fy-.055,fz,.105,fy+.055,fz,.012,dark,8);link(steer,.105,fy-.055,fz,-.105,fy+.055,fz,.012,dark,8);
    steer.add(part(RB(.16,.035,.025,.008,2),lightM,0,fy-.09,fz+.012));
@@ -1883,7 +1903,26 @@ function makeVehicle(v){
   steer.add(part(RB(.14,.15,.02,.01,1),mc('#e8e8e4',.5,0),0,.72,-.1,-.2));
   ud.seat=new THREE.Vector3(0,.84*sc,-.33*sc);ud.peg=new THREE.Vector3(0,.32*sc,-.04*sc);ud.grip={y:(wrF+.78)*sc,z:(FZ-.34)*sc};ud.eye=new THREE.Vector3(0,1.58,-.05);ud.rider='sit';ud.wheelbase=(FZ-RZ)*sc;
   /* Model-specific electric dirt-bike bodywork and visible drivetrain details. */
-  if(v.id==='lightbee'){
+  if(v.id==='policeBike'){
+   /* BMW R 1250 RT-P-inspired touring patrol silhouette: fairing, screen, panniers and blue/white/yellow livery. */
+   const pWhite=paintM('#f1f3f4'),pBlue=paintM('#174b91'),pYellow=paintM('#d9e52c'),pBlack=mc('#15191e',.58,.4),pGlass=mc('#26394c',.22,.2),pRed=new THREE.MeshBasicMaterial({color:0xff2638}),pBlueLamp=new THREE.MeshBasicMaterial({color:0x287cff});
+   bike.add(part(RB(.52,.52,.34,.07,7),pWhite,0,.68,.34,-.08));
+   bike.add(part(RB(.47,.19,.32,.035,5),pBlue,0,.53,.36,-.08));
+   bike.add(part(RB(.43,.055,.18,.018,4),pYellow,0,.43,.39));
+   for(const side of[-1,1]){
+    bike.add(part(RB(.22,.25,.32,.045,5),pWhite,side*.31,.57,-.23,-.05));
+    bike.add(part(RB(.22,.045,.29,.02,4),pBlue,side*.31,.47,-.23,-.05));
+    bike.add(part(RB(.16,.12,.16,.03,4),pBlack,side*.22,.34,-.12));
+   }
+   bike.add(part(RB(.28,.18,.25,.04,5),pBlack,0,1.02,-.53));
+   bike.add(part(RB(.28,.025,.23,.012,3),pBlue,0,1.12,-.53));
+   steer.add(part(RB(.34,.34,.045,.025,5),pGlass,0,.64,-.27,-.12));
+   steer.add(part(RB(.29,.13,.1,.025,5),pWhite,0,.42,-.12));
+   steer.add(part(RB(.2,.07,.025,.012,4),pBlue,0,.43,-.055));
+   const redLamp=part(RB(.09,.045,.04,.01,3),pRed,-.18,.83,-.25),blueLamp=part(RB(.09,.045,.04,.01,3),pBlueLamp,.18,.83,-.25);
+   steer.add(redLamp,blueLamp);ud.sirens=[redLamp,blueLamp];
+   bike.add(part(new THREE.PlaneGeometry(.3,.055),brandMat('POLIZEI','#174b91'),-.19,.7,.53,0,-Math.PI/2,0));
+  }else if(v.id==='lightbee'){
    for(const side of[-1,1]){link(bike,side*.14,.72,.18,side*.095,.42,-.12,.018,chrome,8);bike.add(part(RB(.025,.3,.38,.015,3),plast,side*.145,.62,.1,-.12));}
    bike.add(part(CYL(.105,.105,.23,24,'x'),dark,.12,.4,-.1));bike.add(part(CYL(.055,.055,.24,20,'x'),gold,.125,.4,-.1));
   }else if(v.id==='ultrabee'){
@@ -2072,7 +2111,7 @@ const F={x:0,z:0,h:0,y:0,spd:0,ph:0};
 let mounted=true,state='loading',camMode=1,helpFrom='main',simT=0,shake=0,lightsOn=true,gSel=0,helpBack=null;
 const trip={km:0,save:0};
 let vdef=vById('g2max'),veh=null,rider=null,avatar=null,spot=null,marker=null,prevMesh=null;
-const cars=[],chasers=[],peds=[];
+const cars=[],chasers=[],peds=[],patrolBikes=[];
 const W={level:0,chaseT:0,unseen:0,need:9,bust:0,cool:0,spawnT:0,spdT:0,redCool:0,patrolT:0};
 const camNames=['Ich-Sicht','Dritte Person','Kino','Frei'];
 
@@ -2159,10 +2198,10 @@ function toggleMount(){
   if(Math.hypot(V.vx,V.vz)>1.8){toast('Zum Absteigen anhalten','bad');return;}
   mounted=false;V.vx=V.vz=0;{const k=vdef.kind==='car'?2.0:1.1;F.x=V.x+Math.cos(V.h)*k;F.z=V.z-Math.sin(V.h)*k;}F.h=V.h;F.spd=0;
   collide(F.x,F.z,.4);if(hit.any){F.x=hit.x;F.z=hit.z;}
-  avatar.visible=true;
+  avatar.visible=true;Snd.power(false);
  }else{
   if(Math.hypot(F.x-V.x,F.z-V.z)>3.4){toast('Zu weit vom Fahrzeug entfernt','bad');return;}
-  mounted=true;avatar.visible=false;
+  mounted=true;avatar.visible=false;Snd.power(true);
  }
 }
 function stepVehicle(dt,live){
@@ -2257,9 +2296,16 @@ function carsPush(x,z,r,vx,vz){
   }};
  for(const c of cars)test(c,c.len,CARDEF[c.type].w,c.axis===0?c.dir*c.v:0,c.axis===1?c.dir*c.v:0,false);
  for(const c of chasers)test(c,4.8,1.9,Math.sin(c.h)*c.v,Math.cos(c.h)*c.v,true);
+ for(const p of patrolBikes)test(p,p.len,.92,p.axis===0?p.dir*p.v:0,p.axis===1?p.dir*p.v:0,true);
  return cp.any;
 }
 function carTarget(c){const L=lineAt(c.k);if(c.axis===0){c.tx=c.s;c.tz=L+c.dir*4;c.th=c.dir*Math.PI/2;}else{c.tx=L-c.dir*4;c.tz=c.s;c.th=c.dir>0?0:Math.PI;}}
+const POLICE_BIKE_DEF={id:'policeBike',name:'BMW R 1250 RT-P',kind:'moto',color:'#f1f3f4',accent:'#174b91',scale:1.12,wr:.36,snd:{type:'sawtooth',base:82,mul:5.8}};
+function spawnPatrolBike(){
+ const g=makeVehicle(POLICE_BIKE_DEF),r=attachRider(g,POLICE_BIKE_DEF);scene.add(g);
+ const p={g,r,axis:R()<.5?0:1,k:Math.floor(R()*(N+1)),dir:R()<.5?1:-1,s:rr(-HALF,HALF),v:0,vmax:rr(7.5,10),hold:0,ox:0,oz:0,oh:0,tx:0,tz:0,th:0,len:2.35};
+ carTarget(p);g.position.set(p.tx,0,p.tz);g.rotation.y=p.th;patrolBikes.push(p);return p;
+}
 function spawnCar(type,opts){
  const colr=type==='bus'?pick(['#d9a521','#2c6fb0','#2e8b57']):type==='police'?'#16213f':type==='taxi'?'#f2c200':pick(CARCOL);
  const g=makeCar(type,colr);scene.add(g);
@@ -2272,6 +2318,10 @@ function updateLenses(sg){
  for(const key in lensMats){const ax=key.slice(0,2),c=key.slice(2),st=ax==='ns'?sg.ns:sg.ew;const on=st===c;lensMats[key].color.copy(lensOn[c]).multiplyScalar(on?1:.1);}
 }
 function updateTraffic(dt,f,sg){
+ const laneNext=new Map(),lanes=new Map();
+ for(const c of cars){const key=c.axis+':'+c.k+':'+c.dir;if(!lanes.has(key))lanes.set(key,[]);lanes.get(key).push(c);}
+ for(const p of patrolBikes){const key=p.axis+':'+p.k+':'+p.dir;if(!lanes.has(key))lanes.set(key,[]);lanes.get(key).push(p);}
+ for(const a of lanes.values()){a.sort((x,y)=>(x.s*x.dir)-(y.s*y.dir));for(let i=0;i<a.length-1;i++)laneNext.set(a[i],a[i+1]);}
  for(const c of cars){
   let vdes=c.vmax;
   const st=c.axis===0?sg.ew:sg.ns,u=(c.s+HALF)/CELL;
@@ -2279,7 +2329,7 @@ function updateTraffic(dt,f,sg){
   const dist=(lineAt(m)-c.s)*c.dir;
   if(st!=='g'&&dist>12&&dist<15.5+c.v*c.v/7+4){vdes=Math.min(vdes,Math.sqrt(2*3*Math.max(dist-15.5,0)));}
   if(st==='y'&&dist<18)vdes=c.vmax;
-  for(const o of cars){if(o===c||o.axis!==c.axis||o.k!==c.k||o.dir!==c.dir)continue;const gap=(o.s-c.s)*c.dir-(c.len+o.len)/2;if(gap>-1&&gap<26)vdes=Math.min(vdes,Math.max(0,gap-2.2)*1.1);}
+  {const o=laneNext.get(c);if(o){const gap=(o.s-c.s)*c.dir-(c.len+(o.len||CARDEF[o.type]?.l||2.35))/2;if(gap>-1&&gap<30)vdes=Math.min(vdes,Math.max(0,gap-2.8)*.95);}}
   {const along=c.axis===0?(f.x-c.s)*c.dir:(f.z-c.s)*c.dir,lat=c.axis===0?f.z-c.tz:f.x-c.tx;if(along>0&&along<20&&Math.abs(lat)<2.4)vdes=Math.min(vdes,Math.max(0,along-4)*1.1);}
   if(c.hold>0){c.hold-=dt;vdes=0;}
   c.v+=clamp(vdes-c.v,-8*dt,2.6*dt);if(c.v<.02&&vdes===0)c.v=0;
@@ -2298,12 +2348,26 @@ function updateTraffic(dt,f,sg){
   const near=Math.hypot(c.g.position.x-f.x,c.g.position.z-f.z)<280;c.g.visible=near;
   if(near){const ws=c.g.userData.wheels,rad=c.type==='bus'?.5:.34;for(const w of ws)w.rotation.x+=c.v*dt/rad;}
  }
+ for(const p of patrolBikes){
+  let vdes=p.vmax;const st=p.axis===0?sg.ew:sg.ns,u=(p.s+HALF)/CELL;let m=p.dir>0?Math.ceil(u-1e-4):Math.floor(u+1e-4);m=clamp(m,0,N);
+  const dist=(lineAt(m)-p.s)*p.dir;
+  if(st!=='g'&&dist>10&&dist<18+p.v*p.v/8)vdes=Math.min(vdes,Math.sqrt(2*2.6*Math.max(dist-10,0)));
+  const o=laneNext.get(p);if(o){const gap=(o.s-p.s)*p.dir-(p.len+(o.len||CARDEF[o.type]?.l||2.35))/2;if(gap>-1&&gap<28)vdes=Math.min(vdes,Math.max(0,gap-3)*.9);}
+  p.v+=clamp(vdes-p.v,-7*dt,2.2*dt);const before=dist;p.s+=p.dir*p.v*dt;const after=(lineAt(m)-p.s)*p.dir;
+  if(before>0&&after<=0&&p.v>.5&&st==='g'){p.k=m;}
+  if(p.s>HALF+30)p.s=-HALF-30;else if(p.s<-HALF-30)p.s=HALF+30;
+  carTarget(p);p.g.position.set(p.tx,0,p.tz);p.g.rotation.y=p.th;
+  const near=Math.hypot(p.tx-f.x,p.tz-f.z)<260;p.g.visible=near;
+  if(near){for(const w of p.g.userData.wheels)w.rotation.x+=p.v*dt/.36;}
+  if(p.g.userData.sirens){const on=Math.sin(simT*9)>0;p.g.userData.sirens[0].visible=on;p.g.userData.sirens[1].visible=!on;}
+ }
 }
 function buildTraffic(){
- const nCar=MOBILE?100:180;
+ const nCar=MOBILE?112:210;
  for(let i=0;i<nCar;i++){const c=spawnCar(i%8===0?'taxi':pick(['hatch','sedan','suv','van','sedan','hatch','sport','suv']));for(let t=0;t<12&&cars.some(o=>o!==c&&o.axis===c.axis&&o.k===c.k&&o.dir===c.dir&&Math.abs(o.s-c.s)<14);t++){c.s=rr(-HALF,HALF);carTarget(c);}c.g.position.set(c.tx,0,c.tz);c.g.rotation.y=c.th;}
- for(let i=0;i<(MOBILE?5:10);i++)spawnCar('bus');
+ for(let i=0;i<(MOBILE?7:13);i++)spawnCar('bus');
  for(let i=0;i<(MOBILE?12:24);i++)spawnCar('police');
+ for(let i=0;i<(MOBILE?2:4);i++)spawnPatrolBike();
  /* first patrol close to the garage so the first chase is easy to start */
  const p0=cars.find(c=>c.cop);if(p0){p0.axis=0;p0.k=5;p0.dir=1;p0.s=GARAGE.x+70;carTarget(p0);p0.g.position.set(p0.tx,0,p0.tz);p0.g.rotation.y=p0.th;}
  /* keep clear of the spawn pad */
@@ -2955,7 +3019,7 @@ function update(dt){
  if(play||state==='pause')updateHUD(dt,f,vf);
  updateCamera(sim?dt:.0001);
  let siren=0;if(W.level>0)for(const c of chasers)siren=Math.max(siren,clamp(1-Math.hypot(c.x-f.x,c.z-f.z)/150,0,1));
- Snd.update(dt,{speedFrac:clamp(Math.abs(vf)/(vdef.top/3.6),0,1),throttle:play&&mounted?inp.gas:0,mounted:play&&mounted,rain:wx.cur.rain,slip:play&&mounted?clamp(V.slip*clamp(Math.abs(vf)/6,0,1),0,.1):0,siren:state==='pause'?0:siren});
+ Snd.update(dt,{speedFrac:clamp(Math.abs(vf)/(vdef.top/3.6),0,1),throttle:play&&mounted?inp.gas:0,brake:play&&mounted?inp.brake:0,mounted:play&&mounted,rain:wx.cur.rain,slip:play&&mounted?clamp(V.slip*clamp(Math.abs(vf)/6,0,1),0,.1):0,siren:state==='pause'?0:siren});
 }
 let errShown=false;
 function frame(now){
