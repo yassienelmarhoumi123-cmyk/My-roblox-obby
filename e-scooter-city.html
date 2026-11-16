@@ -51,6 +51,7 @@ button:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
 #battfill{height:100%;width:100%;background:var(--ok)}
 #battpct{position:absolute;right:0;top:-20px;font:700 12px var(--display);letter-spacing:.1em;color:var(--mute)}
 #vname{position:absolute;left:0;top:-22px;font:700 12px var(--display);letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+#drive-modes{position:fixed;z-index:950;left:50%;transform:translateX(-50%);bottom:calc(190px + env(safe-area-inset-bottom,0px));display:flex;gap:5px;padding:6px;background:rgba(9,14,21,.88);border:1px solid rgba(255,255,255,.2);border-radius:12px;box-shadow:0 5px 18px #0008;pointer-events:auto;max-width:94vw}#drive-modes[hidden]{display:none}#drive-modes button{border:1px solid #526071;background:#1b2531;color:#dbe4ee;border-radius:8px;padding:7px 11px;font:800 12px var(--display);letter-spacing:.05em;white-space:nowrap}#drive-modes button.active{background:#ffd400;color:#1a1500;border-color:#ffd400}#drive-modes small{display:block;font:600 9px var(--display);opacity:.75;margin-top:2px}@media(max-width:600px){#drive-modes{bottom:calc(186px + env(safe-area-inset-bottom,0px));gap:3px;padding:4px}#drive-modes button{padding:6px 8px;font-size:11px}}
 #prompt{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(184px + env(safe-area-inset-bottom,0px));font:700 20px var(--display);letter-spacing:.06em;background:var(--paper);color:var(--ink);padding:5px 14px;white-space:nowrap}
 #prompt b{background:var(--ink);color:var(--paper);padding:1px 8px;margin-right:8px}
 #toasts{position:absolute;left:50%;transform:translateX(-50%);top:calc(84px + env(safe-area-inset-top,0px));display:grid;gap:6px;justify-items:center;width:min(92vw,520px)}
@@ -181,6 +182,7 @@ button:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
     <div id="batt"><div id="battfill"></div></div>
     <div id="trip"><span id="trip1">Fahrt 0,0 km</span><span id="odo">Gesamt 0 km</span></div>
   </div>
+  <div id="drive-modes" hidden aria-label="Fahrmodus"></div>
   <div id="camname"></div>
 </div>
 
@@ -1250,6 +1252,9 @@ function makeVehicle(v){
   body.add(bx(.14,.03,.05,tailM,0,wr*2+.03,-L-wr*1.3));body.add(bx(.06,.03,.02,mc('#f0f0f0',.3,.2),0,wr*2+.07,-L-wr*1.35));
   for(const s of[-1,1])body.add(bx(.05,.025,.03,orgM,s*.09,wr*2+.05,-L-wr*1.28));
   const wR=wheelGroup(wr,tw,'scooter',acc,v.tread);wR.position.set(0,wr,-L);body.add(wR);ud.wheels.push(wR);
+  /* Disc-brake hardware and axle caps add visible mechanical detail. */
+  for(const side of[-1,1]){body.add(part(CYL(wr*.48,wr*.48,.008,28,'x'),chrome,side*(tw*.5+.006),wr,-L));body.add(part(CYL(wr*.12,wr*.12,.014,16,'x'),gold,side*(tw*.5+.012),wr,-L));}
+  body.add(bx(dW*.72,.018,.012,mc('#f5f0d8',.2,.25),0,dh+.015,-dL*.43));
   /* rear suspension */
   const axX=tw/2+.035;
   for(const s of[-1,1]){
@@ -1264,6 +1269,7 @@ function makeVehicle(v){
   /* steering assembly (pivot = front axle) */
   const steer=new THREE.Group();steer.position.set(0,wr,L);body.add(steer);ud.steer=steer;
   const wF=wheelGroup(wr,tw,'scooter',acc,v.tread);steer.add(wF);ud.wheels.push(wF);
+  for(const side of[-1,1]){steer.add(part(CYL(wr*.43,wr*.43,.007,28,'x'),chrome,side*(tw*.5+.005),0,0));steer.add(part(CYL(wr*.1,wr*.1,.012,14,'x'),gold,side*(tw*.5+.01),0,0));}
   steer.add(part(arcFender(wr*1.2,tw+.06,Math.PI*.36,Math.PI*(v.fullFender?.99:.9)),frame,0,0,0));
   const hb=v.bar,sTilt=v.id==='g4'?-.2:-.1;
   let baseY=.2,baseZ=-.04;
@@ -1308,6 +1314,7 @@ function makeVehicle(v){
   const wr=.335,RZ=-.62,FZ=.64;
   const plast=frame,plast2=v.id==='ultrabee'?mc('#15181d',.4,.4):accP;
   const wR=wheelGroup(wr,.1,'moto');wR.position.set(0,wr,RZ);bike.add(wR);ud.wheels.push(wR);
+  for(const side of[-1,1]){bike.add(part(CYL(wr*.52,wr*.52,.008,32,'x'),chrome,side*.057,wr,RZ));bike.add(part(CYL(wr*.12,wr*.12,.012,16,'x'),gold,side*.064,wr,RZ));}
   const P=[0,.4,-.1],H=[0,.93,.34];
   for(const s of[-1,1]){
    link(bike,s*.085,P[1],P[2],s*.07,wr,RZ,.026,alu,8);                    /* swingarm */
@@ -1417,6 +1424,11 @@ function makeG4(v){
 const V={wh:0,whT:0,whD:0,x:GARAGE.x,z:GARAGE.z-2,h:GARAGE.h,y:.15,vx:0,vz:0,steer:0,yaw:0,lean:0,pitch:0,thr:0,slip:0,batt:100,pvf:0};
 const F={x:0,z:0,h:0,y:0,spd:0,ph:0};
 let mounted=true,state='loading',camMode=1,helpFrom='main',simT=0,shake=0,lightsOn=true,gSel=0,helpBack=null;
+let driveMode=0;const DRIVE_PROFILES={segway:[['Walk',6,.24],['Eco',22,.48],['Drive',34,.76],['Sport',1,1]],sport:[['Eco',30,.5],['Sport',.78,.82],['Race',1,1]],moto:[['Stufe 1',.52,.52],['Stufe 2',.76,.78],['Stufe 3',1,1]]};
+function driveFamily(d){if(!d||d.kind==='car')return null;if(d.kind==='moto')return 'moto';if(/^ausom/i.test(d.name)||d.name.toLowerCase().includes('dualtron')||d.id==='g4'||d.id==='g2master')return 'sport';if(/ninebot|segway/i.test(d.name))return 'segway';return 'sport';}
+function driveProfile(d){const family=driveFamily(d);return family?DRIVE_PROFILES[family]:null;}
+function renderDriveModes(){const box=$('drive-modes'),profiles=driveProfile(vdef);box.innerHTML='';if(!profiles||!mounted){box.hidden=true;return;}box.hidden=false;driveMode=clamp(driveMode,0,profiles.length-1);profiles.forEach((p,i)=>{const b=document.createElement('button');b.className=i===driveMode?'active':'';b.innerHTML=p[0]+'<small>'+Math.round((p[1]===1?vdef.top:vdef.top*p[1]))+' km/h</small>';b.onclick=()=>{driveMode=i;renderDriveModes();toast('Fahrmodus: '+p[0]);};box.appendChild(b);});}
+function activeDriveProfile(d){const profiles=driveProfile(d);return profiles?profiles[driveMode]||profiles[0]:null;}
 const trip={km:0,save:0};
 let vdef=vById('g2max'),veh=null,rider=null,avatar=null,spot=null,marker=null,prevMesh=null;
 const cars=[],chasers=[],peds=[];
@@ -1429,8 +1441,8 @@ function toast(msg,cls,ttl){const t=document.createElement('div');t.className='t
 const SCREENS={firstpick:'s-firstpick',main:'s-main',pause:'s-pause',garage:'s-garage',help:'s-help',busted:'s-busted'};
 function setState(s){
  state=s;for(const k in SCREENS)$(SCREENS[k]).hidden=(k!==s);
- $('hud').hidden=!(s==='play'||s==='pause'||s==='busted');$('touch').hidden=(s!=='play');$('phone-open').style.display=(s==='play'||s==='pause')?'block':'none';if(s!=='play'&&s!=='pause'&&typeof phoneClose==='function')phoneClose(); 
- if(s==='main')refreshMain();
+ $('hud').hidden=!(s==='play'||s==='pause'||s==='busted');$('touch').hidden=(s!=='play');$('drive-modes').hidden=!(s==='play'&&mounted);$('phone-open').style.display=(s==='play'||s==='pause')?'block':'none';if(s!=='play'&&s!=='pause'&&typeof phoneClose==='function')phoneClose(); 
+ if(s==='main')refreshMain();if(s==='play')renderDriveModes();
 }
 function refreshMain(){
  setT('m-vehicle',vById(save.selected).name);setT('m-owned',save.owned.length+' / '+VEHICLES.filter(v=>(!v.admin||save.admin)&&(!v.codeOnly||save.owned.includes(v.id))).length);setT('m-money',money(save.money));setT('m-esc',String(save.escapes));setT('m-km',num1(save.totalKm)+' km');
@@ -1489,7 +1501,7 @@ function cycleWeather(){wmI=(wmI+1)%WMODES.length;const m=WMODES[wmI];if(m==='au
 /* ============================ VEHICLE / PLAYER ============================ */
 function spawnVehicle(def){
  if(veh){scene.remove(veh);}
- vdef=def;veh=makeVehicle(def);scene.add(veh);
+ vdef=def;driveMode=def.kind==='moto'?2:(driveFamily(def)==='segway'?2:1);veh=makeVehicle(def);scene.add(veh);renderDriveModes();
  rider=attachRider(veh,def);
  spot=new THREE.SpotLight(0xfff2d0,0,75,.55,.65,1.2);spot.position.set(0,.9,.5);const tg=new THREE.Object3D();tg.position.set(0,.2,14);veh.add(tg);spot.target=tg;veh.add(spot);
  if(Snd.ok)Snd.setVehicle(def);
@@ -1504,35 +1516,36 @@ function nearGarage(){const f=focus();return Math.hypot(f.x-GARAGE.x,f.z-GARAGE.
 function toggleMount(){
  if(mounted){
   if(Math.hypot(V.vx,V.vz)>1.8){toast('Zum Absteigen anhalten','bad');return;}
-  mounted=false;V.vx=V.vz=0;{const k=vdef.kind==='car'?2.0:1.1;F.x=V.x+Math.cos(V.h)*k;F.z=V.z-Math.sin(V.h)*k;}F.h=V.h;F.spd=0;
+  mounted=false;V.vx=V.vz=0;renderDriveModes();{const k=vdef.kind==='car'?2.0:1.1;F.x=V.x+Math.cos(V.h)*k;F.z=V.z-Math.sin(V.h)*k;}F.h=V.h;F.spd=0;
   collide(F.x,F.z,.4);if(hit.any){F.x=hit.x;F.z=hit.z;}
   avatar.visible=true;
  }else{
   if(Math.hypot(F.x-V.x,F.z-V.z)>3.4){toast('Zu weit vom Fahrzeug entfernt','bad');return;}
-  mounted=true;avatar.visible=false;
+  mounted=true;avatar.visible=false;renderDriveModes();
  }
 }
 function stepVehicle(dt,live){
- const d=vdef;
+ const d=vdef,profile=activeDriveProfile(d),modeTop=profile?(profile[1]===1?d.top:d.top*profile[1]):d.top,modeAccel=d.accel*(profile?profile[2]:1),modeBrake=d.brake*(profile?(0.88+profile[2]*.12):1);
  const th=live?inp.gas:0,br=live?inp.brake:0,hb=live?inp.hand:0,st=live?(inp.left-inp.right):0;
  let f0=Math.sin(V.h),f1=Math.cos(V.h);
  let vf=V.vx*f0+V.vz*f1;
  /* steering and yaw */
  V.steer=damp(V.steer,st,hb?9:7,dt);
  const sp=Math.abs(vf),sg=vf>=0?1:-1;
- const yawT=V.steer*d.steer*2.1*clamp(sp/3,0,1)/(1+sp/15)*sg*(hb?1.55:1)*(1-.45*clamp(V.wh/.7,0,1));
+ const stability=1-.22*clamp(sp/18,0,1);const yawT=V.steer*d.steer*2.0*clamp(sp/2.5,0,1)/(1+sp/18)*sg*(hb?1.3:1)*stability*(1-.5*clamp(V.wh/.7,0,1));
  V.yaw=damp(V.yaw,yawT,10,dt);V.h+=V.yaw*dt;
  f0=Math.sin(V.h);f1=Math.cos(V.h);const r0=-Math.cos(V.h),r1=Math.sin(V.h);
  vf=V.vx*f0+V.vz*f1;let vl=V.vx*r0+V.vz*r1;
  /* longitudinal */
- const topMs=d.top/3.6*(V.batt>0?1:.2);V.thr=damp(V.thr,th,8,dt);
- if(th&&vf<topMs)vf+=d.accel*dt*(1.12-.95*clamp(vf/topMs,0,1));
+ const topMs=modeTop/3.6*(V.batt>0?1:.2);V.thr=damp(V.thr,th,8,dt);
+ const traction=1-.18*clamp(V.slip,0,1)-.12*wx.wet;
+ if(th&&vf<topMs)vf+=modeAccel*dt*(1.08-.9*clamp(vf/topMs,0,1))*Math.max(.62,traction);
  if(vf>topMs)vf=damp(vf,topMs,2,dt);
- if(br){if(vf>.4)vf-=d.brake*dt;else if(vf>-3.5)vf-=2.8*dt;}
- if(hb)vf-=Math.sign(vf)*Math.min(Math.abs(vf),d.brake*.45*dt);
+ if(br){if(vf>.4)vf-=modeBrake*dt;else if(vf>-3.5)vf-=2.8*dt;}
+ if(hb)vf-=Math.sign(vf)*Math.min(Math.abs(vf),modeBrake*.38*dt);
  if(!th&&!br)vf-=Math.sign(vf)*Math.min(Math.abs(vf),(.55+.004*vf*vf)*dt);
  /* lateral grip */
- const grip=d.grip*(1-.3*wx.wet)*(hb?.17:1)*1.7;vl*=Math.exp(-grip*dt);
+ const grip=d.grip*(1-.42*wx.wet)*(hb?.24:1)*1.85;vl*=Math.exp(-grip*dt);
  V.slip=clamp(Math.abs(vl)/5,0,1);
  V.vx=f0*vf+r0*vl;V.vz=f1*vf+r1*vl;
  /* integrate with substeps */
