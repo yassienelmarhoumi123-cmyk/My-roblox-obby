@@ -2103,7 +2103,7 @@ function mpClientMessage(d){
  if(!d)return;
  if(d.type==='player')MP.players.set(d.id,d.player);
  if(d.type==='leave')MP.players.delete(d.id);
- if(d.type==='state'&&d.players){MP.players.clear();for(const p of d.players)MP.players.set(p.id,p);}
+ if(d.type==='state'&&d.players){MP.players.clear();for(const p of d.players)MP.players.set(p.id,p.player||p);}
 }
 function mpTick(dt){
  if(!MP.peer||MP.peer.destroyed||state!=='play'||MP.room<0)return;
