@@ -182,9 +182,9 @@ button:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
 
 <style>
 #phone-open{position:fixed;z-index:100000;right:18px;bottom:24px;top:auto;pointer-events:auto;background:#18202b;border:2px solid var(--cyan);color:#fff;padding:10px 15px;font:800 17px var(--display);letter-spacing:.1em;box-shadow:0 5px 22px #0008;border-radius:12px}
-#phone{position:fixed;z-index:100001;pointer-events:auto;right:22px;bottom:18px;width:min(360px,calc(100vw - 28px));max-height:min(620px,88vh);overflow:auto;background:#101722;border:8px solid #303a48;border-radius:30px;padding:18px;box-shadow:0 18px 60px #000b;color:#f3f4ef;display:none;touch-action:pan-y}
+#phone{position:fixed;z-index:100001;pointer-events:auto;right:22px;bottom:18px;width:min(360px,calc(100vw - 28px));max-height:min(650px,88vh);overflow:auto;background:radial-gradient(ellipse at 50% 0%,#263d60 0%,#111a2a 48%,#080d16 100%);border:7px solid #aeb5c0;border-radius:48px;padding:48px 17px 24px;box-shadow:inset 0 0 0 2px #e8edf5,0 18px 60px #000c;color:#f3f4ef;display:none;touch-action:pan-y}#phone:before{content:"";position:absolute;top:12px;left:50%;transform:translateX(-50%);width:112px;height:29px;border-radius:20px;background:#020306;box-shadow:inset 0 1px 2px #333;z-index:2;pointer-events:none}#phone:after{content:"";position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:105px;height:4px;border-radius:5px;background:#fff9;pointer-events:none}
 #phone.open{display:block}.phone-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.phone-grid .phone-app{margin:0;min-height:78px;text-align:center;font-size:25px}.phone-grid .phone-app small{font-size:12px}#phone-page h3{margin:12px 0;color:#43d1ff}#phone-back{background:#303a48;color:white;border:0;border-radius:8px;padding:8px 12px}#phone-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
-#phone-title{font:800 28px var(--display);letter-spacing:.08em}#phone-close{border:0;background:#303a48;padding:8px 13px;border-radius:9px}
+#phone-title{font:800 28px var(--display);letter-spacing:.04em}#phone-top .kicker{font-size:10px;letter-spacing:.22em;color:#b7c9e4}#phone-close{border:0;background:#303a48;padding:8px 13px;border-radius:9px}
 .phone-app{width:100%;text-align:left;padding:13px;margin:7px 0;border:1px solid #ffffff30;background:#1c2938;color:#fff;border-radius:12px;font:700 18px var(--display)}
 .phone-app small{display:block;font:400 13px var(--body);color:#aab7c6;margin-top:4px}
 #phone-status{font-size:14px;color:#43d1ff;line-height:1.5;min-height:42px;margin:8px 0}
@@ -194,8 +194,8 @@ button:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
 </style>
 <button id="phone-open" type="button">📱 HANDY</button>
 <div id="phone" aria-label="Smartphone">
- <div id="phone-top"><div><div class="kicker">E-SCOOTER CITY</div><div id="phone-title">SMARTPHONE</div></div><button id="phone-close" type="button">✕</button></div>
- <div class="meta"><span>Wallet <b id="phone-money">0 €</b></span></div>
+ <div id="phone-top"><div><div class="kicker">APPLE · PRO SERIES</div><div id="phone-title">iPhone 18 Pro</div></div><button id="phone-close" type="button">✕</button></div>
+ <div class="meta" style="justify-content:space-between;border-bottom:1px solid #ffffff25;padding-bottom:10px;margin-bottom:12px"><span>Wallet <b id="phone-money">0 €</b></span><span style="color:#b7c9e4">5G · 100%</span></div>
  <div id="phone-home"><div class="phone-grid">
  <button class="phone-app" data-app="delivery">🍔<small>Lieferdienst</small></button><button class="phone-app" data-app="tuning">🛠️<small>Tuning</small></button>
  <button class="phone-app" data-app="map">🗺️<small>Stadtkarte</small></button><button class="phone-app" data-app="garage">🛵<small>Garage</small></button>
@@ -415,10 +415,11 @@ const Snd={ctx:null,ok:false,t:0,
 /* ============================ RENDERER / SCENE ============================ */
 const canvas=$('gl');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:!MOBILE,powerPreference:'high-performance'});
-renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,MOBILE?1.5:2));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,MOBILE?1:1.5));
 renderer.outputEncoding=THREE.sRGBEncoding;
 renderer.toneMapping=THREE.ACESFilmicToneMapping;
-renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+/* Performance preset: reduce expensive shadows on phones/tablets and use a lighter map on desktop. */
+renderer.shadowMap.enabled=!MOBILE;renderer.shadowMap.type=THREE.PCFShadowMap;
 const MAXANISO=renderer.capabilities.getMaxAnisotropy();
 const scene=new THREE.Scene();
 const camera=new THREE.PerspectiveCamera(62,1,.1,2600);
