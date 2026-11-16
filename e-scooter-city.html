@@ -1253,6 +1253,7 @@ function makeVehicle(v){
   /* rear suspension */
   const axX=tw/2+.035;
   if(v.id==='g3max'){ /* Dedicated MAX G3 twin hydraulic shocks are built in its model block. */
+  }else if(v.id==='gt3pro'){ /* GT3 Pro trailing-arm dampers are model-specific below. */
   }else if(v.id==='zt3pro'){
    /* ZT3 Pro uses a single rear coil shock on a distinct swingarm. */
    link(body,0,wr+.015,-L,0,dt+.015,-dL*.34,.035,alu,10);
@@ -1287,7 +1288,7 @@ function makeVehicle(v){
     baseY=.14;baseZ=-.2;
    }else{
     link(steer,s*axX,0,0,s*.07,.34,-.07,v.susp==='hyd'?.024:.015,chrome,8);
-    if(!['g2max','g3max','zt3pro','gt3d'].includes(v.id))coil(steer,s*axX,.08,-.01,s*.07,.3,-.06,v.susp==='hyd'?.045:.032,v.susp==='hyd'?8:6,v.susp==='hyd'?accP:acc);
+    if(!['g2max','g3max','zt3pro','gt3d','gt3pro'].includes(v.id))coil(steer,s*axX,.08,-.01,s*.07,.3,-.06,v.susp==='hyd'?.045:.032,v.susp==='hyd'?8:6,v.susp==='hyd'?accP:acc);
     baseY=.36;baseZ=-.08;
    }
   }
@@ -1590,7 +1591,71 @@ function makeVehicle(v){
     link(steer,side*.13,topY-.01,topZ+.015,side*.12,topY-.21,topZ+.025,.004,g3Black,6);
    }
   }
-  if(v.id==='gt3d'){
+  if(v.id==='gt3pro'){
+   /* Segway GT3 Pro: heavier dual-hub GT chassis, adjustable front linkage and rear hydraulic trailing arms. */
+   const pShell=mc('#171b20',.42,.66),pBlack=mc('#090c10',.72,.35),pGold=mc('#b79a60',.28,.82),pMetal=mc('#aeb7c1',.2,.9),pRed=mc('#c52c34',.35,.58),pRubber=mc('#151719',.94,.06);
+   const pAmber=new THREE.MeshBasicMaterial({color:0xffa52e}),pWhite=new THREE.MeshBasicMaterial({color:0xf5f7fb}),pScreen=new THREE.MeshBasicMaterial({color:0x42c9ed}),pTail=new THREE.MeshBasicMaterial({color:0xe52e3a});
+   /* Long, deep battery deck with stepped black side armor and metallic gold lower rails. */
+   body.add(part(RB(dW*1.1,.19,dL*.96,.05,7),pShell,0,dh-.04,-.012));
+   body.add(part(RB(dW*.96,.028,dL*.82,.014,5),pBlack,0,dh+.055,-.012));
+   body.add(part(RB(dW*.78,.012,dL*.62,.007,3),pRubber,0,dh+.071,-.02));
+   for(const side of[-1,1]){
+    body.add(part(RB(.04,.14,dL*.79,.018,5),pBlack,side*(dW/2+.03),dh+.005,-.012));
+    body.add(part(RB(.012,.026,dL*.65,.006,3),pGold,side*(dW/2+.052),dh+.055,-.015));
+    body.add(part(RB(.018,.038,.09,.008,3),pAmber,side*(dW/2+.054),dh+.04,dL*.36));
+    body.add(part(RB(.018,.038,.09,.008,3),pAmber,side*(dW/2+.054),dh+.04,-dL*.36));
+    /* Reinforced rear trailing arm and hydraulic damper on each side. */
+    link(body,side*(dW*.46),dh+.02,-dL*.33,side*(axX+.04),wr+.02,-L+.01,.04,pShell,12);
+    link(body,side*(dW*.46),dh+.055,-dL*.33,side*(axX+.04),wr+.18,-L+.005,.022,pBlack,10);
+    link(body,side*(dW*.46),dh+.055,-dL*.33,side*(axX+.04),wr+.18,-L+.005,.011,pGold,8);
+    body.add(part(CYL(.043,.043,.065,16,'x'),pBlack,side*(axX+.05),wr+.18,-L+.005));
+    body.add(part(CYL(.027,.027,.07,16,'x'),pMetal,side*(axX+.05),wr+.18,-L+.005));
+    /* Motor hub housings at both wheels, with gold outer rings. */
+    body.add(part(CYL(wr*.43,wr*.43,tw*.12,32,'x'),pBlack,side*tw*.54,wr,-L));
+    body.add(part(CYL(wr*.32,wr*.32,tw*.13,28,'x'),pGold,side*tw*.6,wr,-L));
+    steer.add(part(CYL(wr*.43,wr*.43,tw*.12,32,'x'),pBlack,side*tw*.54,0,0));
+    steer.add(part(CYL(wr*.32,wr*.32,tw*.13,28,'x'),pGold,side*tw*.6,0,0));
+   }
+   /* Single hydraulic disc brake per wheel with visible caliper and hose. */
+   body.add(part(CYL(wr*.36,wr*.36,.01,38,'x'),pMetal,tw*.72,wr,-L));
+   body.add(part(CYL(wr*.25,wr*.25,.013,34,'x'),pBlack,tw*.73,wr,-L));
+   body.add(part(RB(.085,.12,.09,.014,4),pRed,tw*.9,wr+.14,-L+.08));
+   link(body,tw*.9,wr+.17,-L+.1,dW*.46,dh+.1,-dL*.23,.005,pBlack,7);
+   steer.add(part(CYL(wr*.36,wr*.36,.01,38,'x'),pMetal,tw*.72,0,0));
+   steer.add(part(CYL(wr*.25,wr*.25,.013,34,'x'),pBlack,tw*.73,0,0));
+   steer.add(part(RB(.085,.12,.09,.014,4),pRed,tw*.9,.14,.08));
+   link(steer,tw*.9,.17,.1,axX*.85,.31,-.07,.005,pBlack,7);
+   /* Adjustable front linkage: thick gold fork links and visible red coil spring. */
+   for(const side of[-1,1]){
+    link(steer,side*(axX+.015),.34,-.07,side*(axX+.015),.045,-.07,.045,pBlack,12);
+    link(steer,side*(axX+.015),.25,-.07,side*(axX+.015),.045,-.07,.025,pGold,10);
+    link(steer,side*(axX+.015),.31,-.035,side*(axX+.015),.075,-.035,.012,pRed,8);
+    coil(steer,side*(axX+.015),.3,-.035,side*(axX+.015),.08,-.035,.036,10,pRed);
+    steer.add(part(RB(.07,.16,.095,.02,5),pShell,side*(axX+.015),.13,-.06));
+   }
+   /* GT3 Pro's distinctive X-shaped front-wheel decorative brace (not a lamp). */
+   link(steer,-.105,.31,.015,.105,.09,.015,.018,pGold,10);
+   link(steer,.105,.31,.015,-.105,.09,.015,.018,pGold,10);
+   steer.add(part(RB(.07,.07,.04,.012,4),pBlack,0,.2,.025));
+   /* Rear mudguard, plate bracket and red tail-light cluster. */
+   body.add(part(RB(dW*.76,.06,.42,.026,5),pBlack,0,wr*2+.12,-L-.16));
+   body.add(part(RB(.17,.04,.05,.012,4),pTail,0,wr*2+.16,-L-.34));
+   body.add(part(RB(.12,.02,.018,.006,3),pWhite,0,wr*2+.18,-L-.365));
+   body.add(part(RB(.15,.075,.06,.014,4),pBlack,0,wr*2+.085,-L-.42));
+   /* Broad GT handlebar, sculpted steering head, TFT and high/low-beam headlamp. */
+   steer.add(part(RB(.17,.2,.14,.03,5),pShell,0,baseY+.12,baseZ-.025));
+   steer.add(part(RB(.25,.1,.14,.028,5),pBlack,0,topY+.08,topZ+.025));
+   steer.add(part(RB(.18,.058,.012,.008,4),pScreen,0,topY+.11,topZ+.105));
+   steer.add(part(RB(.2,.018,.014,.006,3),pGold,0,topY+.145,topZ+.1));
+   steer.add(part(RB(.3,.14,.13,.032,5),pBlack,0,topY-.3,topZ+.05));
+   steer.add(part(RB(.21,.06,.015,.01,4),pWhite,0,topY-.29,topZ+.12));
+   for(const side of[-1,1]){
+    steer.add(part(RB(.07,.032,.04,.01,3),pAmber,side*.19,topY-.29,topZ+.06));
+    link(steer,side*.15,topY+.005,topZ,side*.27,topY-.045,topZ+.04,.011,pMetal,8);
+    link(steer,side*.14,topY-.01,topZ+.015,side*.13,topY-.22,topZ+.025,.004,pBlack,6);
+   }
+  }
+ if(v.id==='gt3d'){
    /* GT3 D: model-specific wide chassis, hydraulic suspension, dual discs and TFT cockpit. */
    const gtShell=mc('#242a31',.42,.66),gtBlack=mc('#101419',.68,.4),gtMetal=mc('#aeb7c1',.2,.9),gtGold=mc('#b99a4d',.34,.72),gtRubber=mc('#17191c',.92,.08);
    const gtAmber=new THREE.MeshBasicMaterial({color:0xffa52e}),gtWhite=new THREE.MeshBasicMaterial({color:0xf5f7fb}),gtRed=new THREE.MeshBasicMaterial({color:0xe52e3a}),gtScreen=new THREE.MeshBasicMaterial({color:0x42c9ed});
