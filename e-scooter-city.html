@@ -136,7 +136,7 @@ button:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
   #s-garage{grid-template-columns:1fr;grid-template-rows:auto auto minmax(0,1fr);gap:8px;align-items:start;overflow-y:auto}
   #g-right{order:1;align-content:start;background:rgba(10,14,20,.7);padding:10px}
   #g-left{order:2;min-height:0}
-  #g-list{display:grid;grid-auto-flow:row;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-columns:unset;gap:6px;max-height:32vh;overflow-y:auto;overflow-x:hidden;padding:4px}
+  #g-list{display:grid;grid-auto-flow:row;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-columns:unset;gap:6px;max-height:42vh;overflow-y:auto;overflow-x:hidden;padding:4px}
   .vcard{min-width:0;padding:8px 9px;gap:2px 6px}
   .vcard .n{font-size:17px;line-height:1.15}
   .vcard .p{font-size:16px}
@@ -355,6 +355,12 @@ const VEHICLES=[
  {id:'g4',name:'KuKirin G4',price:1500,kind:'scooter',top:55,accel:3.5,brake:8.0,grip:7.0,steer:1.0,range:55,mass:37,
   color:'#16181b',accent:'#ff6a1a',frameCol:'#17191c',swept:true,tread:true,wr:.14,tw:.1,deckW:.22,deckL:.51,L:.5,clear:.18,bar:.98,barW:.62,susp:'spring',stem:'rect',display:'touch',snd:{type:'sawtooth',base:150,mul:4.6},
   desc:'11-Zoll-Breitreifen, Federung vorn und hinten, Rechteck-Lenkerstange. Wendiger Pendler mit gutem Preis.'},
+ {id:'joyort10',name:'Joyor T10',price:3500,kind:'scooter',top:70,accel:4.8,brake:9.0,grip:7.8,steer:.96,range:90,mass:36,
+  color:'#20252b',accent:'#e4a62b',tread:true,wr:.16,tw:.115,deckW:.27,deckL:.6,L:.55,clear:.17,bar:1.04,barW:.67,susp:'hyd',stem:'round',display:'round',dual:true,fullFender:true,snd:{type:'sawtooth',base:182,mul:4.8},
+  desc:'Joyor T10 mit sportlichem Design, kräftiger Federung und 70 km/h Spielgeschwindigkeit.'},
+ {id:'g2master',name:'KuKirin G2 Master',price:3500,kind:'scooter',top:70,accel:4.9,brake:9.1,grip:7.9,steer:.98,range:85,mass:37,
+  color:'#171a1f',accent:'#f04b35',tread:true,wr:.16,tw:.115,deckW:.27,deckL:.6,L:.55,clear:.17,bar:1.03,barW:.66,susp:'spring',stem:'round',display:'touch',dual:true,fullFender:true,snd:{type:'sawtooth',base:188,mul:4.9},
+  desc:'KuKirin G2 Master mit zwei Motoren, sportlicher Optik und 70 km/h Spielgeschwindigkeit.'},
  {id:'thunder',name:'Dualtron Thunder',price:3500,kind:'scooter',top:85,accel:5.3,brake:9.0,grip:6.4,steer:.9,range:120,mass:43,
   color:'#16181c',accent:'#ff7a1a',tread:true,wr:.14,tw:.1,deckW:.3,deckL:.61,L:.52,clear:.165,bar:1.0,barW:.66,dual:true,susp:'swing',stem:'round',display:'round',led:true,snd:{type:'sawtooth',base:190,mul:4.8},
   desc:'Zwei Motoren, Schwingenfederung mit Gummi-Kartuschen, große Standfläche und LED-Leisten. Stabil bei hohem Tempo.'},
@@ -373,12 +379,6 @@ const VEHICLES=[
  {id:'g3max',name:'Ninebot G3 Max',price:0,kind:'scooter',top:45,accel:3.5,brake:8.3,grip:7.6,steer:1.0,range:75,mass:31,
   color:'#cbd2d9',accent:'#18a7b5',tread:true,wr:.14,tw:.1,deckW:.23,deckL:.55,L:.52,clear:.18,bar:1.0,barW:.63,susp:'hyd',stem:'rect',display:'touch',fullFender:true,snd:{type:'triangle',base:168,mul:4.7},
   desc:'G3 Max mit ausgewogener Beschleunigung und guter Reichweite. Kostenlos auswählbar.'},
- {id:'joyort10',name:'Joyor T10',price:3500,kind:'scooter',top:70,accel:4.8,brake:9.0,grip:7.8,steer:.96,range:90,mass:36,
-  color:'#20252b',accent:'#e4a62b',tread:true,wr:.16,tw:.115,deckW:.27,deckL:.6,L:.55,clear:.17,bar:1.04,barW:.67,susp:'hyd',stem:'round',display:'round',dual:true,fullFender:true,snd:{type:'sawtooth',base:182,mul:4.8},
-  desc:'Joyor T10 mit sportlichem Design, kräftiger Federung und 70 km/h Spielgeschwindigkeit.'},
- {id:'g2master',name:'KuKirin G2 Master',price:3500,kind:'scooter',top:70,accel:4.9,brake:9.1,grip:7.9,steer:.98,range:85,mass:37,
-  color:'#171a1f',accent:'#f04b35',tread:true,wr:.16,tw:.115,deckW:.27,deckL:.6,L:.55,clear:.17,bar:1.03,barW:.66,susp:'spring',stem:'round',display:'touch',dual:true,fullFender:true,snd:{type:'sawtooth',base:188,mul:4.9},
-  desc:'KuKirin G2 Master mit zwei Motoren, sportlicher Optik und 70 km/h Spielgeschwindigkeit.'},
  {id:'gt3d',name:'Segway GT3 D',price:3000,kind:'scooter',top:60,accel:4.1,brake:9.2,grip:7.8,steer:.92,range:95,mass:40,
   color:'#181c22',accent:'#e7b83f',tread:true,wr:.17,tw:.12,deckW:.29,deckL:.64,L:.57,clear:.16,bar:1.08,barW:.7,dual:true,susp:'hyd',stem:'round',display:'round',led:true,fullFender:true,snd:{type:'sawtooth',base:178,mul:4.9},
   desc:'GT3 D mit großem Rahmen, Doppel-Federung und markanten LED-Details.'},
