@@ -1523,6 +1523,48 @@ function makeVehicle(v){
     steer.add(part(RB(.045,.025,.025,.008,3),ztAmber,side*.16,topY-.29,topZ+.05));
    }
   }
+  if(v.id==='g3max'){
+   /* Ninebot MAX G3-specific silhouette: red/black trim, twin hydraulic suspension and TFT cockpit. */
+   const g3Black=mc('#202329',.48,.58),g3Red=mc('#d92e36',.32,.62),g3Silver=mc('#b8c0c8',.22,.9),g3Amber=new THREE.MeshBasicMaterial({color:0xffa52b}),g3White=new THREE.MeshBasicMaterial({color:0xf4f6fa}),g3Tail=new THREE.MeshBasicMaterial({color:0xe32e3b});
+   /* Broad 200 mm footboard with angular battery cover and red side accents. */
+   body.add(part(RB(dW*1.02,.12,dL*.86,.035,5),frame,0,dh-.025,-.012));
+   body.add(part(RB(dW*.91,.018,dL*.72,.012,3),g3Black,0,dh+.043,-.012));
+   body.add(part(RB(dW*.68,.012,dL*.48,.008,2),dark,0,dh+.055,-.018));
+   for(const side of[-1,1]){
+    body.add(part(RB(.025,.085,dL*.7,.012,4),g3Black,side*(dW/2+.025),dh+.008,-.005));
+    body.add(part(RB(.014,.022,dL*.42,.006,2),g3Red,side*(dW/2+.04),dh+.045,-.015));
+    body.add(part(RB(.014,.032,.07,.007,3),g3Amber,side*(dW/2+.042),dh+.025,dL*.34));
+    body.add(part(RB(.014,.032,.07,.007,3),g3Amber,side*(dW/2+.042),dh+.025,-dL*.34));
+    /* Rear pair of adjustable hydraulic shock absorbers. */
+    link(body,side*.11,dt+.06,-dL*.3,side*(axX+.04),wr+.14,-L+.02,.034,g3Silver,10);
+    coil(body,side*.11,dt+.06,-dL*.3,side*(axX+.04),wr+.14,-L+.02,.036,9,g3Black);
+    body.add(part(CYL(.033,.033,.05,12,'x'),g3Black,side*(axX+.04),wr+.14,-L+.02));
+   }
+   /* Extended rear mudguard, registration bracket and bright rear lamp. */
+   body.add(part(RB(dW*.65,.045,.34,.018,4),g3Black,0,wr*2+.115,-L-.13));
+   body.add(part(RB(.14,.032,.035,.009,3),g3Tail,0,wr*2+.145,-L-.29));
+   body.add(part(RB(.09,.018,.018,.006,2),g3White,0,wr*2+.16,-L-.312));
+   /* Bulky front fork shroud with two hydraulic tubes and disc-brake hub. */
+   steer.add(part(RB(.27,.105,.105,.025,5),g3Black,0,.32,-.075));
+   steer.add(part(RB(.22,.035,.035,.012,3),g3Red,0,.365,-.012));
+   for(const side of[-1,1]){
+    link(steer,side*.115,.35,-.055,side*.115,.105,-.055,.038,g3Black,10);
+    link(steer,side*.115,.22,-.035,side*.115,.075,-.035,.019,g3Silver,8);
+    steer.add(part(RB(.052,.12,.075,.014,3),frame,side*.115,.15,-.055));
+    steer.add(part(RB(.045,.035,.018,.008,3),g3Amber,side*.15,.07,.035));
+   }
+   steer.add(part(CYL(wr*.35,wr*.35,tw*.98,24,'x'),g3Silver,tw*.5,0,0));
+   steer.add(part(CYL(wr*.26,wr*.26,tw*1.01,24,'x'),g3Black,tw*.51,0,0));
+   /* Six-watt style front lamp and wide colour TFT display. */
+   steer.add(part(RB(.22,.095,.075,.018,4),g3Black,0,topY-.29,topZ+.045));
+   steer.add(part(RB(.16,.038,.014,.008,3),g3White,0,topY-.285,topZ+.087));
+   steer.add(part(RB(.17,.055,.095,.016,3),g3Black,0,topY+.07,topZ+.025));
+   steer.add(part(RB(.115,.008,.06,.006,2),g3Red,0,topY+.1,topZ+.073));
+   for(const side of[-1,1]){
+    link(steer,side*.14,topY+.005,topZ,side*.23,topY-.035,topZ+.035,.007,g3Silver,7);
+    steer.add(part(RB(.05,.026,.025,.008,3),g3Amber,side*.17,topY-.29,topZ+.05));
+   }
+  }
   if(v.id==='gt3d'||v.id==='gt3pro'){
    body.add(part(RB(dW*.92,.12,dL*.5,.035,4),dark,0,dh-.035,-.015));
    for(const side of[-1,1]){body.add(part(RB(.028,.1,.34,.012,3),frame,side*(dW/2+.018),dh+.01,-.02));body.add(part(RB(.012,.035,.22,.006,2),ledM,side*(dW/2+.034),dh+.025,-.02));}
