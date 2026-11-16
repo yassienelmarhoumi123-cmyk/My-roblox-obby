@@ -1392,7 +1392,47 @@ function makeVehicle(v){
    }
   }
   if(v.id==='thunder'){
-   for(const side of[-1,1]){link(body,side*(dW/2+.025),dt-.01,-dL*.38,side*(axX+.035),wr+.04,-L,.026,alu,10);body.add(part(CYL(.035,.035,.13,12,'x'),accP,side*(axX+.045),wr+.12,-L+.04));body.add(part(RB(.012,.025,dL*.65,.005,2),ledM,side*(dW/2+.045),dt+.02,0));}
+   /* Original Dualtron Thunder: long dual swingarms, exposed coilovers and wide deck. */
+   const thRed=paintM('#c83235'),thMetal=mc('#aeb5bd',.25,.9),thBlack=mc('#17191c',.7,.42),thGlow=new THREE.MeshBasicMaterial({color:0xf04a4a});
+   for(const side of[-1,1]){
+    /* Long reinforced rear swingarms and axle blocks. */
+    link(body,side*(dW/2+.025),dt-.01,-dL*.38,side*(axX+.035),wr+.04,-L,.032,thMetal,10);
+    link(body,side*(dW/2+.025),dt-.01,-dL*.38,side*(axX+.035),wr+.12,-L+.015,.014,thBlack,8);
+    body.add(part(CYL(.035,.035,.13,12,'x'),thRed,side*(axX+.045),wr+.12,-L+.04));
+    body.add(part(RB(.045,.07,.12,.012,3),thBlack,side*(tw/2+.045),wr+.04,-L+.12));
+    link(body,side*(tw/2+.07),wr+.075,-L+.12,side*(dW/2+.02),dt+.05,-dL*.26,.006,thMetal,6);
+    /* Red deck-edge trim, lighting strip and fixing hardware. */
+    body.add(part(RB(.014,.025,dL*.7,.006,2),thRed,side*(dW/2+.045),dh+.035,-.015));
+    body.add(part(RB(.01,.02,dL*.62,.005,2),thGlow,side*(dW/2+.055),dh+.045,-.015));
+    for(const z of[-dL*.36,dL*.36])body.add(part(CYL(.01,.01,.009,10,'x'),thMetal,side*(dW/2+.052),dt+.004,z));
+    /* Front/rear shock reservoirs and visible spring details. */
+    link(body,side*(dW/2-.02),dt+.015,-dL*.34,side*(axX+.03),wr+.15,-L+.02,.035,thMetal,10);
+    coil(body,side*(dW/2-.02),dt+.015,-dL*.34,side*(axX+.03),wr+.15,-L+.02,.043,9,thRed);
+    body.add(part(CYL(.027,.027,.06,12,'x'),thBlack,side*(axX+.045),wr+.17,-L+.02));
+    link(body,side*(dW/2-.02),dt+.01,dL*.32,side*(axX+.025),wr+.12,L-.02,.03,thMetal,10);
+    coil(body,side*(dW/2-.02),dt+.01,dL*.32,side*(axX+.025),wr+.12,L-.02,.038,8,thRed);
+   }
+   /* Broad central battery/deck cover and rear lamp cluster. */
+   body.add(part(RB(dW*.88,.065,dL*.68,.022,4),thBlack,0,dh-.018,-.015));
+   body.add(part(RB(dW*.62,.012,dL*.5,.006,3),rub,0,dt+.008,-.015));
+   body.add(part(RB(.16,.035,.035,.01,3),thRed,0,wr*2+.13,-L-.08));
+   body.add(part(RB(.11,.012,.012,.004,2),thGlow,0,wr*2+.15,-L-.101));
+   /* Dual front fork legs, fork brace and steering clamp. */
+   steer.add(part(RB(.24,.055,.075,.015,3),thMetal,0,.34,-.075));
+   for(const side of[-1,1]){
+    steer.add(part(RB(.045,.2,.06,.012,3),thBlack,side*(axX-.012),.19,-.055));
+    steer.add(part(CYL(.02,.02,.13,12,'x'),thMetal,side*(axX+.018),.26,-.055));
+    steer.add(part(CYL(.028,.028,.04,12,'x'),thRed,side*(axX+.018),.16,-.055));
+   }
+   steer.add(part(RB(.14,.08,.055,.014,3),thBlack,0,baseY+.06,baseZ+.02));
+   steer.add(part(RB(.07,.025,.02,.006,2),thMetal,0,baseY+.105,baseZ+.05));
+   /* Distinctive wide cockpit pod, screen and brake levers. */
+   steer.add(part(RB(.14,.045,.085,.014,3),thBlack,0,topY+.06,topZ+.025));
+   steer.add(part(RB(.095,.003,.05,.006,2),thGlow,0,topY+.085,topZ+.071));
+   for(const side of[-1,1]){
+    link(steer,side*.14,topY+.005,topZ,side*.23,topY-.045,topZ+.035,.006,thMetal,6);
+    steer.add(part(CYL(.014,.014,.06,8,'x'),rub,side*.2,topY-.025,topZ+.02));
+   }
   }
   if(v.id==='zt3pro'){
    const fy=topY-.3,fz=topZ+.055;
