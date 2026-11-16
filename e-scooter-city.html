@@ -1,20 +1,4 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
-/* ---------- multiplayer rooms ---------- */
-#s-multi{display:block;background:linear-gradient(135deg,rgba(8,13,20,.96),rgba(15,29,42,.88));overflow:auto}
-#multi-wrap{width:min(100%,900px);margin:0 auto;display:grid;gap:16px}
-#multi-top{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
-#multi-title{font:800 clamp(38px,7vw,64px)/.9 var(--display);text-transform:uppercase}
-#multi-title span{color:var(--signal)}
-#multi-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-#multi-fields input{min-width:0;background:rgba(15,20,27,.85);border:1px solid var(--line);padding:12px;color:var(--paper);font:600 17px var(--body);user-select:text;touch-action:auto}
-#room-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-.room-card{display:grid;grid-template-columns:1fr auto;gap:5px 10px;align-items:center;padding:12px;background:rgba(15,20,27,.86);border:1px solid var(--line)}
-.room-card strong{font:700 22px var(--display);text-transform:uppercase}
-.room-card small{color:var(--mute)}
-.room-card .room-action{grid-column:2;grid-row:1/3;min-width:100px;text-align:center}
-#multi-status{min-height:22px;color:var(--cyan);font-size:14px}
-@media(max-width:650px){#room-list{grid-template-columns:1fr}#multi-fields{grid-template-columns:1fr}.room-card .room-action{min-width:86px}}
-
 </style></head><body>
 <title>E-SCOOTER CITY</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -217,7 +201,7 @@ button:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
     <div class="menu">
       <button class="btn primary" id="b-play">Spielen <small id="m-vehicle"></small></button>
       <button class="btn" id="b-garage">Garage <small id="m-owned"></small></button>
-      <button class="btn" id="b-multi">Multiplayer <small>10 Räume · bis 8 Spieler</small></button>
+      <button class="btn" id="b-multi">Multiplayer <small>Mit anderen zusammen fahren</small></button>
       <button class="btn" id="b-help">Steuerung</button>
       <button class="btn" id="b-reset">Spielstand zurücksetzen</button>
     </div>
@@ -227,20 +211,6 @@ button:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
   </div>
 </div>
 
-
-<div id="s-multi" class="screen" hidden>
-  <div id="multi-wrap">
-    <div id="multi-top"><div><div class="kicker">Online · Zusammen fahren</div><h2 id="multi-title">Multiplayer <span>Räume</span></h2></div><button class="btn" id="multi-refresh">Aktualisieren</button></div>
-    <div id="multi-fields">
-      <input id="mp-name" maxlength="18" placeholder="Dein Spielername" value="Spieler">
-      <input id="mp-code" maxlength="8" placeholder="Raumcode (nur privat)">
-    </div>
-    <div class="note">Wähle einen freien Raum, um einen neuen zu erstellen, oder trete einem öffentlichen Raum bei. Private Räume benötigen den Code des Erstellers.</div>
-    <div id="room-list"></div>
-    <div id="multi-status" role="status">Verbinde mit dem Multiplayer …</div>
-    <button class="btn" id="multi-back">Zurück zum Hauptmenü</button>
-  </div>
-</div>
 
 <div id="s-pause" class="screen dim" hidden>
   <div class="sheet">
@@ -1995,63 +1965,34 @@ for(const[a,b,c]of[['codeIn','codeBtn','codeMsg'],['codeIn2','codeBtn2','codeMsg
 }
 
 
-/* ============================ MULTIPLAYER ROOMS ============================ */
-/* PeerJS Cloud is used only for signaling; player positions travel peer-to-peer. */
-const MP={peer:null,host:false,room:-1,code:'',name:'Spieler',connections:new Map(),players:new Map(),lastSend:0,scan:[],busy:false};
-const mpRoomId=i=>'escootercityroom'+(i+1);
-function mpStatus(t){const e=$('multi-status');if(e)e.textContent=t;}
-function mpName(){return ($('mp-name').value.trim()||'Spieler').slice(0,18);}
-function mpSetStatus(i,info){MP.scan[i]=info;mpRenderRooms();}
-function mpRenderRooms(){
- const box=$('room-list');if(!box)return;
- box.innerHTML='';
- for(let i=0;i<10;i++){
-  const x=MP.scan[i]||{status:'checking'};
-  const card=document.createElement('div');card.className='room-card';
-  const title=document.createElement('strong');title.textContent='Raum '+(i+1);
-  const detail=document.createElement('small');
-  const btn=document.createElement('button');btn.className='btn room-action';
-  if(x.status==='checking'){detail.textContent='Wird geprüft …';btn.textContent='…';btn.disabled=true;}
-  else if(x.status==='free'){detail.textContent='Frei · 0/8 Spieler';btn.textContent='Erstellen';btn.onclick=()=>mpCreateRoom(i);}
-  else if(x.status==='open'){detail.textContent=(x.private?'Privat':'Öffentlich')+' · '+x.count+'/8 Spieler';btn.textContent=x.private?'Code':'Beitreten';btn.onclick=()=>mpJoinRoom(i);}
-  else{detail.textContent='Nicht erreichbar';btn.textContent='Erneut';btn.onclick=()=>mpOpenBrowser();}
-  card.append(title,detail,btn);box.appendChild(card);
- }
-}
+/* ============================ AUTOMATIC MULTIPLAYER ============================ */
+/* Shared public lobby: the first player becomes host; everyone else joins automatically. */
+const MP={peer:null,host:false,room:0,code:'',name:'Spieler',connections:new Map(),players:new Map(),lastSend:0,remote:new Map(),busy:false,joining:false};
+const MP_LOBBY_ID='escooter-city-global-lobby-v1';
+function mpStatus(t){toast(t,'good',3);}
 function mpDestroyPeer(){if(MP.peer){try{MP.peer.destroy();}catch(e){}MP.peer=null;}MP.connections.clear();}
-function mpOpenBrowser(){
- if(!window.Peer){mpStatus('Multiplayer-Bibliothek konnte nicht geladen werden.');return;}
- if(MP.busy)return;MP.busy=true;mpDestroyPeer();MP.host=false;MP.room=-1;MP.code='';MP.scan=Array.from({length:10},()=>({status:'checking'}));mpRenderRooms();mpStatus('Suche freie und belegte Räume …');
- const peer=new Peer();MP.peer=peer;
- peer.on('open',()=>{
-  let finished=0;
-  for(let i=0;i<10;i++){
-   const conn=peer.connect(mpRoomId(i),{reliable:true});
-   let done=false;const finish=info=>{if(done)return;done=true;mpSetStatus(i,info);finished++;if(finished===10){MP.busy=false;mpStatus('10 Räume geprüft.');}};
-   conn.on('open',()=>conn.send({type:'probe'}));
-   conn.on('data',d=>{if(d&&d.type==='roominfo'){finish({status:'open',private:!!d.private,count:d.count||1,hostName:d.hostName||'Spieler'});conn.close();}});
-   conn.on('error',()=>finish({status:'free'}));
-   conn.on('close',()=>{if(!done)finish({status:'free'});});
-   setTimeout(()=>finish({status:'free'}),3500);
-  }
- });
- peer.on('error',e=>{MP.busy=false;mpStatus('Verbindung fehlgeschlagen: '+(e.type||e.message||'Netzwerkfehler'));});
+function mpOwnState(){
+ const o=mounted?V:F;
+ return {name:MP.name,x:o.x,z:o.z,h:o.h,y:o.y||0,mounted:!!mounted,vehicle:vdef.id};
+}
+function mpStart(){
+ MP.busy=false;MP.joining=false;trip.km=0;V.batt=100;setState('play');
+ toast(MP.host?'Multiplayer-Server gestartet':'Mit Multiplayer-Server verbunden','good',3);
+}
+function mpBroadcast(data,except){
+ for(const[id,c]of MP.connections){if(id!==except&&c.open){try{c.send(data);}catch(e){}}}
 }
 function mpAttachHost(peer){
  peer.on('connection',conn=>{
   conn.on('data',d=>{
    if(!d)return;
-   if(d.type==='probe'){conn.send({type:'roominfo',private:!!MP.code,count:MP.connections.size+1,hostName:MP.name});return;}
    if(d.type==='join'){
-    if(MP.connections.size>=7){conn.send({type:'denied',reason:'Der Raum ist voll.'});return;}
-    if(MP.code&&String(d.code||'')!==MP.code){conn.send({type:'denied',reason:'Falscher Raumcode.'});return;}
+    if(MP.connections.size>=7){conn.send({type:'denied',reason:'Der Multiplayer-Server ist voll.'});return;}
     MP.connections.set(conn.peer,conn);
-    conn.send({type:'welcome',room:MP.room+1,players:Array.from(MP.players.entries()).map(([id,p])=>({id,...p})),host:{id:peer.id,...mpOwnState()}});
+    conn.send({type:'welcome',players:Array.from(MP.players.entries()).map(([id,p])=>({id,player:p})),host:{id:peer.id,player:mpOwnState()}});
     mpBroadcast({type:'player',id:peer.id,player:mpOwnState()},conn.peer);
-    mpStatus('Spieler beigetreten: '+(d.name||'Spieler')+' · '+(MP.connections.size+1)+'/8');
-    return;
-   }
-   if(d.type==='state'){
+    toast((d.name||'Ein Spieler')+' ist beigetreten','good',2);
+   }else if(d.type==='state'){
     MP.players.set(conn.peer,d.player);
     mpBroadcast({type:'player',id:conn.peer,player:d.player},conn.peer);
    }
@@ -2059,59 +2000,74 @@ function mpAttachHost(peer){
   conn.on('close',()=>{MP.connections.delete(conn.peer);MP.players.delete(conn.peer);mpBroadcast({type:'leave',id:conn.peer});});
  });
 }
-function mpBroadcast(data,except){
- for(const [id,c] of MP.connections){if(id!==except&&c.open){try{c.send(data);}catch(e){}}}
-}
-function mpOwnState(){
- const o=mounted?V:F;
- return {name:MP.name,x:o.x,z:o.z,h:o.h,y:o.y||0,mounted:!!mounted,vehicle:vdef.id};
-}
-function mpStart(){
- trip.km=0;V.batt=100;setState('play');toast('Multiplayer · Raum '+(MP.room+1),'good',3);
-}
-function mpCreateRoom(i){
- if(!window.Peer)return;
- const name=mpName(),privateCode=$('mp-code').value.trim();
- if(privateCode&&!/^[A-Za-z0-9]{4,8}$/.test(privateCode)){mpStatus('Der private Code muss 4–8 Zeichen haben.');return;}
- mpDestroyPeer();MP.name=name;MP.room=i;MP.code=privateCode;MP.host=true;mpStatus('Erstelle Raum '+(i+1)+' …');
- const peer=new Peer(mpRoomId(i));MP.peer=peer;
- peer.on('open',()=>{MP.busy=false;mpAttachHost(peer);MP.scan[i]={status:'open',private:!!MP.code,count:1};mpStart();});
- peer.on('error',e=>{MP.host=false;mpStatus(e.type==='unavailable-id'?'Dieser Raum wurde gerade von jemand anderem erstellt.':'Raum konnte nicht erstellt werden: '+(e.type||e.message));mpOpenBrowser();});
-}
-function mpJoinRoom(i){
- if(!MP.peer||MP.peer.destroyed){mpOpenBrowser();mpStatus('Bitte erneut auf Beitreten klicken.');return;}
- const info=MP.scan[i]||{};
- let code=$('mp-code').value.trim();
- if(info.private&&!code){mpStatus('Gib oben den privaten Raumcode ein.');$('mp-code').focus();return;}
- MP.name=mpName();MP.room=i;MP.host=false;mpStatus('Trete Raum '+(i+1)+' bei …');
- const conn=MP.peer.connect(mpRoomId(i),{reliable:true});
- conn.on('open',()=>conn.send({type:'join',name:MP.name,code}));
- conn.on('data',d=>{
-  if(d.type==='denied'){mpStatus(d.reason);conn.close();return;}
-  if(d.type==='welcome'){
-   MP.connections.set('host',conn);MP.players.clear();
-   for(const p of(d.players||[]))MP.players.set(p.id,p);
-   if(d.host)MP.players.set(d.host.id,d.host);
-   conn.on('data',msg=>mpClientMessage(msg));
-   conn.on('close',()=>{toast('Verbindung zum Raumleiter verloren','bad');mpLeave();setState('main');});
-   mpStart();
-  }
- });
- conn.on('error',e=>mpStatus('Beitritt fehlgeschlagen: '+(e.type||'Verbindung'))); 
-}
 function mpClientMessage(d){
  if(!d)return;
  if(d.type==='player')MP.players.set(d.id,d.player);
  if(d.type==='leave')MP.players.delete(d.id);
- if(d.type==='state'&&d.players){MP.players.clear();for(const p of d.players)MP.players.set(p.id,p.player||p);}
+}
+function mpCleanRemote(){
+ for(const q of MP.remote.values()){scene.remove(q.g);if(q.avatar)scene.remove(q.avatar);}
+ MP.remote.clear();
+}
+function mpBecomeHost(){
+ if(MP.peer){try{MP.peer.destroy();}catch(e){}MP.peer=null;}
+ const peer=new Peer(MP_LOBBY_ID);MP.peer=peer;MP.host=true;
+ let settled=false;
+ peer.on('open',()=>{if(settled)return;settled=true;MP.busy=false;mpAttachHost(peer);mpStart();});
+ peer.on('error',e=>{
+  if(settled)return;
+  if(e.type==='unavailable-id'){
+   settled=true;MP.host=false;
+   try{peer.destroy();}catch(_){}
+   MP.peer=null;
+   mpTryJoinExisting();
+  }else{settled=true;MP.busy=false;toast('Multiplayer-Verbindung fehlgeschlagen. Bitte später erneut versuchen.','bad',4);}
+ });
+}
+function mpTryJoinExisting(){
+ if(!window.Peer){MP.busy=false;toast('Multiplayer konnte nicht geladen werden.','bad');return;}
+ const peer=new Peer();MP.peer=peer;MP.host=false;
+ let finished=false,conn=null;
+ const becomeHost=()=>{
+  if(finished)return;finished=true;
+  try{peer.destroy();}catch(_){}
+  MP.peer=null;
+  mpBecomeHost();
+ };
+ peer.on('open',()=>{
+  conn=peer.connect(MP_LOBBY_ID,{reliable:true});
+  const fallback=setTimeout(becomeHost,4500);
+  conn.on('open',()=>conn.send({type:'join',name:MP.name}));
+  conn.on('data',d=>{
+   if(!d)return;
+   if(d.type==='denied'){clearTimeout(fallback);finished=true;MP.busy=false;toast(d.reason,'bad',4);return;}
+   if(d.type==='welcome'&&!finished){
+    clearTimeout(fallback);finished=true;MP.connections.set('host',conn);MP.players.clear();
+    for(const p of(d.players||[]))if(p&&p.id)MP.players.set(p.id,p.player||p);
+    if(d.host&&d.host.id)MP.players.set(d.host.id,d.host.player||d.host);
+    conn.on('data',mpClientMessage);
+    conn.on('close',()=>{toast('Multiplayer-Server getrennt.','bad',4);mpLeave();if(state==='play')setState('main');});
+    mpStart();
+   }
+  });
+  conn.on('error',()=>{clearTimeout(fallback);becomeHost();});
+  conn.on('close',()=>{if(!finished){clearTimeout(fallback);becomeHost();}});
+ });
+ peer.on('error',()=>{becomeHost();});
+}
+function mpQuickJoin(){
+ if(MP.busy)return;
+ if(!window.Peer){toast('Multiplayer-Bibliothek konnte nicht geladen werden.','bad',4);return;}
+ mpLeave();MP.busy=true;MP.joining=true;MP.name='Spieler-'+Math.floor(1000+Math.random()*9000);
+ toast('Suche andere Spieler …','good',3);
+ mpTryJoinExisting();
 }
 function mpTick(dt){
- if(!MP.peer||MP.peer.destroyed||state!=='play'||MP.room<0)return;
+ if(!MP.peer||MP.peer.destroyed||state!=='play')return;
  MP.lastSend+=dt;if(MP.lastSend<.1)return;MP.lastSend=0;
  const player=mpOwnState();
  if(MP.host){
   mpBroadcast({type:'player',id:MP.peer.id,player});
-  mpBroadcast({type:'state',players:[...Array.from(MP.players.entries()).map(([id,p])=>({id,player:p})),{id:MP.peer.id,player}]});
  }else{
   const c=MP.connections.get('host');if(c&&c.open)c.send({type:'state',player});
  }
@@ -2121,12 +2077,13 @@ function mpUpdateRemote(){
  const active=new Set();
  for(const[id,p]of MP.players){
   if(!p||id===MP.peer?.id)continue;active.add(id);
-  let q=MP.remote?.get(id);
+  let q=MP.remote.get(id);
   if(!q){
    const def=vById(p.vehicle||'g2max'),g=makeVehicle(def),r=attachRider(g,def);
    const label=document.createElement('canvas');label.width=256;label.height=64;const cx=label.getContext('2d');cx.fillStyle='rgba(10,14,20,.8)';cx.fillRect(0,0,256,64);cx.fillStyle='#ffffff';cx.font='bold 30px Arial';cx.textAlign='center';cx.fillText(String(p.name||'Spieler').slice(0,18),128,43);
    const tex=new THREE.CanvasTexture(label),spr=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false}));spr.scale.set(2.5,.62,1);spr.position.y=2.4;
-   scene.add(spr);const av=makePlayer();av.visible=false;scene.add(av);scene.add(g);MP.remote=MP.remote||new Map();q={g,r,vehicle:def.id,avatar:av,label:spr};MP.remote.set(id,q);
+   scene.add(spr);const av=makePlayer();av.visible=false;scene.add(av);scene.add(g);
+   q={g,r,vehicle:def.id,avatar:av,label:spr};MP.remote.set(id,q);
   }
   const def=vById(p.vehicle||'g2max');
   if(q.vehicle!==def.id){scene.remove(q.g);q.g=makeVehicle(def);q.r=attachRider(q.g,def);scene.add(q.g);q.vehicle=def.id;}
@@ -2135,17 +2092,13 @@ function mpUpdateRemote(){
   if(q.avatar){q.avatar.visible=!p.mounted;q.avatar.position.set(p.x||0,.15,p.z||0);q.avatar.rotation.y=p.h||0;}
   q.label.position.set(p.x||0,(p.y||0)+2.5,p.z||0);
  }
- if(MP.remote)for(const[id,q]of MP.remote)if(!active.has(id)){scene.remove(q.g);if(q.avatar)scene.remove(q.avatar);MP.remote.delete(id);}
+ for(const[id,q]of MP.remote)if(!active.has(id)){scene.remove(q.g);if(q.avatar)scene.remove(q.avatar);MP.remote.delete(id);}
 }
 function mpLeave(){
  if(MP.host)mpBroadcast({type:'leave',id:MP.peer?.id});
- if(MP.remote){for(const q of MP.remote.values()){scene.remove(q.g);if(q.avatar)scene.remove(q.avatar);}MP.remote.clear();}
- mpDestroyPeer();MP.host=false;MP.room=-1;MP.code='';MP.players.clear();MP.remote=new Map();MP.busy=false;
+ mpCleanRemote();mpDestroyPeer();MP.host=false;MP.room=-1;MP.code='';MP.players.clear();MP.busy=false;MP.joining=false;
 }
-$('b-multi').onclick=()=>{setState('multi');};
-$('multi-refresh').onclick=()=>mpOpenBrowser();
-$('multi-back').onclick=()=>{mpLeave();setState('main');};
-
+$('b-multi').onclick=()=>mpQuickJoin();
 /* ============================ POST PROCESSING ============================ */
 const toneU={tDiffuse:{value:null},exposure:{value:1}},gradeU={tDiffuse:{value:null},time:{value:0}};
 function setupPost(){
