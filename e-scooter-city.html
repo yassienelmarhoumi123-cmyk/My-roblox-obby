@@ -443,14 +443,15 @@ const Snd={
    const makeTone=(type)=>{const o=c.createOscillator(),f=c.createBiquadFilter(),g=c.createGain();o.type=type;f.type='lowpass';f.frequency.value=1800;g.gain.value=0;o.connect(f);f.connect(g);g.connect(master);o.start();return{o,f,g};};
    this.driveA=makeTone('sine');this.driveB=makeTone('triangle');this.iceA=makeTone('sawtooth');this.iceB=makeTone('square');
    this.sirenA=c.createOscillator();this.sirenA.type='triangle';this.sirenGain=c.createGain();this.sirenGain.gain.value=0;const sf=c.createBiquadFilter();sf.type='bandpass';sf.frequency.value=950;sf.Q.value=1.1;this.sirenA.connect(sf);sf.connect(this.sirenGain);this.sirenGain.connect(master);this.sirenA.start();
-   this.ok=true;this.setVehicle(vById(save.selected));
+   this.ok=true;this.setVehicle(vById(save.selected));this.power(true);
   }catch(e){this.ok=false;}
  },
  setVehicle(d){this.def=d||vById(save.selected);if(!this.ok)return;
   const electric=this.def.kind!=='car'&&this.def.id!=='policeBike'&&this.def.id!=='policeGS';
-  this.driveA.o.type=electric?'sine':'sawtooth';this.driveB.o.type=electric?'triangle':'square';
-  this.iceA.o.type=electric?'sine':(this.def.id==='policeBike'?'sawtooth':'sawtooth');
-  this.iceB.o.type=electric?'triangle':'triangle';
+  const profiles={g4:['triangle','sine'],joyort10:['sawtooth','triangle'],g2master:['triangle','square'],thunder:['sawtooth','sine'],lightbee:['square','triangle'],ultrabee:['triangle','square'],g2max:['sine','triangle'],zt3pro:['triangle','sine'],g3max:['sine','square'],gt3d:['sawtooth','triangle'],gt3pro:['square','triangle'],xlimited:['sawtooth','square'],dt2pro:['triangle','sawtooth'],varg:['square','sine']};
+  const p=profiles[this.def.id]||['sine','triangle'];
+  this.driveA.o.type=electric?p[0]:'sawtooth';this.driveB.o.type=electric?p[1]:'square';
+  this.iceA.o.type='sawtooth';this.iceB.o.type='triangle';
  },
  tone(f,dur,vol,type,slide){if(!this.ok)return;const c=this.ctx,o=c.createOscillator(),g=c.createGain();o.type=type||'sine';o.frequency.value=f;if(slide)o.frequency.linearRampToValueAtTime(slide,c.currentTime+dur);g.gain.value=vol;g.gain.exponentialRampToValueAtTime(.001,c.currentTime+dur);o.connect(g);g.connect(this.master);o.start();o.stop(c.currentTime+dur+.05);},
  power(on){if(!this.ok)return;const d=this.def||vById(save.selected);if(d.kind==='car'||d.id==='policeBike'){this.tone(on?105:150,.42,.07,'sawtooth',on?58:70);}else{this.tone(on?420:560,.22,.035,'sine',on?780:180);this.tone(on?210:280,.3,.025,'triangle',on?330:90);}},
@@ -1436,8 +1437,8 @@ function makeVehicle(v){
    }
   }
   if(v.id==='thunder'){
-   /* Original Dualtron Thunder: long dual swingarms, exposed coilovers and wide deck. */
-   const thRed=paintM('#c83235'),thMetal=mc('#aeb5bd',.25,.9),thBlack=mc('#17191c',.7,.42),thGlow=new THREE.MeshBasicMaterial({color:0xf04a4a});
+   /* Original Dualtron Thunder: long swingarms with rubber/elastomer cartridge suspension, not exposed coil springs. */
+   const thRed=paintM('#c83235'),thMetal=mc('#aeb5bd',.25,.9),thBlack=mc('#17191c',.7,.42),thRubber=mc('#24282d',.92,.08),thGlow=new THREE.MeshBasicMaterial({color:0xf04a4a});
    for(const side of[-1,1]){
     /* Long reinforced rear swingarms and axle blocks. */
     link(body,side*(dW/2+.025),dt-.01,-dL*.38,side*(axX+.035),wr+.04,-L,.032,thMetal,10);
@@ -1453,6 +1454,7 @@ function makeVehicle(v){
     link(body,side*(dW/2-.02),dt+.015,-dL*.34,side*(axX+.03),wr+.15,-L+.02,.035,thMetal,10);
     body.add(part(RB(.075,.065,.075,.012,3),thBlack,side*(axX+.035),wr+.15,-L+.02));
     body.add(part(CYL(.027,.027,.06,12,'x'),thBlack,side*(axX+.045),wr+.17,-L+.02));
+    body.add(part(RB(.075,.14,.095,.018,4),thRubber,side*(dW*.31),dt+.02,-dL*.31));
     link(body,side*(dW/2-.02),dt+.01,dL*.32,side*(axX+.025),wr+.12,L-.02,.03,thMetal,10);
     body.add(part(RB(.07,.06,.07,.012,3),thBlack,side*(axX+.03),wr+.12,L-.02));
    }
@@ -1465,6 +1467,7 @@ function makeVehicle(v){
    steer.add(part(RB(.24,.055,.075,.015,3),thMetal,0,.34,-.075));
    for(const side of[-1,1]){
     steer.add(part(RB(.045,.2,.06,.012,3),thBlack,side*(axX-.012),.19,-.055));
+    steer.add(part(RB(.07,.13,.08,.018,4),thRubber,side*(axX-.012),.16,-.055));
     steer.add(part(CYL(.02,.02,.13,12,'x'),thMetal,side*(axX+.018),.26,-.055));
     steer.add(part(CYL(.028,.028,.04,12,'x'),thRed,side*(axX+.018),.16,-.055));
    }
