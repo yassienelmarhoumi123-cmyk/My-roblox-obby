@@ -390,7 +390,22 @@ function loadSave(){try{const s=JSON.parse(localStorage.getItem('escooter-city-v
   for(const id of FREE_SCOOTERS)if(!save.owned.includes(id))save.owned.push(id);
   if(!save.owned.includes(save.selected))save.selected='g2max';
   writeSave();}
-function writeSave(){try{localStorage.setItem('escooter-city-v1',JSON.stringify(save));}catch(e){}}
+function writeSave(){
+ try{
+  save.version=2;
+  save.lastSavedAt=Date.now();
+  localStorage.setItem('escooter-city-v1',JSON.stringify(save));
+ }catch(e){console.warn('Spielstand konnte nicht gespeichert werden:',e);}
+}
+let saveTimer=0;
+function startAutoSave(){
+ if(saveTimer)return;
+ saveTimer=setInterval(writeSave,4000);
+ addEventListener('pagehide',writeSave);
+ addEventListener('beforeunload',writeSave);
+ addEventListener('blur',writeSave);
+ document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')writeSave();});
+}
 
 /* ============================ AUDIO ============================ */
 const Snd={ctx:null,ok:false,t:0,
@@ -2273,7 +2288,7 @@ function frame(now){
 /* ============================ BOOT ============================ */
 addEventListener('error',e=>{const l=$('loading');if(l&&!l.hidden){l.lastElementChild.textContent='Fehler: '+(e.message||'unbekannt');}});
 setTimeout(()=>{
- loadSave();vdef=vById(save.selected);
+ loadSave();startAutoSave();vdef=vById(save.selected);
  buildCity();makeMapBase();
  spawnVehicle(vdef);buildPlayerExtras();buildTraffic();buildPeds();buildShopMarkers();
  setT('p-time-v',TIMES[timeI][0]);
