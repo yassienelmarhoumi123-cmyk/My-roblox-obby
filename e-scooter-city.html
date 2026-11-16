@@ -1404,7 +1404,7 @@ function makeG4(v){
  const root=new THREE.Group(),body=new THREE.Group();root.add(body);
  const ud={wheels:[],steer:null,body,def:v};
  const blk=paintM('#17181b'),gph=paintM('#2a2c31'),orgB=new THREE.MeshBasicMaterial({color:0xff6a1a}),dark=mc('#101113',.6,.4),rub=mc('#0e0f10',.95,0),chrome=mc('#c8cdd3',.18,.95),led=new THREE.MeshBasicMaterial({color:0xf4fbff});
- const wr=.14,tw=.11,L=.5,dW=.24,dL=.56,clear=.15,dt=clear+.12,axX=tw/2+.04;
+ const wr=.14,tw=.11,L=.5,dW=.21,dL=.51,clear=.15,dt=clear+.12,axX=tw/2+.04;
  /* thick battery deck */
  body.add(part(RB(dW+.08,.12,dL,.035,3),gph,0,clear+.06,0));
  const gp=new THREE.Mesh(new THREE.BoxGeometry(dW-.01,.012,dL-.1),g4DeckMats);gp.position.set(0,dt+.004,-.01);gp.castShadow=true;body.add(gp);
@@ -1458,6 +1458,31 @@ function makeG4(v){
  steer.add(part(hg('g4dome',()=>new THREE.SphereGeometry(.12,18,10,0,TAU,0,Math.PI/2).scale(1.2,.55,.85)),blk,0,topY+.02,topZ+.0));
  steer.add(part(RB(.14,.045,.08,.015,2),dark,0,topY+.018,topZ+.01));
  const hl=bx(.15,.014,.012,led,0,topY+.045,topZ+.085);steer.add(hl);ud.headlamp=hl;
+ /* G4-specific suspension, folding joint, brake hardware and lighting details. */
+ const shockMetal=mc('#aeb5bd',.28,.88),shockBlack=mc('#171a1e',.62,.5),rubber=mc('#08090a',.98,0),orange=paintM('#ff6a1a');
+ for(const side of[-1,1]){
+  /* Rear shock absorber pair: alloy body, orange spring, mounting eyes. */
+  const sx=side*(dW/2+.015),sy=dt-.015,sz=-dL*.39;
+  link(body,sx,sy,sz,side*(axX+.025),wr+.035,-L+.035,.018,shockMetal,10);
+  link(body,sx,sy,sz,side*(axX+.025),wr+.035,-L+.035,.009,shockBlack,10);
+  coil(body,sx,sy,sz,side*(axX+.025),wr+.035,-L+.035,.025,10,orange);
+  body.add(part(CYL(.026,.026,.018,16,'x'),shockMetal,sx,sy,sz));
+  body.add(part(CYL(.026,.026,.018,16,'x'),shockMetal,side*(axX+.025),wr+.035,-L+.035));
+  /* Visible front fork legs and orange reflector inserts. */
+  link(steer,side*(axX-.006),.015,-.01,side*(axX-.006),.29,-.115,.022,shockMetal,12);
+  link(steer,side*(axX-.006),.12,-.055,side*.075,.34,-.12,.03,shockBlack,10);
+  body.add(part(RB(.012,.035,.055,.006,2),orange,side*(dW/2+.012),dt+.012,.08));
+  /* Small fasteners along the deck side. */
+  for(let k=0;k<4;k++)body.add(part(CYL(.006,.006,.006,8,'x'),shockMetal,side*(dW/2+.042),clear+.06,-dL*.36+k*dL*.23));
+ }
+ /* Front fold clamp and locking lever, kept clear of the steering pivot. */
+ body.add(part(RB(.105,.075,.09,.018,3),shockBlack,0,dt+.12,dL*.42));
+ body.add(part(CYL(.018,.018,.085,12,'x'),shockMetal,.045,dt+.13,dL*.42));
+ body.add(part(RB(.014,.09,.018,.006,2),orange,.052,dt+.18,dL*.42,-.18));
+ /* Distinctive front light bezel and two indicator lenses. */
+ steer.add(part(RB(.17,.06,.035,.015,3),shockBlack,0,topY-.3,topZ+.075));
+ steer.add(part(RB(.135,.022,.012,.006,2),led,0,topY-.292,topZ+.096));
+ for(const side of[-1,1])steer.add(part(RB(.025,.018,.018,.005,2),orgB,side*.105,topY-.3,topZ+.09));
  ud.seat=new THREE.Vector3(0,dt,-.04);ud.grip={y:wr+topY+.03,z:L+topZ-.07};ud.eye=new THREE.Vector3(0,dt+1.62,.03);ud.rider='stand';ud.wheelbase=2*L;
  body.traverse(o=>{if(o.isMesh)o.castShadow=true;});
  root.userData=ud;return root;
