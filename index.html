@@ -90,7 +90,7 @@
       box-shadow: 0 16px 42px rgba(0,0,0,.2);
     }
     .google-search-section h2 { margin: 0 0 7px; font-size: 21px; }
-    .google-search-section p { margin: 0 0 16px; color: var(--muted); font-size: 13px; }
+    .google-search-section p { margin: 0 0 16px; color: var(--muted); font-size: 13px; line-height: 1.55; }
     .google-search-form { display: flex; gap: 10px; flex-wrap: wrap; }
     #google-query {
       flex: 1 1 260px; min-width: 0; padding: 14px 16px; border-radius: 13px;
@@ -103,13 +103,17 @@
       color: #06151a; font: inherit; font-weight: 850;
       background: linear-gradient(100deg, #72f6d5, #a4ffc3);
     }
-    .google-open {
-      display: inline-flex; align-items: center; margin-top: 12px; padding: 9px 13px;
-      border: 1px solid rgba(148,170,205,.22); border-radius: 11px;
-      color: #c7d5ed; text-decoration: none; font-size: 12px;
-      background: rgba(255,255,255,.04);
+    #web-search-status { min-height: 22px; margin-top: 14px; color: #aebed7; font-size: 13px; }
+    #web-search-results { display: grid; gap: 10px; margin-top: 10px; }
+    .web-result {
+      padding: 14px 15px; border: 1px solid rgba(148,170,205,.16);
+      border-radius: 13px; background: rgba(5,12,25,.42);
     }
-    .google-open:hover { border-color: rgba(97,245,209,.5); color: white; }
+    .web-result a { color: #8fffe0; font-weight: 750; text-decoration: none; overflow-wrap: anywhere; }
+    .web-result a:hover { text-decoration: underline; }
+    .web-result p { margin: 7px 0 0; color: #bdcbe0; line-height: 1.5; }
+    .web-result small { display: block; margin-top: 7px; color: #8192ad; overflow-wrap: anywhere; }
+    .web-search-note { margin-top: 13px !important; font-size: 11px !important; color: #8192ad !important; }
     .game-grid {
       width: min(1220px, calc(100% - 40px)); margin: 0 auto;
       display: grid; grid-template-columns: repeat(auto-fit, minmax(235px, 1fr));
@@ -338,13 +342,15 @@
       <div class="hero-bottom"><span class="game-count" id="game-count">15 SPIELE IN DER SAMMLUNG</span></div>
     </section>
     <section class="google-search-section" aria-labelledby="google-title">
-      <h2 id="google-title">🌐 Google-Suche</h2>
-      <p>Suche im gesamten Internet – öffnet die Ergebnisse in einem neuen Tab.</p>
+      <h2 id="google-title">🌐 Arcade Websuche</h2>
+      <p>Suche direkt hier nach Webseiten und Informationen. Die Treffer erscheinen unter dem Suchfeld – es wird kein neuer Tab geöffnet.</p>
       <form class="google-search-form" id="google-search-form">
-        <input id="google-query" type="search" placeholder="Was möchtest du googeln?" aria-label="Google-Suchbegriff" required>
-        <button class="google-action" type="submit">Mit Google suchen</button>
+        <input id="google-query" type="search" placeholder="Was möchtest du im Internet suchen?" aria-label="Suchbegriff" required>
+        <button class="google-action" id="web-search-button" type="submit">Suchen</button>
       </form>
-      <a class="google-open" href="https://www.google.com/" target="_blank" rel="noopener noreferrer">Google direkt öffnen ↗</a>
+      <div id="web-search-status" role="status" aria-live="polite"></div>
+      <div id="web-search-results"></div>
+      <p class="web-search-note">Suchquelle: DuckDuckGo Instant Answers. Sie liefert nicht für jede Suchanfrage vollständige Webtreffer. Manche Websites verhindern außerdem, dass sie innerhalb anderer Websites angezeigt werden.</p>
     </section>
     <div class="section-head">
       <div><h2>Alle Spiele</h2><p>Wähle ein Spiel und leg direkt los.</p></div>
@@ -501,15 +507,66 @@
       }
     });
 
-    // Externe Google-Suche: Ergebnisse in einem neuen Tab öffnen.
+    // Integrierte Websuche: Treffer werden direkt in der Seite angezeigt.
     const googleSearchForm = document.getElementById('google-search-form');
     const googleQuery = document.getElementById('google-query');
-    googleSearchForm.addEventListener('submit', (event) => {
+    const webSearchStatus = document.getElementById('web-search-status');
+    const webSearchResults = document.getElementById('web-search-results');
+
+    function addWebResult(title, description, url) {
+      if (!url || !/^https?:\\/\\//i.test(url)) return;
+      const card = document.createElement('article');
+      card.className = 'web-result';
+      const link = document.createElement('a');
+      link.href = url;
+      link.textContent = title || url;
+      link.target = '_self';
+      const summary = document.createElement('p');
+      summary.textContent = description || 'Für diese Seite wurde keine Beschreibung geliefert.';
+      const address = document.createElement('small');
+      address.textContent = url;
+      card.append(link, summary, address);
+      webSearchResults.appendChild(card);
+    }
+
+    googleSearchForm.addEventListener('submit', async (event) => {
       event.preventDefault();
       const query = googleQuery.value.trim();
       if (!query) return;
-      const googleUrl = 'https://www.google.com/search?q=' + encodeURIComponent(query);
-      window.open(googleUrl, '_blank', 'noopener,noreferrer');
+      webSearchResults.replaceChildren();
+      webSearchStatus.textContent = 'Suche läuft …';
+      const button = document.getElementById('web-search-button');
+      button.disabled = true;
+      button.textContent = 'Suche …';
+      try {
+        const endpoint = 'https://api.duckduckgo.com/?q=' + encodeURIComponent(query) + '&format=json&no_html=1&skip_disambig=1';
+        const response = await fetch(endpoint, { headers: { 'Accept': 'application/json' } });
+        if (!response.ok) throw new Error('Suchdienst antwortet gerade nicht.');
+        const data = await response.json();
+        if (data.AbstractURL) addWebResult(data.Heading || query, data.AbstractText || data.Abstract || '', data.AbstractURL);
+        const topics = [];
+        function collectTopics(items) {
+          (items || []).forEach(item => {
+            if (item.Topics) collectTopics(item.Topics);
+            else if (item.FirstURL) topics.push(item);
+          });
+        }
+        collectTopics(data.RelatedTopics || []);
+        topics.slice(0, 15).forEach(item => {
+          const title = (item.Text || item.FirstURL).split(' - ')[0];
+          addWebResult(title, item.Text || '', item.FirstURL);
+        });
+        if (!webSearchResults.children.length) {
+          webSearchStatus.textContent = 'Für diese Anfrage kamen keine direkten Treffer zurück. Versuche einen genaueren Suchbegriff.';
+        } else {
+          webSearchStatus.textContent = webSearchResults.children.length + ' passende Infotreffer gefunden.';
+        }
+      } catch (error) {
+        webSearchStatus.textContent = 'Die integrierte Suche ist gerade nicht erreichbar. Prüfe die Internetverbindung oder versuche es später erneut.';
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Suchen';
+      }
     });
 
     const searchInput = document.getElementById('game-search');
