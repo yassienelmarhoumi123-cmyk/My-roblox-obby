@@ -420,18 +420,17 @@
         H=H.map((v,i)=>(v+[a,b,cc,d,e,f,g,h][i])>>>0)}
       return H.map(v=>v.toString(16).padStart(8,'0')).join('');
     }
-    async function getSha256(value){
-      if(window.crypto?.subtle){try{const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value));return Array.from(new Uint8Array(d),b=>b.toString(16).padStart(2,'0')).join('')}catch(_){}}
-      return sha256Fallback(value);
-    }
+    // Auf iPad/Safari direkt synchron prüfen, damit die Freigabe nicht
+    // an einer verzögerten Web-Crypto-Antwort hängen bleibt.
+    function getSha256(value){ return sha256Fallback(value); }
     let saved=false;try{saved=sessionStorage.getItem('arcadeHubAccess')==='granted'}catch(_){}
     if(saved){setAccessGranted()}else{menu.style.display='none';menu.inert=true;playerContainer.inert=true;accessCode.focus()}
-    accessForm.addEventListener('submit',async event=>{
+    accessForm.addEventListener('submit',event=>{
       event.preventDefault();if(accessButton.disabled)return;
       const entered=accessCode.value.trim();if(!entered){accessError.textContent='Bitte gib zuerst deinen Zugangscode ein.';return}
       accessButton.disabled=true;accessButton.textContent='Prüfe …';accessError.textContent='Der Zugangscode wird geprüft …';
       try{
-        const hash=await getSha256(entered);
+        const hash=getSha256(entered);
         if(hash==='7a7f04c0aa384e6ed4890273c07683c942e373f23e78e39e9418f9792e9a798d'){setAccessGranted()}
         else{accessError.textContent='Der Code ist leider falsch. Bitte prüfe ihn und versuche es erneut.';accessCode.value='';accessCode.focus()}
       }catch(error){console.error('Arcade Hub Zugang:',error);accessError.textContent='Die Prüfung ist fehlgeschlagen. Bitte lade die Seite neu und versuche es erneut.'}
