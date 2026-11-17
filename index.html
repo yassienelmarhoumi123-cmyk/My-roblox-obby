@@ -306,6 +306,7 @@
       color: #06151a; font: inherit; font-weight: 850; cursor: pointer;
       background: linear-gradient(100deg, #72f6d5, #a4ffc3);
     }
+    #access-submit:disabled { opacity: .7; cursor: wait; }
     #access-error { min-height: 20px; margin-top: 12px; color: #ff9caa; font-size: 13px; }
     .gate-footnote { display: block; margin-top: 15px; color: #8292ad; font-size: 11px; }
 
@@ -413,16 +414,37 @@
     }
     accessForm.addEventListener('submit', async (event) => {
       event.preventDefault();
-      const entered = accessCode.value;
-      const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(entered));
-      const hash = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
-      if (hash === '7a7f04c0aa384e6ed4890273c07683c942e373f23e78e39e9418f9792e9a798d') {
-        accessError.textContent = '';
-        setAccessGranted();
-      } else {
-        accessError.textContent = 'Der Code ist leider falsch. Versuch es noch einmal.';
-        accessCode.value = '';
-        accessCode.focus();
+      const submitButton = document.getElementById('access-submit');
+      submitButton.disabled = true;
+      submitButton.textContent = 'Prüfe …';
+      accessError.textContent = '';
+
+      try {
+        if (!window.crypto || !window.crypto.subtle) {
+          throw new Error('Die sichere Codeprüfung wird von diesem Browser nicht unterstützt.');
+        }
+        const entered = accessCode.value.trim();
+        const digest = await window.crypto.subtle.digest(
+          'SHA-256',
+          new TextEncoder().encode(entered)
+        );
+        const hash = Array.from(new Uint8Array(digest), byte =>
+          byte.toString(16).padStart(2, '0')
+        ).join('');
+
+        if (hash === '7a7f04c0aa384e6ed4890273c07683c942e373f23e78e39e9418f9792e9a798d') {
+          setAccessGranted();
+        } else {
+          accessError.textContent = 'Der Code ist leider falsch. Versuch es noch einmal.';
+          accessCode.value = '';
+          accessCode.focus();
+        }
+      } catch (error) {
+        console.error('Arcade Hub Zugang:', error);
+        accessError.textContent = 'Die Anmeldung konnte gerade nicht geprüft werden. Bitte lade die Seite neu und versuche es erneut.';
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = 'Freischalten';
       }
     });
 
