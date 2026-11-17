@@ -312,25 +312,25 @@
       <div class="game-card">
         <div class="game-cover" role="img" aria-label="Scooter Life Titelbild" style="display:grid;place-items:center;font-size:76px;background:radial-gradient(circle at 50% 35%, #38556a, #101b2b 72%);">🛴</div>
         <h3>Scooter Life</h3>
-        <button onclick="loadGame('e-scooter-city.html')">Spielen</button>
+        <button type="button" data-game="e-scooter-city.html">Spielen</button>
       </div>
 
       <div class="game-card">
         <div class="game-cover" role="img" aria-label="Mafia Skyline Titelbild" style="display:grid;place-items:center;font-size:76px;background:radial-gradient(circle at 50% 35%, #315c78, #101b2b 72%);">✈️</div>
         <h3>Mafia Skyline</h3>
-        <button onclick="loadGame('Mafia Skyline.html')">Spielen</button>
+        <button type="button" data-game="Mafia Skyline.html">Spielen</button>
       </div>
 
       <div class="game-card">
         <div class="game-cover" role="img" aria-label="Business Mogul Titelbild" style="display:grid;place-items:center;font-size:76px;background:radial-gradient(circle at 50% 35%, #376b9a, #101b2b 72%);">🏙️</div>
         <h3>Business Mogul</h3>
-        <button onclick="loadGame('Immobilien-Mogul.html')">Spielen</button>
+        <button type="button" data-game="Immobilien-Mogul.html">Spielen</button>
       </div>
 
       <div class="game-card">
         <div class="game-cover" role="img" aria-label="Zombie Apocalypse Game Titelbild" style="display:grid;place-items:center;font-size:76px;background:radial-gradient(circle at 50% 35%, #657d69, #101b2b 72%);">🧟</div>
         <h3>Zombie Apocalypse Game</h3>
-        <button onclick="loadGame('Apocalypse Online.html')">Spielen</button>
+        <button type="button" data-game="Apocalypse Online.html">Spielen</button>
       </div>
     </div>
 
@@ -340,7 +340,7 @@
 
   <!-- Vollbild-Player, wenn ein Spiel gestartet wird -->
   <div id="player-container">
-    <button class="back-btn" onclick="closeGame()">← Zurück zur Übersicht</button>
+    <button class="back-btn" type="button" id="back-to-menu">← Zurück zur Übersicht</button>
     <iframe id="game-iframe" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture; fullscreen; gamepad; xr-spatial-tracking" allowfullscreen></iframe>
   </div>
 
@@ -441,11 +441,19 @@
     function closeGame() {
       const container = document.getElementById('player-container');
       const iframe = document.getElementById('game-iframe');
-      iframe.src = ""; // Stoppt das Spiel im Hintergrund
+      iframe.src = "";
       iframe.removeAttribute('sandbox');
       container.style.display = 'none';
       document.getElementById('menu').style.display = 'block';
     }
+
+    // Spielstart und Zurück-Navigation direkt über Event-Listener verbinden.
+    document.querySelectorAll('.game-card button[data-game]').forEach(button => {
+      button.addEventListener('click', () => loadGame(button.dataset.game));
+    });
+    document.getElementById('back-to-menu').addEventListener('click', closeGame);
+    window.loadGame = loadGame;
+    window.closeGame = closeGame;
   </script>
 
 </body>
