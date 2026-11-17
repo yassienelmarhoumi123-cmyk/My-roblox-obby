@@ -401,12 +401,21 @@
     const accessCode = document.getElementById('access-code');
     const accessError = document.getElementById('access-error');
     const protectedAreas = [document.getElementById('menu'), document.getElementById('player-container')];
+    // Speicherzugriff sicher kapseln: Manche Browser blockieren sessionStorage.
+    function getAccessSaved() {
+      try { return window.sessionStorage.getItem('arcadeHubAccess') === 'granted'; }
+      catch (error) { console.warn('Arcade Hub: Sitzungsspeicher nicht verfügbar.', error); return false; }
+    }
+    function saveAccessGranted() {
+      try { window.sessionStorage.setItem('arcadeHubAccess', 'granted'); }
+      catch (error) { console.warn('Arcade Hub: Freigabe kann nicht gespeichert werden.', error); }
+    }
     function setAccessGranted() {
       accessGate.style.display = 'none';
       protectedAreas.forEach(area => area.inert = false);
-      sessionStorage.setItem('arcadeHubAccess', 'granted');
+      saveAccessGranted();
     }
-    if (sessionStorage.getItem('arcadeHubAccess') === 'granted') {
+    if (getAccessSaved()) {
       setAccessGranted();
     } else {
       protectedAreas.forEach(area => area.inert = true);
