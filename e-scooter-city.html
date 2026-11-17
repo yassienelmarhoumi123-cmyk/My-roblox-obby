@@ -208,9 +208,13 @@ button:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
  </div></div><div id="phone-page" hidden><button id="phone-back" type="button">← Zurück</button><h3 id="phone-page-title">App</h3><div id="phone-page-content"></div></div>
  <div id="phone-delivery" hidden><button class="phone-back phone-section-back" type="button">← Zurück zu Apps</button><button class="phone-app" id="delivery-start">🍔 Lieferdienst starten <small>Hole eine Bestellung ab und bringe sie zum Kunden. Belohnung: 250 €</small></button><button class="phone-app" id="delivery-cancel">✕ Lieferung abbrechen</button></div>
  <div id="phone-tuning" hidden><button class="phone-back phone-section-back" type="button">← Zurück zu Apps</button><div class="phone-app" style="background:#111d29"><strong>🛠️ Scooter-Tuning</strong>
-  <div class="upgrade"><span>Motor +10 % <small>Beschleunigung · 400 €</small></span><button id="tune-motor">Kaufen</button></div>
-  <div class="upgrade"><span>Akku +10 % <small>Reichweite · 300 €</small></span><button id="tune-battery">Kaufen</button></div>
-  <div class="upgrade"><span>Bremsen +10 % <small>Bremskraft · 350 €</small></span><button id="tune-brakes">Kaufen</button></div>
+  <div class="upgrade"><span>VESC-Controller <small>Steuergerät · 900 € je Stufe</small></span><button id="tune-vesc">Einbauen</button></div>
+  <div class="upgrade"><span>Motor-Upgrade <small>Spiel-Beschleunigung · 550 € je Stufe</small></span><button id="tune-motor">Einbauen</button></div>
+  <div class="upgrade"><span>Akku-Upgrade <small>Spiel-Reichweite · 450 € je Stufe</small></span><button id="tune-battery">Einbauen</button></div>
+  <div class="upgrade"><span>Bremsanlage <small>Spiel-Bremskraft · 400 € je Stufe</small></span><button id="tune-brakes">Einbauen</button></div>
+  <div class="upgrade"><span>Reifen & Grip <small>Spiel-Handling · 350 € je Stufe</small></span><button id="tune-tires">Einbauen</button></div>
+  <div class="upgrade"><span>Fahrwerk <small>Spiel-Stabilität · 500 € je Stufe</small></span><button id="tune-susp">Einbauen</button></div>
+  <div class="upgrade"><span>Grafikqualität <small>Zwischen Leistung, Ausgeglichen und Hoch wechseln</small></span><button id="quality-cycle">Wechseln</button></div>
  </div></div><div id="phone-status">Willkommen! Wähle eine App.</div>
 </div><div id="flash"></div><div id="sirenfx"></div>
 
@@ -404,9 +408,10 @@ const vById=id=>VEHICLES.find(v=>v.id===id)||VEHICLES[4];
 {const TOP={g2max:40,g4:32,lightbee:45,thunder:50,ultrabee:58,xlimited:65,dt2pro:80,varg:120};
  for(const v of VEHICLES){if(TOP[v.id]){v.top=TOP[v.id];if(v.id!=='varg')v.accel=Math.round(v.accel*.75*10)/10;}}}
 const FREE_SCOOTERS=['zt3pro','g3max'];
-const save={money:CONFIG.START_MONEY,owned:[...FREE_SCOOTERS],selected:'zt3pro',totalKm:0,escapes:0,redeemedCodes:[]};
+const save={money:CONFIG.START_MONEY,owned:[...FREE_SCOOTERS],selected:'zt3pro',totalKm:0,escapes:0,redeemedCodes:[],tuning:{}};
 function loadSave(){let hasSave=false;try{const s=JSON.parse(localStorage.getItem('escooter-city-v1')||'null');if(s&&typeof s.money==='number'&&Array.isArray(s.owned)&&s.owned.length){Object.assign(save,s);hasSave=true;if((s.version||0)<3){save.owned=save.owned.filter(id=>id!=='g2max'&&id!=='gt3d');}}}catch(e){}
   if(!Array.isArray(save.redeemedCodes))save.redeemedCodes=[];
+  if(!save.tuning||typeof save.tuning!=='object')save.tuning={};
   for(const id of FREE_SCOOTERS)if(!save.owned.includes(id))save.owned.push(id);
   if(!save.owned.includes(save.selected))save.selected='zt3pro';
   if(!hasSave)save.needsStarterChoice=true;
@@ -886,7 +891,7 @@ function addLamps(B){
   addLamp(B.cx+t,B.cz-edge,0,-1);addLamp(B.cx+t,B.cz+edge,0,1);addLamp(B.cx-edge,B.cz+t,-1,0);addLamp(B.cx+edge,B.cz+t,1,0);
  }
 }
-function addPeds(B,n){for(let k=0;k<n;k++)pedRings.push({B,s:R()*232,spd:rr(1.1,1.8)*(R()<.5?1:-1),off:rr(-1.3,1.3),c:Math.floor(R()*50),ph:R()*10,ox:0,oz:0});}
+function addPeds(B,n){const count=Math.min(Math.ceil(n*1.75),Math.max(0,460-pedRings.length));for(let k=0;k<count;k++)pedRings.push({B,s:R()*232,spd:rr(1.0,1.9)*(R()<.5?1:-1),off:rr(-1.8,1.8),c:Math.floor(R()*50),ph:R()*10,ox:0,oz:0});}
 
 function signalLens(){
  for(let a=0;a<=N;a++)for(let b=0;b<=N;b++){
@@ -2221,7 +2226,8 @@ function toggleMount(){
  }
 }
 function stepVehicle(dt,live){
- const d=vdef;
+ const base=vdef,lv=(save.tuning&&save.tuning[base.id])||{};
+ const d={...base,top:base.top*(1+(lv.vesc||0)*.055),accel:base.accel*(1+(lv.motor||0)*.12+(lv.vesc||0)*.035),brake:base.brake*(1+(lv.brakes||0)*.12),grip:base.grip*(1+(lv.tires||0)*.08)};
  const th=live?inp.gas:0,br=live?inp.brake:0,hb=live?inp.hand:0,st=live?(inp.left-inp.right):0;
  let f0=Math.sin(V.h),f1=Math.cos(V.h);
  let vf=V.vx*f0+V.vz*f1;
@@ -2937,7 +2943,7 @@ function mpLeave(){
 $('b-multi').onclick=()=>mpQuickJoin();
 
 /* ============================ PHONE: DELIVERY & TUNING ============================ */
-const phoneState={job:null,marker:null,tune:{motor:0,battery:0,brakes:0}};
+const phoneState={job:null,marker:null};
 function phoneMessage(t){$('phone-status').textContent=t;}
 function phoneOpen(){const p=$('phone');p.classList.toggle('open');$('phone-money').textContent=money(save.money);Snd.init();Snd.click();}
 function phoneClose(){if($('phone').classList.contains('open')){$('phone').classList.remove('open');Snd.click();}}
@@ -2949,7 +2955,7 @@ function phoneShowApp(app){
  const title=$('phone-page-title'),content=$('phone-page-content');content.innerHTML='';
  const btn=(label,fn)=>{const b=document.createElement('button');b.className='phone-app';b.textContent=label;b.onclick=fn;content.appendChild(b);};
  if(app==='delivery'){title.textContent='🍔 Lieferdienst';delivery.hidden=false;page.hidden=true;}
- else if(app==='tuning'){title.textContent='🛠️ Scooter-Tuning';tuning.hidden=false;page.hidden=true;}
+ else if(app==='tuning'){title.textContent='🛠️ Werkstatt & Tuning';tuning.hidden=false;page.hidden=true;refreshTuneUI();}
  else if(app==='map'){title.textContent='🗺️ Stadtkarte';const f=focus();content.textContent='Deine Position: '+Math.round(f.x)+', '+Math.round(f.z)+'. Fahre durch die Stadt und entdecke neue Straßen.';btn('Garage öffnen',()=>{phoneClose();openGarage('play');});}
  else if(app==='garage'){title.textContent='🛵 Garage';content.textContent='Verwalte und wechsle deine Fahrzeuge.';btn('Garage öffnen',()=>{phoneClose();openGarage('play');});}
  else if(app==='weather'){title.textContent='🌦️ Wetter';content.textContent='Aktuelles Wetter: '+WNAMES[wx.key]+'.';btn('Wetter wechseln',()=>{cycleWeather();content.textContent='Aktuelles Wetter: '+WNAMES[wx.key]+'.';});}
@@ -2972,17 +2978,43 @@ function deliveryStart(){
 }
 function deliveryCancel(){if(phoneState.marker){scene.remove(phoneState.marker.marker);scene.remove(phoneState.marker.ring);}phoneState.marker=null;phoneState.job=null;$('delivery-nav').hidden=true;phoneMessage('Lieferung abgebrochen.');}
 $('delivery-start').onclick=deliveryStart;$('delivery-cancel').onclick=deliveryCancel;
-function phoneTune(kind){
- const prices={motor:400,battery:300,brakes:350},max=3;
- if(phoneState.tune[kind]>=max){phoneMessage('Dieses Upgrade ist bereits auf Maximum.');return;}
- const price=prices[kind];if(save.money<price){phoneMessage('Nicht genug Geld für dieses Upgrade.');return;}
- save.money-=price;phoneState.tune[kind]++;
- if(kind==='motor')vdef.accel*=1.1;
- if(kind==='battery'){vdef.range*=1.1;V.batt=Math.min(100,V.batt+10);}
- if(kind==='brakes')vdef.brake*=1.1;
- writeSave();$('phone-money').textContent=money(save.money);setT('money',money(save.money));phoneMessage('Upgrade eingebaut! '+phoneState.tune[kind]+'/'+max+' gekauft.');Snd.buy();toast('Scooter verbessert','good');
+const TUNE_PARTS={
+ vesc:{name:'VESC-Controller',price:900,max:3},
+ motor:{name:'Motor-Upgrade',price:550,max:3},
+ battery:{name:'Akku-Upgrade',price:450,max:3},
+ brakes:{name:'Bremsanlage',price:400,max:3},
+ tires:{name:'Reifen & Grip',price:350,max:3},
+ susp:{name:'Fahrwerk',price:500,max:2}
+};
+function currentTune(){if(!save.tuning||typeof save.tuning!=='object')save.tuning={};if(!save.tuning[vdef.id])save.tuning[vdef.id]={};return save.tuning[vdef.id];}
+function refreshTuneUI(){
+ const lv=currentTune();
+ for(const k of Object.keys(TUNE_PARTS)){const b=$('tune-'+k);if(!b)continue;const q=TUNE_PARTS[k],n=lv[k]||0;b.textContent=n>=q.max?'MAX':('Einbauen · '+q.price+' €');b.disabled=n>=q.max||save.money<q.price;}
+ const q=$('quality-cycle');if(q)q.textContent=['Leistung','Ausgeglichen','Hoch'][qualityLevel]||'Wechseln';
 }
-$('tune-motor').onclick=()=>phoneTune('motor');$('tune-battery').onclick=()=>phoneTune('battery');$('tune-brakes').onclick=()=>phoneTune('brakes');
+function phoneTune(kind){
+ const q=TUNE_PARTS[kind];if(!q)return;
+ const lv=currentTune(),n=lv[kind]||0;
+ if(n>=q.max){phoneMessage('Dieses Teil ist bereits auf Maximum.');return;}
+ if(save.money<q.price){phoneMessage('Nicht genug Geld für dieses Upgrade.');return;}
+ save.money-=q.price;lv[kind]=n+1;writeSave();
+ $('phone-money').textContent=money(save.money);setT('money',money(save.money));
+ const names={vesc:'VESC-Controller eingebaut',motor:'Motor-Upgrade eingebaut',battery:'Akku verbessert',brakes:'Bremsanlage verbessert',tires:'Reifen und Grip verbessert',susp:'Fahrwerk verbessert'};
+ phoneMessage(names[kind]+' · Stufe '+lv[kind]+'/'+q.max+'.');Snd.buy();toast('Tuning eingebaut','good');refreshTuneUI();
+}
+for(const k of Object.keys(TUNE_PARTS))$('tune-'+k).onclick=()=>phoneTune(k);
+let qualityLevel=MOBILE?0:1;
+function applyQuality(){
+ const ratios=[MOBILE?.82:1,MOBILE?1:1.2,1.5],ratio=Math.min(window.devicePixelRatio||1,ratios[qualityLevel]);
+ renderer.setPixelRatio(ratio);
+ renderer.shadowMap.enabled=!MOBILE&&qualityLevel>=2;
+ resize();
+}
+function cycleQuality(){
+ qualityLevel=(qualityLevel+1)%3;applyQuality();
+ const names=['Leistung','Ausgeglichen','Hoch'];toast('Grafik: '+names[qualityLevel],'good');refreshTuneUI();
+}
+$('quality-cycle').onclick=cycleQuality;
 function updatePhoneWorld(dt){
  if(phoneState.marker){const m=phoneState.marker;m.marker.rotation.y+=dt*1.5;m.marker.position.y=3+Math.sin(simT*3)*.35;m.ring.rotation.z+=dt*.8;
   const o=mounted?V:F,dx=phoneState.job.x-o.x,dz=phoneState.job.z-o.z,d=Math.hypot(dx,dz),bearing=Math.atan2(dx,dz),relative=Math.atan2(Math.sin(bearing-(o.h||0)),Math.cos(bearing-(o.h||0)));
