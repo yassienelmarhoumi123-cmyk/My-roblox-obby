@@ -2227,7 +2227,7 @@ function toggleMount(){
 }
 function stepVehicle(dt,live){
  const base=vdef,lv=(save.tuning&&save.tuning[base.id])||{};
- const d={...base,top:base.top*(1+(lv.vesc||0)*.055),accel:base.accel*(1+(lv.motor||0)*.12+(lv.vesc||0)*.035),brake:base.brake*(1+(lv.brakes||0)*.12),grip:base.grip*(1+(lv.tires||0)*.08)};
+ const d={...base,top:base.top*(1+(lv.vesc||0)*.055),accel:base.accel*(1+(lv.motor||0)*.12+(lv.vesc||0)*.035),brake:base.brake*(1+(lv.brakes||0)*.12),grip:base.grip*(1+(lv.tires||0)*.08+(lv.susp||0)*.035),range:base.range*(1+(lv.battery||0)*.15)};
  const th=live?inp.gas:0,br=live?inp.brake:0,hb=live?inp.hand:0,st=live?(inp.left-inp.right):0;
  let f0=Math.sin(V.h),f1=Math.cos(V.h);
  let vf=V.vx*f0+V.vz*f1;
@@ -3003,7 +3003,7 @@ function phoneTune(kind){
  phoneMessage(names[kind]+' · Stufe '+lv[kind]+'/'+q.max+'.');Snd.buy();toast('Tuning eingebaut','good');refreshTuneUI();
 }
 for(const k of Object.keys(TUNE_PARTS))$('tune-'+k).onclick=()=>phoneTune(k);
-let qualityLevel=MOBILE?0:1;
+let qualityLevel=MOBILE?1:2;
 function applyQuality(){
  const ratios=[MOBILE?.82:1,MOBILE?1:1.2,1.5],ratio=Math.min(window.devicePixelRatio||1,ratios[qualityLevel]);
  renderer.setPixelRatio(ratio);
