@@ -83,22 +83,22 @@
       transition: border-color .2s, box-shadow .2s;
     }
     #game-search:focus { border-color: rgba(97,245,209,.65); box-shadow: 0 0 0 3px rgba(97,245,209,.1); }
-    .google-search-section {
+    .web-search-section {
       width: min(1180px, calc(100% - 40px)); margin: 0 auto 34px;
       padding: 22px; text-align: left; border: 1px solid rgba(97,245,209,.22);
       border-radius: 22px; background: linear-gradient(120deg, rgba(19,35,57,.96), rgba(12,23,40,.94));
       box-shadow: 0 16px 42px rgba(0,0,0,.2);
     }
-    .google-search-section h2 { margin: 0 0 7px; font-size: 21px; }
-    .google-search-section p { margin: 0 0 16px; color: var(--muted); font-size: 13px; line-height: 1.55; }
-    .google-search-form { display: flex; gap: 10px; flex-wrap: wrap; }
-    #google-query {
+    .web-search-section h2 { margin: 0 0 7px; font-size: 21px; }
+    .web-search-section p { margin: 0 0 16px; color: var(--muted); font-size: 13px; line-height: 1.55; }
+    .web-search-form { display: flex; gap: 10px; flex-wrap: wrap; }
+    #web-query {
       flex: 1 1 260px; min-width: 0; padding: 14px 16px; border-radius: 13px;
       border: 1px solid rgba(148,170,205,.25); outline: none; color: var(--text);
       background: rgba(5,12,25,.72); font: inherit;
     }
-    #google-query:focus { border-color: rgba(97,245,209,.7); box-shadow: 0 0 0 3px rgba(97,245,209,.1); }
-    .google-action {
+    #web-query:focus { border-color: rgba(97,245,209,.7); box-shadow: 0 0 0 3px rgba(97,245,209,.1); }
+    .web-search-button {
       padding: 13px 19px; border: 0; border-radius: 13px; cursor: pointer;
       color: #06151a; font: inherit; font-weight: 850;
       background: linear-gradient(100deg, #72f6d5, #a4ffc3);
@@ -160,8 +160,8 @@
       .top-note { display: none; }
       .hero { width: calc(100% - 28px); margin-top: 10px; border-radius: 21px; }
       .section-head { align-items: stretch; flex-direction: column; }
-      .google-search-section { width: calc(100% - 28px); padding: 18px; }
-      .google-action { flex: 1 1 100%; }
+      .web-search-section { width: calc(100% - 28px); padding: 18px; }
+      .web-search-button { flex: 1 1 100%; }
       .search-wrap { width: 100%; }
       .game-grid { width: calc(100% - 28px); grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
       .game-card { padding: 9px; border-radius: 15px; }
@@ -341,12 +341,12 @@
       <p>Entdecke deine Lieblingsspiele, finde neue Herausforderungen und starte direkt los – alles an einem Ort.</p>
       <div class="hero-bottom"><span class="game-count" id="game-count">15 SPIELE IN DER SAMMLUNG</span></div>
     </section>
-    <section class="google-search-section" aria-labelledby="google-title">
-      <h2 id="google-title">🌐 Arcade Websuche</h2>
+    <section class="web-search-section" aria-labelledby="web-search-title">
+      <h2 id="web-search-title">🌐 Arcade Websuche</h2>
       <p>Suche direkt hier nach Webseiten und Informationen. Die Treffer erscheinen unter dem Suchfeld – es wird kein neuer Tab geöffnet.</p>
-      <form class="google-search-form" id="google-search-form">
-        <input id="google-query" type="search" placeholder="Was möchtest du im Internet suchen?" aria-label="Suchbegriff" required>
-        <button class="google-action" id="web-search-button" type="submit">Suchen</button>
+      <form class="web-search-form" id="web-search-form">
+        <input id="web-query" type="search" placeholder="Was möchtest du im Internet suchen?" aria-label="Suchbegriff" required>
+        <button class="web-search-button" id="web-search-button" type="submit">Suchen</button>
       </form>
       <div id="web-search-status" role="status" aria-live="polite"></div>
       <div id="web-search-results"></div>
@@ -508,8 +508,8 @@
     });
 
     // Integrierte Websuche: Treffer werden direkt in der Seite angezeigt.
-    const googleSearchForm = document.getElementById('google-search-form');
-    const googleQuery = document.getElementById('google-query');
+    const webSearchForm = document.getElementById('web-search-form');
+    const webQuery = document.getElementById('web-query');
     const webSearchStatus = document.getElementById('web-search-status');
     const webSearchResults = document.getElementById('web-search-results');
 
@@ -529,9 +529,9 @@
       webSearchResults.appendChild(card);
     }
 
-    googleSearchForm.addEventListener('submit', async (event) => {
+    webSearchForm.addEventListener('submit', async (event) => {
       event.preventDefault();
-      const query = googleQuery.value.trim();
+      const query = webQuery.value.trim();
       if (!query) return;
       webSearchResults.replaceChildren();
       webSearchStatus.textContent = 'Suche läuft …';
