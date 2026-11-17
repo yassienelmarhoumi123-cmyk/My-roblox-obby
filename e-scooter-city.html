@@ -2991,7 +2991,7 @@ function startCityTour(){
  if(state!=='play'){phoneMessage('Du musst zuerst spielen.');return;}
  if(phoneState.job){phoneMessage('Beende zuerst deinen aktuellen Auftrag.');return;}
  const o=mounted?V:F,points=[];
- for(let i=0;i<3;i++){const a=Math.random()*Math.PI*2,d=170+Math.random()*190;points.push({x:clamp(o.x+Math.sin(a)*d,-560,560),z:clamp(o.z+Math.cos(a)*d,-560,560)});}
+ for(let i=0;i<3;i++){const a=Math.random()*Math.PI*2,d=170+Math.random()*190,tx=clamp(o.x+Math.sin(a)*d,-560,560),tz=clamp(o.z+Math.cos(a)*d,-560,560),ix=clamp(Math.round((tx+HALF)/CELL),0,N),iz=clamp(Math.round((tz+HALF)/CELL),0,N);points.push({x:lineAt(ix)+(Math.random()<.5?-1:1)*10,z:lineAt(iz)+(Math.random()<.5?-1:1)*10});}
  phoneState.mission={type:'tour',points,index:0,reward:450};
  setJobTarget(points[0]);phoneMessage('Stadttour gestartet! Fahre alle drei blauen Wegpunkte an.');toast('Neue Mission · Stadttour','good');phoneClose();
 }
