@@ -1,0 +1,347 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Immobilien-Mogul</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Layout: Kopfzeile mit Firma, Kennzahlen-Raster, Reiter, feste Leiste unten mit "Nächster Monat" */
+:root{--bg:#eceff3;--panel:#fff;--panel2:#f4f6f9;--ink:#14202b;--mute:#5d6b79;--line:#d8dee5;--accent:#1f5fbf;--accent-ink:#fff;--good:#177a50;--bad:#bf3a2a;--warn:#a96a08;--head:'Space Grotesk','Inter',system-ui,sans-serif;--body:'Inter',system-ui,sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e161d;--panel:#17222c;--panel2:#1d2a36;--ink:#e6ecf2;--mute:#92a1b0;--line:#2a3a48;--accent:#5b9bf0;--accent-ink:#0b1620;--good:#4cc38a;--bad:#f0806f;--warn:#e0a548;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e161d;--panel:#17222c;--panel2:#1d2a36;--ink:#e6ecf2;--mute:#92a1b0;--line:#2a3a48;--accent:#5b9bf0;--accent-ink:#0b1620;--good:#4cc38a;--bad:#f0806f;--warn:#e0a548;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:14px;line-height:1.45;padding-block:0 84px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1040px;margin:0 auto}
+h1,h2,h3{font-family:var(--head);margin:0;text-wrap:balance}
+header{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;justify-content:space-between;padding:18px 0 10px}
+header h1{font-size:22px}
+header small{color:var(--mute)}
+.date{font-family:var(--head);font-weight:700;font-size:16px}
+nav{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--line);margin-bottom:14px}
+nav button{background:none;border:0;border-bottom:3px solid transparent;color:var(--mute);font:600 14px var(--body);padding:10px 12px;cursor:pointer;white-space:nowrap}
+nav button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(165px,1fr))}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px;min-width:0}
+.tile span{display:block;overflow-wrap:anywhere;color:var(--mute);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+.tile b{display:block;font:700 20px var(--head);margin-top:2px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.pos{color:var(--good)}.neg{color:var(--bad)}.mu{color:var(--mute)}
+section.box{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:14px;margin-top:12px;min-width:0}
+section.box h2{font-size:16px;margin-bottom:8px}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);white-space:nowrap;vertical-align:middle}
+th{font-size:12px;color:var(--mute);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+td.n,th.n{text-align:right}
+.btn{font:600 13px var(--body);background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:5px;padding:6px 10px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--panel2);border:1px solid var(--line)}
+.pill.g{color:var(--good)}.pill.b{color:var(--bad)}.pill.w{color:var(--warn)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.row.sp{justify-content:space-between}
+select,input{font:14px var(--body);background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:5px;padding:6px 8px;min-width:0}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--panel);border-top:1px solid var(--line);padding:10px max(16px,env(safe-area-inset-left,0px)) calc(10px + env(safe-area-inset-bottom,0px));z-index:5}
+.bar .in{max-width:1040px;margin:0 auto;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.bar .btn.pri{font-size:15px;padding:10px 18px}
+.ov{position:fixed;inset:0;background:rgba(8,14,20,.62);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:24px 16px;z-index:20}
+.dlg{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:18px;width:100%;max-width:520px}
+.dlg h2{font-size:18px;margin-bottom:8px}
+.dlg p{margin:6px 0}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:3px 0;border-bottom:1px dashed var(--line);font-variant-numeric:tabular-nums}
+.log li{padding:5px 0;border-bottom:1px solid var(--line)}
+.log{list-style:none;margin:0;padding:0}
+.ev{border-left:3px solid var(--accent);padding:4px 10px;margin:6px 0;background:var(--panel2)}
+.ev.g{border-color:var(--good)}.ev.b{border-color:var(--bad)}
+svg text{fill:var(--mute);font:11px var(--body)}
+.goal{height:8px;background:var(--panel2);border-radius:4px;overflow:hidden;border:1px solid var(--line)}
+.goal i{display:block;height:100%;background:var(--accent)}
+@media (prefers-reduced-motion:no-preference){.tile b{transition:color .3s}}
+</style>
+<div class="wrap" id="app"></div>
+<script>
+'use strict';
+const DISTRICTS=['Altstadt','Hafenviertel','Nordstadt','Südstadt','Westpark','Seeblick','Business Mitte','Industriegürtel'];
+const DTREND={Altstadt:.002,Hafenviertel:.003,Nordstadt:0,Südstadt:0,Westpark:.002,Seeblick:.0025,'Business Mitte':0,Industriegürtel:-.002};
+// [id,name,typ,stadtteil,preis,miete,kosten,besitzer]
+const RAW=[
+['W01','1-Zi-Wohnung','Wohnung','Nordstadt',95000,480,120,null],['W02','2-Zi-Wohnung','Wohnung','Südstadt',110000,560,140,null],
+['W03','3-Zi-Wohnung','Wohnung','Altstadt',185000,820,190,'urban'],['W04','Penthouse','Wohnung','Seeblick',340000,1450,330,'kronen'],
+['W05','2-Zi-Wohnung','Wohnung','Hafenviertel',160000,720,170,null],['H01','Reihenhaus','Haus','Südstadt',210000,950,210,null],
+['H02','Einfamilienhaus','Haus','Westpark',380000,1500,340,'urban'],['H03','Doppelhaushälfte','Haus','Nordstadt',260000,1100,250,null],
+['H04','Altbau-Stadthaus (sanierungsbedürftig)','Haus','Altstadt',230000,700,280,null],
+['V01','Villa am See','Villa','Seeblick',1150000,4200,1100,'kronen'],['V02','Gründerzeitvilla','Villa','Westpark',780000,2900,760,'kronen'],
+['V03','Stadtvilla','Villa','Westpark',620000,2400,620,'kronen'],['M01','Mehrfamilienhaus (6 WE)','Mehrfamilienhaus','Südstadt',520000,2600,650,null],
+['M02','Mehrfamilienhaus (8 WE)','Mehrfamilienhaus','Nordstadt',740000,3700,900,'hansa'],['M03','Mehrfamilienhaus (12 WE)','Mehrfamilienhaus','Südstadt',880000,4600,1300,'hansa'],
+['M04','Mehrfamilienhaus (4 WE)','Mehrfamilienhaus','Altstadt',480000,2200,520,null],['B01','Büro-Etagenhaus','Büro','Altstadt',650000,3300,700,'phoenix'],
+['B02','Bürogebäude','Büro','Business Mitte',2400000,12500,2600,'vertex'],['B03','Bürotower','Büro','Business Mitte',6800000,36000,7000,'vertex'],
+['B04','Gewerbebüro','Büro','Industriegürtel',430000,2400,480,null],['HT01','Pension „Zum Anker“','Hotel','Hafenviertel',890000,7500,4300,null],
+['HT02','Boutique-Hotel','Hotel','Altstadt',2100000,19000,11500,'goldstein'],['HT03','Seehotel 4★','Hotel','Seeblick',4600000,41000,25000,'goldstein'],
+['E01','Nahversorgungszentrum','Einkaufszentrum','Südstadt',1650000,9000,2400,'phoenix'],['E02','Einkaufszentrum „City Galerie“','Einkaufszentrum','Business Mitte',9500000,52000,14000,'titan'],
+['E03','Fachmarktzentrum','Einkaufszentrum','Industriegürtel',3100000,17500,4000,'titan'],['G01','Bauland (800 m²)','Grundstück','Nordstadt',85000,0,40,null],
+['G02','Baugrundstück (1.200 m²)','Grundstück','Westpark',240000,0,90,null],['G03','Brachfläche','Grundstück','Hafenviertel',180000,0,80,null],
+['G04','Seegrundstück','Grundstück','Seeblick',520000,0,160,'meridian'],['G05','Gewerbegrundstück','Grundstück','Industriegürtel',150000,0,70,null],
+['G06','Grundstück Business Mitte','Grundstück','Business Mitte',700000,0,200,'meridian']];
+const COMP={kronen:{n:'Kronen Immobilien AG',s:'Luxus & Villen',t:['Villa','Wohnung'],cash:800000},
+vertex:{n:'Vertex Capital Properties',s:'Büro & Gewerbe',t:['Büro'],cash:2500000},
+hansa:{n:'Hansa Wohnbau GmbH',s:'Massenwohnungsbau',t:['Mehrfamilienhaus','Wohnung'],cash:450000},
+goldstein:{n:'Goldstein & Partner',s:'Hotels & Tourismus',t:['Hotel'],cash:1200000},
+urban:{n:'Urban Nest Group',s:'Mikro-Apartments, Familienhäuser',t:['Wohnung','Haus'],cash:300000},
+phoenix:{n:'Phoenix Real Estate',s:'Sanierung & Flips',t:['Büro','Einkaufszentrum','Haus','Mehrfamilienhaus'],cash:600000},
+titan:{n:'Titan Holding',s:'Einzelhandel',t:['Einkaufszentrum'],cash:3000000},
+meridian:{n:'Meridian Estates',s:'Grundstücke & Entwicklung',t:['Grundstück'],cash:900000}};
+const BUILD={
+ efh:{n:'Einfamilienhaus',cost:224000,m:6,type:'Haus'},
+ mfh:{n:'Mehrfamilienhaus (8 WE)',cost:770000,m:9,type:'Mehrfamilienhaus'},
+ buero:{n:'Bürohaus',cost:1540000,m:10,type:'Büro'},
+ hotel:{n:'Hotel',cost:2450000,m:12,type:'Hotel'}};
+const STAFF={makler:{n:'Makler',pay:3200,d:'Kaufnebenkosten nur 3 % statt 5 %, keine Verkaufsgebühr, schnellere Vermietung'},
+ verwalter:{n:'Hausverwalter',pay:3000,d:'Betreut 10 Objekte, deutlich weniger Leerstand'},
+ handwerker:{n:'Handwerker',pay:3400,d:'Halbiert Reparaturkosten'},
+ manager:{n:'Manager',pay:6500,d:'Führt 25 Objekte, +3 % Mieteinnahmen'}};
+const START_CASH=250000, OFFICE=300, BUYFEE=.04, SELLFEE=.02, OVERDRAFT=0;
+const eur=n=>Math.round(n).toLocaleString('de-DE')+' €';
+const MON=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+const dateStr=m=>{const t=10+m;return MON[t%12]+' '+(2026+Math.floor(t/12))};
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const chance=p=>Math.random()<p;
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+let G=null;
+function newGame(){
+ const idx={},ridx={};DISTRICTS.forEach(d=>{idx[d]=1;ridx[d]=1});
+ G={m:0,cash:START_CASH,debt:0,firm:'Julien Immobilien GmbH',rate:.03,eco:1,idx,ridx,staff:{makler:0,verwalter:0,handwerker:0,manager:0},
+  props:RAW.map(r=>({id:r[0],name:r[1],type:r[2],d:r[3],base:r[4],brent:r[5]*1.4,bcost:r[6]*.85,owner:r[7],upg:{r:0,m:0,s:0},work:0,workName:'',build:null,vac:false,vacM:0,lease:0,paid:0})),
+  comp:Object.fromEntries(Object.entries(COMP).map(([k,v])=>[k,{cash:v.cash}])),
+  hist:[],log:[],last:null,stats:{in:0,out:0}};
+ G.hist.push(netWorth());
+ addLog('Willkommen in Neuhafen! Startkapital: '+eur(START_CASH)+'.');
+}
+const P=id=>G.props.find(p=>p.id===id);
+const vf=p=>1+(p.upg.m?.08:0)+(p.upg.s?.15:0);
+const rf=p=>1+(p.upg.r?.03:0)+(p.upg.m?.10:0)+(p.upg.s?.20:0);
+function value(p){return p.base*G.idx[p.d]*vf(p)}
+function ecoF(p){return(p.type==='Hotel'||p.type==='Einkaufszentrum'||p.type==='Büro')?G.eco:1+(G.eco-1)*.3}
+function fullRent(p){return p.brent*G.ridx[p.d]*rf(p)*ecoF(p)*(1+.03*mgrEff())}
+function mgrEff(){const n=mine().length;return Math.min(1,G.staff.manager*25/Math.max(1,n))}
+function rent(p){if(p.owner!=='me'||p.brent===0||p.work>0||p.build||p.vac)return 0;return fullRent(p)}
+function cost(p){return p.bcost*(.6+.4*G.idx[p.d])}
+const mine=()=>G.props.filter(p=>p.owner==='me');
+const portValue=()=>mine().reduce((s,p)=>s+value(p),0)+mine().reduce((s,p)=>s+(p.build?p.build.cost*0:0),0);
+const netWorth=()=>G.cash+portValue()-G.debt;
+const staffCost=()=>Object.entries(G.staff).reduce((s,[k,n])=>s+n*STAFF[k].pay,0);
+const income=()=>mine().reduce((s,p)=>s+rent(p),0);
+const interest=()=>G.debt*G.rate/12;
+const running=()=>mine().reduce((s,p)=>s+cost(p),0)+staffCost()+OFFICE+interest();
+const net=()=>income()-running();
+const maxDebt=()=>portValue()*.8;
+const buyPrice=p=>value(p);
+function addLog(t){G.log.unshift({m:G.m,t});if(G.log.length>200)G.log.pop()}
+function compWealth(k){return G.comp[k].cash+G.props.filter(p=>p.owner===k).reduce((s,p)=>s+value(p),0)}
+function feeRate(){return G.staff.makler>0?.03:BUYFEE}
+function canBuy(p,price,pct){
+ const fee=price*feeRate(),loan=price*pct,need=price-loan+fee;
+ if(need>G.cash)return 'Zu wenig Bargeld: du brauchst '+eur(need)+' (Anzahlung + Nebenkosten).';
+ if(G.debt+loan>(portValue()+price)*.8+1)return 'Die Bank gibt maximal 80 % deines Immobilienwerts als Gesamtkredit.';
+ return null}
+function buy(id,pct,price){
+ const p=P(id),own=p.owner;price=price||value(p);const err=canBuy(p,price,pct);if(err)return err;
+ const fee=price*feeRate(),loan=price*pct;G.cash-=price-loan+fee;G.debt+=loan;
+ if(own&&COMP[own])G.comp[own].cash+=price*.97;
+ p.owner='me';p.vac=false;p.vacM=0;
+ addLog('Gekauft: '+p.id+' '+p.name+' für '+eur(price)+(loan?' (Kredit '+eur(loan)+')':'')+'.');save();return null}
+function sell(id){
+ const p=P(id);if(p.owner!=='me')return;const v=value(p),fee=G.staff.makler>0?0:v*SELLFEE;
+ G.cash+=v-fee;p.owner=null;
+ p.brent=p.brent*rf(p);p.base=v/G.idx[p.d];p.upg={r:0,m:0,s:0};p.work=0;p.build=null;p.vac=false;
+ const ex=G.debt-maxDebt();if(ex>0){const pay=Math.min(G.cash,ex);G.cash-=pay;G.debt-=pay;}
+ addLog('Verkauft: '+p.id+' '+p.name+' für '+eur(v-fee)+(fee?' (nach '+eur(fee)+' Makler)':'')+'.');save()}
+function offer(id,amount,pct){
+ const p=P(id);const v=value(p);const err=canBuy(p,amount,pct);if(err)return{ok:false,msg:err};
+ const need=v*rnd(1.02,1.1);
+ if(amount>=need){const e=buy(id,pct,amount);return{ok:!e,msg:e||''}}
+ addLog('Angebot '+eur(amount)+' für '+p.id+' abgelehnt.');return{ok:false,msg:'Abgelehnt. Das Unternehmen will mehr als '+eur(amount)+'.'}}
+const IMPROVE={r:{n:'Renovieren',pct:.05,mo:1,d:'+3 % Miete'},m:{n:'Modernisieren',pct:.12,mo:2,d:'+8 % Wert, +10 % Miete'},s:{n:'Kernsanierung',pct:.20,mo:3,d:'+15 % Wert, +20 % Miete'}};
+function improveCost(p,k){return value(p)*IMPROVE[k].pct}
+function improve(id,k){
+ const p=P(id),c=improveCost(p,k);if(c>G.cash)return 'Zu wenig Bargeld ('+eur(c)+' nötig).';
+ G.cash-=c;p.upg[k]=1;p.work=IMPROVE[k].mo;p.workName=IMPROVE[k].n;
+ addLog(IMPROVE[k].n+': '+p.id+' für '+eur(c)+' ('+IMPROVE[k].mo+' Mon. Bauzeit).');save();return null}
+function startBuild(id,key){
+ const p=P(id),b=BUILD[key];if(b.cost>G.cash)return 'Zu wenig Bargeld ('+eur(b.cost)+' nötig).';
+ G.cash-=b.cost;p.build={key,left:b.m,cost:b.cost};
+ addLog('Neubau gestartet auf '+p.id+': '+b.n+' ('+eur(b.cost)+', '+b.m+' Monate).');save();return null}
+function hire(k){G.staff[k]++;addLog('Eingestellt: '+STAFF[k].n+'.');save()}
+function fire(k){if(G.staff[k]>0){G.staff[k]--;addLog('Entlassen: '+STAFF[k].n+'.');save()}}
+function takeLoan(a){const room=maxDebt()-G.debt;if(a>room+.5)return 'Dein Kreditrahmen beträgt noch '+eur(Math.max(0,room))+'.';G.cash+=a;G.debt+=a;addLog('Kredit aufgenommen: '+eur(a)+'.');save();return null}
+function repay(a){a=Math.min(a,G.debt);if(a>G.cash)return 'Zu wenig Bargeld.';G.cash-=a;G.debt-=a;addLog('Kredit getilgt: '+eur(a)+'.');save();return null}
+
+const EVENTS=[
+ ()=>{G.eco=Math.min(1.15,G.eco+.03);return['Die Konjunktur zieht an. Hotels, Büros und Läden profitieren.','g']},
+ ()=>{G.eco=Math.max(.85,G.eco-.03);return['Eine leichte Wirtschaftsflaute dämpft Gewerbemieten.','b']},
+ ()=>{G.rate=Math.max(.015,G.rate-.004);return['Die Zentralbank senkt den Leitzins. Kredite werden billiger.','g']},
+ ()=>{G.rate=Math.min(.06,G.rate+.004);return['Der Leitzins steigt leicht. Kredite werden teurer.','b']},
+ ()=>{const d=pick(DISTRICTS);G.idx[d]*=1.03;return['Ein Technologiekonzern siedelt sich in '+d+' an. Preise steigen um 3 %.','g']},
+ ()=>{const d=pick(DISTRICTS);G.idx[d]*=1.04;return['Neue U-Bahn-Linie für '+d+' beschlossen. Preise steigen um 4 %.','g']},
+ ()=>{const d=pick(DISTRICTS);G.idx[d]*=.975;return['Baulärm und Sperrungen in '+d+'. Preise sinken um 2,5 %.','b']},
+ ()=>{DISTRICTS.forEach(d=>G.ridx[d]*=1.01);return['Der neue Mietspiegel erlaubt 1 % höhere Mieten.','g']},
+ ()=>{const a=Math.round(rnd(2000,8000));G.cash+=a;return['Steuerrückerstattung: '+eur(a)+' gutgeschrieben.','g']},
+ ()=>['Stadtfest in der Altstadt. Viele Besucher, keine Auswirkung auf deine Zahlen.',''],
+ ()=>['Ein Wirtschaftsmagazin lobt den Immobilienmarkt von Neuhafen.','']];
+function nextMonth(){
+ const r={m:G.m,inc:0,pc:0,sc:staffCost(),off:OFFICE,int:interest(),rep:0,ev:[],comp:[],over:false};
+ // Markt
+ G.eco+=(1-G.eco)*.08+rnd(-.012,.012);G.eco=Math.max(.85,Math.min(1.15,G.eco));
+ G.rate=Math.max(.02,Math.min(.06,G.rate+rnd(-.0006,.0006)));
+ DISTRICTS.forEach(d=>{G.idx[d]*=1+DTREND[d]+rnd(-.006,.006)+(G.eco-1)*.02;G.ridx[d]*=1+DTREND[d]*.7+rnd(-.003,.003);
+  G.idx[d]=Math.max(.6,Math.min(1.8,G.idx[d]));G.ridx[d]=Math.max(.7,Math.min(1.6,G.ridx[d]))});
+ // Objekte
+ const ms=mine(),n=ms.length,cover=Math.min(1,G.staff.verwalter*10/Math.max(1,n));
+ ms.forEach(p=>{
+  if(p.work>0){p.work--;if(p.work===0)r.ev.push([p.id+': '+p.workName+' abgeschlossen.','g'])}
+  if(p.build){p.build.left--;if(p.build.left<=0){const b=BUILD[p.build.key],v=b.cost*1.25;
+    p.type=b.type;p.name=b.n+' (Neubau)';p.base=v/G.idx[p.d];p.brent=v*.0075;p.bcost=v*.0022;p.upg={r:0,m:0,s:0};p.build=null;p.vac=true;p.vacM=0;
+    r.ev.push([p.id+': '+b.n+' fertiggestellt, Mieter werden gesucht.','g'])}}
+  if(p.brent>0&&!p.work&&!p.build){
+   if(!p.vac&&chance(.025*(1-cover*.5))){p.vac=true;p.vacM=0;r.ev.push([p.id+' '+p.name+': Mieter ist ausgezogen.','b'])}
+   else if(p.vac){p.vacM++;if(chance(.3+(G.staff.makler?.2:0)+.1*cover)){p.vac=false;r.ev.push([p.id+' '+p.name+': neuer Mieter gefunden.','g'])}}}
+  if(p.brent>0&&p.type!=='Grundstück'&&chance(.04)){const c=value(p)*rnd(.004,.015)*(G.staff.handwerker?.5:1);r.rep+=c;r.ev.push([p.id+': Reparatur für '+eur(c)+'.','b'])}
+ });
+ r.inc=income();r.pc=mine().reduce((s,p)=>s+cost(p),0);
+ G.cash+=r.inc-r.pc-r.sc-r.off-r.int-r.rep;
+ // Ereignis
+ if(chance(.6)){const e=pick(EVENTS)();r.ev.push(e)}
+ // Konkurrenz
+ Object.keys(COMP).forEach(k=>{const c=G.comp[k],own=G.props.filter(p=>p.owner===k);
+  c.cash+=own.reduce((s,p)=>s+(p.brent?fullRent(p)*.75:0),0)-own.length*500;
+  if(chance(.28)){const lst=G.props.filter(p=>!p.owner&&(COMP[k].t.includes(p.type)||chance(.15))&&value(p)*1.03<=c.cash);
+   if(lst.length){const p=pick(lst);c.cash-=value(p)*1.03;p.owner=k;r.comp.push(COMP[k].n+' kauft '+p.id+' ('+p.name+', '+p.d+') für '+eur(value(p))+'.')}}
+  if(own.length>1&&chance(.12)){const p=pick(own);c.cash+=value(p)*.97;p.owner=null;r.comp.push(COMP[k].n+' verkauft '+p.id+' ('+p.name+') zum Marktpreis. Jetzt frei kaufbar.')}
+ });
+ // Pleite: Zwangsverkauf
+ while(G.cash<0&&mine().length){const p=mine().sort((a,b)=>value(b)-value(a))[0];sell(p.id);r.ev.push(['Kontostand negativ: '+p.id+' wurde zwangsverkauft.','b'])}
+ if(G.cash<-20000){r.over=true}
+ G.m++;G.hist.push(netWorth());r.after={cash:G.cash,nw:netWorth()};
+ r.net=r.inc-r.pc-r.sc-r.off-r.int-r.rep;G.last=r;G.stats.in+=r.inc;G.stats.out+=r.inc-r.net;
+ r.ev.forEach(e=>addLog(e[0]));r.comp.forEach(t=>addLog(t));addLog('Monat abgeschlossen: Nettogewinn '+eur(r.net)+'.');save();return r}
+const KEY='immobilien-mogul-v1';
+function save(){try{localStorage.setItem(KEY,JSON.stringify(G))}catch(e){}}
+function load(){try{const s=localStorage.getItem(KEY);if(s){G=JSON.parse(s);return true}}catch(e){}return false}
+const UI={tab:'ov',fd:'',ft:'',ffree:false,modal:null,pct:.8};
+const $=id=>document.getElementById(id);
+const cl=n=>n>0?'pos':n<0?'neg':'';
+const sg=n=>(n>0?'+':'')+eur(n);
+const TABS=[['ov','Übersicht'],['mk','Markt'],['pf','Portfolio'],['co','Konkurrenz'],['st','Team'],['bk','Bank'],['lg','Protokoll']];
+function status(p){if(p.build)return'<span class="pill w">Neubau ('+p.build.left+' Mon.)</span>';if(p.work>0)return'<span class="pill w">'+p.workName+' ('+p.work+' Mon.)</span>';
+ if(p.brent===0)return'<span class="pill">Grundstück</span>';return p.vac?'<span class="pill b">Leerstand</span>':'<span class="pill g">Vermietet</span>'}
+function tile(l,v,c){return'<div class="tile"><span>'+l+'</span><b class="'+(c||'')+'">'+v+'</b></div>'}
+function chart(){
+ const h=G.hist,W=640,H=170,L=64,R=10,T=10,B=22,mn=Math.min(...h),mx=Math.max(...h),pad=Math.max(1000,(mx-mn)*.25),lo=mn-pad,hi=mx+pad;
+ const x=i=>L+(h.length<2?0:i*(W-L-R)/(h.length-1)),y=v=>T+(H-T-B)*(1-(v-lo)/(hi-lo));
+ const pts=h.map((v,i)=>x(i).toFixed(1)+','+y(v).toFixed(1)).join(' ');
+ let g='';for(let i=0;i<=3;i++){const v=lo+(hi-lo)*i/3,yy=y(v);g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+yy+'" y2="'+yy+'" stroke="var(--line)"/><text x="'+(L-6)+'" y="'+(yy+4)+'" text-anchor="end">'+Math.round(v/1000)+' T€</text>'}
+ const lx=x(h.length-1),ly=y(h[h.length-1]);
+ return'<svg viewBox="0 0 '+W+' '+H+'" width="100%" role="img" aria-label="Verlauf des Eigenkapitals">'+g+
+ '<polyline points="'+pts+'" fill="none" stroke="var(--accent)" stroke-width="2.5"/><circle cx="'+lx+'" cy="'+ly+'" r="4" fill="var(--accent)"/>'+
+ '<text x="'+L+'" y="'+(H-5)+'">'+dateStr(0)+'</text><text x="'+(W-R)+'" y="'+(H-5)+'" text-anchor="end">'+dateStr(G.m)+'</text></svg>'}
+function ranking(){
+ const rows=Object.keys(COMP).map(k=>({k,n:COMP[k].n,s:COMP[k].s,cnt:G.props.filter(p=>p.owner===k).length,pv:G.props.filter(p=>p.owner===k).reduce((s,p)=>s+value(p),0),cash:G.comp[k].cash,w:compWealth(k),me:false}));
+ rows.push({k:'me',n:G.firm,s:'Du',cnt:mine().length,pv:portValue(),cash:G.cash,w:netWorth(),me:true});
+ return rows.sort((a,b)=>b.w-a.w)}
+function vOv(){
+ const n=net(),rk=ranking(),pos=rk.findIndex(r=>r.me)+1,nw=netWorth(),goal=5e6;
+ let h='<div class="grid">'+tile('Kontostand',eur(G.cash),cl(G.cash))+tile('Immobilienvermögen',eur(portValue()))+tile('Schulden',eur(G.debt),G.debt>0?'neg':'')+tile('Eigenkapital',eur(nw))+
+ tile('Mieteinnahmen / Monat',eur(income()),'pos')+tile('Laufende Kosten / Monat',eur(running()))+tile('Nettogewinn / Monat',sg(n),cl(n))+'</div>';
+ h+='<section class="box"><h2>Eigenkapital im Verlauf</h2>'+chart()+'</section>';
+ h+='<section class="box"><div class="row sp"><h2>Ziel: Immobilien-Mogul</h2><span class="pill">Rang '+pos+' von '+rk.length+'</span></div><p class="mu" style="margin:0 0 8px">Erreiche 5 Mio. € Eigenkapital oder Rang 1 unter allen Unternehmen. Es gibt kein Zeitlimit.</p><div class="goal"><i style="width:'+Math.max(0,Math.min(100,nw/goal*100)).toFixed(1)+'%"></i></div><p class="mu" style="margin:6px 0 0">'+eur(nw)+' von '+eur(goal)+'</p></section>';
+ if(G.last){const l=G.last;h+='<section class="box"><h2>Letzter Monat ('+dateStr(l.m)+')</h2><div class="kv"><span>Mieteinnahmen</span><b class="pos">'+eur(l.inc)+'</b></div><div class="kv"><span>Nettogewinn</span><b class="'+cl(l.net)+'">'+sg(l.net)+'</b></div><p class="mu" style="margin:8px 0 0">Details im Protokoll.</p></section>'}
+ h+='<section class="box"><h2>Marktlage</h2><div class="row" style="margin-bottom:8px"><span class="pill">Leitzins '+(G.rate*100).toFixed(2).replace('.',',')+' %</span><span class="pill '+(G.eco>=1?'g':'b')+'">Konjunktur '+(G.eco>=1?'+':'')+((G.eco-1)*100).toFixed(1).replace('.',',')+' %</span></div><div class="tw"><table><tr><th>Stadtteil</th><th class="n">Preisindex</th><th class="n">Mietindex</th></tr>'+
+ DISTRICTS.map(d=>'<tr><td>'+d+'</td><td class="n">'+(G.idx[d]*100).toFixed(1).replace('.',',')+'</td><td class="n">'+(G.ridx[d]*100).toFixed(1).replace('.',',')+'</td></tr>').join('')+'</table></div></section>';
+ return h}
+function vMk(){
+ let l=G.props.filter(p=>p.owner!=='me'&&(!UI.fd||p.d===UI.fd)&&(!UI.ft||p.type===UI.ft)&&(!UI.ffree||!p.owner));
+ const types=[...new Set(RAW.map(r=>r[2]))];
+ let h='<section class="box"><div class="row" style="margin-bottom:10px"><select id="fd" aria-label="Stadtteil"><option value="">Alle Stadtteile</option>'+DISTRICTS.map(d=>'<option'+(UI.fd===d?' selected':'')+'>'+d+'</option>').join('')+'</select><select id="ft" aria-label="Typ"><option value="">Alle Typen</option>'+types.map(d=>'<option'+(UI.ft===d?' selected':'')+'>'+d+'</option>').join('')+'</select><label class="row"><input type="checkbox" id="ff"'+(UI.ffree?' checked':'')+'> nur frei kaufbar</label></div>';
+ h+='<div class="tw"><table><tr><th>ID</th><th>Objekt</th><th>Stadtteil</th><th class="n">Preis</th><th class="n">Miete/Mon.</th><th class="n">Rendite</th><th>Anbieter</th><th></th></tr>';
+ l.forEach(p=>{const v=value(p),r=p.brent?fullRent(p):0,y=p.brent?((r-cost(p))*12/v*100).toFixed(1).replace('.',',')+' %':'–';
+  h+='<tr><td>'+p.id+'</td><td>'+p.name+'<br><span class="mu">'+p.type+'</span></td><td>'+p.d+'</td><td class="n">'+eur(v)+'</td><td class="n">'+(r?eur(r):'–')+'</td><td class="n">'+y+'</td><td>'+(p.owner?COMP[p.owner].n:'<span class="pill g">frei</span>')+'</td><td>'+
+  (p.owner?'<button class="btn" data-act="offer" data-id="'+p.id+'">Angebot</button>':'<button class="btn pri" data-act="buy" data-id="'+p.id+'">Kaufen</button>')+'</td></tr>'});
+ if(!l.length)h+='<tr><td colspan="8" class="mu">Keine Objekte für diesen Filter.</td></tr>';
+ return h+'</table></div><p class="mu" style="margin:8px 0 0">Rendite = Jahresmiete minus Kosten, geteilt durch den Preis. Die Miete gilt bei Vollvermietung.</p></section>'}
+function vPf(){
+ const l=mine();if(!l.length)return'<section class="box"><h2>Portfolio</h2><p>Du besitzt noch kein Objekt. Im Reiter Markt findest du frei kaufbare Immobilien. Ein guter Start ist eine kleine Wohnung mit Kredit.</p></section>';
+ let h='<section class="box"><h2>Dein Portfolio ('+l.length+' Objekte)</h2><div class="tw"><table><tr><th>ID</th><th>Objekt</th><th>Stadtteil</th><th class="n">Wert</th><th class="n">Miete</th><th class="n">Kosten</th><th>Status</th><th></th></tr>';
+ l.forEach(p=>{const busy=p.work>0||p.build;
+  h+='<tr><td>'+p.id+'</td><td>'+p.name+'</td><td>'+p.d+'</td><td class="n">'+eur(value(p))+'</td><td class="n">'+(p.brent?eur(rent(p)):'–')+'</td><td class="n">'+eur(cost(p))+'</td><td>'+status(p)+'</td><td><div class="row">'+
+  (p.type==='Grundstück'&&!p.build?'<button class="btn pri" data-act="bauen" data-id="'+p.id+'">Bauen</button>':'')+
+  (p.brent>0&&!busy?'<button class="btn" data-act="improve" data-id="'+p.id+'">Verbessern</button>':'')+
+  (p.build?'':'<button class="btn" data-act="sell" data-id="'+p.id+'">Verkaufen</button>')+'</div></td></tr>'});
+ return h+'</table></div></section>'}
+function vCo(){
+ const rk=ranking();
+ return'<section class="box"><h2>Rangliste nach Vermögen</h2><div class="tw"><table><tr><th>#</th><th>Unternehmen</th><th>Strategie</th><th class="n">Objekte</th><th class="n">Portfoliowert</th><th class="n">Bargeld</th><th class="n">Vermögen</th></tr>'+
+ rk.map((r,i)=>'<tr'+(r.me?' style="font-weight:700"':'')+'><td>'+(i+1)+'</td><td>'+r.n+'</td><td>'+r.s+'</td><td class="n">'+r.cnt+'</td><td class="n">'+eur(r.pv)+'</td><td class="n">'+eur(r.cash)+'</td><td class="n">'+eur(r.w)+'</td></tr>').join('')+'</table></div><p class="mu" style="margin:8px 0 0">Die Konkurrenten kaufen und verkaufen jeden Monat selbst. Im Reiter Markt kannst du ihnen Objekte abkaufen.</p></section>'}
+function vSt(){
+ const n=mine().length;
+ return'<section class="box"><h2>Team</h2><div class="tw"><table><tr><th>Rolle</th><th class="n">Gehalt/Mon.</th><th>Wirkung</th><th class="n">Anzahl</th><th></th></tr>'+
+ Object.entries(STAFF).map(([k,s])=>'<tr><td>'+s.n+'</td><td class="n">'+eur(s.pay)+'</td><td style="white-space:normal;min-width:200px">'+s.d+'</td><td class="n">'+G.staff[k]+'</td><td><div class="row"><button class="btn pri" data-act="hire" data-id="'+k+'">Einstellen</button><button class="btn" data-act="fire" data-id="'+k+'"'+(G.staff[k]?'':' disabled')+'>Entlassen</button></div></td></tr>').join('')+'</table></div>'+
+ '<p class="mu" style="margin:8px 0 0">Personalkosten: '+eur(staffCost())+' pro Monat. Verwalter-Abdeckung: '+Math.round(Math.min(1,G.staff.verwalter*10/Math.max(1,n))*100)+' % von '+n+' Objekten. Manager-Abdeckung: '+Math.round(mgrEff()*100)+' %.</p></section>'}
+function vBk(){
+ const room=Math.max(0,maxDebt()-G.debt);
+ return'<section class="box"><h2>Bank</h2><div class="grid" style="margin-bottom:12px">'+tile('Schulden',eur(G.debt),G.debt?'neg':'')+tile('Zins p. a.',(G.rate*100).toFixed(2).replace('.',',')+' %')+tile('Zinsen / Monat',eur(interest()))+tile('Freier Kreditrahmen',eur(room))+'</div>'+
+ '<p class="mu" style="margin:0 0 8px">Gesamtkredit maximal 80 % deines Immobilienwerts. Der Zins folgt dem Leitzins.</p><div class="row"><input id="amt" type="number" min="0" step="1000" value="50000" aria-label="Betrag in Euro"><button class="btn pri" data-act="loan">Kredit aufnehmen</button><button class="btn" data-act="repay">Tilgen</button></div><p id="bkmsg" class="neg" style="margin:8px 0 0"></p></section>'}
+function vLg(){
+ return'<section class="box"><div class="row sp"><h2>Protokoll</h2><button class="btn" data-act="newask">Neues Spiel</button></div><ul class="log">'+G.log.map(e=>'<li><span class="mu">'+dateStr(e.m)+'</span> '+e.t+'</li>').join('')+'</ul></section>'+
+ '<section class="box"><h2>Firmenname</h2><div class="row"><input id="firm" value="'+G.firm.replace(/"/g,'')+'" aria-label="Firmenname"><button class="btn" data-act="rename">Speichern</button></div></section>'}
+function finSel(price){
+ const opts=[0,.5,.8];let h='<div class="row" style="margin:8px 0"><label for="pct">Finanzierung:</label><select id="pct">'+opts.map(o=>'<option value="'+o+'"'+(UI.pct===o?' selected':'')+'>'+(o?Math.round(o*100)+' % Kredit':'Nur Eigenkapital')+'</option>').join('')+'</select></div>';
+ const fee=price*feeRate(),loan=price*UI.pct;
+ return h+'<div class="kv"><span>Kaufpreis</span><b>'+eur(price)+'</b></div><div class="kv"><span>Nebenkosten ('+Math.round(feeRate()*100)+' %)</span><b>'+eur(fee)+'</b></div><div class="kv"><span>Kredit</span><b>'+eur(loan)+'</b></div><div class="kv"><span>Dein Bargeld nötig</span><b>'+eur(price-loan+fee)+'</b></div><div class="kv"><span>Bargeld danach</span><b class="'+cl(G.cash-(price-loan+fee))+'">'+eur(G.cash-(price-loan+fee))+'</b></div>'}
+function dlg(h){return'<div class="ov" data-act="bg"><div class="dlg" role="dialog" aria-modal="true">'+h+'</div></div>'}
+function vModal(){
+ const m=UI.modal;if(!m)return'';const p=m.id&&P(m.id);let h='';const msg=m.msg?'<p class="neg">'+m.msg+'</p>':'';
+ if(m.t==='buy'){const v=value(p);h='<h2>'+p.id+' kaufen</h2><p>'+p.name+', '+p.d+'</p>'+finSel(v)+msg+'<div class="row" style="margin-top:12px"><button class="btn pri" data-act="dobuy">Kaufen</button><button class="btn" data-act="close">Abbrechen</button></div>'}
+ if(m.t==='offer'){const v=value(p);h='<h2>Angebot für '+p.id+'</h2><p>'+p.name+' gehört '+COMP[p.owner].n+'. Marktwert: '+eur(v)+'. Meist wird ein Aufschlag von 2 bis 10 % verlangt.</p><div class="row"><label for="oa">Dein Gebot (€)</label><input id="oa" type="number" step="1000" value="'+Math.round(v*1.07/1000)*1000+'"></div>'+finSel(v*1.07)+msg+'<div class="row" style="margin-top:12px"><button class="btn pri" data-act="dooffer">Angebot abgeben</button><button class="btn" data-act="close">Abbrechen</button></div>'}
+ if(m.t==='sell'){const v=value(p),f=G.staff.makler?0:v*SELLFEE;h='<h2>'+p.id+' verkaufen?</h2><p>'+p.name+'</p><div class="kv"><span>Marktwert</span><b>'+eur(v)+'</b></div><div class="kv"><span>Maklergebühr</span><b>'+eur(f)+'</b></div><div class="kv"><span>Erlös</span><b>'+eur(v-f)+'</b></div><div class="row" style="margin-top:12px"><button class="btn pri" data-act="dosell">Verkaufen</button><button class="btn" data-act="close">Abbrechen</button></div>'}
+ if(m.t==='improve'){h='<h2>'+p.id+' verbessern</h2><p>'+p.name+'. Während der Arbeiten gibt es keine Miete.</p>'+Object.entries(IMPROVE).map(([k,i])=>'<div class="row sp" style="padding:6px 0;border-bottom:1px solid var(--line)"><div><b>'+i.n+'</b><br><span class="mu">'+eur(improveCost(p,k))+', '+i.mo+' Mon., '+i.d+'</span></div><button class="btn pri" data-act="doimp" data-k="'+k+'"'+(p.upg[k]?' disabled':'')+'>'+(p.upg[k]?'Erledigt':'Starten')+'</button></div>').join('')+msg+'<div class="row" style="margin-top:12px"><button class="btn" data-act="close">Schließen</button></div>'}
+ if(m.t==='bauen'){h='<h2>Bauen auf '+p.id+'</h2><p>'+p.name+'. Das Gebäude ist nach der Bauzeit vermietbar.</p>'+Object.entries(BUILD).map(([k,b])=>'<div class="row sp" style="padding:6px 0;border-bottom:1px solid var(--line)"><div><b>'+b.n+'</b><br><span class="mu">'+eur(b.cost)+', '+b.m+' Monate, Wert danach ca. '+eur(b.cost*1.25)+'</span></div><button class="btn pri" data-act="dobuild" data-k="'+k+'">Bauen</button></div>').join('')+msg+'<div class="row" style="margin-top:12px"><button class="btn" data-act="close">Schließen</button></div>'}
+ if(m.t==='report'){const l=G.last;h='<h2>'+dateStr(l.m)+' abgerechnet</h2><div class="kv"><span>Mieteinnahmen</span><b class="pos">'+eur(l.inc)+'</b></div><div class="kv"><span>Objektkosten</span><b>−'+eur(l.pc)+'</b></div><div class="kv"><span>Personal</span><b>−'+eur(l.sc)+'</b></div><div class="kv"><span>Büro</span><b>−'+eur(l.off)+'</b></div><div class="kv"><span>Zinsen</span><b>−'+eur(l.int)+'</b></div><div class="kv"><span>Reparaturen</span><b>−'+eur(l.rep)+'</b></div><div class="kv"><b>Nettogewinn</b><b class="'+cl(l.net)+'">'+sg(l.net)+'</b></div>'+
+  (l.ev.length?'<h3 style="margin-top:12px">Ereignisse</h3>'+l.ev.map(e=>'<div class="ev '+(e[1]||'')+'">'+e[0]+'</div>').join(''):'')+
+  (l.comp.length?'<h3 style="margin-top:12px">Konkurrenz</h3>'+l.comp.map(t=>'<div class="ev">'+t+'</div>').join(''):'')+
+  '<div class="row" style="margin-top:14px"><button class="btn pri" data-act="close">Weiter spielen</button></div>'}
+ if(m.t==='over'){h='<h2>Zahlungsunfähig</h2><p>Dein Konto ist dauerhaft im Minus. Die Firma muss aufgeben. Eigenkapital zuletzt: '+eur(netWorth())+'.</p><button class="btn pri" data-act="newgo">Neues Spiel starten</button>'}
+ if(m.t==='newask'){h='<h2>Neues Spiel?</h2><p>Der aktuelle Spielstand wird gelöscht.</p><div class="row"><button class="btn pri" data-act="newgo">Ja, neu starten</button><button class="btn" data-act="close">Abbrechen</button></div>'}
+ return dlg(h)}
+function render(){
+ const keep=document.activeElement&&document.activeElement.id;
+ $('app').innerHTML='<header><div><h1>'+G.firm+'</h1><small>von Julien</small></div><div class="date">'+dateStr(G.m)+' · Monat '+(G.m+1)+'</div></header>'+
+ '<nav role="tablist">'+TABS.map(t=>'<button role="tab" data-act="tab" data-id="'+t[0]+'" aria-selected="'+(UI.tab===t[0])+'">'+t[1]+'</button>').join('')+'</nav>'+
+ '<main>'+({ov:vOv,mk:vMk,pf:vPf,co:vCo,st:vSt,bk:vBk,lg:vLg}[UI.tab])()+'</main>'+
+ '<div class="bar"><div class="in"><div><b class="'+cl(net())+'">'+sg(net())+'</b> <span class="mu">erwartet pro Monat · Bargeld '+eur(G.cash)+'</span></div><button class="btn pri" data-act="next">Nächster Monat ▶</button></div></div>'+vModal();
+ if(keep&&$(keep)&&['amt','oa','firm'].includes(keep))$(keep).focus()}
+document.addEventListener('click',e=>{
+ const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act,id=b.dataset.id;
+ if(a==='bg'){if(e.target!==b)return;UI.modal=null;return render()}
+ if(a==='tab'){UI.tab=id}
+ else if(a==='next'){const r=nextMonth();UI.modal={t:r.over?'over':'report'}}
+ else if(a==='close'){UI.modal=null}
+ else if(a==='buy'||a==='offer'||a==='sell'||a==='improve'||a==='bauen'){UI.modal={t:a,id}}
+ else if(a==='dobuy'){const er=buy(UI.modal.id,UI.pct);if(er)UI.modal.msg=er;else UI.modal=null}
+ else if(a==='dooffer'){const r=offer(UI.modal.id,+$('oa').value,UI.pct);if(r.ok)UI.modal=null;else UI.modal.msg=r.msg}
+ else if(a==='dosell'){sell(UI.modal.id);UI.modal=null}
+ else if(a==='doimp'){const er=improve(UI.modal.id,b.dataset.k);if(er)UI.modal.msg=er;else UI.modal=null}
+ else if(a==='dobuild'){const er=startBuild(UI.modal.id,b.dataset.k);if(er)UI.modal.msg=er;else UI.modal=null}
+ else if(a==='hire'){hire(id)}else if(a==='fire'){fire(id)}
+ else if(a==='loan'||a==='repay'){const v=Math.max(0,+$('amt').value||0);const er=a==='loan'?takeLoan(v):repay(v);render();if(er)$('bkmsg').textContent=er;return}
+ else if(a==='rename'){const v=$('firm').value.trim();if(v){G.firm=v.slice(0,40);save()}}
+ else if(a==='newask'){UI.modal={t:'newask'}}
+ else if(a==='newgo'){newGame();save();UI.modal=null;UI.tab='ov'}
+ render()});
+document.addEventListener('change',e=>{
+ const t=e.target;
+ if(t.id==='fd'){UI.fd=t.value}else if(t.id==='ft'){UI.ft=t.value}else if(t.id==='ff'){UI.ffree=t.checked}
+ else if(t.id==='pct'){UI.pct=+t.value;if(UI.modal&&UI.modal.t==='offer'){const v=+$('oa').value;render();$('oa').value=v;return}}
+ else return;render()});
+function start(){if(!load())newGame();render()}
+window.claude?.hot?.ready?window.claude.hot.ready(start):start();
+</script>
+
+</body></html>
