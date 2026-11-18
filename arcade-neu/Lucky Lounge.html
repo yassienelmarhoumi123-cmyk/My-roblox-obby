@@ -2,10 +2,37 @@
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lucky Lounge – Arcade Coins</title>
 <style>
 :root{color-scheme:dark;--bg:#090d19;--panel:#172238;--line:#34445e;--gold:#ffd66b;--mint:#6cf0cb;--muted:#aebbd0}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% 0,#493719,transparent 34rem),var(--bg);color:#f5f7ff;font-family:system-ui,sans-serif;min-height:100vh}.wrap{max-width:1000px;margin:auto;padding:22px}.top{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}.logo{font-weight:1000;letter-spacing:.08em}.logo span{color:var(--gold)}.balance{padding:12px 17px;border:1px solid #806b37;border-radius:13px;background:#2b2417;color:var(--gold);font-weight:900}.hero{margin:25px 0;padding:clamp(24px,5vw,45px);border:1px solid #65542f;border-radius:22px;background:linear-gradient(120deg,#302719,#172238)}.eyebrow{color:var(--gold);font-size:12px;letter-spacing:.18em;font-weight:900}.hero h1{font-size:clamp(34px,6vw,56px);margin:12px 0}.hero p,.muted{color:#c1cada;line-height:1.55}.notice{font-size:13px;color:#c7f4df}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px}.game{background:linear-gradient(145deg,#1b2941,#111a2b);border:1px solid var(--line);border-radius:18px;padding:19px}.emoji{font-size:40px}.game h2{margin:8px 0}.game p{min-height:44px;color:var(--muted);font-size:14px}.btn{width:100%;padding:12px;border:0;border-radius:10px;background:linear-gradient(100deg,var(--gold),#fff0a6);color:#211807;font-weight:900;cursor:pointer}.btn:disabled{opacity:.5}#area{display:none;margin-top:18px;padding:22px;background:#111b2c;border:1px solid var(--line);border-radius:18px;text-align:center}.prompt{font-size:clamp(22px,4vw,34px);font-weight:900;margin:22px 0}.answer{padding:12px;border-radius:9px;border:1px solid #50617b;background:#0b1422;color:white;font-size:17px;width:min(100%,260px)}.message{min-height:30px;color:var(--mint);font-weight:800;margin-top:12px}.controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}.secondary{width:auto;background:#29384f;color:white}.small{font-size:12px;color:var(--muted)}footer{text-align:center;color:#74839c;font-size:12px;margin:30px 0}@media(max-width:550px){.wrap{padding:15px}.game{padding:15px}}
+
+.machine-wrap{margin:28px auto 10px;max-width:650px;padding:16px;background:linear-gradient(145deg,#49351d,#171c2b);border:3px solid #a9853c;border-radius:28px;box-shadow:0 18px 50px #0009,inset 0 0 24px #f7c65b22}
+.machine-top{text-align:center;color:#ffe39a;font-weight:1000;letter-spacing:.18em;text-shadow:0 0 12px #ffbd45;padding:8px}
+.machine-screen{background:radial-gradient(ellipse at center,#203d4a,#07111e 75%);border:3px solid #d6b45f;border-radius:18px;padding:22px 16px;box-shadow:inset 0 0 28px #000}
+.machine-lights{display:flex;justify-content:center;gap:12px;margin-bottom:16px}.lamp{width:10px;height:10px;border-radius:50%;background:#ffe08a;box-shadow:0 0 12px #ffce59;animation:blink 1s infinite alternate}.lamp:nth-child(2n){animation-delay:.4s}
+@keyframes blink{to{opacity:.25;box-shadow:0 0 2px #ffce59}}
+.machine-title{text-align:center;font-size:clamp(22px,5vw,34px);font-weight:1000;color:#ffe8a5;letter-spacing:.08em}
+.machine-display{display:flex;justify-content:center;gap:10px;margin:18px auto;padding:14px;background:#050a12;border:2px solid #718095;border-radius:13px;max-width:420px}
+.reel{width:30%;height:82px;display:grid;place-items:center;background:linear-gradient(#f7f0d9,#c9c0a7);color:#172238;border-radius:8px;font-size:clamp(35px,7vw,52px);box-shadow:inset 0 4px 8px #fff,inset 0 -5px 8px #625c50}
+.machine-meter{height:18px;max-width:420px;margin:20px auto 8px;border-radius:20px;background:linear-gradient(90deg,#ff7c68,#f4d36b,#67e6b0,#f4d36b,#ff7c68);position:relative;border:3px solid #d7ddeb;overflow:hidden}
+.machine-marker{position:absolute;top:-5px;left:0;width:8px;height:22px;border-radius:5px;background:#fff;box-shadow:0 0 8px #fff;transform:translateX(-50%)}
+.machine-controls{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:15px}.machine-controls .btn{max-width:230px}
+.machine-caption{text-align:center;color:#c8d4e6;font-size:13px;margin-top:12px}
+@media(max-width:550px){.machine-wrap{padding:10px}.reel{height:65px}.machine-screen{padding:16px 9px}}
 </style></head><body><div class="wrap">
 <header class="top"><div class="logo">LUCKY <span>LOUNGE</span> ✨</div><div class="balance">🪙 <span id="coins">1.000</span> Münzen</div></header>
 <section class="hero"><div class="eyebrow">ARCADE COIN CLUB</div><h1>Spiel um deine Bestleistung.</h1><p>Du startest mit 1.000 Münzen. Verdiene weitere Münzen, indem du kleine Geschicklichkeits- und Denk-Challenges meisterst.</p><div class="notice">Nur virtuelle Spielpunkte: keine Einsätze, keine Zufallswetten und kein Echtgeldwert. Du kannst keine Münzen verlieren.</div></section>
-<h2>Deine Challenges</h2><p class="small">Jeder Erfolg bringt eine feste Belohnung.</p>
+
+<section class="machine-wrap" aria-label="Geschicklichkeits-Spielautomat">
+ <div class="machine-top">✦ ✦ ✦ LUCKY LOUNGE ✦ ✦ ✦</div>
+ <div class="machine-screen">
+  <div class="machine-lights"><i class="lamp"></i><i class="lamp"></i><i class="lamp"></i><i class="lamp"></i><i class="lamp"></i></div>
+  <div class="machine-title">SKILL SPINNER</div>
+  <div class="machine-display"><div class="reel" id="reel1">⭐</div><div class="reel" id="reel2">🍒</div><div class="reel" id="reel3">💎</div></div>
+  <div class="machine-meter"><div class="machine-marker" id="marker"></div></div>
+  <div class="machine-caption">Stoppe den Lichtmarker möglichst genau in der grünen Mitte.</div>
+  <div class="machine-controls"><button class="btn" id="machineStart">Maschine starten</button><button class="btn secondary" id="machineStop" disabled>STOPP!</button></div>
+  <div class="message" id="machineMessage" aria-live="polite"></div>
+ </div>
+</section>
+<h2>Weitere Challenges</h2><p class="small">Jede Challenge belohnt deine richtige Antwort oder dein Timing.</p>
 <section class="grid">
 <article class="game"><div class="emoji">⚡</div><h2>Reaktions-Test</h2><p>Warte auf das Signal und klicke möglichst schnell.</p><button class="btn" data-mode="reaction">Starten · bis zu 100 Münzen</button></article>
 <article class="game"><div class="emoji">🧠</div><h2>Zahlen-Merker</h2><p>Merke dir eine Zahlenfolge und tippe sie korrekt ein.</p><button class="btn" data-mode="memory">Starten · 75 Münzen</button></article>
@@ -27,5 +54,22 @@ function start(mode){
  if(mode==='target'){let target=10+Math.floor(Math.random()*40);show('Zielgenau','Welche Zahl liegt genau in der Mitte zwischen '+(target-5)+' und '+(target+5)+'?','<input class="answer" id="entry" inputmode="numeric" placeholder="Deine Schätzung"><button class="btn" id="check">Prüfen</button>');$('check').onclick=()=>{if(Number($('entry').value)===target)award(60);else $('message').textContent='Tipp: Addiere beide Zahlen und teile durch 2.'}}
 }
 $('close').onclick=()=>{clearTimeout(timer);$('area').style.display='none'};
+
+let meterPos=0,meterDir=1,meterTimer=null,reelTimer=null,machineRunning=false;
+const symbols=['⭐','🍒','💎','🔔','🍋','7️⃣'];
+$('machineStart').onclick=()=>{
+ if(machineRunning)return;machineRunning=true;meterPos=0;meterDir=1;
+ $('machineMessage').textContent='Die Maschine läuft – stoppe den Marker in der grünen Mitte!';
+ $('machineStart').disabled=true;$('machineStop').disabled=false;
+ reelTimer=setInterval(()=>{for(let i=1;i<=3;i++)$('reel'+i).textContent=symbols[Math.floor(Math.random()*symbols.length)]},95);
+ meterTimer=setInterval(()=>{meterPos+=meterDir*1.8;if(meterPos>=100){meterPos=100;meterDir=-1}if(meterPos<=0){meterPos=0;meterDir=1}$('marker').style.left=meterPos+'%'},18);
+};
+$('machineStop').onclick=()=>{
+ if(!machineRunning)return;machineRunning=false;clearInterval(meterTimer);clearInterval(reelTimer);
+ for(let i=1;i<=3;i++)$('reel'+i).textContent=symbols[Math.floor(Math.random()*symbols.length)];
+ let accuracy=Math.abs(meterPos-50);let prize=accuracy<=5?100:accuracy<=12?60:accuracy<=22?30:10;
+ coins+=prize;render();$('machineMessage').textContent='Gutes Timing! Du bekommst '+prize+' Münzen. Starte eine neue Runde, wenn du möchtest.';
+ $('machineStart').disabled=false;$('machineStop').disabled=true;
+};
 render();
 </script></body></html>
