@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#111322">
+  <meta name="description" content="Eine offene 3D-Stadt für deinen eigenen maskierten Netzschwinger.">
+  <link rel="icon" href="./assets/icon-CkMUvVzR.svg" type="image/svg+xml">
+  <title>Skyline: Web of the City</title>
+  <script type="module" crossorigin src="./assets/index-CmyRT60V.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-MPMzM6lo.css">
+</head>
+<body>
+  <main id="game" aria-label="Skyline: Web of the City">
+    <canvas id="view" aria-label="Dreidimensionale Spielwelt"></canvas>
+    <div class="vignette" aria-hidden="true"></div>
+    <header class="branding" aria-label="Skyline">
+      <img src="data:image/svg+xml,%3csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2056%2056'%3e%3crect%20width='56'%20height='56'%20rx='5'%20fill='%23fb4661'/%3e%3cpath%20d='M28%2017v23m-9-26%205%208m-11-1%2010%205m-11%205%2012-2m-7%2014%207-9m13-20-5%208m11-1-10%205m11%205-12-2m7%2014-7-9'%20fill='none'%20stroke='%23fff'%20stroke-width='2.5'%20stroke-linecap='round'/%3e%3cellipse%20cx='28'%20cy='28'%20rx='5'%20ry='9'%20fill='%23fff'/%3e%3c/svg%3e" alt="">
+      <div><strong>SKYLINE</strong><small>WEB OF THE CITY</small></div>
+      <span class="edition">OPEN WORLD / 01</span>
+    </header>
+    <section id="start" class="home" aria-label="Hauptmenü">
+      <p class="overline"><i></i> DIE STADT GEHÖRT DIR</p>
+      <h1>SKYLINE<span>WEB OF THE CITY</span></h1>
+      <p class="tagline">Ein Netz. Tausend Wege.</p>
+      <p class="summary">Schwing dich über die Dächer, folge den Notrufen und entdecke die Stadt im eigenen Tempo.</p>
+      <button class="primary" id="play" disabled>SPIELEN <span aria-hidden="true">↗</span></button>
+      <nav aria-label="Spieloptionen">
+        <button data-panel="controls" disabled>Steuerung</button>
+        <button data-panel="settings" disabled>Einstellungen</button>
+        <button data-panel="suits" disabled>Anzüge</button>
+      </nav>
+      <p id="boot" class="boot" role="status">Stadt wird geladen …</p>
+    </section>
+    <div id="hud" hidden>
+      <div class="vitals">
+        <div class="mini"><span id="level">LEVEL 01</span><span id="healthText">100 / 100</span></div>
+        <progress id="healthBar" max="100" value="100" aria-label="Leben"></progress>
+        <progress id="xpBar" max="120" value="0" aria-label="Erfahrung"></progress>
+        <div class="mini dim"><span id="xpText">0 / 120 EP</span><span id="combo"></span></div>
+      </div>
+      <div class="mission"><span class="overline">◈ AKTUELLES ZIEL</span><strong id="missionName"></strong><span id="missionHint"></span><span id="missionDistance"></span></div>
+      <span class="crosshair" aria-hidden="true"></span>
+      <div id="waypoint" class="waypoint" aria-hidden="true"><span>◈</span><small></small></div>
+      <div class="radar">
+        <canvas id="map" width="160" height="160" aria-label="Minimap mit Missionszielen"></canvas>
+        <div class="mini"><span>◈ NYC</span><span id="clock">18:05</span></div>
+      </div>
+      <p id="toast" class="toast" role="status"></p>
+      <div class="speed"><strong id="speed">000</strong><span>KM/H</span><small id="cameraMode">THIRD PERSON</small></div>
+      <div class="powers"><span id="webL">L <b>NETZ</b></span><span id="webR">R <b>NETZ</b></span><span id="special">F <b>IMPULS</b></span></div>
+      <nav class="quick" aria-label="Spielmenü"><button data-panel="missions" aria-label="Missionen">◈ <span>Missionen</span></button><button data-panel="pause" aria-label="Pause">Ⅱ <span>Pause</span></button></nav>
+      <p id="tip" class="tip">WASD bewegen · SPACE springen · MAUS halten zum Schwingen</p>
+      <div class="touch" aria-label="Touch-Steuerung">
+        <div class="touch-move"><button data-key="KeyW" aria-label="Vorwärts">↑</button><button data-key="KeyA" aria-label="Links">←</button><button data-key="KeyS" aria-label="Zurück">↓</button><button data-key="KeyD" aria-label="Rechts">→</button></div>
+        <div class="touch-actions"><button data-key="KeyE">E</button><button data-key="KeyC">C</button><button data-key="KeyX">X</button><button data-key="KeyR">R</button><button data-key="Space" aria-label="Springen">↑</button><button data-key="KeyF">F</button><button data-web="0">NETZ L</button><button data-web="1">NETZ R</button></div>
+      </div>
+    </div>
+    <dialog id="menu" aria-labelledby="panelTitle">
+      <div class="dialog-inner">
+        <div class="dialog-header"><p class="overline">SKYLINE / SPIELMENÜ</p><button id="closePanel" aria-label="Menü schließen">✕</button></div>
+        <h2 id="panelTitle"></h2>
+        <div id="panelContent"></div>
+      </div>
+    </dialog>
+    <footer id="credits"><span>NYC / SIMULATION</span><span>UNOFFIZIELLES SUPERHELDEN-FANSPIEL</span></footer>
+  </main>
+</body>
+</html>

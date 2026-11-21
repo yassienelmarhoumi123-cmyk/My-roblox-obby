@@ -1,0 +1,19 @@
+{
+  "name": "skyline-open-world",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build --base=./",
+    "preview": "vite preview",
+    "test": "node --test",
+    "build:pages": "vite build --base=./ --outDir docs"
+  },
+  "dependencies": {
+    "three": "0.180.0"
+  },
+  "devDependencies": {
+    "vite": "^8.0.0"
+  }
+}
