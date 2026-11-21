@@ -43,26 +43,7 @@ footer{text-align:center;color:#73809a;padding:30px;border-top:1px solid #ffffff
 <article class="card"><div class="thumb">🏙️</div><div class="cardbody"><h3>City Explorer</h3><p>Eine Stadt zum Erkunden — ein Open-World-Projekt in Entwicklung.</p><button class="secondary" onclick="alert('City Explorer kommt bald!')">Coming soon</button></div></article>
 <article class="card"><div class="thumb">🏁</div><div class="cardbody"><h3>Street Racer</h3><p>Arcade-Rennen, kurze Runden und neue Strecken.</p><button class="secondary" onclick="alert('Street Racer kommt bald!')">Coming soon</button></div></article>
 </div></section>
-<section class="playbox" id="playbox"><div class="gamehead"><h2>Neon Dodger</h2><span class="instructions">← → oder A / D zum bewegen · Hindernissen ausweichen</span></div><canvas id="game" width="700" height="320"></canvas><div class="gamecontrols"><button onclick="startGame()">Start / Neustart</button><button class="secondary" onclick="stopGame()">Pause</button><button class="secondary" onclick="closeGame()">Schließen</button><span id="score" class="instructions">Score: 0</span></div></section>
 <section id="about" style="margin-top:50px;color:var(--muted);line-height:1.7"><h2 style="color:var(--text)">About Arcade Hub</h2><p>Ein neuer Start: Spiele direkt im Browser, ohne Installation. Mehr Games kommen nach und nach dazu.</p></section>
 </main><footer>ARCADE HUB · New start, new games</footer>
-<script>
-const box=document.getElementById('playbox'),canvas=document.getElementById('game'),ctx=canvas.getContext('2d'),scoreEl=document.getElementById('score');
-let player={x:335,y:270,w:30,h:34},obstacles=[],score=0,running=false,raf=null,last=0,keys={};
-function launchGame(){box.classList.add('active');box.scrollIntoView({behavior:'smooth'});startGame()}
-function startGame(){cancelAnimationFrame(raf);player.x=335;obstacles=[];score=0;running=true;last=0;raf=requestAnimationFrame(loop)}
-function stopGame(){running=false;cancelAnimationFrame(raf);draw()}
-function closeGame(){stopGame();box.classList.remove('active')}
-document.addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;if(['ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault()});
-document.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
-function loop(t){if(!running)return;let dt=Math.min((t-last)/16||1,2);last=t;score+=dt*.18;player.x+=((keys.arrowleft||keys.a)?-5:0)+((keys.arrowright||keys.d)?5:0);player.x=Math.max(0,Math.min(canvas.width-player.w,player.x));
-if(Math.random()<.035*dt)obstacles.push({x:Math.random()*(canvas.width-28),y:-35,w:26+Math.random()*20,h:22+Math.random()*25,speed:2.4+Math.random()*2.3});
-obstacles.forEach(o=>o.y+=o.speed*dt);obstacles=obstacles.filter(o=>o.y<canvas.height+40);
-if(obstacles.some(o=>player.x<o.x+o.w&&player.x+player.w>o.x&&player.y<o.y+o.h&&player.y+player.h>o.y)){running=false;draw();ctx.fillStyle='white';ctx.font='bold 30px system-ui';ctx.textAlign='center';ctx.fillText('GAME OVER',canvas.width/2,canvas.height/2);return}
-draw();scoreEl.textContent='Score: '+Math.floor(score);raf=requestAnimationFrame(loop)}
-function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);ctx.strokeStyle='#182b42';ctx.lineWidth=1;for(let x=0;x<canvas.width;x+=35){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height);ctx.stroke()}for(let y=0;y<canvas.height;y+=35){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke()}
-ctx.fillStyle='#43d9ff';ctx.shadowColor='#43d9ff';ctx.shadowBlur=16;ctx.fillRect(player.x,player.y,player.w,player.h);ctx.shadowBlur=0;
-obstacles.forEach(o=>{ctx.fillStyle='#ff4f8b';ctx.shadowColor='#ff4f8b';ctx.shadowBlur=12;ctx.fillRect(o.x,o.y,o.w,o.h)});ctx.shadowBlur=0}
-draw();
-</script>
+<script></script>
 </body></html>
