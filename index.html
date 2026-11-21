@@ -50,11 +50,11 @@ hard:[
 {topic:"nature",text:"Zwischen den dicht bewachsenen Uferstellen entdeckte man gelegentlich seltene Pflanzen, deren empfindliche Blätter bei starker Trockenheit erstaunlich schnell welkten."},
 {topic:"story",text:"Niemand hatte damit gerechnet, dass ausgerechnet der unscheinbare Brief eine längst vergessene Erinnerung hervorrufen würde. Trotzdem bewahrte er ihn auf, ohne zunächst jemandem davon zu erzählen."}]
 };
-let current=null;
+let current=null, sentenceParts=[], sentenceIndex=0;
 const $=id=>document.getElementById(id);
 function pickText(){let level=$("level").value,topic=$("topic").value,arr=dictations[level].filter(t=>topic==="all"||t.topic===topic);return arr[Math.floor(Math.random()*arr.length)]}
-$("newText").onclick=()=>{speechSynthesis.cancel();current=pickText();$("reading").textContent="Hörtext bereit. Drücke auf „Vorlesen“, um ihn anzuhören."; $("listen").disabled=false;$("pause").disabled=false;$("check").disabled=false;$("answer").value="";$("result").classList.remove("visible")};
-$("listen").onclick=()=>{if(!current)return;speechSynthesis.cancel();let u=new SpeechSynthesisUtterance(current.text);u.lang="de-DE";u.rate=.88;speechSynthesis.speak(u)};
+$("newText").onclick=()=>{speechSynthesis.cancel();current=pickText();sentenceParts=current.text.match(/[^.!?]+[.!?]+|[^.!?]+$/g)||[current.text];sentenceIndex=0;$("reading").textContent="Hörtext bereit. Drücke auf „Vorlesen“, um Satz 1 anzuhören."; $("listen").disabled=false;$("pause").disabled=false;$("check").disabled=false;$("answer").value="";$("result").classList.remove("visible")};
+$("listen").onclick=()=>{if(!current||sentenceIndex>=sentenceParts.length)return;speechSynthesis.cancel();let u=new SpeechSynthesisUtterance(sentenceParts[sentenceIndex].trim());u.lang="de-DE";u.rate=.88;u.onend=()=>{$("reading").textContent=sentenceIndex+1>=sentenceParts.length?"Diktat beendet. Du kannst deinen Text jetzt vergleichen.":"Satz "+(sentenceIndex+1)+" beendet. Drücke erneut „Vorlesen“ für den nächsten Satz.";sentenceIndex++;if(sentenceIndex>=sentenceParts.length)$("listen").disabled=true};$("reading").textContent="Satz "+(sentenceIndex+1)+" wird vorgelesen …";speechSynthesis.speak(u)};
 $("pause").onclick=()=>{if(speechSynthesis.speaking){if(speechSynthesis.paused)speechSynthesis.resume();else speechSynthesis.pause()}};
 $("clear").onclick=()=>{$("answer").value="";$("result").classList.remove("visible")};
 function norm(s){return s.toLocaleLowerCase("de-DE").replace(/[.,!?;:„“"()]/g,"").trim().split(/\s+/).filter(Boolean)}
