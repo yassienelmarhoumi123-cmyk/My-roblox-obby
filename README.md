@@ -37,6 +37,12 @@ Auf Geräten mit Touch werden Tasten eingeblendet. Ziehen auf der Spielfläche d
 
 ## GitHub Pages
 
-Die veröffentlichte Website liegt im Ordner `docs/`. Nach Änderungen am Spiel `npm ci`, `npm test` und `npm run build:pages` ausführen und die Änderungen in `docs/` mit committen. GitHub Pages verwendet den Branch `coderabbit/create-web-game/3586f141` und den Ordner `/docs`. Falls später ein anderer Branch veröffentlicht werden soll, muss die Quelle in den Pages-Einstellungen entsprechend angepasst werden.
+<!-- coderabbit-ai-generated:v1 -->
+
+<!-- coderabbit-ai-generated-section:v1:f9fe010f6cd0a8641f40d6397abbcdb1b5c1a3bce89efd27aa52d32ce6b2eecf -->
+
+Der fertige Website-Build liegt im Ordner `docs/`. Zum Veröffentlichen unter **Settings → Pages → Build and deployment → Source** die Option **Deploy from a branch**, den Branch `coderabbit/create-web-game/3586f141` und den Ordner `/docs` auswählen und speichern. Nach Änderungen am Spiel `npm ci`, `npm test` und `npm run build:pages` ausführen und die Änderungen in `docs/` mit committen. Falls später ein anderer Branch veröffentlicht werden soll, die Pages-Einstellungen entsprechend anpassen.
+
+<!-- /coderabbit-ai-generated:v1 -->
 
 <!-- /coderabbit-ai-generated:v1 -->
