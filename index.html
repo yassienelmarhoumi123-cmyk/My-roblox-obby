@@ -3,47 +3,65 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Arcade Hub — Play Something</title>
+<title>Diktat Trainer</title>
 <style>
-:root{--bg:#0a0d16;--panel:#111827;--text:#edf2ff;--muted:#9aa7bd;--accent:#6d5dfc;--cyan:#43d9ff}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% 0,#20254c 0,transparent 35%),var(--bg);color:var(--text);font-family:Inter,system-ui,Segoe UI,sans-serif}
-header{display:flex;justify-content:space-between;align-items:center;padding:22px max(5vw,20px);border-bottom:1px solid #ffffff12;position:sticky;top:0;background:#0a0d16d9;backdrop-filter:blur(14px);z-index:3}
-.logo{font-weight:900;letter-spacing:.08em;font-size:18px}.logo span{color:var(--cyan)}
-nav a{color:var(--muted);text-decoration:none;margin-left:24px;font-size:14px}nav a:hover{color:white}
-main{max-width:1200px;margin:auto;padding:44px 22px 80px}
-.hero{display:grid;grid-template-columns:1.2fr .8fr;gap:28px;align-items:center;padding:42px 0 55px}
-.tag{display:inline-flex;border:1px solid #6d5dfc66;background:#6d5dfc20;color:#bcb5ff;border-radius:999px;padding:8px 13px;font-size:12px;letter-spacing:.08em}
-h1{font-size:clamp(42px,7vw,76px);line-height:.98;margin:20px 0;font-weight:900;letter-spacing:-.055em}h1 em{font-style:normal;color:var(--cyan)}
-.hero p{color:var(--muted);max-width:560px;line-height:1.7}
-.hero-art{min-height:300px;border-radius:26px;position:relative;overflow:hidden;background:linear-gradient(145deg,#1d2856,#17112f 60%,#0e233b);border:1px solid #ffffff18;display:grid;place-items:center}
-.hero-art:before,.hero-art:after{content:"";position:absolute;border-radius:50%;filter:blur(1px)}.hero-art:before{width:250px;height:250px;background:#695cff88;box-shadow:0 0 90px #695cff;}.hero-art:after{width:170px;height:170px;border:2px solid #43d9ff88;transform:rotate(35deg);border-radius:35px;box-shadow:0 0 60px #43d9ff44}
-.arttext{position:relative;z-index:1;font-size:34px;font-weight:900;text-shadow:0 3px 30px #080b15;letter-spacing:.14em}
-.section-head{display:flex;justify-content:space-between;align-items:end;margin:10px 0 20px}.section-head h2{font-size:28px;margin:0}.section-head small{color:var(--muted)}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-.card{border:1px solid #ffffff12;background:linear-gradient(150deg,#151b2b,#101522);border-radius:18px;overflow:hidden;transition:transform .2s,border-color .2s}.card:hover{transform:translateY(-5px);border-color:#6d5dfc77}
-.thumb{height:150px;display:grid;place-items:center;font-size:42px;background:linear-gradient(135deg,#242e59,#17152e);position:relative;overflow:hidden}.thumb:after{content:"";position:absolute;width:140px;height:140px;border-radius:50%;border:1px solid #ffffff25;right:-20px;top:-45px}
-.card:nth-child(2) .thumb{background:linear-gradient(135deg,#3c2c24,#211b29)}.card:nth-child(3) .thumb{background:linear-gradient(135deg,#153c48,#172534)}
-.cardbody{padding:18px}.cardbody h3{margin:0 0 8px;font-size:18px}.cardbody p{margin:0;color:var(--muted);font-size:13px;line-height:1.5;min-height:40px}.cardbody button{margin-top:16px;width:100%}
-button{border:0;background:linear-gradient(90deg,var(--accent),#4b9dff);color:white;font-weight:750;padding:12px 15px;border-radius:11px;cursor:pointer;transition:filter .2s}button:hover{filter:brightness(1.15)}button.secondary{background:#222a3b;border:1px solid #ffffff18}
-.playbox{display:none;margin-top:28px;padding:20px;border:1px solid #ffffff18;border-radius:20px;background:#111827}.playbox.active{display:block}
-.gamehead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}.gamehead h2{margin:0}.instructions{color:var(--muted);font-size:13px}
-canvas{display:block;width:100%;max-width:700px;height:320px;margin:12px auto;border-radius:14px;background:#0b1120;border:1px solid #ffffff12}
-.gamecontrols{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
-footer{text-align:center;color:#73809a;padding:30px;border-top:1px solid #ffffff10;font-size:13px}
-@media(max-width:800px){.hero{grid-template-columns:1fr}.grid{grid-template-columns:1fr 1fr}.hero-art{min-height:220px}}@media(max-width:520px){nav a{margin-left:10px;font-size:12px}.grid{grid-template-columns:1fr}.hero{padding-top:25px}}
+:root{--bg:#101522;--panel:#171f30;--panel2:#202b40;--ink:#f4f6ff;--muted:#a9b5ca;--blue:#7c9cff;--mint:#67e2c1;--border:#ffffff18}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 12% 0,#27365b 0,transparent 35%),var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,sans-serif}
+header{display:flex;justify-content:space-between;align-items:center;padding:20px max(4vw,18px);border-bottom:1px solid var(--border);position:sticky;top:0;background:#101522e8;backdrop-filter:blur(12px);z-index:3}.brand{font-size:19px;font-weight:900;letter-spacing:.04em}.brand span{color:var(--mint)}nav a{color:var(--muted);text-decoration:none;margin-left:18px;font-size:14px}nav a:hover{color:white}
+main{max-width:1050px;margin:auto;padding:35px 20px 70px}.intro{margin-bottom:28px}.kicker{font-size:12px;letter-spacing:.12em;color:var(--mint);font-weight:800}.intro h1{font-size:clamp(35px,6vw,58px);letter-spacing:-.04em;line-height:1.05;margin:12px 0}.intro p{color:var(--muted);line-height:1.6;max-width:700px}
+.layout{display:grid;grid-template-columns:300px 1fr;gap:20px}.panel{background:linear-gradient(160deg,var(--panel),#141a27);border:1px solid var(--border);border-radius:18px;padding:20px}.panel h2{margin:0 0 16px;font-size:20px}
+label{display:block;color:var(--muted);font-size:13px;margin:14px 0 7px}select,textarea{font:inherit;color:var(--ink);background:#111827;border:1px solid #34415b;border-radius:10px;padding:12px;width:100%}select{cursor:pointer}textarea{resize:vertical;min-height:190px;line-height:1.65}button{border:0;border-radius:11px;padding:12px 16px;background:linear-gradient(100deg,#667cff,#4e9dff);color:white;font-weight:800;cursor:pointer}button:hover{filter:brightness(1.12)}button.secondary{background:#263248;border:1px solid #ffffff16}button:disabled{opacity:.45;cursor:not-allowed}.buttons{display:flex;gap:10px;flex-wrap:wrap;margin-top:13px}.tip{font-size:12px;color:var(--muted);line-height:1.6;margin-top:16px}
+.reading{min-height:175px;border-radius:14px;border:1px dashed #556783;background:#101827;padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;color:#dce6fb;font-size:17px;line-height:1.8}.reading .placeholder{color:#7f8da7;font-size:14px}
+.result{margin-top:20px;display:none}.result.visible{display:block}.result h3{margin:0 0 12px}.stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px}.stat{padding:10px 14px;background:#222e43;border-radius:11px;font-size:13px;color:var(--muted)}.stat strong{color:var(--ink)}.feedback{padding:14px;background:#101827;border-radius:12px;line-height:1.9;word-break:break-word}.wrong{color:#ff8d9c;text-decoration:underline;text-decoration-color:#ff8d9c}.right{color:#7de1bc}.missing{color:#ffcb7d}.footnote{color:var(--muted);font-size:12px;margin-top:12px}
+@media(max-width:760px){.layout{grid-template-columns:1fr}.panel{padding:17px}} 
 </style>
 </head>
 <body>
-<header><div class="logo">ARCADE<span> HUB</span></div><nav><a href="#games">Games</a><a href="#about">About</a></nav></header>
+<header><div class="brand">WORT<span>WERK</span> · DIKTAT</div><nav><a href="#training">Üben</a><a href="#info">So geht's</a></nav></header>
 <main>
-<section class="hero"><div><span class="tag">YOUR PLAYGROUND</span><h1>PLAY.<br><em>REPEAT.</em></h1><p>Eine frische Arcade-Sammlung. Such dir ein Spiel aus, starte direkt im Browser und knack deinen Highscore.</div><div class="hero-art"><div class="arttext">ARCADE<br>MODE</div></div></section>
-<section id="games"><div class="section-head"><h2>Game Library</h2><small>Pick your next challenge</small></div>
-<div class="grid">
-<article class="card"><div class="thumb">⚡</div><div class="cardbody"><h3>Neon Dodger</h3><p>Weiche den Neon-Hindernissen aus und überlebe so lange wie möglich.</p><button onclick="launchGame()">Jetzt spielen</button></div></article>
-<article class="card"><div class="thumb">🏙️</div><div class="cardbody"><h3>City Explorer</h3><p>Eine Stadt zum Erkunden — ein Open-World-Projekt in Entwicklung.</p><button class="secondary" onclick="alert('City Explorer kommt bald!')">Coming soon</button></div></article>
-<article class="card"><div class="thumb">🏁</div><div class="cardbody"><h3>Street Racer</h3><p>Arcade-Rennen, kurze Runden und neue Strecken.</p><button class="secondary" onclick="alert('Street Racer kommt bald!')">Coming soon</button></div></article>
-</div></section>
-<section id="about" style="margin-top:50px;color:var(--muted);line-height:1.7"><h2 style="color:var(--text)">About Arcade Hub</h2><p>Ein neuer Start: Spiele direkt im Browser, ohne Installation. Mehr Games kommen nach und nach dazu.</p></section>
-</main><footer>ARCADE HUB · New start, new games</footer>
-<script></script>
+<section class="intro"><span class="kicker">HÖREN · SCHREIBEN · CHECKEN</span><h1>Dein Diktat-<br><span style="color:var(--mint)">Trainer.</span></h1><p>Wähle einen Text, lass ihn dir vorlesen und schreibe ihn auf. Danach kannst du deinen Text automatisch mit der Vorlage vergleichen und Fehler entdecken.</p></section>
+<section id="training" class="layout">
+<aside class="panel"><h2>Deine Übung</h2>
+<label for="level">Schwierigkeit</label><select id="level"><option value="easy">Einfach</option><option value="medium" selected>Mittel</option><option value="hard">Schwer</option></select>
+<label for="topic">Text-Thema</label><select id="topic"><option value="all">Überraschungstext</option><option value="school">Schule & Alltag</option><option value="nature">Natur</option><option value="story">Kleine Geschichten</option></select>
+<div class="buttons"><button id="newText">Neues Diktat</button><button class="secondary" id="listen" disabled>▶ Vorlesen</button><button class="secondary" id="pause" disabled>Ⅱ Pause</button></div>
+<p class="tip">Tipp: Du kannst den Text mehrmals anhören. Wenn möglich, höre erst einen Satz und schreibe ihn auf, bevor du weiterhörst.</p></aside>
+<div class="panel"><h2>Hörtext</h2><div id="reading" class="reading"><span class="placeholder">Klicke auf „Neues Diktat“, um deinen Hörtext zu laden.</span></div>
+<label for="answer">Dein geschriebener Text</label><textarea id="answer" placeholder="Schreibe hier, was du gehört hast …"></textarea>
+<div class="buttons"><button id="check" disabled>Text vergleichen</button><button class="secondary" id="clear">Eingabe löschen</button></div>
+<div id="result" class="result"><h3>Dein Ergebnis</h3><div id="stats" class="stats"></div><div id="feedback" class="feedback"></div><div class="footnote">Markierungen: <span class="wrong">Rot = falsch</span> · <span class="missing">Orange = fehlt</span> · <span class="right">Grün = richtig</span>. Satzzeichen und Groß-/Kleinschreibung werden beim Vergleich berücksichtigt.</div></div>
+</div>
+</section>
+<section id="info" class="panel" style="margin-top:20px"><h2>So funktioniert's</h2><p style="color:var(--muted);line-height:1.7;margin:0">1. Schwierigkeit und Thema auswählen. 2. Ein Diktat laden und vorlesen lassen. 3. Den Text in das Feld schreiben. 4. Auf „Text vergleichen“ klicken und die Markierungen ansehen. Die Texte werden hier im Browser bereitgestellt.</p></section>
+</main>
+<footer style="text-align:center;color:#77869e;padding:25px;border-top:1px solid var(--border);font-size:12px">WORTWERK · Übung macht sicher</footer>
+<script>
+const dictations={
+easy:[
+{topic:"school",text:"Am Morgen klingelt mein Wecker. Ich stehe auf und öffne das Fenster. Draußen ist die Luft frisch. Danach frühstücke ich und packe meine Schultasche."},
+{topic:"nature",text:"Auf der Wiese wachsen viele Blumen. Ein kleiner Schmetterling fliegt von Blatt zu Blatt. Die Sonne scheint und die Vögel singen."},
+{topic:"story",text:"Lena findet auf dem Heimweg einen Schlüssel. Er liegt neben einer alten Bank. Sie schaut sich um, aber niemand ist zu sehen."}],
+medium:[
+{topic:"school",text:"Während die Klasse die Aufgabe besprach, schrieb Mia die wichtigsten Stichpunkte in ihr Heft. Anschließend verglichen alle ihre Ergebnisse und verbesserten kleine Fehler."},
+{topic:"nature",text:"Am frühen Nachmittag zogen dunkle Wolken über das Tal. Ein leichter Wind bewegte die Zweige, und schon bald fielen die ersten Regentropfen auf den warmen Boden."},
+{topic:"story",text:"Als Jonas die Tür öffnete, hörte er ein leises Geräusch aus dem Flur. Vorsichtig stellte er seine Tasche ab und schaute nach, woher es kam."}],
+hard:[
+{topic:"school",text:"Obwohl die Erklärung zunächst kompliziert wirkte, erkannte die Schülerin schließlich den Zusammenhang. Sie notierte ihre Überlegungen sorgfältig, damit sie den Lösungsweg später nachvollziehen konnte."},
+{topic:"nature",text:"Zwischen den dicht bewachsenen Uferstellen entdeckte man gelegentlich seltene Pflanzen, deren empfindliche Blätter bei starker Trockenheit erstaunlich schnell welkten."},
+{topic:"story",text:"Niemand hatte damit gerechnet, dass ausgerechnet der unscheinbare Brief eine längst vergessene Erinnerung hervorrufen würde. Trotzdem bewahrte er ihn auf, ohne zunächst jemandem davon zu erzählen."}]
+};
+let current=null;
+const $=id=>document.getElementById(id);
+function pickText(){let level=$("level").value,topic=$("topic").value,arr=dictations[level].filter(t=>topic==="all"||t.topic===topic);return arr[Math.floor(Math.random()*arr.length)]}
+$("newText").onclick=()=>{speechSynthesis.cancel();current=pickText();$("reading").textContent="Hörtext bereit. Drücke auf „Vorlesen“, um ihn anzuhören."; $("listen").disabled=false;$("pause").disabled=false;$("check").disabled=false;$("answer").value="";$("result").classList.remove("visible")};
+$("listen").onclick=()=>{if(!current)return;speechSynthesis.cancel();let u=new SpeechSynthesisUtterance(current.text);u.lang="de-DE";u.rate=.88;speechSynthesis.speak(u)};
+$("pause").onclick=()=>{if(speechSynthesis.speaking){if(speechSynthesis.paused)speechSynthesis.resume();else speechSynthesis.pause()}};
+$("clear").onclick=()=>{$("answer").value="";$("result").classList.remove("visible")};
+function norm(s){return s.toLocaleLowerCase("de-DE").replace(/[.,!?;:„“"()]/g,"").trim().split(/\s+/).filter(Boolean)}
+$("check").onclick=()=>{if(!current)return;let target=norm(current.text),typed=norm($("answer").value),i=0,j=0,html="",correct=0,errors=0,missing=0;while(i<target.length||j<typed.length){if(i<target.length&&j<typed.length&&target[i]===typed[j]){html+='<span class="right">'+escapeHTML(typed[j])+'</span> ';i++;j++;correct++}else if(j<typed.length&&(i>=target.length||typed.slice(j,j+2).join(" ")===target.slice(i,i+2).join(" "))){html+='<span class="wrong">'+escapeHTML(typed[j])+'</span> ';j++;errors++}else if(i<target.length){html+='<span class="missing">'+escapeHTML(target[i])+'</span> ';i++;missing++}else{html+='<span class="wrong">'+escapeHTML(typed[j])+'</span> ';j++;errors++}}
+let total=target.length,percent=Math.round(correct/Math.max(total,1)*100);$("stats").innerHTML='<div class="stat">Richtig: <strong>'+correct+'</strong></div><div class="stat">Abweichungen: <strong>'+errors+'</strong></div><div class="stat">Fehlende Wörter: <strong>'+missing+'</strong></div><div class="stat">Trefferquote: <strong>'+percent+'%</strong></div>';
+$("feedback").innerHTML=html||"Du hast noch nichts geschrieben."; $("result").classList.add("visible")};
+function escapeHTML(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+window.addEventListener("beforeunload",()=>speechSynthesis.cancel());
+</script>
 </body></html>
