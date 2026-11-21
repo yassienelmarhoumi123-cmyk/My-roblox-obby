@@ -14,6 +14,17 @@ label{display:block;color:var(--muted);font-size:13px;margin:14px 0 7px}select,t
 .reading{min-height:175px;border-radius:14px;border:1px dashed #556783;background:#101827;padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;color:#dce6fb;font-size:17px;line-height:1.8}.reading .placeholder{color:#7f8da7;font-size:14px}
 .result{margin-top:20px;display:none}.result.visible{display:block}.result h3{margin:0 0 12px}.stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px}.stat{padding:10px 14px;background:#222e43;border-radius:11px;font-size:13px;color:var(--muted)}.stat strong{color:var(--ink)}.feedback{padding:14px;background:#101827;border-radius:12px;line-height:1.9;word-break:break-word}.wrong{color:#ff8d9c;text-decoration:underline;text-decoration-color:#ff8d9c}.right{color:#7de1bc}.missing{color:#ffcb7d}.footnote{color:var(--muted);font-size:12px;margin-top:12px}
 @media(max-width:760px){.layout{grid-template-columns:1fr}.panel{padding:17px}} 
+
+/* Refreshed visual styling */
+body{background:radial-gradient(ellipse at 10% 0,#2b3b66 0,transparent 38%),radial-gradient(ellipse at 100% 25%,#193e4b 0,transparent 30%),#0b1020}
+header{background:#0b1020dd;border-bottom-color:#ffffff1a}
+.panel{border-radius:22px;background:linear-gradient(145deg,#18233a,#121a2b);box-shadow:0 18px 45px #0002}
+.intro h1{letter-spacing:-.055em}.intro h1 span{color:#67e2c1}
+.reading{background:linear-gradient(140deg,#101b30,#101827);border:1px solid #67e2c133;border-radius:17px;min-height:185px;box-shadow:inset 0 0 30px #67e2c108}
+button{border-radius:12px;padding:13px 16px;box-shadow:0 6px 20px #0002}button.secondary{box-shadow:none}
+select,textarea{background:#0d1525;border-radius:12px;border-color:#35445e}
+label{font-weight:650;letter-spacing:.02em}
+@media(max-width:760px){main{padding-top:24px}.panel{padding:17px}}
 </style>
 </head>
 <body>
@@ -24,6 +35,8 @@ label{display:block;color:var(--muted);font-size:13px;margin:14px 0 7px}select,t
 <aside class="panel"><h2>Deine Übung</h2>
 <label for="level">Schwierigkeit</label><select id="level"><option value="easy">Einfach</option><option value="medium" selected>Mittel</option><option value="hard">Schwer</option></select>
 <label for="topic">Text-Thema</label><select id="topic"><option value="all">Überraschungstext</option><option value="school">Schule & Alltag</option><option value="nature">Natur</option><option value="story">Kleine Geschichten</option></select>
+<label for="voice">Vorlesestimme</label><select id="voice"><option value="">Standardstimme</option></select>
+<label for="speed">Sprechtempo</label><select id="speed"><option value="0.72">Langsam</option><option value="0.85" selected>Normal</option><option value="0.98">Zügig</option></select>
 <div class="buttons"><button id="newText">Neues Diktat</button><button class="secondary" id="listen" disabled>▶ Vorlesen</button><button class="secondary" id="pause" disabled>Ⅱ Pause</button></div>
 <p class="tip">Tipp: Du kannst den Text mehrmals anhören. Wenn möglich, höre erst einen Satz und schreibe ihn auf, bevor du weiterhörst.</p></aside>
 <div class="panel"><h2>Hörtext</h2><div id="reading" class="reading"><span class="placeholder">Klicke auf „Neues Diktat“, um deinen Hörtext zu laden.</span></div>
@@ -50,11 +63,13 @@ hard:[
 {topic:"nature",text:"Zwischen den dicht bewachsenen Uferstellen entdeckte man gelegentlich seltene Pflanzen, deren empfindliche Blätter bei starker Trockenheit erstaunlich schnell welkten."},
 {topic:"story",text:"Niemand hatte damit gerechnet, dass ausgerechnet der unscheinbare Brief eine längst vergessene Erinnerung hervorrufen würde. Trotzdem bewahrte er ihn auf, ohne zunächst jemandem davon zu erzählen."}]
 };
-let current=null, sentenceParts=[], sentenceIndex=0;
+let current=null, sentenceParts=[], sentenceIndex=0, germanVoices=[];
 const $=id=>document.getElementById(id);
+function loadGermanVoices(){germanVoices=speechSynthesis.getVoices().filter(v=>v.lang.toLowerCase().startsWith("de"));let old=$("voice").value;$("voice").innerHTML='<option value="">Standardstimme</option>'+germanVoices.map((v,i)=>'<option value="'+i+'">'+v.name+' · '+v.lang+'</option>').join("");if(old&&Number(old)<germanVoices.length)$("voice").value=old}
+loadGermanVoices();speechSynthesis.onvoiceschanged=loadGermanVoices;
 function pickText(){let level=$("level").value,topic=$("topic").value,arr=dictations[level].filter(t=>topic==="all"||t.topic===topic);return arr[Math.floor(Math.random()*arr.length)]}
 $("newText").onclick=()=>{speechSynthesis.cancel();current=pickText();sentenceParts=current.text.match(/[^.!?]+[.!?]+|[^.!?]+$/g)||[current.text];sentenceIndex=0;$("reading").textContent="Hörtext bereit. Drücke auf „Vorlesen“, um Satz 1 anzuhören."; $("listen").disabled=false;$("pause").disabled=false;$("check").disabled=false;$("answer").value="";$("result").classList.remove("visible")};
-$("listen").onclick=()=>{if(!current||sentenceIndex>=sentenceParts.length)return;speechSynthesis.cancel();let u=new SpeechSynthesisUtterance(sentenceParts[sentenceIndex].trim());u.lang="de-DE";u.rate=.88;u.onend=()=>{$("reading").textContent=sentenceIndex+1>=sentenceParts.length?"Diktat beendet. Du kannst deinen Text jetzt vergleichen.":"Satz "+(sentenceIndex+1)+" beendet. Drücke erneut „Vorlesen“ für den nächsten Satz.";sentenceIndex++;if(sentenceIndex>=sentenceParts.length)$("listen").disabled=true};$("reading").textContent="Satz "+(sentenceIndex+1)+" wird vorgelesen …";speechSynthesis.speak(u)};
+$("listen").onclick=()=>{if(!current||sentenceIndex>=sentenceParts.length)return;speechSynthesis.cancel();let u=new SpeechSynthesisUtterance(sentenceParts[sentenceIndex].trim());u.lang="de-DE";u.rate=Number($("speed").value);let selected=$("voice").value;if(selected!==""&&germanVoices[Number(selected)])u.voice=germanVoices[Number(selected)];u.onend=()=>{$("reading").textContent=sentenceIndex+1>=sentenceParts.length?"Diktat beendet. Du kannst deinen Text jetzt vergleichen.":"Satz "+(sentenceIndex+1)+" beendet. Drücke erneut „Vorlesen“ für den nächsten Satz.";sentenceIndex++;if(sentenceIndex>=sentenceParts.length)$("listen").disabled=true};$("reading").textContent="Satz "+(sentenceIndex+1)+" wird vorgelesen …";speechSynthesis.speak(u)};
 $("pause").onclick=()=>{if(speechSynthesis.speaking){if(speechSynthesis.paused)speechSynthesis.resume();else speechSynthesis.pause()}};
 $("clear").onclick=()=>{$("answer").value="";$("result").classList.remove("visible")};
 function norm(s){return s.toLocaleLowerCase("de-DE").replace(/[.,!?;:„“"()]/g,"").trim().split(/\s+/).filter(Boolean)}
