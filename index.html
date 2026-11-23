@@ -58,7 +58,7 @@ canvas{display:block;width:100%;height:100%;outline:none}
  <div id="mark" aria-hidden="true">
   <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 19 7v5.5c0 4.5-3 7-7 8.5-4-1.5-7-4-7-8.5V7l7-3.5Z"/><path d="M8.5 12.3 11 15l4.8-5"/></svg>
  </div>
- <div><div id="heading">CHARACTER TEST</div><div id="subheading">OPEN WORLD · PROTOTYP 01</div></div>
+ <div><div id="heading">CITY BLOCK · CHARACTER TEST</div><div id="subheading">OPEN WORLD · CITY PROTOTYP 02</div></div>
 </div>
 <div id="status">3D-MODELL LÄDT</div>
 <div id="help">
@@ -93,7 +93,7 @@ const errorEl = document.getElementById("error");
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xb9c6d2);
-scene.fog = new THREE.Fog(0xb9c6d2, 27, 105);
+scene.fog = new THREE.Fog(0xb9c6d2, 55, 185);
 
 const camera = new THREE.PerspectiveCamera(48, window.innerWidth / window.innerHeight, 0.1, 260);
 camera.position.set(0, 2.8, -6);
@@ -142,11 +142,239 @@ ground.position.y = -0.025;
 ground.receiveShadow = true;
 scene.add(ground);
 
-const grid = new THREE.GridHelper(240,120,0x9aa2aa,0x969ea6);
-grid.position.y = -0.018;
-grid.material.transparent = true;
-grid.material.opacity = 0.13;
-scene.add(grid);
+
+/* ------------------------------------------------------------------
+   PROCEDURAL CITY BLOCK
+   Buildings and road layout are built locally with Three.js.
+   No additional city assets or downloads are required.
+------------------------------------------------------------------- */
+function buildCity() {
+  const city = new THREE.Group();
+  city.name = "City Buildings";
+  scene.add(city);
+
+  const roadMat = new THREE.MeshStandardMaterial({ color: 0x343a40, roughness: 0.96 });
+  const sidewalkMat = new THREE.MeshStandardMaterial({ color: 0x969b9e, roughness: 0.94 });
+  const curbMat = new THREE.MeshStandardMaterial({ color: 0xb5b8b9, roughness: 0.9 });
+  const lineMat = new THREE.MeshStandardMaterial({ color: 0xd9d2ad, roughness: 0.85 });
+  const frameMat = new THREE.MeshStandardMaterial({ color: 0x555d64, roughness: 0.78, metalness: 0.12 });
+  const glassMat = new THREE.MeshStandardMaterial({
+    color: 0x66879a, roughness: 0.25, metalness: 0.18,
+    envMapIntensity: 0.65
+  });
+
+  // A deterministic variation keeps the city stable between reloads.
+  let seed = 18473;
+  const rand = () => {
+    seed = (seed * 1664525 + 1013904223) >>> 0;
+    return seed / 4294967296;
+  };
+
+  const streetPositions = [-60, -36, -12, 12, 36, 60];
+  const roadLength = 190;
+
+  // Asphalt grid with raised sidewalks, leaving clear paths between plots.
+  for (const x of streetPositions) {
+    const road = new THREE.Mesh(new THREE.BoxGeometry(8.6, 0.08, roadLength), roadMat);
+    road.position.set(x, 0.015, 0);
+    road.receiveShadow = true;
+    city.add(road);
+
+    for (const side of [-1, 1]) {
+      const walk = new THREE.Mesh(new THREE.BoxGeometry(1.25, 0.13, roadLength), sidewalkMat);
+      walk.position.set(x + side * 5.0, 0.055, 0);
+      walk.receiveShadow = true;
+      city.add(walk);
+      const curb = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.2, roadLength), curbMat);
+      curb.position.set(x + side * 4.35, 0.12, 0);
+      curb.receiveShadow = true;
+      city.add(curb);
+    }
+  }
+
+  for (const z of streetPositions) {
+    const road = new THREE.Mesh(new THREE.BoxGeometry(roadLength, 0.08, 8.6), roadMat);
+    road.position.set(0, 0.016, z);
+    road.receiveShadow = true;
+    city.add(road);
+
+    for (const side of [-1, 1]) {
+      const walk = new THREE.Mesh(new THREE.BoxGeometry(roadLength, 0.13, 1.25), sidewalkMat);
+      walk.position.set(0, 0.055, z + side * 5.0);
+      walk.receiveShadow = true;
+      city.add(walk);
+      const curb = new THREE.Mesh(new THREE.BoxGeometry(roadLength, 0.2, 0.16), curbMat);
+      curb.position.set(0, 0.12, z + side * 4.35);
+      curb.receiveShadow = true;
+      city.add(curb);
+    }
+  }
+
+  // Dashed lane markings, instanced so the road detail stays lightweight.
+  const dashGeometry = new THREE.BoxGeometry(0.16, 0.018, 2.5);
+  const dashCount = streetPositions.length * 2 * 22;
+  const dashes = new THREE.InstancedMesh(dashGeometry, lineMat, dashCount);
+  const dummy = new THREE.Object3D();
+  let dashIndex = 0;
+  for (const x of streetPositions) {
+    for (let z = -84; z <= 84; z += 8) {
+      dummy.position.set(x, 0.064, z);
+      dummy.rotation.set(0, 0, 0);
+      dummy.updateMatrix();
+      dashes.setMatrixAt(dashIndex++, dummy.matrix);
+    }
+  }
+  for (const z of streetPositions) {
+    for (let x = -84; x <= 84; x += 8) {
+      dummy.position.set(x, 0.065, z);
+      dummy.rotation.set(0, Math.PI / 2, 0);
+      dummy.updateMatrix();
+      dashes.setMatrixAt(dashIndex++, dummy.matrix);
+    }
+  }
+  dashes.count = dashIndex;
+  dashes.instanceMatrix.needsUpdate = true;
+  city.add(dashes);
+
+  // Instanced window frames and blue-grey glass across all building facades.
+  const frameGeometry = new THREE.BoxGeometry(1.08, 1.58, 0.14);
+  const glassGeometry = new THREE.BoxGeometry(0.88, 1.34, 0.08);
+  const maxWindows = 9000;
+  const frames = new THREE.InstancedMesh(frameGeometry, frameMat, maxWindows);
+  const panes = new THREE.InstancedMesh(glassGeometry, glassMat, maxWindows);
+  frames.castShadow = false;
+  frames.receiveShadow = false;
+  panes.castShadow = false;
+  panes.receiveShadow = false;
+  const windowDummy = new THREE.Object3D();
+  let windowIndex = 0;
+
+  const buildingPalette = [
+    0xaeb4b8, 0xc0bdb5, 0x8d9aa1, 0x9da5a8,
+    0xb6b2aa, 0x7e898f, 0xc5c3bd, 0x8f9699
+  ].map(color => new THREE.MeshStandardMaterial({ color, roughness: 0.9 }));
+
+  const plotPositions = [-72, -48, -24, 24, 48, 72];
+
+  for (const x of plotPositions) {
+    for (const z of plotPositions) {
+      // Keep the four innermost plots open for a broad central intersection.
+      if (Math.abs(x) === 24 && Math.abs(z) === 24) continue;
+
+      const floors = 5 + Math.floor(rand() * 10);
+      const floorHeight = 2.75;
+      const height = floors * floorHeight;
+      const width = 10.8 + rand() * 1.45;
+      const depth = 10.8 + rand() * 1.45;
+      const bodyMat = buildingPalette[Math.floor(rand() * buildingPalette.length)];
+
+      const building = new THREE.Group();
+      building.position.set(x + (rand() - 0.5) * 1.2, 0, z + (rand() - 0.5) * 1.2);
+      building.name = "City Building";
+      city.add(building);
+
+      const body = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), bodyMat);
+      body.position.y = height / 2;
+      body.castShadow = true;
+      body.receiveShadow = true;
+      building.add(body);
+
+      const base = new THREE.Mesh(
+        new THREE.BoxGeometry(width + 0.25, 0.45, depth + 0.25),
+        new THREE.MeshStandardMaterial({ color: 0x687177, roughness: 0.95 })
+      );
+      base.position.y = 0.225;
+      base.castShadow = true;
+      base.receiveShadow = true;
+      building.add(base);
+
+      // Narrow roof edge and a few rooftop service structures.
+      const parapetMat = new THREE.MeshStandardMaterial({ color: 0x747d82, roughness: 0.9 });
+      const parapetHeight = 0.34;
+      const parapets = [
+        [width + 0.12, parapetHeight, 0.18, 0, height + parapetHeight / 2, depth / 2],
+        [width + 0.12, parapetHeight, 0.18, 0, height + parapetHeight / 2, -depth / 2],
+        [0.18, parapetHeight, depth, width / 2, height + parapetHeight / 2, 0],
+        [0.18, parapetHeight, depth, -width / 2, height + parapetHeight / 2, 0]
+      ];
+      for (const [sx, sy, sz, px, py, pz] of parapets) {
+        const rail = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), parapetMat);
+        rail.position.set(px, py, pz);
+        building.add(rail);
+      }
+
+      if (rand() > 0.35) {
+        const rooftop = new THREE.Mesh(
+          new THREE.BoxGeometry(width * (0.28 + rand() * 0.12), 1.15, depth * 0.3),
+          parapetMat
+        );
+        rooftop.position.set((rand() - 0.5) * 1.2, height + 0.72, (rand() - 0.5) * 1.0);
+        rooftop.castShadow = true;
+        rooftop.receiveShadow = true;
+        building.add(rooftop);
+      }
+
+      // Four-sided window grid. Frames and glass are stored in shared instances.
+      const addWindow = (px, py, pz, rotationY) => {
+        if (windowIndex >= maxWindows) return;
+        windowDummy.position.set(building.position.x + px, py, building.position.z + pz);
+        windowDummy.rotation.set(0, rotationY, 0);
+        windowDummy.scale.set(1, 1, 1);
+        windowDummy.updateMatrix();
+        frames.setMatrixAt(windowIndex, windowDummy.matrix);
+        panes.setMatrixAt(windowIndex, windowDummy.matrix);
+        windowIndex++;
+      };
+
+      const makeFacade = (faceWidth, faceDepth, side) => {
+        const columns = Math.max(2, Math.floor(faceWidth / 2.4));
+        for (let row = 0; row < floors; row++) {
+          const py = 1.48 + row * floorHeight;
+          for (let col = 0; col < columns; col++) {
+            const spread = (col - (columns - 1) / 2) * (faceWidth / (columns + 0.2));
+            if (side === "front") addWindow(spread, py, depth / 2 + 0.08, 0);
+            if (side === "back") addWindow(spread, py, -depth / 2 - 0.08, Math.PI);
+            if (side === "right") addWindow(width / 2 + 0.08, py, spread, Math.PI / 2);
+            if (side === "left") addWindow(-width / 2 - 0.08, py, spread, -Math.PI / 2);
+          }
+        }
+      };
+      makeFacade(width, depth, "front");
+      makeFacade(width, depth, "back");
+      makeFacade(depth, width, "right");
+      makeFacade(depth, width, "left");
+
+      // A few slim vertical facade piers create a more finished city silhouette.
+      const pierMat = new THREE.MeshStandardMaterial({ color: 0x727e83, roughness: 0.88 });
+      for (const side of [-1, 1]) {
+        const pier = new THREE.Mesh(new THREE.BoxGeometry(0.12, height, 0.16), pierMat);
+        pier.position.set(side * (width / 2 - 0.12), height / 2, depth / 2 + 0.02);
+        building.add(pier);
+      }
+    }
+  }
+
+  frames.count = windowIndex;
+  panes.count = windowIndex;
+  frames.instanceMatrix.needsUpdate = true;
+  panes.instanceMatrix.needsUpdate = true;
+  city.add(frames);
+  city.add(panes);
+
+  // Simple paved plaza where the player spawns, clear of tall buildings.
+  const plaza = new THREE.Mesh(
+    new THREE.BoxGeometry(20, 0.045, 20),
+    new THREE.MeshStandardMaterial({ color: 0x8c9295, roughness: 0.92 })
+  );
+  plaza.position.set(0, 0.012, 0);
+  plaza.receiveShadow = true;
+  city.add(plaza);
+
+  console.info("City generated:", plotPositions.length * plotPositions.length - 4, "building plots");
+}
+
+
+buildCity();
 
 const player = new THREE.Group();
 scene.add(player);
