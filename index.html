@@ -80,8 +80,6 @@ canvas{display:block;width:100%;height:100%;outline:none}
 <script type="module">
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { KTX2Loader } from "three/addons/loaders/KTX2Loader.js";
-import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
 
 const root = document.getElementById("game");
 const statusEl = document.getElementById("status");
@@ -107,11 +105,6 @@ renderer.toneMappingExposure = 1.12;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 root.appendChild(renderer.domElement);
-
-const ktx2Loader = new KTX2Loader()
-  .setTranscoderPath("https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/libs/basis/")
-  .detectSupport(renderer);
-
 
 
 const hemi = new THREE.HemisphereLight(0xe8f1ff, 0x646b75, 1.65);
@@ -811,14 +804,21 @@ function prepareCharacter(gltf) {
 
 function loadCharacter() {
   const loader = new GLTFLoader();
-  loader.setKTX2Loader(ktx2Loader);
-  loader.setMeshoptDecoder(MeshoptDecoder);
   const modelUrl = "./assets/man-base-character-rigged.glb";
 
   loadCopy.textContent = "Lokales Grab3D-Modell wird geladen …";
+  let loadFinished = false;
+  const loadTimeout = setTimeout(() => {
+    if (!loadFinished) {
+      showLoadError("Der Download oder das Einlesen dauert ungewöhnlich lange. Bitte lade die Seite neu.");
+    }
+  }, 60000);
+
   loader.load(
     modelUrl,
     (gltf) => {
+      loadFinished = true;
+      clearTimeout(loadTimeout);
       try {
         prepareCharacter(gltf);
       } catch (error) {
@@ -830,9 +830,14 @@ function loadCharacter() {
       if (event.total > 0) {
         const percent = Math.round(event.loaded / event.total * 100);
         loadCopy.textContent = "Grab3D-Modell wird geladen · " + percent + "%";
+      } else {
+        const megabytes = (event.loaded / (1024 * 1024)).toFixed(1);
+        loadCopy.textContent = "Grab3D-Modell wird geladen · " + megabytes + " MB";
       }
     },
     (error) => {
+      loadFinished = true;
+      clearTimeout(loadTimeout);
       console.error("Local Grab3D GLB load failed:", error);
       const detail = error && error.message ? " (" + error.message + ")" : "";
       showLoadError("Lokale Grab3D-Datei konnte nicht gelesen werden" + detail + ".");
