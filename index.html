@@ -153,10 +153,11 @@ function buildCity() {
   city.name = "Detailed Downtown Buildings";
   scene.add(city);
 
-  const roadMat = new THREE.MeshStandardMaterial({ color: 0x30363c, roughness: 0.98 });
-  const sidewalkMat = new THREE.MeshStandardMaterial({ color: 0xa4a5a2, roughness: 0.96 });
-  const curbMat = new THREE.MeshStandardMaterial({ color: 0xc3c3bd, roughness: 0.92 });
-  const laneMat = new THREE.MeshStandardMaterial({ color: 0xe2d7b8, roughness: 0.9 });
+  const roadMat = new THREE.MeshStandardMaterial({ color: 0x252b30, roughness: 0.96 });
+  const sidewalkMat = new THREE.MeshStandardMaterial({ color: 0xb1b2ae, roughness: 0.96 });
+  const curbMat = new THREE.MeshStandardMaterial({ color: 0xd0d0ca, roughness: 0.92 });
+  const laneMat = new THREE.MeshStandardMaterial({ color: 0xf0eadb, roughness: 0.9 });
+  const edgeLineMat = new THREE.MeshStandardMaterial({ color: 0xbeb8a8, roughness: 0.92 });
   const darkMetal = new THREE.MeshStandardMaterial({ color: 0x343c42, roughness: 0.7, metalness: 0.28 });
   const balconyGlass = new THREE.MeshStandardMaterial({
     color: 0x9bb5bf, roughness: 0.22, metalness: 0.16,
@@ -191,49 +192,103 @@ function buildCity() {
   const streetPositions = [-60, -36, -12, 12, 36, 60];
   const roadLength = 190;
 
-  // Asphalt, raised paving stones and curbs.
+  // Asphalt roads, raised curbs and broad concrete pavements.
   for (const x of streetPositions) {
-    const road = makeBox(city, "asphalt street", 8.6, 0.08, roadLength, roadMat, x, 0.015, 0);
+    const road = makeBox(city, "dark asphalt street", 8.6, 0.08, roadLength, roadMat, x, 0.015, 0);
     road.receiveShadow = true;
     for (const side of [-1, 1]) {
-      makeBox(city, "paved sidewalk", 1.25, 0.13, roadLength, sidewalkMat, x + side * 5.0, 0.055, 0);
-      makeBox(city, "stone curb", 0.16, 0.2, roadLength, curbMat, x + side * 4.35, 0.12, 0);
+      makeBox(city, "concrete sidewalk", 1.25, 0.13, roadLength, sidewalkMat, x + side * 5.0, 0.055, 0);
+      makeBox(city, "raised stone curb", 0.16, 0.2, roadLength, curbMat, x + side * 4.35, 0.12, 0);
     }
   }
   for (const z of streetPositions) {
-    const road = makeBox(city, "asphalt street", roadLength, 0.08, 8.6, roadMat, 0, 0.016, z);
+    const road = makeBox(city, "dark asphalt street", roadLength, 0.08, 8.6, roadMat, 0, 0.016, z);
     road.receiveShadow = true;
     for (const side of [-1, 1]) {
-      makeBox(city, "paved sidewalk", roadLength, 0.13, 1.25, sidewalkMat, 0, 0.055, z + side * 5.0);
-      makeBox(city, "stone curb", roadLength, 0.2, 0.16, curbMat, 0, 0.12, z + side * 4.35);
+      makeBox(city, "concrete sidewalk", roadLength, 0.13, 1.25, sidewalkMat, 0, 0.055, z + side * 5.0);
+      makeBox(city, "raised stone curb", roadLength, 0.2, 0.16, curbMat, 0, 0.12, z + side * 4.35);
     }
   }
 
-  // Dashed lane markings on the crossing streets.
+  // Dashed center lines: a single instanced draw call for the whole city.
   const dashGeometry = new THREE.BoxGeometry(0.15, 0.018, 2.4);
-  const dashCount = streetPositions.length * 2 * 22;
-  const dashes = new THREE.InstancedMesh(dashGeometry, laneMat, dashCount);
-  const dummy = new THREE.Object3D();
+  const dashCapacity = streetPositions.length * 2 * 22;
+  const dashes = new THREE.InstancedMesh(dashGeometry, laneMat, dashCapacity);
+  const roadDummy = new THREE.Object3D();
   let dashIndex = 0;
   for (const x of streetPositions) {
     for (let z = -84; z <= 84; z += 8) {
-      dummy.position.set(x, 0.064, z);
-      dummy.rotation.set(0, 0, 0);
-      dummy.updateMatrix();
-      dashes.setMatrixAt(dashIndex++, dummy.matrix);
+      roadDummy.position.set(x, 0.064, z);
+      roadDummy.rotation.set(0, 0, 0);
+      roadDummy.updateMatrix();
+      dashes.setMatrixAt(dashIndex++, roadDummy.matrix);
     }
   }
   for (const z of streetPositions) {
     for (let x = -84; x <= 84; x += 8) {
-      dummy.position.set(x, 0.065, z);
-      dummy.rotation.set(0, Math.PI / 2, 0);
-      dummy.updateMatrix();
-      dashes.setMatrixAt(dashIndex++, dummy.matrix);
+      roadDummy.position.set(x, 0.065, z);
+      roadDummy.rotation.set(0, Math.PI / 2, 0);
+      roadDummy.updateMatrix();
+      dashes.setMatrixAt(dashIndex++, roadDummy.matrix);
     }
   }
   dashes.count = dashIndex;
   dashes.instanceMatrix.needsUpdate = true;
   city.add(dashes);
+
+  // Thin continuous edge markings: one additional instanced mesh.
+  const edgeGeometry = new THREE.BoxGeometry(0.075, 0.016, roadLength - 2);
+  const edgeLines = new THREE.InstancedMesh(
+    edgeGeometry, edgeLineMat, streetPositions.length * 4
+  );
+  let edgeIndex = 0;
+  for (const x of streetPositions) {
+    for (const side of [-1, 1]) {
+      roadDummy.position.set(x + side * 3.78, 0.063, 0);
+      roadDummy.rotation.set(0, 0, 0);
+      roadDummy.updateMatrix();
+      edgeLines.setMatrixAt(edgeIndex++, roadDummy.matrix);
+    }
+  }
+  for (const z of streetPositions) {
+    for (const side of [-1, 1]) {
+      roadDummy.position.set(0, 0.063, z + side * 3.78);
+      roadDummy.rotation.set(0, Math.PI / 2, 0);
+      roadDummy.updateMatrix();
+      edgeLines.setMatrixAt(edgeIndex++, roadDummy.matrix);
+    }
+  }
+  edgeLines.count = edgeIndex;
+  edgeLines.instanceMatrix.needsUpdate = true;
+  city.add(edgeLines);
+
+  // Zebra crossings at junctions, batched into one lightweight instanced mesh.
+  const stripeOffsets = [-2.5, -1.5, -0.5, 0.5, 1.5, 2.5];
+  const crossingGeometry = new THREE.BoxGeometry(0.82, 0.02, 0.20);
+  const crossingCapacity = streetPositions.length * streetPositions.length * 4 * stripeOffsets.length;
+  const crossings = new THREE.InstancedMesh(crossingGeometry, laneMat, crossingCapacity);
+  let crossingIndex = 0;
+  for (const x of streetPositions) {
+    for (const z of streetPositions) {
+      for (const side of [-1, 1]) {
+        for (const offset of stripeOffsets) {
+          // Crossing on the road running along X.
+          roadDummy.position.set(x + offset, 0.068, z + side * 5.2);
+          roadDummy.rotation.set(0, 0, 0);
+          roadDummy.updateMatrix();
+          crossings.setMatrixAt(crossingIndex++, roadDummy.matrix);
+          // Crossing on the road running along Z.
+          roadDummy.position.set(x + side * 5.2, 0.068, z + offset);
+          roadDummy.rotation.set(0, Math.PI / 2, 0);
+          roadDummy.updateMatrix();
+          crossings.setMatrixAt(crossingIndex++, roadDummy.matrix);
+        }
+      }
+    }
+  }
+  crossings.count = crossingIndex;
+  crossings.instanceMatrix.needsUpdate = true;
+  city.add(crossings);
 
   // Detailed, instanced window assemblies: outer frame, glass, mullions and sill.
   const maxWindows = 12000;
