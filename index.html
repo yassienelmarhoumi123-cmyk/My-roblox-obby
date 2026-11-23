@@ -80,6 +80,8 @@ canvas{display:block;width:100%;height:100%;outline:none}
 <script type="module">
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { KTX2Loader } from "three/addons/loaders/KTX2Loader.js";
+import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
 
 const root = document.getElementById("game");
 const statusEl = document.getElementById("status");
@@ -105,6 +107,11 @@ renderer.toneMappingExposure = 1.12;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 root.appendChild(renderer.domElement);
+
+const ktx2Loader = new KTX2Loader()
+  .setTranscoderPath("https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/libs/basis/")
+  .detectSupport(renderer);
+
 
 
 const hemi = new THREE.HemisphereLight(0xe8f1ff, 0x646b75, 1.65);
@@ -147,6 +154,8 @@ function buildCity() {
   scene.add(city);
 
   const roadMat = new THREE.MeshStandardMaterial({ color: 0x30363c, roughness: 0.98 });
+  const sidewalkMat = new THREE.MeshStandardMaterial({ color: 0xa4a5a2, roughness: 0.96 });
+  const curbMat = new THREE.MeshStandardMaterial({ color: 0xc3c3bd, roughness: 0.92 });
   const laneMat = new THREE.MeshStandardMaterial({ color: 0xe2d7b8, roughness: 0.9 });
   const darkMetal = new THREE.MeshStandardMaterial({ color: 0x343c42, roughness: 0.7, metalness: 0.28 });
   const balconyGlass = new THREE.MeshStandardMaterial({
@@ -182,253 +191,49 @@ function buildCity() {
   const streetPositions = [-60, -36, -12, 12, 36, 60];
   const roadLength = 190;
 
-  // Fine procedural asphalt grain, generated locally without external textures.
-  const asphaltSize = 256;
-  const asphaltPixels = new Uint8Array(asphaltSize * asphaltSize * 4);
-  for (let i = 0; i < asphaltSize * asphaltSize; i++) {
-    const grain = 48 + Math.floor(rand() * 30);
-    const speckle = rand() > 0.985 ? 18 : 0;
-    const value = Math.min(112, grain + speckle);
-    const p = i * 4;
-    asphaltPixels[p] = value;
-    asphaltPixels[p + 1] = value + 2;
-    asphaltPixels[p + 2] = value + 4;
-    asphaltPixels[p + 3] = 255;
-  }
-  const asphaltTexture = new THREE.DataTexture(
-    asphaltPixels, asphaltSize, asphaltSize, THREE.RGBAFormat
-  );
-  asphaltTexture.colorSpace = THREE.SRGBColorSpace;
-  asphaltTexture.wrapS = THREE.RepeatWrapping;
-  asphaltTexture.wrapT = THREE.RepeatWrapping;
-  asphaltTexture.magFilter = THREE.LinearFilter;
-  asphaltTexture.minFilter = THREE.LinearMipmapLinearFilter;
-  asphaltTexture.generateMipmaps = true;
-  asphaltTexture.needsUpdate = true;
-
-  const asphaltAlongZ = new THREE.MeshStandardMaterial({
-    color: 0x85888a, map: asphaltTexture.clone(), roughness: 0.99, metalness: 0
-  });
-  asphaltAlongZ.map.repeat.set(7, 160);
-  asphaltAlongZ.map.needsUpdate = true;
-  const asphaltAlongX = new THREE.MeshStandardMaterial({
-    color: 0x85888a, map: asphaltTexture.clone(), roughness: 0.99, metalness: 0
-  });
-  asphaltAlongX.map.repeat.set(160, 7);
-  asphaltAlongX.map.needsUpdate = true;
-
-  const sidewalkMat = new THREE.MeshStandardMaterial({ color: 0xa4a5a2, roughness: 0.96 });
-  const curbMat = new THREE.MeshStandardMaterial({ color: 0xc3c3bd, roughness: 0.92 });
-  const drainMat = new THREE.MeshStandardMaterial({ color: 0x333a3e, roughness: 0.82, metalness: 0.35 });
-  const manholeMat = new THREE.MeshStandardMaterial({ color: 0x555c60, roughness: 0.7, metalness: 0.5 });
-  const paverJointMat = new THREE.MeshStandardMaterial({ color: 0x777d7c, roughness: 1 });
-
-  const streetPositions = [-60, -36, -12, 12, 36, 60];
-  const roadLength = 190;
-
-  // Asphalt carriageways with subtle grain and expanded paved sidewalks.
+  // Asphalt, raised paving stones and curbs.
   for (const x of streetPositions) {
-    const foundation = makeBox(city, "road asphalt foundation", 8.6, 0.08, roadLength,
-      roadMat, x, 0.015, 0);
-    foundation.receiveShadow = true;
-    const surface = new THREE.Mesh(new THREE.PlaneGeometry(8.6, roadLength), asphaltAlongZ);
-    surface.name = "textured asphalt road surface";
-    surface.rotation.x = -Math.PI / 2;
-    surface.position.set(x, 0.058, 0);
-    surface.receiveShadow = true;
-    city.add(surface);
-
+    const road = makeBox(city, "asphalt street", 8.6, 0.08, roadLength, roadMat, x, 0.015, 0);
+    road.receiveShadow = true;
     for (const side of [-1, 1]) {
-      makeBox(city, "raised stone curb", 0.2, 0.2, roadLength, curbMat,
-        x + side * 4.42, 0.12, 0);
-      makeBox(city, "wide paved sidewalk", 1.4, 0.13, roadLength, sidewalkMat,
-        x + side * 5.25, 0.055, 0);
-    }
-  }
-
-  for (const z of streetPositions) {
-    const foundation = makeBox(city, "road asphalt foundation", roadLength, 0.08, 8.6,
-      roadMat, 0, 0.016, z);
-    foundation.receiveShadow = true;
-    const surface = new THREE.Mesh(new THREE.PlaneGeometry(roadLength, 8.6), asphaltAlongX);
-    surface.name = "textured asphalt road surface";
-    surface.rotation.x = -Math.PI / 2;
-    surface.position.set(0, 0.059, z);
-    surface.receiveShadow = true;
-    city.add(surface);
-
-    for (const side of [-1, 1]) {
-      makeBox(city, "raised stone curb", roadLength, 0.2, 0.2, curbMat,
-        0, 0.12, z + side * 4.42);
-      makeBox(city, "wide paved sidewalk", roadLength, 0.13, 1.4, sidewalkMat,
-        0, 0.055, z + side * 5.25);
-    }
-  }
-
-  // Sidewalk slab joints: a visible regular paving pattern.
-  const seamsZ = [];
-  const seamsX = [];
-  const seamDummy = new THREE.Object3D();
-  const seamZGeometry = new THREE.BoxGeometry(1.35, 0.012, 0.035);
-  const seamXGeometry = new THREE.BoxGeometry(0.035, 0.012, 1.35);
-  for (const x of streetPositions) {
-    for (const side of [-1, 1]) {
-      for (let z = -94; z <= 94; z += 2.7) {
-        seamDummy.position.set(x + side * 5.25, 0.122, z);
-        seamDummy.rotation.set(0, 0, 0);
-        seamDummy.updateMatrix();
-        seamsZ.push(seamDummy.matrix.clone());
-      }
+      makeBox(city, "paved sidewalk", 1.25, 0.13, roadLength, sidewalkMat, x + side * 5.0, 0.055, 0);
+      makeBox(city, "stone curb", 0.16, 0.2, roadLength, curbMat, x + side * 4.35, 0.12, 0);
     }
   }
   for (const z of streetPositions) {
+    const road = makeBox(city, "asphalt street", roadLength, 0.08, 8.6, roadMat, 0, 0.016, z);
+    road.receiveShadow = true;
     for (const side of [-1, 1]) {
-      for (let x = -94; x <= 94; x += 2.7) {
-        seamDummy.position.set(x, 0.122, z + side * 5.25);
-        seamDummy.rotation.set(0, 0, 0);
-        seamDummy.updateMatrix();
-        seamsX.push(seamDummy.matrix.clone());
-      }
+      makeBox(city, "paved sidewalk", roadLength, 0.13, 1.25, sidewalkMat, 0, 0.055, z + side * 5.0);
+      makeBox(city, "stone curb", roadLength, 0.2, 0.16, curbMat, 0, 0.12, z + side * 4.35);
     }
   }
-  const seamMeshZ = new THREE.InstancedMesh(seamZGeometry, paverJointMat, seamsZ.length);
-  const seamMeshX = new THREE.InstancedMesh(seamXGeometry, paverJointMat, seamsX.length);
-  seamsZ.forEach((m, i) => seamMeshZ.setMatrixAt(i, m));
-  seamsX.forEach((m, i) => seamMeshX.setMatrixAt(i, m));
-  seamMeshZ.instanceMatrix.needsUpdate = true;
-  seamMeshX.instanceMatrix.needsUpdate = true;
-  city.add(seamMeshZ, seamMeshX);
 
-  // Dashed white centre lines and solid road-edge lines.
-  const centerZ = [];
-  const centerX = [];
-  const edgeZ = [];
-  const edgeX = [];
-  const markingDummy = new THREE.Object3D();
-
+  // Dashed lane markings on the crossing streets.
+  const dashGeometry = new THREE.BoxGeometry(0.15, 0.018, 2.4);
+  const dashCount = streetPositions.length * 2 * 22;
+  const dashes = new THREE.InstancedMesh(dashGeometry, laneMat, dashCount);
+  const dummy = new THREE.Object3D();
+  let dashIndex = 0;
   for (const x of streetPositions) {
-    for (let z = -92; z <= 92; z += 7.2) {
-      markingDummy.position.set(x, 0.074, z);
-      markingDummy.rotation.set(0, 0, 0);
-      markingDummy.updateMatrix();
-      centerZ.push(markingDummy.matrix.clone());
-    }
-    for (const side of [-1, 1]) {
-      markingDummy.position.set(x + side * 3.88, 0.071, 0);
-      markingDummy.updateMatrix();
-      edgeZ.push(markingDummy.matrix.clone());
+    for (let z = -84; z <= 84; z += 8) {
+      dummy.position.set(x, 0.064, z);
+      dummy.rotation.set(0, 0, 0);
+      dummy.updateMatrix();
+      dashes.setMatrixAt(dashIndex++, dummy.matrix);
     }
   }
   for (const z of streetPositions) {
-    for (let x = -92; x <= 92; x += 7.2) {
-      markingDummy.position.set(x, 0.074, z);
-      markingDummy.rotation.set(0, Math.PI / 2, 0);
-      markingDummy.updateMatrix();
-      centerX.push(markingDummy.matrix.clone());
-    }
-    for (const side of [-1, 1]) {
-      markingDummy.position.set(0, 0.071, z + side * 3.88);
-      markingDummy.rotation.set(0, Math.PI / 2, 0);
-      markingDummy.updateMatrix();
-      edgeX.push(markingDummy.matrix.clone());
+    for (let x = -84; x <= 84; x += 8) {
+      dummy.position.set(x, 0.065, z);
+      dummy.rotation.set(0, Math.PI / 2, 0);
+      dummy.updateMatrix();
+      dashes.setMatrixAt(dashIndex++, dummy.matrix);
     }
   }
-  const centerMeshZ = new THREE.InstancedMesh(new THREE.BoxGeometry(0.13, 0.022, 2.8), laneMat, centerZ.length);
-  const centerMeshX = new THREE.InstancedMesh(new THREE.BoxGeometry(2.8, 0.022, 0.13), laneMat, centerX.length);
-  const edgeMeshZ = new THREE.InstancedMesh(new THREE.BoxGeometry(0.10, 0.018, roadLength), laneMat, edgeZ.length);
-  const edgeMeshX = new THREE.InstancedMesh(new THREE.BoxGeometry(roadLength, 0.018, 0.10), laneMat, edgeX.length);
-  centerZ.forEach((m, i) => centerMeshZ.setMatrixAt(i, m));
-  centerX.forEach((m, i) => centerMeshX.setMatrixAt(i, m));
-  edgeZ.forEach((m, i) => edgeMeshZ.setMatrixAt(i, m));
-  edgeX.forEach((m, i) => edgeMeshX.setMatrixAt(i, m));
-  for (const mesh of [centerMeshZ, centerMeshX, edgeMeshZ, edgeMeshX]) {
-    mesh.instanceMatrix.needsUpdate = true;
-  }
-  city.add(centerMeshZ, centerMeshX, edgeMeshZ, edgeMeshX);
-
-  // Zebra crossings at every street intersection.
-  const crossZ = [];
-  const crossX = [];
-  for (const x of streetPositions) {
-    for (const z of streetPositions) {
-      for (let i = -3; i <= 3; i++) {
-        markingDummy.position.set(x + i * 0.68, 0.078, z);
-        markingDummy.rotation.set(0, 0, 0);
-        markingDummy.updateMatrix();
-        crossZ.push(markingDummy.matrix.clone());
-
-        markingDummy.position.set(x, 0.078, z + i * 0.68);
-        markingDummy.rotation.set(0, 0, 0);
-        markingDummy.updateMatrix();
-        crossX.push(markingDummy.matrix.clone());
-      }
-    }
-  }
-  const zebraZ = new THREE.InstancedMesh(
-    new THREE.BoxGeometry(0.43, 0.025, 7.75), laneMat, crossZ.length
-  );
-  const zebraX = new THREE.InstancedMesh(
-    new THREE.BoxGeometry(7.75, 0.025, 0.43), laneMat, crossX.length
-  );
-  crossZ.forEach((m, i) => zebraZ.setMatrixAt(i, m));
-  crossX.forEach((m, i) => zebraX.setMatrixAt(i, m));
-  zebraZ.instanceMatrix.needsUpdate = true;
-  zebraX.instanceMatrix.needsUpdate = true;
-  city.add(zebraZ, zebraX);
-
-  // Drain grates close to curbs and cast-iron manhole covers between junctions.
-  const drainGeometry = new THREE.BoxGeometry(0.92, 0.035, 0.22);
-  const drainCount = streetPositions.length * 2 * 7 * 2;
-  const drains = new THREE.InstancedMesh(drainGeometry, drainMat, drainCount);
-  let drainIndex = 0;
-  for (const x of streetPositions) {
-    for (const side of [-1, 1]) {
-      for (let z = -84; z <= 84; z += 28) {
-        markingDummy.position.set(x + side * 3.55, 0.073, z);
-        markingDummy.rotation.set(0, 0, 0);
-        markingDummy.updateMatrix();
-        drains.setMatrixAt(drainIndex++, markingDummy.matrix);
-      }
-    }
-  }
-  for (const z of streetPositions) {
-    for (const side of [-1, 1]) {
-      for (let x = -84; x <= 84; x += 28) {
-        markingDummy.position.set(x, 0.073, z + side * 3.55);
-        markingDummy.rotation.set(0, Math.PI / 2, 0);
-        markingDummy.updateMatrix();
-        drains.setMatrixAt(drainIndex++, markingDummy.matrix);
-      }
-    }
-  }
-  drains.count = drainIndex;
-  drains.instanceMatrix.needsUpdate = true;
-  city.add(drains);
-
-  const manholeGeometry = new THREE.CylinderGeometry(0.36, 0.36, 0.035, 32);
-  const manholes = new THREE.InstancedMesh(
-    manholeGeometry, manholeMat, streetPositions.length * 5 * 2
-  );
-  let manholeIndex = 0;
-  for (const x of streetPositions) {
-    for (const z of [-48, -24, 0, 24, 48]) {
-      markingDummy.position.set(x + 1.8, 0.083, z);
-      markingDummy.rotation.set(0, 0, 0);
-      markingDummy.updateMatrix();
-      manholes.setMatrixAt(manholeIndex++, markingDummy.matrix);
-    }
-  }
-  for (const z of streetPositions) {
-    for (const x of [-48, -24, 0, 24, 48]) {
-      markingDummy.position.set(x, 0.084, z + 1.8);
-      markingDummy.rotation.set(0, 0, 0);
-      markingDummy.updateMatrix();
-      manholes.setMatrixAt(manholeIndex++, markingDummy.matrix);
-    }
-  }
-  manholes.count = manholeIndex;
-  manholes.instanceMatrix.needsUpdate = true;
-  city.add(manholes);
+  dashes.count = dashIndex;
+  dashes.instanceMatrix.needsUpdate = true;
+  city.add(dashes);
 
   // Detailed, instanced window assemblies: outer frame, glass, mullions and sill.
   const maxWindows = 12000;
@@ -804,21 +609,14 @@ function prepareCharacter(gltf) {
 
 function loadCharacter() {
   const loader = new GLTFLoader();
+  loader.setKTX2Loader(ktx2Loader);
+  loader.setMeshoptDecoder(MeshoptDecoder);
   const modelUrl = "./assets/man-base-character-rigged.glb";
 
   loadCopy.textContent = "Lokales Grab3D-Modell wird geladen …";
-  let loadFinished = false;
-  const loadTimeout = setTimeout(() => {
-    if (!loadFinished) {
-      showLoadError("Der Download oder das Einlesen dauert ungewöhnlich lange. Bitte lade die Seite neu.");
-    }
-  }, 60000);
-
   loader.load(
     modelUrl,
     (gltf) => {
-      loadFinished = true;
-      clearTimeout(loadTimeout);
       try {
         prepareCharacter(gltf);
       } catch (error) {
@@ -830,14 +628,9 @@ function loadCharacter() {
       if (event.total > 0) {
         const percent = Math.round(event.loaded / event.total * 100);
         loadCopy.textContent = "Grab3D-Modell wird geladen · " + percent + "%";
-      } else {
-        const megabytes = (event.loaded / (1024 * 1024)).toFixed(1);
-        loadCopy.textContent = "Grab3D-Modell wird geladen · " + megabytes + " MB";
       }
     },
     (error) => {
-      loadFinished = true;
-      clearTimeout(loadTimeout);
       console.error("Local Grab3D GLB load failed:", error);
       const detail = error && error.message ? " (" + error.message + ")" : "";
       showLoadError("Lokale Grab3D-Datei konnte nicht gelesen werden" + detail + ".");
