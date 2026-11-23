@@ -211,7 +211,7 @@ function setMaterialLook(material, meshName) {
     mat.onBeforeCompile = (shader) => {
       shader.fragmentShader = shader.fragmentShader.replace(
         "#include <map_fragment>",
-        "#include <map_fragment>\\ndiffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.91, 0.76, 0.67), 0.38);"
+        "#include <map_fragment>\ndiffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.91, 0.76, 0.67), 0.38);"
       );
     };
     mat.customProgramCacheKey = () => "fair-natural-skin-v2";
