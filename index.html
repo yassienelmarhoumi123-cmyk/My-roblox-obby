@@ -69,7 +69,7 @@ canvas{display:block;width:100%;height:100%;outline:none}
 <button id="camera-reset" title="Kamera zurücksetzen" aria-label="Kamera zurücksetzen">
  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 2.64-6.36L3 8"/><path d="M3 3v5h5"/></svg>
 </button>
-<div id="credit">CHARAKTERMODELL: CC0 · TESTUMGEBUNG OHNE STADT ODER FAHRZEUGE</div>
+<div id="credit">MAN BASE MESH · GRAB3D CC0 · HOCHDETAIL · SCHWARZES OUTFIT</div>
 <div id="loading">
  <div class="spinner" id="spinner"></div>
  <div id="load-title">CHARAKTER WIRD GELADEN</div>
@@ -192,14 +192,10 @@ function showLoadError(message) {
 function setMaterialLook(material, meshName) {
   const mat = material.clone();
   const label = ((mat.name || "") + " " + (meshName || "")).toLowerCase();
-
-  // Classify by actual material / mesh labels first. Never turn every
-  // pale or low-saturation material black: skin textures often use a white
-  // glTF base-color factor too.
   const hair = /hair|eyebrow|brow/.test(label);
-  const faceDetails = /eye|eyebrow|brow|mouth|teeth|lip|lash/.test(label);
+  const faceDetails = /eye|brow|mouth|teeth|lip|lash/.test(label);
   const skin = !faceDetails && /skin|face|head|hand|finger|ear|neck/.test(label);
-  const clothingByName = /hood|sweat|shirt|top|upper|jacket|cloth|fabric|jean|pant|trouser|bottom|shoe|trainer|sneaker|sleeve/.test(label);
+  const clothing = /shirt|tee|top|short|hood|sweat|cloth|fabric|shoe|sneaker|trainer|jean|pant|trouser|bottom/.test(label);
 
   if (hair) {
     mat.color.set("#2b1b13");
@@ -208,49 +204,178 @@ function setMaterialLook(material, meshName) {
   }
 
   if (skin) {
-    // Fair, natural skin tone while retaining the original texture detail.
     mat.color.set("#fff0e7");
-    if ("roughness" in mat) mat.roughness = Math.max(mat.roughness || 0.72, 0.68);
+    if ("roughness" in mat) mat.roughness = 0.78;
     if ("metalness" in mat) mat.metalness = 0;
     mat.onBeforeCompile = (shader) => {
       shader.fragmentShader = shader.fragmentShader.replace(
         "#include <map_fragment>",
-        "#include <map_fragment>\\ndiffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.91, 0.78, 0.71), 0.62);"
+        "#include <map_fragment>\\ndiffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.94, 0.82, 0.76), 0.45);"
       );
     };
-    mat.customProgramCacheKey = () => "natural-fair-skin-v3";
+    mat.customProgramCacheKey = () => "man-base-fair-skin-v1";
     mat.needsUpdate = true;
     return mat;
   }
 
-  // Recolor only named clothing, or clearly blue denim. Unknown materials
-  // keep their original color so face, hands and skin cannot become black.
-  let clothing = clothingByName;
-  if (!clothing && mat.color) {
-    const hsl = {};
-    mat.color.getHSL(hsl);
-    clothing = hsl.h > 0.48 && hsl.h < 0.74 && hsl.s > 0.12;
-  }
-
   if (clothing) {
     mat.color.set("#111214");
-    if ("roughness" in mat) mat.roughness = 0.92;
+    if ("roughness" in mat) mat.roughness = 0.94;
     if ("metalness" in mat) mat.metalness = 0;
   }
   return mat;
 }
 
-function lengthenNeck(characterRoot) {
-  // Keep the original humanoid rig intact. Scaling a neck bone can distort
-  // the connected upper-body pose in some skinned animation rigs.
-  // A tiny head lift gives a little more neck room without stretching bones.
-  let headBone = null;
+
+function findBone(characterRoot, pattern) {
+  let found = null;
   characterRoot.traverse((obj) => {
-    if (!obj.isBone) return;
-    const name = (obj.name || "").toLowerCase().replace(/[^a-z0-9]/g, "");
-    if (!headBone && name.includes("head")) headBone = obj;
+    if (!found && obj.isBone) {
+      const name = (obj.name || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+      if (pattern.test(name)) found = obj;
+    }
   });
-  if (headBone) headBone.position.y += 0.012;
+  return found;
+}
+
+function addClothSegment(parentBone, childBone, radius, material) {
+  if (!parentBone || !childBone) return null;
+  parentBone.updateWorldMatrix(true, true);
+  const endWorld = childBone.getWorldPosition(new THREE.Vector3());
+  const endLocal = parentBone.worldToLocal(endWorld.clone());
+  const length = endLocal.length();
+  if (!Number.isFinite(length) || length < 0.06) return null;
+
+  const cylinderLength = Math.max(0.025, length - radius * 2 + 0.07);
+  const mesh = new THREE.Mesh(
+    new THREE.CapsuleGeometry(radius, cylinderLength, 5, 14),
+    material.clone()
+  );
+  mesh.name = "custom-black-clothing";
+  mesh.position.copy(endLocal).multiplyScalar(0.5);
+  mesh.quaternion.setFromUnitVectors(
+    new THREE.Vector3(0, 1, 0),
+    endLocal.clone().normalize()
+  );
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  parentBone.add(mesh);
+  return mesh;
+}
+
+function addCustomBlackOutfit(characterRoot) {
+  const cloth = new THREE.MeshStandardMaterial({
+    color: 0x111214,
+    roughness: 0.94,
+    metalness: 0
+  });
+  const trim = new THREE.MeshStandardMaterial({
+    color: 0x25272a,
+    roughness: 0.88,
+    metalness: 0
+  });
+
+  // Mixamo-style humanoid names; matching also tolerates namespaces.
+  const hips = findBone(characterRoot, /^(hips|pelvis)$/);
+  const spine = findBone(characterRoot, /^(spine2|spine1|spine|chest)$/);
+  const neck = findBone(characterRoot, /^neck/);
+  const leftUpLeg = findBone(characterRoot, /^leftupleg|^leftthigh/);
+  const leftLeg = findBone(characterRoot, /^leftleg|^leftcalf|^leftshin/);
+  const leftFoot = findBone(characterRoot, /^leftfoot/);
+  const rightUpLeg = findBone(characterRoot, /^rightupleg|^rightthigh/);
+  const rightLeg = findBone(characterRoot, /^rightleg|^rightcalf|^rightshin/);
+  const rightFoot = findBone(characterRoot, /^rightfoot/);
+  const leftArm = findBone(characterRoot, /^leftarm|^leftupperarm/);
+  const leftForeArm = findBone(characterRoot, /^leftforearm|^leftlowerarm/);
+  const leftHand = findBone(characterRoot, /^lefthand/);
+  const rightArm = findBone(characterRoot, /^rightarm|^rightupperarm/);
+  const rightForeArm = findBone(characterRoot, /^rightforearm|^rightlowerarm/);
+  const rightHand = findBone(characterRoot, /^righthand/);
+
+  let added = 0;
+
+  // A softly rounded hoodie shell sits over the original shirt.
+  if (hips && neck) {
+    hips.updateWorldMatrix(true, true);
+    const neckWorld = neck.getWorldPosition(new THREE.Vector3());
+    const neckLocal = hips.worldToLocal(neckWorld.clone());
+    const length = neckLocal.length();
+    if (length > 0.25) {
+      const half = length * 0.5;
+      const points = [
+        new THREE.Vector2(0.15, -half),
+        new THREE.Vector2(0.19, -half + 0.07),
+        new THREE.Vector2(0.22, -half + length * 0.35),
+        new THREE.Vector2(0.25, half - 0.11),
+        new THREE.Vector2(0.21, half - 0.035)
+      ];
+      const shell = new THREE.Mesh(new THREE.LatheGeometry(points, 28), cloth.clone());
+      shell.name = "custom-black-hoodie-body";
+      shell.position.copy(neckLocal).multiplyScalar(0.5);
+      shell.quaternion.setFromUnitVectors(
+        new THREE.Vector3(0, 1, 0),
+        neckLocal.clone().normalize()
+      );
+      shell.scale.z = 0.78;
+      shell.castShadow = true;
+      shell.receiveShadow = true;
+      hips.add(shell);
+      added++;
+    }
+  }
+
+  // Sleeves follow the arm bones, so the arms remain animated naturally.
+  if (addClothSegment(leftArm, leftForeArm, 0.078, cloth)) added++;
+  if (addClothSegment(leftForeArm, leftHand, 0.060, cloth)) added++;
+  if (addClothSegment(rightArm, rightForeArm, 0.078, cloth)) added++;
+  if (addClothSegment(rightForeArm, rightHand, 0.060, cloth)) added++;
+
+  // Jeans overlay each thigh and lower leg and follow the skeleton.
+  if (addClothSegment(leftUpLeg, leftLeg, 0.105, cloth)) added++;
+  if (addClothSegment(leftLeg, leftFoot, 0.078, cloth)) added++;
+  if (addClothSegment(rightUpLeg, rightLeg, 0.105, cloth)) added++;
+  if (addClothSegment(rightLeg, rightFoot, 0.078, cloth)) added++;
+
+  // Black low-profile sneakers attached to each foot.
+  for (const foot of [leftFoot, rightFoot]) {
+    if (!foot) continue;
+    const shoe = new THREE.Mesh(
+      new THREE.SphereGeometry(1, 24, 16),
+      cloth.clone()
+    );
+    shoe.name = "custom-black-sneaker";
+    shoe.scale.set(0.115, 0.075, 0.235);
+    shoe.position.set(0, -0.025, 0.075);
+    shoe.castShadow = true;
+    shoe.receiveShadow = true;
+    foot.add(shoe);
+    added++;
+  }
+
+  // A small rear hood shape and a front kangaroo pocket finish the hoodie.
+  if (neck) {
+    const hood = new THREE.Mesh(
+      new THREE.SphereGeometry(0.16, 24, 16),
+      cloth.clone()
+    );
+    hood.name = "custom-hood";
+    hood.scale.set(1.0, 1.05, 0.72);
+    hood.position.set(0, 0.055, -0.10);
+    hood.castShadow = true;
+    neck.add(hood);
+    added++;
+  }
+  if (spine) {
+    const pocket = new THREE.Mesh(new THREE.BoxGeometry(0.23, 0.12, 0.025), trim.clone());
+    pocket.name = "custom-hoodie-pocket";
+    pocket.position.set(0, -0.03, 0.205);
+    pocket.castShadow = true;
+    spine.add(pocket);
+    added++;
+  }
+
+  console.info("Custom black outfit parts added:", added);
+  return added;
 }
 
 function prepareCharacter(gltf) {
@@ -267,6 +392,9 @@ function prepareCharacter(gltf) {
     }
   });
 
+  addCustomBlackOutfit(character);
+  character.updateMatrixWorld(true);
+
   const bounds = new THREE.Box3().setFromObject(character);
   const height = bounds.max.y - bounds.min.y;
   const targetHeight = 1.8;
@@ -282,12 +410,14 @@ function prepareCharacter(gltf) {
 
   if (idleClip) idleAction = mixer.clipAction(idleClip);
   if (walkClip) walkAction = mixer.clipAction(walkClip);
-  if (!idleAction && walkAction) idleAction = mixer.clipAction(walkClip.getClip());
+  if (!walkAction) {
+    const runClip = clips.find((clip) => /run/i.test(clip.name));
+    if (runClip) walkAction = mixer.clipAction(runClip);
+  }
   if (idleAction) {
     idleAction.play();
     activeAction = idleAction;
   }
-  if (!walkAction) walkAction = idleAction;
 
   characterReady = true;
   statusEl.textContent = "BEREIT · 1,80 M";
@@ -301,7 +431,7 @@ function loadCharacter() {
   const loader = new GLTFLoader();
   loader.setKTX2Loader(ktx2Loader);
   loader.setMeshoptDecoder(MeshoptDecoder);
-  const modelUrl = "https://tevy.dev/models/casual-walker/v1/lod0.glb";
+  const modelUrl = "https://grab3d.com/dl/man-base-character-rigged/man-base-character-rigged.glb";
   loader.load(
     modelUrl,
     (gltf) => prepareCharacter(gltf),
@@ -360,6 +490,9 @@ function updateMovement(delta) {
     walkAction.timeScale = 1.0;
   } else if (idleAction) {
     switchAction(idleAction);
+  } else if (activeAction) {
+    activeAction.fadeOut(0.16);
+    activeAction = null;
   }
 }
 
