@@ -69,16 +69,19 @@ canvas{display:block;width:100%;height:100%;outline:none}
 <button id="camera-reset" title="Kamera zurücksetzen" aria-label="Kamera zurücksetzen">
  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 2.64-6.36L3 8"/><path d="M3 3v5h5"/></svg>
 </button>
-<div id="credit">MAN BASE MESH · GRAB3D CC0 · HOCHDETAIL · SCHWARZES OUTFIT</div>
+<div id="credit">GRAB3D MAN BASE MESH · RIGGED · CC0</div>
 <div id="loading">
  <div class="spinner" id="spinner"></div>
- <div id="load-title">3D-FIGUR WIRD ERSTELLT</div>
- <div id="load-copy">Die Spielfigur wird direkt im Spiel aufgebaut.</div>
+ <div id="load-title">GRAB3D-FIGUR WIRD GELADEN</div>
+ <div id="load-copy">Das echte Grab3D-3D-Modell wird geladen.</div>
  <div id="error"></div>
 </div>
 
 <script type="module">
 import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { KTX2Loader } from "three/addons/loaders/KTX2Loader.js";
+import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
 
 const root = document.getElementById("game");
 const statusEl = document.getElementById("status");
@@ -104,6 +107,11 @@ renderer.toneMappingExposure = 1.12;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 root.appendChild(renderer.domElement);
+
+const ktx2Loader = new KTX2Loader()
+  .setTranscoderPath("https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/libs/basis/")
+  .detectSupport(renderer);
+
 
 
 const hemi = new THREE.HemisphereLight(0xe8f1ff, 0x646b75, 1.65);
@@ -160,6 +168,10 @@ const right = new THREE.Vector3();
 const desiredVelocity = new THREE.Vector3();
 
 let character = null;
+let mixer = null;
+let walkAction = null;
+let runAction = null;
+let activeAction = null;
 let cameraYaw = 0;
 let cameraPitch = 0.16;
 let cameraDistance = 5.6;
@@ -167,192 +179,118 @@ let dragging = false;
 let lastPointerX = 0;
 let lastPointerY = 0;
 let characterReady = false;
-let isCharacterMoving = false;
-let walkPhase = 0;
-let leftArmPivot = null;
-let rightArmPivot = null;
-let leftForearmPivot = null;
-let rightForearmPivot = null;
-let leftLegPivot = null;
-let rightLegPivot = null;
-let leftShinPivot = null;
-let rightShinPivot = null;
-let torsoGroup = null;
-let headGroup = null;
 
-
-function makeMaterial(color, roughness = 0.82) {
-  return new THREE.MeshStandardMaterial({ color, roughness, metalness: 0 });
+function showLoadError(message) {
+  spinner.style.display = "none";
+  loadTitle.textContent = "MODELL KONNTE NICHT GELADEN WERDEN";
+  loadCopy.textContent = "Die lokale 3D-Datei ist noch nicht verfügbar.";
+  errorEl.style.display = "block";
+  errorEl.textContent = message + " Prüfe in GitHub unter Actions, ob der Grab3D-Download erfolgreich war.";
+  statusEl.textContent = "MODELL NICHT GELADEN";
 }
 
-function makeMesh(geometry, material, parent, name, position = [0, 0, 0], scale = [1, 1, 1]) {
-  const mesh = new THREE.Mesh(geometry, material);
-  mesh.name = name;
-  mesh.position.set(position[0], position[1], position[2]);
-  mesh.scale.set(scale[0], scale[1], scale[2]);
-  mesh.castShadow = true;
-  mesh.receiveShadow = true;
-  parent.add(mesh);
-  return mesh;
-}
+function styleModelMaterial(material, meshName) {
+  const mat = material.clone();
+  const label = ((mat.name || "") + " " + (meshName || "")).toLowerCase();
 
-function makeCapsule(parent, name, radius, cylinderLength, material, position) {
-  return makeMesh(
-    new THREE.CapsuleGeometry(radius, cylinderLength, 6, 14),
-    material,
-    parent,
-    name,
-    position
-  );
-}
-
-function createCharacter() {
-  character = new THREE.Group();
-  character.name = "PlayableHumanCharacter";
-  player.add(character);
-
-  const skin = makeMaterial(0xe8bfa6, 0.78);
-  const skinLight = makeMaterial(0xf0cbb5, 0.76);
-  const hoodie = makeMaterial(0x111214, 0.94);
-  const hoodieTrim = makeMaterial(0x292b2e, 0.9);
-  const jeans = makeMaterial(0x101114, 0.96);
-  const shoes = makeMaterial(0x08090b, 0.9);
-  const hair = makeMaterial(0x2b1b13, 0.86);
-  const eyeWhite = makeMaterial(0xf4eee8, 0.42);
-  const iris = makeMaterial(0x4a2d1e, 0.35);
-  const pupil = makeMaterial(0x17120f, 0.28);
-  const mouthMat = makeMaterial(0x764b43, 0.76);
-
-  // Body and hoodie.
-  torsoGroup = new THREE.Group();
-  torsoGroup.position.set(0, 1.22, 0);
-  character.add(torsoGroup);
-
-  makeCapsule(torsoGroup, "black-hoodie-body", 0.235, 0.27, hoodie, [0, 0, 0]);
-  makeMesh(new THREE.BoxGeometry(0.22, 0.115, 0.018), hoodieTrim, torsoGroup,
-    "hoodie-kangaroo-pocket", [0, -0.19, 0.217]);
-  makeMesh(new THREE.BoxGeometry(0.012, 0.15, 0.012), hoodieTrim, torsoGroup,
-    "hoodie-drawstring-left", [-0.045, 0.265, 0.205]);
-  makeMesh(new THREE.BoxGeometry(0.012, 0.15, 0.012), hoodieTrim, torsoGroup,
-    "hoodie-drawstring-right", [0.045, 0.265, 0.205]);
-
-  // Neck and hood.
-  makeCapsule(torsoGroup, "neck", 0.072, 0.095, skin, [0, 0.355, 0]);
-  makeMesh(new THREE.SphereGeometry(0.145, 24, 18), hoodie, torsoGroup,
-    "hood-back", [0, 0.36, -0.09], [1.08, 1.05, 0.78]);
-
-  // Head with simple facial features facing +Z.
-  headGroup = new THREE.Group();
-  headGroup.position.set(0, 1.64, 0.012);
-  character.add(headGroup);
-  makeMesh(new THREE.SphereGeometry(0.132, 32, 24), skinLight, headGroup,
-    "head", [0, 0, 0], [0.93, 1.12, 0.92]);
-  makeMesh(new THREE.SphereGeometry(0.137, 32, 18), hair, headGroup,
-    "dark-brown-hair-cap", [0, 0.078, -0.006], [1.01, 0.62, 0.98]);
-  makeMesh(new THREE.SphereGeometry(0.045, 18, 12), hair, headGroup,
-    "front-hair-fringe", [0, 0.07, 0.105], [1.65, 0.62, 0.45]);
-
-  for (const side of [-1, 1]) {
-    makeMesh(new THREE.SphereGeometry(0.027, 16, 12), skin, headGroup,
-      "ear", [side * 0.124, -0.005, 0], [0.55, 0.82, 0.56]);
-    makeMesh(new THREE.SphereGeometry(0.018, 16, 12), eyeWhite, headGroup,
-      "eye-white", [side * 0.047, 0.018, 0.115], [1, 0.78, 0.55]);
-    makeMesh(new THREE.SphereGeometry(0.010, 14, 10), iris, headGroup,
-      "brown-iris", [side * 0.047, 0.018, 0.126], [1, 1, 0.55]);
-    makeMesh(new THREE.SphereGeometry(0.0055, 12, 8), pupil, headGroup,
-      "pupil", [side * 0.047, 0.018, 0.131], [1, 1, 0.5]);
-    makeMesh(new THREE.SphereGeometry(0.026, 16, 10), hair, headGroup,
-      "short-fade-side-hair", [side * 0.113, 0.012, -0.01], [0.32, 1.75, 0.78]);
+  if (/hair|brow/.test(label)) {
+    mat.color.set("#2b1b13");
+    if ("roughness" in mat) mat.roughness = 0.84;
+    return mat;
   }
 
-  makeMesh(new THREE.SphereGeometry(0.018, 16, 12), skinLight, headGroup,
-    "nose", [0, -0.018, 0.126], [0.72, 1.1, 0.78]);
-  makeMesh(new THREE.BoxGeometry(0.042, 0.006, 0.006), mouthMat, headGroup,
-    "closed-neutral-mouth", [0, -0.066, 0.119]);
+  if (/skin|face|head|hand|finger|ear|neck/.test(label)) {
+    // Keep the model's high-resolution skin maps; use a fair, warm multiplier.
+    mat.color.set("#fff0e7");
+    if ("roughness" in mat) mat.roughness = 0.78;
+    if ("metalness" in mat) mat.metalness = 0;
+    return mat;
+  }
 
-  // Articulated arms and hands. Pivots are animated, preserving clear anatomy.
-  leftArmPivot = new THREE.Group();
-  leftArmPivot.position.set(-0.275, 1.43, 0);
-  character.add(leftArmPivot);
-  makeCapsule(leftArmPivot, "left-hoodie-sleeve", 0.075, 0.235, hoodie, [0, -0.16, 0]);
-  leftForearmPivot = new THREE.Group();
-  leftForearmPivot.position.set(0, -0.32, 0);
-  leftArmPivot.add(leftForearmPivot);
-  makeCapsule(leftForearmPivot, "left-hoodie-cuff", 0.061, 0.215, hoodie, [0, -0.145, 0]);
-  makeMesh(new THREE.SphereGeometry(0.061, 18, 14), skin, leftForearmPivot,
-    "left-hand", [0, -0.32, 0], [0.88, 1.05, 0.68]);
+  if (/shirt|tee|top|short|cloth|fabric|hood|sweat|pant|trouser|jean|shoe|sneaker/.test(label)) {
+    mat.color.set("#17181b");
+    if ("roughness" in mat) mat.roughness = 0.92;
+    if ("metalness" in mat) mat.metalness = 0;
+  }
+  return mat;
+}
 
-  rightArmPivot = new THREE.Group();
-  rightArmPivot.position.set(0.275, 1.43, 0);
-  character.add(rightArmPivot);
-  makeCapsule(rightArmPivot, "right-hoodie-sleeve", 0.075, 0.235, hoodie, [0, -0.16, 0]);
-  rightForearmPivot = new THREE.Group();
-  rightForearmPivot.position.set(0, -0.32, 0);
-  rightArmPivot.add(rightForearmPivot);
-  makeCapsule(rightForearmPivot, "right-hoodie-cuff", 0.061, 0.215, hoodie, [0, -0.145, 0]);
-  makeMesh(new THREE.SphereGeometry(0.061, 18, 14), skin, rightForearmPivot,
-    "right-hand", [0, -0.32, 0], [0.88, 1.05, 0.68]);
+function switchAction(nextAction) {
+  if (!nextAction || activeAction === nextAction) return;
+  if (activeAction) activeAction.fadeOut(0.18);
+  nextAction.reset().fadeIn(0.18).play();
+  activeAction = nextAction;
+}
 
-  // Black jeans with articulated legs.
-  leftLegPivot = new THREE.Group();
-  leftLegPivot.position.set(-0.12, 0.94, 0);
-  character.add(leftLegPivot);
-  makeCapsule(leftLegPivot, "left-black-jeans-thigh", 0.092, 0.235, jeans, [0, -0.19, 0]);
-  leftShinPivot = new THREE.Group();
-  leftShinPivot.position.set(0, -0.39, 0);
-  leftLegPivot.add(leftShinPivot);
-  makeCapsule(leftShinPivot, "left-black-jeans-lower-leg", 0.072, 0.235, jeans, [0, -0.18, 0]);
-  makeMesh(new THREE.SphereGeometry(1, 22, 16), shoes, leftShinPivot,
-    "left-black-sneaker", [0, -0.365, 0.065], [0.105, 0.072, 0.20]);
+function prepareCharacter(gltf) {
+  character = gltf.scene;
+  character.traverse((obj) => {
+    if (!obj.isMesh) return;
+    obj.castShadow = true;
+    obj.receiveShadow = true;
+    if (Array.isArray(obj.material)) {
+      obj.material = obj.material.map((mat) => styleModelMaterial(mat, obj.name));
+    } else if (obj.material) {
+      obj.material = styleModelMaterial(obj.material, obj.name);
+    }
+  });
 
-  rightLegPivot = new THREE.Group();
-  rightLegPivot.position.set(0.12, 0.94, 0);
-  character.add(rightLegPivot);
-  makeCapsule(rightLegPivot, "right-black-jeans-thigh", 0.092, 0.235, jeans, [0, -0.19, 0]);
-  rightShinPivot = new THREE.Group();
-  rightShinPivot.position.set(0, -0.39, 0);
-  rightLegPivot.add(rightShinPivot);
-  makeCapsule(rightShinPivot, "right-black-jeans-lower-leg", 0.072, 0.235, jeans, [0, -0.18, 0]);
-  makeMesh(new THREE.SphereGeometry(1, 22, 16), shoes, rightShinPivot,
-    "right-black-sneaker", [0, -0.365, 0.065], [0.105, 0.072, 0.20]);
-
-  // Subtle grounded shadow and measured human height near 1.80 m.
-  character.updateMatrixWorld(true);
   const bounds = new THREE.Box3().setFromObject(character);
   const height = bounds.max.y - bounds.min.y;
+  if (!Number.isFinite(height) || height < 0.5) {
+    throw new Error("Das geladene Modell hat keine gültige Körperhöhe.");
+  }
+
   character.scale.setScalar(1.8 / height);
-  character.position.y -= bounds.min.y * character.scale.y;
+  const scaledBounds = new THREE.Box3().setFromObject(character);
+  character.position.y -= scaledBounds.min.y;
   character.updateMatrixWorld(true);
+  player.add(character);
+
+  mixer = new THREE.AnimationMixer(character);
+  const clips = gltf.animations || [];
+  const walkClip = clips.find((clip) => /walk/i.test(clip.name));
+  const runClip = clips.find((clip) => /run/i.test(clip.name));
+  if (walkClip) walkAction = mixer.clipAction(walkClip);
+  if (runClip) runAction = mixer.clipAction(runClip);
 
   characterReady = true;
   statusEl.textContent = "BEREIT · 1,80 M";
   statusEl.classList.add("ready");
   loadTitle.textContent = "BEREIT";
-  loadCopy.textContent = "WASD drücken und loslaufen.";
-  setTimeout(() => loadingEl.classList.add("hidden"), 350);
+  loadCopy.textContent = "Echtes Grab3D-Modell geladen · WASD zum Laufen.";
+  setTimeout(() => loadingEl.classList.add("hidden"), 450);
 }
 
-function updateCharacterAnimation(delta, moving) {
-  walkPhase += delta * (moving ? 9.2 : 1.8);
-  const swing = moving ? Math.sin(walkPhase) * 0.52 : Math.sin(walkPhase) * 0.018;
-  const idleSway = moving ? 0 : Math.sin(walkPhase * 0.7) * 0.006;
+function loadCharacter() {
+  const loader = new GLTFLoader();
+  loader.setKTX2Loader(ktx2Loader);
+  loader.setMeshoptDecoder(MeshoptDecoder);
+  const modelUrl = "./assets/man-base-character-rigged.glb";
 
-  if (leftLegPivot) leftLegPivot.rotation.x = swing;
-  if (rightLegPivot) rightLegPivot.rotation.x = -swing;
-  if (leftShinPivot) leftShinPivot.rotation.x = moving ? Math.max(0, -swing) * 0.72 : 0;
-  if (rightShinPivot) rightShinPivot.rotation.x = moving ? Math.max(0, swing) * 0.72 : 0;
-  if (leftArmPivot) leftArmPivot.rotation.x = -swing * 0.82;
-  if (rightArmPivot) rightArmPivot.rotation.x = swing * 0.82;
-  if (leftForearmPivot) leftForearmPivot.rotation.x = moving ? -0.12 : 0;
-  if (rightForearmPivot) rightForearmPivot.rotation.x = moving ? -0.12 : 0;
-  if (torsoGroup) {
-    torsoGroup.position.y = 1.22 + (moving ? Math.abs(Math.sin(walkPhase * 2)) * 0.018 : idleSway);
-    torsoGroup.rotation.z = moving ? Math.sin(walkPhase) * 0.018 : idleSway;
-  }
-  if (headGroup) {
-    headGroup.rotation.x = moving ? Math.sin(walkPhase * 2) * 0.012 : 0;
-    headGroup.rotation.z = moving ? -Math.sin(walkPhase) * 0.012 : idleSway * 0.4;
-  }
+  loadCopy.textContent = "Lokales Grab3D-Modell wird geladen …";
+  loader.load(
+    modelUrl,
+    (gltf) => {
+      try {
+        prepareCharacter(gltf);
+      } catch (error) {
+        console.error("Character setup failed:", error);
+        showLoadError(error.message || "Das Modell konnte nicht vorbereitet werden.");
+      }
+    },
+    (event) => {
+      if (event.total > 0) {
+        const percent = Math.round(event.loaded / event.total * 100);
+        loadCopy.textContent = "Grab3D-Modell wird geladen · " + percent + "%";
+      }
+    },
+    (error) => {
+      console.error("Local Grab3D GLB load failed:", error);
+      const detail = error && error.message ? " (" + error.message + ")" : "";
+      showLoadError("Lokale Grab3D-Datei konnte nicht gelesen werden" + detail + ".");
+    }
+  );
 }
 
 function updateMovement(delta) {
@@ -384,8 +322,13 @@ function updateMovement(delta) {
   player.position.x += velocity.x * delta;
   player.position.z += velocity.z * delta;
 
-  isCharacterMoving = isMoving;
-  updateCharacterAnimation(delta, isMoving);
+  if (isMoving) {
+    if (walkAction) switchAction(walkAction);
+    else if (runAction) switchAction(runAction);
+  } else if (activeAction) {
+    activeAction.fadeOut(0.18);
+    activeAction = null;
+  }
 }
 
 function updateCamera(delta) {
@@ -405,11 +348,12 @@ function animate() {
   requestAnimationFrame(animate);
   const delta = Math.min(clock.getDelta(), 0.04);
   updateMovement(delta);
+  if (mixer) mixer.update(delta);
   updateCamera(delta);
   renderer.render(scene,camera);
 }
 animate();
-createCharacter();
+loadCharacter();
 
 window.addEventListener("keydown", (event) => {
   if (["KeyW","KeyA","KeyS","KeyD","ArrowUp","ArrowDown","ArrowLeft","ArrowRight","Space"].includes(event.code)) event.preventDefault();
