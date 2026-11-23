@@ -63,6 +63,7 @@ canvas{display:block;width:100%;height:100%;outline:none}
 <div id="status">3D-MODELL LÄDT</div>
 <div id="help">
  <div class="help-item"><div class="keys"><span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span></div><span>Bewegen</span></div>
+ <div class="help-item"><span class="key">SPACE</span><span>Springen</span></div>
  <div class="help-item"><span class="key">MAUS</span><span>Kamera drehen</span></div>
  <div class="help-item"><span class="key">SCROLL</span><span>Zoom</span></div>
 </div>
@@ -572,7 +573,7 @@ function buildCity() {
     new THREE.MeshStandardMaterial({ color: 0x9da19e, roughness: 0.94 }), 0, 0.012, 0);
   plaza.receiveShadow = true;
 
-  // Four trees are batched into instanced meshes, keeping the draw-call count low.
+  // Four fuller, more natural-looking trees, batched into a few instanced meshes.
   const treePositions = [
     [-8.1, -8.1], [-8.1, 8.1], [8.1, -8.1], [8.1, 8.1]
   ];
@@ -581,45 +582,111 @@ function buildCity() {
     new THREE.MeshStandardMaterial({ color: 0x777d79, roughness: 0.94 }),
     treePositions.length
   );
+  const soilMesh = new THREE.InstancedMesh(
+    new THREE.BoxGeometry(2.12, 0.055, 2.12),
+    new THREE.MeshStandardMaterial({ color: 0x493e31, roughness: 1 }),
+    treePositions.length
+  );
+  const barkMat = new THREE.MeshStandardMaterial({ color: 0x594333, roughness: 1 });
   const trunkMesh = new THREE.InstancedMesh(
-    new THREE.CylinderGeometry(0.16, 0.23, 2.8, 8),
-    new THREE.MeshStandardMaterial({ color: 0x594333, roughness: 1 }),
+    new THREE.CylinderGeometry(0.13, 0.25, 3.15, 9),
+    barkMat,
     treePositions.length
   );
-  const crownMesh = new THREE.InstancedMesh(
-    new THREE.IcosahedronGeometry(1.35, 1),
-    new THREE.MeshStandardMaterial({ color: 0x54734e, roughness: 0.96 }),
-    treePositions.length
+  const branchMesh = new THREE.InstancedMesh(
+    new THREE.CylinderGeometry(0.055, 0.12, 1, 7),
+    barkMat,
+    treePositions.length * 4
   );
-  const crownTopMesh = new THREE.InstancedMesh(
-    new THREE.IcosahedronGeometry(0.98, 1),
-    new THREE.MeshStandardMaterial({ color: 0x65845a, roughness: 0.96 }),
-    treePositions.length
-  );
+  const leafGeometry = new THREE.SphereGeometry(1, 12, 10);
+  const leafMaterials = [
+    new THREE.MeshStandardMaterial({ color: 0x365f39, roughness: 0.98 }),
+    new THREE.MeshStandardMaterial({ color: 0x477846, roughness: 0.98 }),
+    new THREE.MeshStandardMaterial({ color: 0x5d874b, roughness: 0.98 })
+  ];
+  const leafMeshes = leafMaterials.map((material) => new THREE.InstancedMesh(
+    leafGeometry, material, treePositions.length * 4
+  ));
+  const leafLayouts = [
+    { x: 0, y: 4.35, z: 0, sx: 1.05, sy: 1.00, sz: 1.02 },
+    { x: -0.78, y: 4.05, z: 0.05, sx: 0.82, sy: 0.76, sz: 0.82 },
+    { x: 0.76, y: 4.12, z: -0.12, sx: 0.86, sy: 0.82, sz: 0.84 },
+    { x: 0.02, y: 4.03, z: 0.78, sx: 0.82, sy: 0.78, sz: 0.82 },
+    { x: -0.08, y: 4.12, z: -0.78, sx: 0.83, sy: 0.80, sz: 0.82 },
+    { x: -0.38, y: 4.92, z: -0.30, sx: 0.76, sy: 0.75, sz: 0.77 },
+    { x: 0.48, y: 4.88, z: 0.34, sx: 0.78, sy: 0.78, sz: 0.76 }
+  ];
+  const leafCounts = [0, 0, 0];
   const treeDummy = new THREE.Object3D();
+  const treeUp = new THREE.Vector3(0, 1, 0);
+  const branchDirection = new THREE.Vector3();
+  let branchIndex = 0;
+
   for (let i = 0; i < treePositions.length; i++) {
     const [tx, tz] = treePositions[i];
     treeDummy.position.set(tx, 0.105, tz);
+    treeDummy.rotation.set(0, 0, 0);
     treeDummy.scale.set(1, 1, 1);
     treeDummy.updateMatrix();
     planterMesh.setMatrixAt(i, treeDummy.matrix);
 
-    treeDummy.position.set(tx, 1.52, tz);
+    treeDummy.position.set(tx, 0.225, tz);
+    treeDummy.updateMatrix();
+    soilMesh.setMatrixAt(i, treeDummy.matrix);
+
+    treeDummy.position.set(tx, 1.63, tz);
     treeDummy.updateMatrix();
     trunkMesh.setMatrixAt(i, treeDummy.matrix);
 
-    treeDummy.position.set(tx, 3.35, tz);
-    treeDummy.scale.set(1, 1, 1);
-    treeDummy.updateMatrix();
-    crownMesh.setMatrixAt(i, treeDummy.matrix);
+    // Four tapered branches grow outward and upward from the main trunk.
+    const branchTips = [
+      [-0.92, 3.75, -0.22],
+      [0.92, 3.78, 0.20],
+      [-0.18, 3.72, 0.92],
+      [0.20, 3.82, -0.92]
+    ];
+    for (const tip of branchTips) {
+      branchDirection.set(tip[0], tip[1] - 2.12, tip[2]);
+      const branchLength = branchDirection.length();
+      treeDummy.position.set(
+        tx + tip[0] * 0.5,
+        2.12 + (tip[1] - 2.12) * 0.5,
+        tz + tip[2] * 0.5
+      );
+      treeDummy.quaternion.setFromUnitVectors(treeUp, branchDirection.normalize());
+      treeDummy.scale.set(1, branchLength, 1);
+      treeDummy.updateMatrix();
+      branchMesh.setMatrixAt(branchIndex++, treeDummy.matrix);
+    }
 
-    treeDummy.position.set(tx + 0.18, 4.12, tz - 0.08);
-    treeDummy.scale.set(0.94, 0.94, 0.94);
-    treeDummy.updateMatrix();
-    crownTopMesh.setMatrixAt(i, treeDummy.matrix);
+    // Leaf clusters overlap naturally to form a rounded, irregular canopy.
+    const rotation = i * 0.43;
+    for (let c = 0; c < leafLayouts.length; c++) {
+      const leaf = leafLayouts[c];
+      const rotatedX = leaf.x * Math.cos(rotation) - leaf.z * Math.sin(rotation);
+      const rotatedZ = leaf.x * Math.sin(rotation) + leaf.z * Math.cos(rotation);
+      const materialIndex = (i + c) % leafMeshes.length;
+      const targetMesh = leafMeshes[materialIndex];
+      const localIndex = leafCounts[materialIndex]++;
+      treeDummy.position.set(tx + rotatedX, leaf.y, tz + rotatedZ);
+      treeDummy.rotation.set(0, rotation + c * 0.17, 0);
+      treeDummy.scale.set(leaf.sx, leaf.sy, leaf.sz);
+      treeDummy.updateMatrix();
+      targetMesh.setMatrixAt(localIndex, treeDummy.matrix);
+    }
   }
-  city.add(planterMesh, trunkMesh, crownMesh, crownTopMesh);
 
+  planterMesh.receiveShadow = true;
+  soilMesh.receiveShadow = true;
+  trunkMesh.castShadow = true;
+  branchMesh.castShadow = true;
+  for (let i = 0; i < leafMeshes.length; i++) {
+    leafMeshes[i].count = leafCounts[i];
+    leafMeshes[i].castShadow = true;
+    leafMeshes[i].receiveShadow = false;
+    leafMeshes[i].instanceMatrix.needsUpdate = true;
+  }
+  city.add(planterMesh, soilMesh, trunkMesh, branchMesh, ...leafMeshes);
   // Streetlights are also instanced; no extra light sources or heavy effects.
   const lampLocations = [];
   for (let ix = 0; ix < streetPositions.length; ix += 2) {
@@ -696,6 +763,9 @@ const moveDir = new THREE.Vector3();
 const forward = new THREE.Vector3();
 const right = new THREE.Vector3();
 const desiredVelocity = new THREE.Vector3();
+let verticalVelocity = 0;
+let isGrounded = true;
+let jumpQueued = false;
 
 let character = null;
 let mixer = null;
@@ -824,7 +894,24 @@ function loadCharacter() {
 }
 
 function updateMovement(delta) {
-  if (!characterReady) return;
+  if (!characterReady) {
+    jumpQueued = false;
+    return;
+  }
+
+  // One press produces one jump; gravity brings the player back to the ground.
+  if (jumpQueued && isGrounded) {
+    verticalVelocity = 6.8;
+    isGrounded = false;
+    jumpQueued = false;
+  }
+  verticalVelocity -= 18 * delta;
+  player.position.y += verticalVelocity * delta;
+  if (player.position.y <= 0) {
+    player.position.y = 0;
+    verticalVelocity = 0;
+    isGrounded = true;
+  }
 
   const forwardInput = (keys.KeyW || keys.ArrowUp ? 1 : 0) - (keys.KeyS || keys.ArrowDown ? 1 : 0);
   const sideInput = (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0);
@@ -887,6 +974,7 @@ loadCharacter();
 
 window.addEventListener("keydown", (event) => {
   if (["KeyW","KeyA","KeyS","KeyD","ArrowUp","ArrowDown","ArrowLeft","ArrowRight","Space"].includes(event.code)) event.preventDefault();
+  if (event.code === "Space" && !event.repeat && isGrounded) jumpQueued = true;
   keys[event.code] = true;
 });
 window.addEventListener("keyup", (event) => { keys[event.code] = false; });
