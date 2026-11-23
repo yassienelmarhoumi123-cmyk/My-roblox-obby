@@ -72,16 +72,13 @@ canvas{display:block;width:100%;height:100%;outline:none}
 <div id="credit">MAN BASE MESH · GRAB3D CC0 · HOCHDETAIL · SCHWARZES OUTFIT</div>
 <div id="loading">
  <div class="spinner" id="spinner"></div>
- <div id="load-title">CHARAKTER WIRD GELADEN</div>
- <div id="load-copy">Die 3D-Figur und ihre Bewegungsanimation werden vorbereitet.</div>
+ <div id="load-title">3D-FIGUR WIRD ERSTELLT</div>
+ <div id="load-copy">Die Spielfigur wird direkt im Spiel aufgebaut.</div>
  <div id="error"></div>
 </div>
 
 <script type="module">
 import * as THREE from "three";
-import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { KTX2Loader } from "three/addons/loaders/KTX2Loader.js";
-import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
 
 const root = document.getElementById("game");
 const statusEl = document.getElementById("status");
@@ -108,11 +105,6 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 root.appendChild(renderer.domElement);
 
-// Tevy-Modelle verwenden KTX2-Texturen und Meshopt-komprimierte Geometrie.
-// Beide Decoder müssen vor dem GLB-Ladevorgang registriert werden.
-const ktx2Loader = new KTX2Loader()
-  .setTranscoderPath("https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/libs/basis/")
-  .detectSupport(renderer);
 
 const hemi = new THREE.HemisphereLight(0xe8f1ff, 0x646b75, 1.65);
 scene.add(hemi);
@@ -168,10 +160,6 @@ const right = new THREE.Vector3();
 const desiredVelocity = new THREE.Vector3();
 
 let character = null;
-let mixer = null;
-let idleAction = null;
-let walkAction = null;
-let activeAction = null;
 let cameraYaw = 0;
 let cameraPitch = 0.16;
 let cameraDistance = 5.6;
@@ -179,292 +167,192 @@ let dragging = false;
 let lastPointerX = 0;
 let lastPointerY = 0;
 let characterReady = false;
+let isCharacterMoving = false;
+let walkPhase = 0;
+let leftArmPivot = null;
+let rightArmPivot = null;
+let leftForearmPivot = null;
+let rightForearmPivot = null;
+let leftLegPivot = null;
+let rightLegPivot = null;
+let leftShinPivot = null;
+let rightShinPivot = null;
+let torsoGroup = null;
+let headGroup = null;
 
-function showLoadError(message) {
-  spinner.style.display = "none";
-  loadTitle.textContent = "MODELL KONNTE NICHT GELADEN WERDEN";
-  loadCopy.textContent = "Die Spielsteuerung ist noch nicht bereit.";
-  errorEl.style.display = "block";
-  errorEl.textContent = message + " Bitte lade die Seite neu.";
-  statusEl.textContent = "MODELL NICHT GELADEN";
+
+function makeMaterial(color, roughness = 0.82) {
+  return new THREE.MeshStandardMaterial({ color, roughness, metalness: 0 });
 }
 
-function setMaterialLook(material, meshName) {
-  const mat = material.clone();
-  const label = ((mat.name || "") + " " + (meshName || "")).toLowerCase();
-  const hair = /hair|eyebrow|brow/.test(label);
-  const faceDetails = /eye|brow|mouth|teeth|lip|lash/.test(label);
-  const skin = !faceDetails && /skin|face|head|hand|finger|ear|neck/.test(label);
-  const clothing = /shirt|tee|top|short|hood|sweat|cloth|fabric|shoe|sneaker|trainer|jean|pant|trouser|bottom/.test(label);
-
-  if (hair) {
-    mat.color.set("#2b1b13");
-    if ("roughness" in mat) mat.roughness = 0.82;
-    return mat;
-  }
-
-  if (skin) {
-    mat.color.set("#fff0e7");
-    if ("roughness" in mat) mat.roughness = 0.78;
-    if ("metalness" in mat) mat.metalness = 0;
-    mat.onBeforeCompile = (shader) => {
-      shader.fragmentShader = shader.fragmentShader.replace(
-        "#include <map_fragment>",
-        "#include <map_fragment>\\ndiffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.94, 0.82, 0.76), 0.45);"
-      );
-    };
-    mat.customProgramCacheKey = () => "man-base-fair-skin-v1";
-    mat.needsUpdate = true;
-    return mat;
-  }
-
-  if (clothing) {
-    mat.color.set("#111214");
-    if ("roughness" in mat) mat.roughness = 0.94;
-    if ("metalness" in mat) mat.metalness = 0;
-  }
-  return mat;
-}
-
-
-function findBone(characterRoot, pattern) {
-  let found = null;
-  characterRoot.traverse((obj) => {
-    if (!found && obj.isBone) {
-      let name = (obj.name || "").toLowerCase().replace(/[^a-z0-9]/g, "");
-      if (name.includes("mixamorig")) name = name.slice(name.lastIndexOf("mixamorig") + "mixamorig".length);
-      name = name.replace(/^armature/, "").replace(/^skeleton/, "");
-      if (pattern.test(name)) found = obj;
-    }
-  });
-  return found;
-}
-
-function addClothSegment(parentBone, childBone, radius, material) {
-  if (!parentBone || !childBone) return null;
-  parentBone.updateWorldMatrix(true, true);
-  const endWorld = childBone.getWorldPosition(new THREE.Vector3());
-  const endLocal = parentBone.worldToLocal(endWorld.clone());
-  const length = endLocal.length();
-  if (!Number.isFinite(length) || length < 0.06) return null;
-
-  const cylinderLength = Math.max(0.025, length - radius * 2 + 0.07);
-  const mesh = new THREE.Mesh(
-    new THREE.CapsuleGeometry(radius, cylinderLength, 5, 14),
-    material.clone()
-  );
-  mesh.name = "custom-black-clothing";
-  mesh.position.copy(endLocal).multiplyScalar(0.5);
-  mesh.quaternion.setFromUnitVectors(
-    new THREE.Vector3(0, 1, 0),
-    endLocal.clone().normalize()
-  );
+function makeMesh(geometry, material, parent, name, position = [0, 0, 0], scale = [1, 1, 1]) {
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.name = name;
+  mesh.position.set(position[0], position[1], position[2]);
+  mesh.scale.set(scale[0], scale[1], scale[2]);
   mesh.castShadow = true;
   mesh.receiveShadow = true;
-  parentBone.add(mesh);
+  parent.add(mesh);
   return mesh;
 }
 
-function addCustomBlackOutfit(characterRoot) {
-  const cloth = new THREE.MeshStandardMaterial({
-    color: 0x111214,
-    roughness: 0.94,
-    metalness: 0
-  });
-  const trim = new THREE.MeshStandardMaterial({
-    color: 0x25272a,
-    roughness: 0.88,
-    metalness: 0
-  });
-
-  // Mixamo-style humanoid names; matching also tolerates namespaces.
-  const hips = findBone(characterRoot, /^(hips|pelvis)$/);
-  const spine = findBone(characterRoot, /^(spine2|spine1|spine|chest)$/);
-  const neck = findBone(characterRoot, /^neck/);
-  const leftUpLeg = findBone(characterRoot, /^leftupleg|^leftthigh/);
-  const leftLeg = findBone(characterRoot, /^leftleg|^leftcalf|^leftshin/);
-  const leftFoot = findBone(characterRoot, /^leftfoot/);
-  const rightUpLeg = findBone(characterRoot, /^rightupleg|^rightthigh/);
-  const rightLeg = findBone(characterRoot, /^rightleg|^rightcalf|^rightshin/);
-  const rightFoot = findBone(characterRoot, /^rightfoot/);
-  const leftArm = findBone(characterRoot, /^leftarm|^leftupperarm/);
-  const leftForeArm = findBone(characterRoot, /^leftforearm|^leftlowerarm/);
-  const leftHand = findBone(characterRoot, /^lefthand/);
-  const rightArm = findBone(characterRoot, /^rightarm|^rightupperarm/);
-  const rightForeArm = findBone(characterRoot, /^rightforearm|^rightlowerarm/);
-  const rightHand = findBone(characterRoot, /^righthand/);
-
-  let added = 0;
-
-  // A softly rounded hoodie shell sits over the original shirt.
-  if (hips && neck) {
-    hips.updateWorldMatrix(true, true);
-    const neckWorld = neck.getWorldPosition(new THREE.Vector3());
-    const neckLocal = hips.worldToLocal(neckWorld.clone());
-    const length = neckLocal.length();
-    if (length > 0.25) {
-      const half = length * 0.5;
-      const points = [
-        new THREE.Vector2(0.15, -half),
-        new THREE.Vector2(0.19, -half + 0.07),
-        new THREE.Vector2(0.22, -half + length * 0.35),
-        new THREE.Vector2(0.25, half - 0.11),
-        new THREE.Vector2(0.21, half - 0.035)
-      ];
-      const shell = new THREE.Mesh(new THREE.LatheGeometry(points, 28), cloth.clone());
-      shell.name = "custom-black-hoodie-body";
-      shell.position.copy(neckLocal).multiplyScalar(0.5);
-      shell.quaternion.setFromUnitVectors(
-        new THREE.Vector3(0, 1, 0),
-        neckLocal.clone().normalize()
-      );
-      shell.scale.z = 0.78;
-      shell.castShadow = true;
-      shell.receiveShadow = true;
-      hips.add(shell);
-      added++;
-    }
-  }
-
-  // Sleeves follow the arm bones, so the arms remain animated naturally.
-  if (addClothSegment(leftArm, leftForeArm, 0.078, cloth)) added++;
-  if (addClothSegment(leftForeArm, leftHand, 0.060, cloth)) added++;
-  if (addClothSegment(rightArm, rightForeArm, 0.078, cloth)) added++;
-  if (addClothSegment(rightForeArm, rightHand, 0.060, cloth)) added++;
-
-  // Jeans overlay each thigh and lower leg and follow the skeleton.
-  if (addClothSegment(leftUpLeg, leftLeg, 0.105, cloth)) added++;
-  if (addClothSegment(leftLeg, leftFoot, 0.078, cloth)) added++;
-  if (addClothSegment(rightUpLeg, rightLeg, 0.105, cloth)) added++;
-  if (addClothSegment(rightLeg, rightFoot, 0.078, cloth)) added++;
-
-  // Black low-profile sneakers attached to each foot.
-  const leftToe = findBone(characterRoot, /^lefttoebase|^lefttoe/);
-  const rightToe = findBone(characterRoot, /^righttoebase|^righttoe/);
-  for (const [foot, toe] of [[leftFoot, leftToe], [rightFoot, rightToe]]) {
-    if (!foot) continue;
-    const shoe = new THREE.Mesh(
-      new THREE.SphereGeometry(1, 24, 16),
-      cloth.clone()
-    );
-    shoe.name = "custom-black-sneaker";
-    shoe.scale.set(0.115, 0.075, 0.235);
-    shoe.position.set(0, -0.025, 0.075);
-    if (toe) {
-      foot.updateWorldMatrix(true, true);
-      const toeWorld = toe.getWorldPosition(new THREE.Vector3());
-      const toeLocal = foot.worldToLocal(toeWorld.clone()).normalize();
-      if (toeLocal.lengthSq() > 0.01) {
-        shoe.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), toeLocal);
-      }
-    }
-    shoe.castShadow = true;
-    shoe.receiveShadow = true;
-    foot.add(shoe);
-    added++;
-  }
-
-  // A small rear hood shape and a front kangaroo pocket finish the hoodie.
-  if (neck) {
-    const hood = new THREE.Mesh(
-      new THREE.SphereGeometry(0.16, 24, 16),
-      cloth.clone()
-    );
-    hood.name = "custom-hood";
-    hood.scale.set(1.0, 1.05, 0.72);
-    hood.position.set(0, 0.055, -0.10);
-    hood.castShadow = true;
-    neck.add(hood);
-    added++;
-  }
-  if (spine) {
-    const pocket = new THREE.Mesh(new THREE.BoxGeometry(0.23, 0.12, 0.025), trim.clone());
-    pocket.name = "custom-hoodie-pocket";
-    pocket.position.set(0, -0.03, 0.205);
-    pocket.castShadow = true;
-    spine.add(pocket);
-    added++;
-  }
-
-  console.info("Custom black outfit parts added:", added);
-  return added;
+function makeCapsule(parent, name, radius, cylinderLength, material, position) {
+  return makeMesh(
+    new THREE.CapsuleGeometry(radius, cylinderLength, 6, 14),
+    material,
+    parent,
+    name,
+    position
+  );
 }
 
-function prepareCharacter(gltf) {
-  character = gltf.scene;
-  character.traverse((obj) => {
-    if (!obj.isMesh) return;
-    obj.castShadow = true;
-    obj.receiveShadow = true;
-    if (Array.isArray(obj.material)) {
-      obj.material = obj.material.map((m) => setMaterialLook(m, obj.name));
-    } else if (obj.material) {
-      obj.material = setMaterialLook(obj.material, obj.name);
-    }
-  });
+function createCharacter() {
+  character = new THREE.Group();
+  character.name = "PlayableHumanCharacter";
+  player.add(character);
 
-  addCustomBlackOutfit(character);
+  const skin = makeMaterial(0xe8bfa6, 0.78);
+  const skinLight = makeMaterial(0xf0cbb5, 0.76);
+  const hoodie = makeMaterial(0x111214, 0.94);
+  const hoodieTrim = makeMaterial(0x292b2e, 0.9);
+  const jeans = makeMaterial(0x101114, 0.96);
+  const shoes = makeMaterial(0x08090b, 0.9);
+  const hair = makeMaterial(0x2b1b13, 0.86);
+  const eyeWhite = makeMaterial(0xf4eee8, 0.42);
+  const iris = makeMaterial(0x4a2d1e, 0.35);
+  const pupil = makeMaterial(0x17120f, 0.28);
+  const mouthMat = makeMaterial(0x764b43, 0.76);
+
+  // Body and hoodie.
+  torsoGroup = new THREE.Group();
+  torsoGroup.position.set(0, 1.22, 0);
+  character.add(torsoGroup);
+
+  makeCapsule(torsoGroup, "black-hoodie-body", 0.235, 0.27, hoodie, [0, 0, 0]);
+  makeMesh(new THREE.BoxGeometry(0.22, 0.115, 0.018), hoodieTrim, torsoGroup,
+    "hoodie-kangaroo-pocket", [0, -0.19, 0.217]);
+  makeMesh(new THREE.BoxGeometry(0.012, 0.15, 0.012), hoodieTrim, torsoGroup,
+    "hoodie-drawstring-left", [-0.045, 0.265, 0.205]);
+  makeMesh(new THREE.BoxGeometry(0.012, 0.15, 0.012), hoodieTrim, torsoGroup,
+    "hoodie-drawstring-right", [0.045, 0.265, 0.205]);
+
+  // Neck and hood.
+  makeCapsule(torsoGroup, "neck", 0.072, 0.095, skin, [0, 0.355, 0]);
+  makeMesh(new THREE.SphereGeometry(0.145, 24, 18), hoodie, torsoGroup,
+    "hood-back", [0, 0.36, -0.09], [1.08, 1.05, 0.78]);
+
+  // Head with simple facial features facing +Z.
+  headGroup = new THREE.Group();
+  headGroup.position.set(0, 1.64, 0.012);
+  character.add(headGroup);
+  makeMesh(new THREE.SphereGeometry(0.132, 32, 24), skinLight, headGroup,
+    "head", [0, 0, 0], [0.93, 1.12, 0.92]);
+  makeMesh(new THREE.SphereGeometry(0.137, 32, 18), hair, headGroup,
+    "dark-brown-hair-cap", [0, 0.078, -0.006], [1.01, 0.62, 0.98]);
+  makeMesh(new THREE.SphereGeometry(0.045, 18, 12), hair, headGroup,
+    "front-hair-fringe", [0, 0.07, 0.105], [1.65, 0.62, 0.45]);
+
+  for (const side of [-1, 1]) {
+    makeMesh(new THREE.SphereGeometry(0.027, 16, 12), skin, headGroup,
+      "ear", [side * 0.124, -0.005, 0], [0.55, 0.82, 0.56]);
+    makeMesh(new THREE.SphereGeometry(0.018, 16, 12), eyeWhite, headGroup,
+      "eye-white", [side * 0.047, 0.018, 0.115], [1, 0.78, 0.55]);
+    makeMesh(new THREE.SphereGeometry(0.010, 14, 10), iris, headGroup,
+      "brown-iris", [side * 0.047, 0.018, 0.126], [1, 1, 0.55]);
+    makeMesh(new THREE.SphereGeometry(0.0055, 12, 8), pupil, headGroup,
+      "pupil", [side * 0.047, 0.018, 0.131], [1, 1, 0.5]);
+    makeMesh(new THREE.SphereGeometry(0.026, 16, 10), hair, headGroup,
+      "short-fade-side-hair", [side * 0.113, 0.012, -0.01], [0.32, 1.75, 0.78]);
+  }
+
+  makeMesh(new THREE.SphereGeometry(0.018, 16, 12), skinLight, headGroup,
+    "nose", [0, -0.018, 0.126], [0.72, 1.1, 0.78]);
+  makeMesh(new THREE.BoxGeometry(0.042, 0.006, 0.006), mouthMat, headGroup,
+    "closed-neutral-mouth", [0, -0.066, 0.119]);
+
+  // Articulated arms and hands. Pivots are animated, preserving clear anatomy.
+  leftArmPivot = new THREE.Group();
+  leftArmPivot.position.set(-0.275, 1.43, 0);
+  character.add(leftArmPivot);
+  makeCapsule(leftArmPivot, "left-hoodie-sleeve", 0.075, 0.235, hoodie, [0, -0.16, 0]);
+  leftForearmPivot = new THREE.Group();
+  leftForearmPivot.position.set(0, -0.32, 0);
+  leftArmPivot.add(leftForearmPivot);
+  makeCapsule(leftForearmPivot, "left-hoodie-cuff", 0.061, 0.215, hoodie, [0, -0.145, 0]);
+  makeMesh(new THREE.SphereGeometry(0.061, 18, 14), skin, leftForearmPivot,
+    "left-hand", [0, -0.32, 0], [0.88, 1.05, 0.68]);
+
+  rightArmPivot = new THREE.Group();
+  rightArmPivot.position.set(0.275, 1.43, 0);
+  character.add(rightArmPivot);
+  makeCapsule(rightArmPivot, "right-hoodie-sleeve", 0.075, 0.235, hoodie, [0, -0.16, 0]);
+  rightForearmPivot = new THREE.Group();
+  rightForearmPivot.position.set(0, -0.32, 0);
+  rightArmPivot.add(rightForearmPivot);
+  makeCapsule(rightForearmPivot, "right-hoodie-cuff", 0.061, 0.215, hoodie, [0, -0.145, 0]);
+  makeMesh(new THREE.SphereGeometry(0.061, 18, 14), skin, rightForearmPivot,
+    "right-hand", [0, -0.32, 0], [0.88, 1.05, 0.68]);
+
+  // Black jeans with articulated legs.
+  leftLegPivot = new THREE.Group();
+  leftLegPivot.position.set(-0.12, 0.94, 0);
+  character.add(leftLegPivot);
+  makeCapsule(leftLegPivot, "left-black-jeans-thigh", 0.092, 0.235, jeans, [0, -0.19, 0]);
+  leftShinPivot = new THREE.Group();
+  leftShinPivot.position.set(0, -0.39, 0);
+  leftLegPivot.add(leftShinPivot);
+  makeCapsule(leftShinPivot, "left-black-jeans-lower-leg", 0.072, 0.235, jeans, [0, -0.18, 0]);
+  makeMesh(new THREE.SphereGeometry(1, 22, 16), shoes, leftShinPivot,
+    "left-black-sneaker", [0, -0.365, 0.065], [0.105, 0.072, 0.20]);
+
+  rightLegPivot = new THREE.Group();
+  rightLegPivot.position.set(0.12, 0.94, 0);
+  character.add(rightLegPivot);
+  makeCapsule(rightLegPivot, "right-black-jeans-thigh", 0.092, 0.235, jeans, [0, -0.19, 0]);
+  rightShinPivot = new THREE.Group();
+  rightShinPivot.position.set(0, -0.39, 0);
+  rightLegPivot.add(rightShinPivot);
+  makeCapsule(rightShinPivot, "right-black-jeans-lower-leg", 0.072, 0.235, jeans, [0, -0.18, 0]);
+  makeMesh(new THREE.SphereGeometry(1, 22, 16), shoes, rightShinPivot,
+    "right-black-sneaker", [0, -0.365, 0.065], [0.105, 0.072, 0.20]);
+
+  // Subtle grounded shadow and measured human height near 1.80 m.
   character.updateMatrixWorld(true);
-
   const bounds = new THREE.Box3().setFromObject(character);
   const height = bounds.max.y - bounds.min.y;
-  const targetHeight = 1.8;
-  character.scale.setScalar(targetHeight / height);
-  const scaledBounds = new THREE.Box3().setFromObject(character);
-  character.position.y -= scaledBounds.min.y;
-
-  player.add(character);
-  mixer = new THREE.AnimationMixer(character);
-  const clips = gltf.animations || [];
-  const idleClip = clips.find((clip) => /idle|stand/i.test(clip.name));
-  const walkClip = clips.find((clip) => /walk/i.test(clip.name));
-
-  if (idleClip) idleAction = mixer.clipAction(idleClip);
-  if (walkClip) walkAction = mixer.clipAction(walkClip);
-  if (!walkAction) {
-    const runClip = clips.find((clip) => /run/i.test(clip.name));
-    if (runClip) walkAction = mixer.clipAction(runClip);
-  }
-  if (idleAction) {
-    idleAction.play();
-    activeAction = idleAction;
-  }
+  character.scale.setScalar(1.8 / height);
+  character.position.y -= bounds.min.y * character.scale.y;
+  character.updateMatrixWorld(true);
 
   characterReady = true;
   statusEl.textContent = "BEREIT · 1,80 M";
   statusEl.classList.add("ready");
   loadTitle.textContent = "BEREIT";
-  loadCopy.textContent = "Hochdetail-Charakter geladen · WASD zum Laufen.";
-  setTimeout(() => loadingEl.classList.add("hidden"), 600);
+  loadCopy.textContent = "WASD drücken und loslaufen.";
+  setTimeout(() => loadingEl.classList.add("hidden"), 350);
 }
 
-function loadCharacter() {
-  const loader = new GLTFLoader();
-  loader.setKTX2Loader(ktx2Loader);
-  loader.setMeshoptDecoder(MeshoptDecoder);
-  const modelUrl = "https://grab3d.com/dl/man-base-character-rigged/man-base-character-rigged.glb";
-  loader.load(
-    modelUrl,
-    (gltf) => prepareCharacter(gltf),
-    (event) => {
-      if (event.total > 0) {
-        const percent = Math.round(event.loaded / event.total * 100);
-        loadCopy.textContent = "3D-Modell wird geladen · " + percent + "%";
-      }
-    },
-    (error) => {
-      console.error("3D character load failed:", error);
-      const detail = error && error.message ? " (" + error.message + ")" : "";
-      showLoadError("3D-Modell konnte nicht geladen werden" + detail + ".");
-    }
-  );
-}
+function updateCharacterAnimation(delta, moving) {
+  walkPhase += delta * (moving ? 9.2 : 1.8);
+  const swing = moving ? Math.sin(walkPhase) * 0.52 : Math.sin(walkPhase) * 0.018;
+  const idleSway = moving ? 0 : Math.sin(walkPhase * 0.7) * 0.006;
 
-function switchAction(nextAction) {
-  if (!nextAction || activeAction === nextAction) return;
-  if (activeAction) activeAction.fadeOut(0.18);
-  nextAction.reset().fadeIn(0.18).play();
-  activeAction = nextAction;
+  if (leftLegPivot) leftLegPivot.rotation.x = swing;
+  if (rightLegPivot) rightLegPivot.rotation.x = -swing;
+  if (leftShinPivot) leftShinPivot.rotation.x = moving ? Math.max(0, -swing) * 0.72 : 0;
+  if (rightShinPivot) rightShinPivot.rotation.x = moving ? Math.max(0, swing) * 0.72 : 0;
+  if (leftArmPivot) leftArmPivot.rotation.x = -swing * 0.82;
+  if (rightArmPivot) rightArmPivot.rotation.x = swing * 0.82;
+  if (leftForearmPivot) leftForearmPivot.rotation.x = moving ? -0.12 : 0;
+  if (rightForearmPivot) rightForearmPivot.rotation.x = moving ? -0.12 : 0;
+  if (torsoGroup) {
+    torsoGroup.position.y = 1.22 + (moving ? Math.abs(Math.sin(walkPhase * 2)) * 0.018 : idleSway);
+    torsoGroup.rotation.z = moving ? Math.sin(walkPhase) * 0.018 : idleSway;
+  }
+  if (headGroup) {
+    headGroup.rotation.x = moving ? Math.sin(walkPhase * 2) * 0.012 : 0;
+    headGroup.rotation.z = moving ? -Math.sin(walkPhase) * 0.012 : idleSway * 0.4;
+  }
 }
 
 function updateMovement(delta) {
@@ -496,15 +384,8 @@ function updateMovement(delta) {
   player.position.x += velocity.x * delta;
   player.position.z += velocity.z * delta;
 
-  if (isMoving && walkAction) {
-    switchAction(walkAction);
-    walkAction.timeScale = 1.0;
-  } else if (idleAction) {
-    switchAction(idleAction);
-  } else if (activeAction) {
-    activeAction.fadeOut(0.16);
-    activeAction = null;
-  }
+  isCharacterMoving = isMoving;
+  updateCharacterAnimation(delta, isMoving);
 }
 
 function updateCamera(delta) {
@@ -524,12 +405,11 @@ function animate() {
   requestAnimationFrame(animate);
   const delta = Math.min(clock.getDelta(), 0.04);
   updateMovement(delta);
-  if (mixer) mixer.update(delta);
   updateCamera(delta);
   renderer.render(scene,camera);
 }
 animate();
-loadCharacter();
+createCharacter();
 
 window.addEventListener("keydown", (event) => {
   if (["KeyW","KeyA","KeyS","KeyD","ArrowUp","ArrowDown","ArrowLeft","ArrowRight","Space"].includes(event.code)) event.preventDefault();
