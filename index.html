@@ -64,6 +64,7 @@ canvas{display:block;width:100%;height:100%;outline:none}
 <div id="help">
  <div class="help-item"><div class="keys"><span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span></div><span>Bewegen</span></div>
  <div class="help-item"><span class="key">SPACE</span><span>Springen</span></div>
+ <div class="help-item"><span class="key">SHIFT</span><span>Sprinten</span></div>
  <div class="help-item"><span class="key">MAUS</span><span>Kamera drehen</span></div>
  <div class="help-item"><span class="key">SCROLL</span><span>Zoom</span></div>
 </div>
@@ -779,6 +780,10 @@ let dragging = false;
 let lastPointerX = 0;
 let lastPointerY = 0;
 let characterReady = false;
+let airPoseBones = [];
+let airPoseActive = false;
+let airPoseClock = 0;
+let sprintingNow = false;
 
 function showLoadError(message) {
   spinner.style.display = "none";
@@ -822,6 +827,75 @@ function switchAction(nextAction) {
   activeAction = nextAction;
 }
 
+function findAirPoseBones(root) {
+  const found = {
+    leftArm: null, rightArm: null,
+    leftForearm: null, rightForearm: null,
+    leftThigh: null, rightThigh: null,
+    leftShin: null, rightShin: null,
+    leftFoot: null, rightFoot: null
+  };
+  const matches = {
+    leftArm: (n) => n.includes("leftarm") || n.includes("leftupperarm") || n.includes("armleft"),
+    rightArm: (n) => n.includes("rightarm") || n.includes("rightupperarm") || n.includes("armright"),
+    leftForearm: (n) => n.includes("leftforearm") || n.includes("forearmleft"),
+    rightForearm: (n) => n.includes("rightforearm") || n.includes("forearmright"),
+    leftThigh: (n) => n.includes("leftupleg") || n.includes("leftthigh") || n.includes("thighleft"),
+    rightThigh: (n) => n.includes("rightupleg") || n.includes("rightthigh") || n.includes("thighright"),
+    leftShin: (n) => n.includes("leftleg") || n.includes("leftlowerleg") || n.includes("calfleft"),
+    rightShin: (n) => n.includes("rightleg") || n.includes("rightlowerleg") || n.includes("calfright"),
+    leftFoot: (n) => n.includes("leftfoot") || n.includes("footleft"),
+    rightFoot: (n) => n.includes("rightfoot") || n.includes("footright")
+  };
+  root.traverse((obj) => {
+    if (!obj.isBone) return;
+    const name = (obj.name || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+    for (const key of Object.keys(found)) {
+      if (!found[key] && matches[key](name)) found[key] = obj;
+    }
+  });
+  return Object.entries(found)
+    .filter((entry) => entry[1])
+    .map(([key, bone]) => ({ key, bone, rest: bone.quaternion.clone() }));
+}
+
+function updateAirPose() {
+  if (!airPoseBones.length) return;
+
+  if (isGrounded) {
+    if (airPoseActive) {
+      for (const entry of airPoseBones) {
+        entry.bone.quaternion.copy(entry.rest);
+      }
+      airPoseActive = false;
+    }
+    return;
+  }
+
+  airPoseActive = true;
+  const kick = Math.sin(airPoseClock * 15.5);
+  const tuck = Math.max(0, Math.sin(airPoseClock * 15.5 + 0.7));
+  for (const entry of airPoseBones) {
+    let angle = 0;
+    switch (entry.key) {
+      case "leftArm": angle = -0.55 + kick * 0.22; break;
+      case "rightArm": angle = -0.55 - kick * 0.22; break;
+      case "leftForearm": angle = -0.72; break;
+      case "rightForearm": angle = -0.72; break;
+      case "leftThigh": angle = 0.25 + kick * 0.48; break;
+      case "rightThigh": angle = 0.25 - kick * 0.48; break;
+      case "leftShin": angle = -0.2 - tuck * 0.65; break;
+      case "rightShin": angle = -0.2 - (1 - tuck) * 0.65; break;
+      case "leftFoot": angle = 0.12 + tuck * 0.18; break;
+      case "rightFoot": angle = 0.12 + (1 - tuck) * 0.18; break;
+    }
+    const offset = new THREE.Quaternion().setFromAxisAngle(
+      new THREE.Vector3(1, 0, 0), angle
+    );
+    entry.bone.quaternion.copy(entry.rest).multiply(offset);
+  }
+}
+
 function prepareCharacter(gltf) {
   character = gltf.scene;
   character.traverse((obj) => {
@@ -848,6 +922,7 @@ function prepareCharacter(gltf) {
   player.add(character);
 
   mixer = new THREE.AnimationMixer(character);
+  airPoseBones = findAirPoseBones(character);
   const clips = gltf.animations || [];
   const walkClip = clips.find((clip) => /walk/i.test(clip.name));
   const runClip = clips.find((clip) => /run/i.test(clip.name));
@@ -904,7 +979,12 @@ function updateMovement(delta) {
     verticalVelocity = 6.8;
     isGrounded = false;
     jumpQueued = false;
+    if (activeAction) {
+      activeAction.fadeOut(0.12);
+      activeAction = null;
+    }
   }
+  if (!isGrounded) airPoseClock += delta;
   verticalVelocity -= 18 * delta;
   player.position.y += verticalVelocity * delta;
   if (player.position.y <= 0) {
@@ -914,7 +994,7 @@ function updateMovement(delta) {
   }
 
   const forwardInput = (keys.KeyW || keys.ArrowUp ? 1 : 0) - (keys.KeyS || keys.ArrowDown ? 1 : 0);
-  const sideInput = (keys.KeyA || keys.ArrowLeft ? 1 : 0) - (keys.KeyD || keys.ArrowRight ? 1 : 0);
+  const sideInput = (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0);
 
   forward.set(Math.sin(cameraYaw), 0, Math.cos(cameraYaw));
   right.set(Math.cos(cameraYaw), 0, -Math.sin(cameraYaw));
@@ -925,7 +1005,8 @@ function updateMovement(delta) {
   const isMoving = desiredVelocity.lengthSq() > 0.001;
   if (isMoving) {
     desiredVelocity.normalize();
-    desiredVelocity.multiplyScalar(2.7);
+    sprintingNow = (keys.ShiftLeft || keys.ShiftRight) && isGrounded;
+    desiredVelocity.multiplyScalar(sprintingNow ? 5.0 : 2.7);
     moveDir.copy(desiredVelocity).normalize();
 
     const targetRotation = Math.atan2(moveDir.x, moveDir.z);
@@ -939,9 +1020,12 @@ function updateMovement(delta) {
   player.position.x += velocity.x * delta;
   player.position.z += velocity.z * delta;
 
-  if (isMoving) {
-    if (walkAction) switchAction(walkAction);
+  if (isMoving && isGrounded) {
+    if (sprintingNow && runAction) switchAction(runAction);
+    else if (walkAction) switchAction(walkAction);
     else if (runAction) switchAction(runAction);
+  } else if (!isGrounded) {
+    sprintingNow = false;
   } else if (activeAction) {
     activeAction.fadeOut(0.18);
     activeAction = null;
@@ -966,6 +1050,7 @@ function animate() {
   const delta = Math.min(clock.getDelta(), 0.04);
   updateMovement(delta);
   if (mixer) mixer.update(delta);
+  updateAirPose();
   updateCamera(delta);
   renderer.render(scene,camera);
 }
