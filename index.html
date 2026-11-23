@@ -1,1 +1,384 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#111317">
+<title>Open World – Charakter-Test</title>
+<style>
+:root{color-scheme:dark;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#aebbc7}
+body{user-select:none}
+#game{position:fixed;inset:0}
+canvas{display:block;width:100%;height:100%;outline:none}
+#topbar{position:fixed;left:22px;top:20px;display:flex;align-items:center;gap:12px;z-index:5;pointer-events:none}
+#mark{width:38px;height:38px;border:1px solid #ffffff36;border-radius:12px;background:#111820b8;display:grid;place-items:center;backdrop-filter:blur(12px);box-shadow:0 8px 30px #0002}
+#mark svg{width:20px;height:20px}
+#heading{font-size:12px;font-weight:800;letter-spacing:.16em;color:#fff;text-shadow:0 2px 10px #0005}
+#subheading{font-size:10px;color:#e5eaf0b8;letter-spacing:.12em;margin-top:3px}
+#status{position:fixed;right:22px;top:22px;z-index:5;border:1px solid #ffffff35;border-radius:999px;padding:8px 12px;background:#1118209c;color:#e9eef2;font-size:10px;font-weight:700;letter-spacing:.12em;backdrop-filter:blur(12px)}
+#status:before{content:"";display:inline-block;width:7px;height:7px;margin-right:8px;border-radius:50%;background:#e9b45e;box-shadow:0 0 10px #e9b45e;vertical-align:1px}
+#status.ready:before{background:#79d7a1;box-shadow:0 0 10px #79d7a1}
+#help{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:5;display:flex;align-items:center;gap:18px;padding:11px 16px;border:1px solid #ffffff30;border-radius:14px;background:#111820b8;backdrop-filter:blur(14px);box-shadow:0 12px 40px #0002;color:#eef2f6;white-space:nowrap}
+.help-item{display:flex;align-items:center;gap:8px;font-size:11px;color:#e9edf2c9}
+.keys{display:flex;gap:3px}
+.key{height:23px;min-width:23px;padding:0 6px;display:grid;place-items:center;border:1px solid #ffffff38;border-bottom-width:2px;border-radius:6px;background:#ffffff12;color:#fff;font-size:10px;font-weight:800}
+#camera-reset{position:fixed;right:22px;bottom:22px;z-index:5;width:42px;height:42px;border:1px solid #ffffff30;border-radius:13px;background:#111820b8;color:#fff;display:grid;place-items:center;cursor:pointer;backdrop-filter:blur(12px)}
+#camera-reset:hover{background:#26313c}
+#camera-reset svg{width:18px;height:18px}
+#loading{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;background:linear-gradient(180deg,#20283222,#10151dcc);color:#fff;transition:opacity .45s ease,visibility .45s ease}
+#loading.hidden{opacity:0;visibility:hidden;pointer-events:none}
+.spinner{width:36px;height:36px;border:2px solid #ffffff32;border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#load-title{font-size:13px;font-weight:800;letter-spacing:.18em}
+#load-copy{font-size:11px;color:#ffffff9c;letter-spacing:.04em;text-align:center;max-width:260px;line-height:1.6}
+#error{display:none;max-width:340px;padding:18px 20px;border:1px solid #ffffff30;border-radius:14px;background:#111820ed;text-align:center;line-height:1.6;font-size:12px;color:#f0d9d9}
+#credit{position:fixed;left:22px;bottom:22px;z-index:5;color:#edf1f5a0;font-size:9px;letter-spacing:.04em;pointer-events:none}
+@media(max-width:650px){
+ #topbar{left:14px;top:14px}#status{right:14px;top:14px;font-size:9px}
+ #help{bottom:14px;gap:10px;padding:9px 11px;max-width:calc(100% - 28px);white-space:normal;justify-content:center;flex-wrap:wrap}
+ .help-item{font-size:10px}#camera-reset{right:14px;bottom:82px;width:38px;height:38px}
+ #credit{left:14px;bottom:66px}
+}
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<div id="game"></div>
+<div id="topbar">
+ <div id="mark" aria-hidden="true">
+  <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 19 7v5.5c0 4.5-3 7-7 8.5-4-1.5-7-4-7-8.5V7l7-3.5Z"/><path d="M8.5 12.3 11 15l4.8-5"/></svg>
+ </div>
+ <div><div id="heading">CHARACTER TEST</div><div id="subheading">OPEN WORLD · PROTOTYP 01</div></div>
+</div>
+<div id="status">3D-MODELL LÄDT</div>
+<div id="help">
+ <div class="help-item"><div class="keys"><span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span></div><span>Bewegen</span></div>
+ <div class="help-item"><span class="key">MAUS</span><span>Kamera drehen</span></div>
+ <div class="help-item"><span class="key">SCROLL</span><span>Zoom</span></div>
+</div>
+<button id="camera-reset" title="Kamera zurücksetzen" aria-label="Kamera zurücksetzen">
+ <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 2.64-6.36L3 8"/><path d="M3 3v5h5"/></svg>
+</button>
+<div id="credit">CHARAKTERMODELL: CC0 · TESTUMGEBUNG OHNE STADT ODER FAHRZEUGE</div>
+<div id="loading">
+ <div class="spinner" id="spinner"></div>
+ <div id="load-title">CHARAKTER WIRD GELADEN</div>
+ <div id="load-copy">Die 3D-Figur und ihre Bewegungsanimation werden vorbereitet.</div>
+ <div id="error"></div>
+</div>
 
+<script type="module">
+import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+
+const root = document.getElementById("game");
+const statusEl = document.getElementById("status");
+const loadingEl = document.getElementById("loading");
+const loadTitle = document.getElementById("load-title");
+const loadCopy = document.getElementById("load-copy");
+const spinner = document.getElementById("spinner");
+const errorEl = document.getElementById("error");
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xb9c6d2);
+scene.fog = new THREE.Fog(0xb9c6d2, 27, 105);
+
+const camera = new THREE.PerspectiveCamera(48, window.innerWidth / window.innerHeight, 0.1, 260);
+camera.position.set(0, 2.8, -6);
+
+const renderer = new THREE.WebGLRenderer({antialias:true, alpha:false, powerPreference:"high-performance"});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.8));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.12;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+root.appendChild(renderer.domElement);
+
+const hemi = new THREE.HemisphereLight(0xe8f1ff, 0x646b75, 1.65);
+scene.add(hemi);
+
+const keyLight = new THREE.DirectionalLight(0xffedda, 2.25);
+keyLight.position.set(-7, 13, -5);
+keyLight.castShadow = true;
+keyLight.shadow.mapSize.set(2048,2048);
+keyLight.shadow.camera.left = -16;
+keyLight.shadow.camera.right = 16;
+keyLight.shadow.camera.top = 16;
+keyLight.shadow.camera.bottom = -16;
+keyLight.shadow.bias = -0.00025;
+keyLight.shadow.normalBias = 0.025;
+scene.add(keyLight);
+
+const fillLight = new THREE.DirectionalLight(0xc4d9ff, 0.65);
+fillLight.position.set(8, 6, 7);
+scene.add(fillLight);
+
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(600,600),
+  new THREE.MeshStandardMaterial({color:0x747b82, roughness:0.96, metalness:0})
+);
+ground.rotation.x = -Math.PI/2;
+ground.position.y = -0.025;
+ground.receiveShadow = true;
+scene.add(ground);
+
+const grid = new THREE.GridHelper(240,120,0x9aa2aa,0x969ea6);
+grid.position.y = -0.018;
+grid.material.transparent = true;
+grid.material.opacity = 0.13;
+scene.add(grid);
+
+const player = new THREE.Group();
+scene.add(player);
+
+const groundShadow = new THREE.Mesh(
+  new THREE.CircleGeometry(0.52,48),
+  new THREE.MeshBasicMaterial({color:0x20252b, transparent:true, opacity:0.15, depthWrite:false})
+);
+groundShadow.rotation.x = -Math.PI/2;
+groundShadow.position.y = 0.004;
+player.add(groundShadow);
+
+const clock = new THREE.Clock();
+const keys = Object.create(null);
+const velocity = new THREE.Vector3();
+const moveDir = new THREE.Vector3();
+const forward = new THREE.Vector3();
+const right = new THREE.Vector3();
+const desiredVelocity = new THREE.Vector3();
+
+let character = null;
+let mixer = null;
+let idleAction = null;
+let walkAction = null;
+let activeAction = null;
+let cameraYaw = 0;
+let cameraPitch = 0.16;
+let cameraDistance = 5.6;
+let dragging = false;
+let lastPointerX = 0;
+let lastPointerY = 0;
+let characterReady = false;
+
+function showLoadError(message) {
+  spinner.style.display = "none";
+  loadTitle.textContent = "MODELL KONNTE NICHT GELADEN WERDEN";
+  loadCopy.textContent = "Die Spielsteuerung ist noch nicht bereit.";
+  errorEl.style.display = "block";
+  errorEl.textContent = message + " Bitte lade die Seite neu. Das 3D-Modell wird von einem externen CC0-Asset-Server geladen.";
+  statusEl.textContent = "MODELL NICHT GELADEN";
+}
+
+function setMaterialLook(material, meshName) {
+  const mat = material.clone();
+  const label = ((mat.name || "") + " " + (meshName || "")).toLowerCase();
+  const skinOrFace = /skin|face|head|body|hand|finger|eye|brow|mouth|teeth|lip/.test(label);
+  const hair = /hair|eyebrow|brow/.test(label);
+  if (hair) {
+    mat.color.set("#2b1b13");
+    if ("roughness" in mat) mat.roughness = 0.82;
+    return mat;
+  }
+  if (skinOrFace) return mat;
+
+  let clothing = /hood|sweat|shirt|top|upper|jacket|cloth|fabric|jean|pant|trouser|bottom|shoe|trainer|sneaker/.test(label);
+  if (!clothing && mat.color) {
+    const hsl = {};
+    mat.color.getHSL(hsl);
+    const blueDenim = hsl.h > 0.48 && hsl.h < 0.74 && hsl.s > 0.12;
+    const greyOrWhiteCloth = hsl.s < 0.20 && hsl.l > 0.18;
+    clothing = blueDenim || greyOrWhiteCloth;
+  }
+  if (clothing) {
+    mat.color.set("#111214");
+    if ("roughness" in mat) mat.roughness = 0.92;
+    if ("metalness" in mat) mat.metalness = 0;
+  }
+  return mat;
+}
+
+function prepareCharacter(gltf) {
+  character = gltf.scene;
+  character.traverse((obj) => {
+    if (!obj.isMesh) return;
+    obj.castShadow = true;
+    obj.receiveShadow = true;
+    if (Array.isArray(obj.material)) {
+      obj.material = obj.material.map((m) => setMaterialLook(m, obj.name));
+    } else if (obj.material) {
+      obj.material = setMaterialLook(obj.material, obj.name);
+    }
+  });
+
+  const bounds = new THREE.Box3().setFromObject(character);
+  const height = bounds.max.y - bounds.min.y;
+  const targetHeight = 1.8;
+  character.scale.setScalar(targetHeight / height);
+  const scaledBounds = new THREE.Box3().setFromObject(character);
+  character.position.y -= scaledBounds.min.y;
+
+  player.add(character);
+  mixer = new THREE.AnimationMixer(character);
+  const clips = gltf.animations || [];
+  const idleClip = clips.find((clip) => /idle|stand/i.test(clip.name));
+  const walkClip = clips.find((clip) => /walk/i.test(clip.name));
+
+  if (idleClip) idleAction = mixer.clipAction(idleClip);
+  if (walkClip) walkAction = mixer.clipAction(walkClip);
+  if (!idleAction && walkAction) idleAction = mixer.clipAction(walkClip.getClip());
+  if (idleAction) {
+    idleAction.play();
+    activeAction = idleAction;
+  }
+  if (!walkAction) walkAction = idleAction;
+
+  characterReady = true;
+  statusEl.textContent = "BEREIT · 1,80 M";
+  statusEl.classList.add("ready");
+  loadTitle.textContent = "BEREIT";
+  loadCopy.textContent = "WASD drücken und loslaufen.";
+  setTimeout(() => loadingEl.classList.add("hidden"), 600);
+}
+
+function loadCharacter() {
+  const loader = new GLTFLoader();
+  const modelUrl = "https://tevy.dev/models/casual-walker/v1/lod0.glb";
+  loader.load(
+    modelUrl,
+    (gltf) => prepareCharacter(gltf),
+    (event) => {
+      if (event.total > 0) {
+        const percent = Math.round(event.loaded / event.total * 100);
+        loadCopy.textContent = "3D-Modell wird geladen · " + percent + "%";
+      }
+    },
+    (error) => {
+      console.error("3D character load failed:", error);
+      showLoadError("Verbindung zum Modellserver fehlgeschlagen.");
+    }
+  );
+}
+
+function switchAction(nextAction) {
+  if (!nextAction || activeAction === nextAction) return;
+  if (activeAction) activeAction.fadeOut(0.18);
+  nextAction.reset().fadeIn(0.18).play();
+  activeAction = nextAction;
+}
+
+function updateMovement(delta) {
+  if (!characterReady) return;
+
+  const forwardInput = (keys.KeyW || keys.ArrowUp ? 1 : 0) - (keys.KeyS || keys.ArrowDown ? 1 : 0);
+  const sideInput = (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0);
+
+  forward.set(Math.sin(cameraYaw), 0, Math.cos(cameraYaw));
+  right.set(Math.cos(cameraYaw), 0, -Math.sin(cameraYaw));
+  desiredVelocity.set(0,0,0);
+  desiredVelocity.addScaledVector(forward, forwardInput);
+  desiredVelocity.addScaledVector(right, sideInput);
+
+  const isMoving = desiredVelocity.lengthSq() > 0.001;
+  if (isMoving) {
+    desiredVelocity.normalize();
+    desiredVelocity.multiplyScalar(2.7);
+    moveDir.copy(desiredVelocity).normalize();
+
+    const targetRotation = Math.atan2(moveDir.x, moveDir.z);
+    let rotationDifference = targetRotation - player.rotation.y;
+    rotationDifference = Math.atan2(Math.sin(rotationDifference), Math.cos(rotationDifference));
+    player.rotation.y += rotationDifference * (1 - Math.exp(-13 * delta));
+  }
+
+  const blend = 1 - Math.exp(-10 * delta);
+  velocity.lerp(desiredVelocity, blend);
+  player.position.x += velocity.x * delta;
+  player.position.z += velocity.z * delta;
+
+  if (isMoving && walkAction) {
+    switchAction(walkAction);
+    walkAction.timeScale = 1.0;
+  } else if (idleAction) {
+    switchAction(idleAction);
+  }
+}
+
+function updateCamera(delta) {
+  const target = new THREE.Vector3(player.position.x, player.position.y + 1.16, player.position.z);
+  const horizontalDistance = cameraDistance * Math.cos(cameraPitch);
+  const offset = new THREE.Vector3(
+    -Math.sin(cameraYaw) * horizontalDistance,
+    cameraDistance * Math.sin(cameraPitch) + 0.18,
+    -Math.cos(cameraYaw) * horizontalDistance
+  );
+  const wantedPosition = target.clone().add(offset);
+  camera.position.lerp(wantedPosition, 1 - Math.exp(-7.5 * delta));
+  camera.lookAt(target);
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  const delta = Math.min(clock.getDelta(), 0.04);
+  updateMovement(delta);
+  if (mixer) mixer.update(delta);
+  updateCamera(delta);
+  renderer.render(scene,camera);
+}
+animate();
+loadCharacter();
+
+window.addEventListener("keydown", (event) => {
+  if (["KeyW","KeyA","KeyS","KeyD","ArrowUp","ArrowDown","ArrowLeft","ArrowRight","Space"].includes(event.code)) event.preventDefault();
+  keys[event.code] = true;
+});
+window.addEventListener("keyup", (event) => { keys[event.code] = false; });
+window.addEventListener("blur", () => { Object.keys(keys).forEach((key) => keys[key] = false); });
+
+renderer.domElement.addEventListener("pointerdown", (event) => {
+  if (event.button !== 0) return;
+  dragging = true;
+  lastPointerX = event.clientX;
+  lastPointerY = event.clientY;
+  renderer.domElement.setPointerCapture(event.pointerId);
+});
+renderer.domElement.addEventListener("pointermove", (event) => {
+  if (!dragging) return;
+  const dx = event.clientX - lastPointerX;
+  const dy = event.clientY - lastPointerY;
+  lastPointerX = event.clientX;
+  lastPointerY = event.clientY;
+  cameraYaw -= dx * 0.005;
+  cameraPitch = THREE.MathUtils.clamp(cameraPitch + dy * 0.003, -0.08, 0.62);
+});
+renderer.domElement.addEventListener("pointerup", () => { dragging = false; });
+renderer.domElement.addEventListener("pointercancel", () => { dragging = false; });
+renderer.domElement.addEventListener("wheel", (event) => {
+  cameraDistance = THREE.MathUtils.clamp(cameraDistance + event.deltaY * 0.004, 3.2, 9);
+}, {passive:true});
+
+document.getElementById("camera-reset").addEventListener("click", () => {
+  cameraYaw = 0;
+  cameraPitch = 0.16;
+  cameraDistance = 5.6;
+});
+
+window.addEventListener("resize", () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.8));
+});
+</script>
+</body>
+</html>
