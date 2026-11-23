@@ -192,9 +192,14 @@ function showLoadError(message) {
 function setMaterialLook(material, meshName) {
   const mat = material.clone();
   const label = ((mat.name || "") + " " + (meshName || "")).toLowerCase();
+
+  // Classify by actual material / mesh labels first. Never turn every
+  // pale or low-saturation material black: skin textures often use a white
+  // glTF base-color factor too.
   const hair = /hair|eyebrow|brow/.test(label);
-  const faceDetails = /eye|brow|mouth|teeth|lip|lash/.test(label);
-  const skin = !faceDetails && /skin|face|head|body|hand|finger|ear|neck/.test(label);
+  const faceDetails = /eye|eyebrow|brow|mouth|teeth|lip|lash/.test(label);
+  const skin = !faceDetails && /skin|face|head|hand|finger|ear|neck/.test(label);
+  const clothingByName = /hood|sweat|shirt|top|upper|jacket|cloth|fabric|jean|pant|trouser|bottom|shoe|trainer|sneaker|sleeve/.test(label);
 
   if (hair) {
     mat.color.set("#2b1b13");
@@ -203,30 +208,30 @@ function setMaterialLook(material, meshName) {
   }
 
   if (skin) {
-    // Warmer, fair skin tone. The shader blend brightens the original albedo
-    // without removing its fine texture, normal map or natural lighting.
+    // Fair, natural skin tone while retaining the original texture detail.
     mat.color.set("#fff0e7");
     if ("roughness" in mat) mat.roughness = Math.max(mat.roughness || 0.72, 0.68);
     if ("metalness" in mat) mat.metalness = 0;
     mat.onBeforeCompile = (shader) => {
       shader.fragmentShader = shader.fragmentShader.replace(
         "#include <map_fragment>",
-        "#include <map_fragment>\ndiffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.91, 0.76, 0.67), 0.38);"
+        "#include <map_fragment>\\ndiffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.91, 0.78, 0.71), 0.62);"
       );
     };
-    mat.customProgramCacheKey = () => "fair-natural-skin-v2";
+    mat.customProgramCacheKey = () => "natural-fair-skin-v3";
     mat.needsUpdate = true;
     return mat;
   }
 
-  let clothing = /hood|sweat|shirt|top|upper|jacket|cloth|fabric|jean|pant|trouser|bottom|shoe|trainer|sneaker/.test(label);
+  // Recolor only named clothing, or clearly blue denim. Unknown materials
+  // keep their original color so face, hands and skin cannot become black.
+  let clothing = clothingByName;
   if (!clothing && mat.color) {
     const hsl = {};
     mat.color.getHSL(hsl);
-    const blueDenim = hsl.h > 0.48 && hsl.h < 0.74 && hsl.s > 0.12;
-    const greyOrWhiteCloth = hsl.s < 0.20 && hsl.l > 0.18;
-    clothing = blueDenim || greyOrWhiteCloth;
+    clothing = hsl.h > 0.48 && hsl.h < 0.74 && hsl.s > 0.12;
   }
+
   if (clothing) {
     mat.color.set("#111214");
     if ("roughness" in mat) mat.roughness = 0.92;
@@ -236,28 +241,16 @@ function setMaterialLook(material, meshName) {
 }
 
 function lengthenNeck(characterRoot) {
-  let neckBone = null;
+  // Keep the original humanoid rig intact. Scaling a neck bone can distort
+  // the connected upper-body pose in some skinned animation rigs.
+  // A tiny head lift gives a little more neck room without stretching bones.
   let headBone = null;
-
   characterRoot.traverse((obj) => {
     if (!obj.isBone) return;
-    const boneName = (obj.name || "").toLowerCase().replace(/[^a-z0-9]/g, "");
-    if (!neckBone && boneName.includes("neck")) neckBone = obj;
-    if (!headBone && boneName.includes("head")) headBone = obj;
+    const name = (obj.name || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (!headBone && name.includes("head")) headBone = obj;
   });
-
-  if (neckBone) {
-    // A modest 16% increase gives the neck more natural length while
-    // keeping the original rig and its walking/idle animation.
-    neckBone.scale.y *= 1.16;
-    console.info("Character neck proportion adjusted:", neckBone.name);
-  } else if (headBone && headBone.parent && headBone.parent.isBone) {
-    // Fallback for rigs that call the neck joint something else.
-    headBone.position.y += 0.035;
-    console.info("Character head height adjusted slightly:", headBone.name);
-  } else {
-    console.warn("No neck/head bone found; original proportions kept.");
-  }
+  if (headBone) headBone.position.y += 0.012;
 }
 
 function prepareCharacter(gltf) {
