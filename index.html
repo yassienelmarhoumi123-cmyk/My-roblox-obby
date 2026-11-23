@@ -878,10 +878,11 @@ function updateAirPose() {
   for (const entry of airPoseBones) {
     let angle = 0;
     switch (entry.key) {
-      case "leftArm": angle = -1.05 + kick * 0.10; break;
-      case "rightArm": angle = -1.05 - kick * 0.10; break;
-      case "leftForearm": angle = -0.42; break;
-      case "rightForearm": angle = -0.42; break;
+      // Positive local X rotation moves both upper arms forward on this rig.
+      case "leftArm": angle = 0.95 + kick * 0.08; break;
+      case "rightArm": angle = 0.95 - kick * 0.08; break;
+      case "leftForearm": angle = 0.38; break;
+      case "rightForearm": angle = 0.38; break;
       case "leftThigh": angle = 0.25 + kick * 0.48; break;
       case "rightThigh": angle = 0.25 - kick * 0.48; break;
       case "leftShin": angle = -0.2 - tuck * 0.65; break;
