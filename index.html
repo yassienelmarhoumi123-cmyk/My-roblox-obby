@@ -185,7 +185,7 @@ function showLoadError(message) {
   loadTitle.textContent = "MODELL KONNTE NICHT GELADEN WERDEN";
   loadCopy.textContent = "Die Spielsteuerung ist noch nicht bereit.";
   errorEl.style.display = "block";
-  errorEl.textContent = message + " Bitte lade die Seite neu. Das 3D-Modell wird von einem externen CC0-Asset-Server geladen.";
+  errorEl.textContent = message + " Bitte lade die Seite neu.";
   statusEl.textContent = "MODELL NICHT GELADEN";
 }
 
@@ -231,7 +231,9 @@ function findBone(characterRoot, pattern) {
   let found = null;
   characterRoot.traverse((obj) => {
     if (!found && obj.isBone) {
-      const name = (obj.name || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+      let name = (obj.name || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+      if (name.includes("mixamorig")) name = name.slice(name.lastIndexOf("mixamorig") + "mixamorig".length);
+      name = name.replace(/^armature/, "").replace(/^skeleton/, "");
       if (pattern.test(name)) found = obj;
     }
   });
@@ -337,7 +339,9 @@ function addCustomBlackOutfit(characterRoot) {
   if (addClothSegment(rightLeg, rightFoot, 0.078, cloth)) added++;
 
   // Black low-profile sneakers attached to each foot.
-  for (const foot of [leftFoot, rightFoot]) {
+  const leftToe = findBone(characterRoot, /^lefttoebase|^lefttoe/);
+  const rightToe = findBone(characterRoot, /^righttoebase|^righttoe/);
+  for (const [foot, toe] of [[leftFoot, leftToe], [rightFoot, rightToe]]) {
     if (!foot) continue;
     const shoe = new THREE.Mesh(
       new THREE.SphereGeometry(1, 24, 16),
@@ -346,6 +350,14 @@ function addCustomBlackOutfit(characterRoot) {
     shoe.name = "custom-black-sneaker";
     shoe.scale.set(0.115, 0.075, 0.235);
     shoe.position.set(0, -0.025, 0.075);
+    if (toe) {
+      foot.updateWorldMatrix(true, true);
+      const toeWorld = toe.getWorldPosition(new THREE.Vector3());
+      const toeLocal = foot.worldToLocal(toeWorld.clone()).normalize();
+      if (toeLocal.lengthSq() > 0.01) {
+        shoe.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), toeLocal);
+      }
+    }
     shoe.castShadow = true;
     shoe.receiveShadow = true;
     foot.add(shoe);
@@ -423,7 +435,7 @@ function prepareCharacter(gltf) {
   statusEl.textContent = "BEREIT · 1,80 M";
   statusEl.classList.add("ready");
   loadTitle.textContent = "BEREIT";
-  loadCopy.textContent = "WASD drücken und loslaufen.";
+  loadCopy.textContent = "Hochdetail-Charakter geladen · WASD zum Laufen.";
   setTimeout(() => loadingEl.classList.add("hidden"), 600);
 }
 
