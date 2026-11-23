@@ -1,0 +1,47 @@
+name: Download Grab3D character model
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/vendor-grab3d-model.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  vendor-model:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Download the rigged CC0 GLB from Grab3D
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p assets
+          curl --fail --location --retry 3 --retry-delay 2 \
+            -A "Mozilla/5.0" \
+            "https://grab3d.com/dl/man-base-character-rigged/man-base-character-rigged.glb" \
+            --output assets/man-base-character-rigged.glb
+          test "$(head -c 4 assets/man-base-character-rigged.glb)" = "glTF"
+          test "$(stat -c%s assets/man-base-character-rigged.glb)" -gt 1000000
+
+      - name: Commit model into this repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/man-base-character-rigged.glb
+          if git diff --cached --quiet; then
+            echo "Model file already exists and is unchanged."
+            exit 0
+          fi
+          git commit -m "Add Grab3D CC0 rigged character model"
+          git push origin HEAD:main
