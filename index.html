@@ -92,18 +92,18 @@ const spinner = document.getElementById("spinner");
 const errorEl = document.getElementById("error");
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xb9c6d2);
-scene.fog = new THREE.Fog(0xb9c6d2, 55, 185);
+scene.background = new THREE.Color(0x557da4);
+scene.fog = new THREE.Fog(0xbccbd2, 68, 225);
 
 const camera = new THREE.PerspectiveCamera(48, window.innerWidth / window.innerHeight, 0.1, 260);
 camera.position.set(0, 2.8, -6);
 
 const renderer = new THREE.WebGLRenderer({antialias:true, alpha:false, powerPreference:"high-performance"});
-renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.8));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.7));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.12;
+renderer.toneMappingExposure = 1.16;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 root.appendChild(renderer.domElement);
@@ -114,28 +114,57 @@ const ktx2Loader = new KTX2Loader()
 
 
 
-const hemi = new THREE.HemisphereLight(0xe8f1ff, 0x646b75, 1.65);
+// Soft blue skylight, warm sunlight and a cool fill light create more depth.
+const hemi = new THREE.HemisphereLight(0xdcecff, 0x62685d, 1.48);
 scene.add(hemi);
 
-const keyLight = new THREE.DirectionalLight(0xffedda, 2.25);
-keyLight.position.set(-7, 13, -5);
+const keyLight = new THREE.DirectionalLight(0xffe5c6, 2.45);
+keyLight.position.set(-18, 30, -14);
 keyLight.castShadow = true;
 keyLight.shadow.mapSize.set(2048,2048);
-keyLight.shadow.camera.left = -16;
-keyLight.shadow.camera.right = 16;
-keyLight.shadow.camera.top = 16;
-keyLight.shadow.camera.bottom = -16;
-keyLight.shadow.bias = -0.00025;
-keyLight.shadow.normalBias = 0.025;
+keyLight.shadow.camera.left = -25;
+keyLight.shadow.camera.right = 25;
+keyLight.shadow.camera.top = 25;
+keyLight.shadow.camera.bottom = -25;
+keyLight.shadow.camera.near = 0.5;
+keyLight.shadow.camera.far = 110;
+keyLight.shadow.bias = -0.0003;
+keyLight.shadow.normalBias = 0.03;
 scene.add(keyLight);
 
-const fillLight = new THREE.DirectionalLight(0xc4d9ff, 0.65);
-fillLight.position.set(8, 6, 7);
+const fillLight = new THREE.DirectionalLight(0xbfdcff, 0.78);
+fillLight.position.set(16, 10, 12);
 scene.add(fillLight);
+
+// A small vertex-colour sky dome gives the horizon a natural blue gradient.
+const skyGeometry = new THREE.SphereGeometry(245, 32, 20);
+const skyPositions = skyGeometry.getAttribute("position");
+const skyColors = new Float32Array(skyPositions.count * 3);
+const horizonSky = new THREE.Color(0xcbd7d9);
+const zenithSky = new THREE.Color(0x557da4);
+const skyColor = new THREE.Color();
+for (let i = 0; i < skyPositions.count; i++) {
+  const vertical = THREE.MathUtils.clamp(skyPositions.getY(i) / 245, 0, 1);
+  const blend = vertical * vertical * (3 - 2 * vertical);
+  skyColor.copy(horizonSky).lerp(zenithSky, blend);
+  skyColor.toArray(skyColors, i * 3);
+}
+skyGeometry.setAttribute("color", new THREE.BufferAttribute(skyColors, 3));
+const skyDome = new THREE.Mesh(
+  skyGeometry,
+  new THREE.MeshBasicMaterial({
+    vertexColors: true,
+    side: THREE.BackSide,
+    depthWrite: false,
+    fog: false
+  })
+);
+skyDome.frustumCulled = false;
+scene.add(skyDome);
 
 const ground = new THREE.Mesh(
   new THREE.PlaneGeometry(600,600),
-  new THREE.MeshStandardMaterial({color:0x747b82, roughness:0.96, metalness:0})
+  new THREE.MeshStandardMaterial({color:0x687568, roughness:1, metalness:0})
 );
 ground.rotation.x = -Math.PI/2;
 ground.position.y = -0.025;
@@ -538,10 +567,111 @@ function buildCity() {
     mesh.instanceMatrix.needsUpdate = true;
   }
 
-  // A little city plaza remains free around the player spawn point.
+  // A small planted plaza makes the central spawn area feel lived-in.
   const plaza = makeBox(city, "central paved plaza", 20, 0.045, 20,
     new THREE.MeshStandardMaterial({ color: 0x9da19e, roughness: 0.94 }), 0, 0.012, 0);
   plaza.receiveShadow = true;
+
+  // Four trees are batched into instanced meshes, keeping the draw-call count low.
+  const treePositions = [
+    [-8.1, -8.1], [-8.1, 8.1], [8.1, -8.1], [8.1, 8.1]
+  ];
+  const planterMesh = new THREE.InstancedMesh(
+    new THREE.BoxGeometry(2.35, 0.18, 2.35),
+    new THREE.MeshStandardMaterial({ color: 0x777d79, roughness: 0.94 }),
+    treePositions.length
+  );
+  const trunkMesh = new THREE.InstancedMesh(
+    new THREE.CylinderGeometry(0.16, 0.23, 2.8, 8),
+    new THREE.MeshStandardMaterial({ color: 0x594333, roughness: 1 }),
+    treePositions.length
+  );
+  const crownMesh = new THREE.InstancedMesh(
+    new THREE.IcosahedronGeometry(1.35, 1),
+    new THREE.MeshStandardMaterial({ color: 0x54734e, roughness: 0.96 }),
+    treePositions.length
+  );
+  const crownTopMesh = new THREE.InstancedMesh(
+    new THREE.IcosahedronGeometry(0.98, 1),
+    new THREE.MeshStandardMaterial({ color: 0x65845a, roughness: 0.96 }),
+    treePositions.length
+  );
+  const treeDummy = new THREE.Object3D();
+  for (let i = 0; i < treePositions.length; i++) {
+    const [tx, tz] = treePositions[i];
+    treeDummy.position.set(tx, 0.105, tz);
+    treeDummy.scale.set(1, 1, 1);
+    treeDummy.updateMatrix();
+    planterMesh.setMatrixAt(i, treeDummy.matrix);
+
+    treeDummy.position.set(tx, 1.52, tz);
+    treeDummy.updateMatrix();
+    trunkMesh.setMatrixAt(i, treeDummy.matrix);
+
+    treeDummy.position.set(tx, 3.35, tz);
+    treeDummy.scale.set(1, 1, 1);
+    treeDummy.updateMatrix();
+    crownMesh.setMatrixAt(i, treeDummy.matrix);
+
+    treeDummy.position.set(tx + 0.18, 4.12, tz - 0.08);
+    treeDummy.scale.set(0.94, 0.94, 0.94);
+    treeDummy.updateMatrix();
+    crownTopMesh.setMatrixAt(i, treeDummy.matrix);
+  }
+  city.add(planterMesh, trunkMesh, crownMesh, crownTopMesh);
+
+  // Streetlights are also instanced; no extra light sources or heavy effects.
+  const lampLocations = [];
+  for (let ix = 0; ix < streetPositions.length; ix += 2) {
+    for (let iz = 0; iz < streetPositions.length; iz += 2) {
+      const sx = streetPositions[ix];
+      const sz = streetPositions[iz];
+      for (const sideX of [-1, 1]) {
+        for (const sideZ of [-1, 1]) {
+          lampLocations.push({ x: sx + sideX * 5.35, z: sz + sideZ * 5.35, sideX });
+        }
+      }
+    }
+  }
+  const lampPoleMat = new THREE.MeshStandardMaterial({ color: 0x343d42, roughness: 0.64, metalness: 0.38 });
+  const lampGlowMat = new THREE.MeshStandardMaterial({
+    color: 0xffe8bd,
+    emissive: 0xffc66b,
+    emissiveIntensity: 0.32,
+    roughness: 0.38
+  });
+  const lampPoles = new THREE.InstancedMesh(
+    new THREE.CylinderGeometry(0.065, 0.095, 4.35, 8),
+    lampPoleMat,
+    lampLocations.length
+  );
+  const lampArms = new THREE.InstancedMesh(
+    new THREE.BoxGeometry(0.82, 0.085, 0.09),
+    lampPoleMat,
+    lampLocations.length
+  );
+  const lampHeads = new THREE.InstancedMesh(
+    new THREE.BoxGeometry(0.34, 0.16, 0.28),
+    lampGlowMat,
+    lampLocations.length
+  );
+  for (let i = 0; i < lampLocations.length; i++) {
+    const lamp = lampLocations[i];
+    treeDummy.position.set(lamp.x, 2.175, lamp.z);
+    treeDummy.rotation.set(0, 0, 0);
+    treeDummy.scale.set(1, 1, 1);
+    treeDummy.updateMatrix();
+    lampPoles.setMatrixAt(i, treeDummy.matrix);
+
+    treeDummy.position.set(lamp.x - lamp.sideX * 0.38, 4.23, lamp.z);
+    treeDummy.updateMatrix();
+    lampArms.setMatrixAt(i, treeDummy.matrix);
+
+    treeDummy.position.set(lamp.x - lamp.sideX * 0.78, 4.16, lamp.z);
+    treeDummy.updateMatrix();
+    lampHeads.setMatrixAt(i, treeDummy.matrix);
+  }
+  city.add(lampPoles, lampArms, lampHeads);
 
   console.info("Detailed city generated:", plotPositions.length * plotPositions.length - 4, "buildings");
 }
