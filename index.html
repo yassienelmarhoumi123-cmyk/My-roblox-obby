@@ -150,70 +150,69 @@ scene.add(ground);
 ------------------------------------------------------------------- */
 function buildCity() {
   const city = new THREE.Group();
-  city.name = "City Buildings";
+  city.name = "Detailed Downtown Buildings";
   scene.add(city);
 
-  const roadMat = new THREE.MeshStandardMaterial({ color: 0x343a40, roughness: 0.96 });
-  const sidewalkMat = new THREE.MeshStandardMaterial({ color: 0x969b9e, roughness: 0.94 });
-  const curbMat = new THREE.MeshStandardMaterial({ color: 0xb5b8b9, roughness: 0.9 });
-  const lineMat = new THREE.MeshStandardMaterial({ color: 0xd9d2ad, roughness: 0.85 });
-  const frameMat = new THREE.MeshStandardMaterial({ color: 0x555d64, roughness: 0.78, metalness: 0.12 });
-  const glassMat = new THREE.MeshStandardMaterial({
-    color: 0x66879a, roughness: 0.25, metalness: 0.18,
-    envMapIntensity: 0.65
+  const roadMat = new THREE.MeshStandardMaterial({ color: 0x30363c, roughness: 0.98 });
+  const sidewalkMat = new THREE.MeshStandardMaterial({ color: 0xa4a5a2, roughness: 0.96 });
+  const curbMat = new THREE.MeshStandardMaterial({ color: 0xc3c3bd, roughness: 0.92 });
+  const laneMat = new THREE.MeshStandardMaterial({ color: 0xe2d7b8, roughness: 0.9 });
+  const darkMetal = new THREE.MeshStandardMaterial({ color: 0x343c42, roughness: 0.7, metalness: 0.28 });
+  const balconyGlass = new THREE.MeshStandardMaterial({
+    color: 0x9bb5bf, roughness: 0.22, metalness: 0.16,
+    transparent: true, opacity: 0.76
   });
+  const windowGlass = new THREE.MeshStandardMaterial({
+    color: 0x68899a, roughness: 0.23, metalness: 0.2,
+    envMapIntensity: 0.8
+  });
+  const windowDark = new THREE.MeshStandardMaterial({
+    color: 0x263640, roughness: 0.26, metalness: 0.16
+  });
+  const concreteTrim = new THREE.MeshStandardMaterial({ color: 0xd1cec5, roughness: 0.88 });
+  const brickTrim = new THREE.MeshStandardMaterial({ color: 0x785c50, roughness: 0.94 });
 
-  // A deterministic variation keeps the city stable between reloads.
   let seed = 18473;
   const rand = () => {
     seed = (seed * 1664525 + 1013904223) >>> 0;
     return seed / 4294967296;
   };
 
+  const makeBox = (parent, name, width, height, depth, material, x, y, z) => {
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), material);
+    mesh.name = name;
+    mesh.position.set(x, y, z);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    parent.add(mesh);
+    return mesh;
+  };
+
   const streetPositions = [-60, -36, -12, 12, 36, 60];
   const roadLength = 190;
 
-  // Asphalt grid with raised sidewalks, leaving clear paths between plots.
+  // Asphalt, raised paving stones and curbs.
   for (const x of streetPositions) {
-    const road = new THREE.Mesh(new THREE.BoxGeometry(8.6, 0.08, roadLength), roadMat);
-    road.position.set(x, 0.015, 0);
+    const road = makeBox(city, "asphalt street", 8.6, 0.08, roadLength, roadMat, x, 0.015, 0);
     road.receiveShadow = true;
-    city.add(road);
-
     for (const side of [-1, 1]) {
-      const walk = new THREE.Mesh(new THREE.BoxGeometry(1.25, 0.13, roadLength), sidewalkMat);
-      walk.position.set(x + side * 5.0, 0.055, 0);
-      walk.receiveShadow = true;
-      city.add(walk);
-      const curb = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.2, roadLength), curbMat);
-      curb.position.set(x + side * 4.35, 0.12, 0);
-      curb.receiveShadow = true;
-      city.add(curb);
+      makeBox(city, "paved sidewalk", 1.25, 0.13, roadLength, sidewalkMat, x + side * 5.0, 0.055, 0);
+      makeBox(city, "stone curb", 0.16, 0.2, roadLength, curbMat, x + side * 4.35, 0.12, 0);
     }
   }
-
   for (const z of streetPositions) {
-    const road = new THREE.Mesh(new THREE.BoxGeometry(roadLength, 0.08, 8.6), roadMat);
-    road.position.set(0, 0.016, z);
+    const road = makeBox(city, "asphalt street", roadLength, 0.08, 8.6, roadMat, 0, 0.016, z);
     road.receiveShadow = true;
-    city.add(road);
-
     for (const side of [-1, 1]) {
-      const walk = new THREE.Mesh(new THREE.BoxGeometry(roadLength, 0.13, 1.25), sidewalkMat);
-      walk.position.set(0, 0.055, z + side * 5.0);
-      walk.receiveShadow = true;
-      city.add(walk);
-      const curb = new THREE.Mesh(new THREE.BoxGeometry(roadLength, 0.2, 0.16), curbMat);
-      curb.position.set(0, 0.12, z + side * 4.35);
-      curb.receiveShadow = true;
-      city.add(curb);
+      makeBox(city, "paved sidewalk", roadLength, 0.13, 1.25, sidewalkMat, 0, 0.055, z + side * 5.0);
+      makeBox(city, "stone curb", roadLength, 0.2, 0.16, curbMat, 0, 0.12, z + side * 4.35);
     }
   }
 
-  // Dashed lane markings, instanced so the road detail stays lightweight.
-  const dashGeometry = new THREE.BoxGeometry(0.16, 0.018, 2.5);
+  // Dashed lane markings on the crossing streets.
+  const dashGeometry = new THREE.BoxGeometry(0.15, 0.018, 2.4);
   const dashCount = streetPositions.length * 2 * 22;
-  const dashes = new THREE.InstancedMesh(dashGeometry, lineMat, dashCount);
+  const dashes = new THREE.InstancedMesh(dashGeometry, laneMat, dashCount);
   const dummy = new THREE.Object3D();
   let dashIndex = 0;
   for (const x of streetPositions) {
@@ -236,143 +235,261 @@ function buildCity() {
   dashes.instanceMatrix.needsUpdate = true;
   city.add(dashes);
 
-  // Instanced window frames and blue-grey glass across all building facades.
-  const frameGeometry = new THREE.BoxGeometry(1.08, 1.58, 0.14);
-  const glassGeometry = new THREE.BoxGeometry(0.88, 1.34, 0.08);
-  const maxWindows = 9000;
-  const frames = new THREE.InstancedMesh(frameGeometry, frameMat, maxWindows);
-  const panes = new THREE.InstancedMesh(glassGeometry, glassMat, maxWindows);
-  frames.castShadow = false;
-  frames.receiveShadow = false;
-  panes.castShadow = false;
-  panes.receiveShadow = false;
-  const windowDummy = new THREE.Object3D();
+  // Detailed, instanced window assemblies: outer frame, glass, mullions and sill.
+  const maxWindows = 12000;
+  const frames = new THREE.InstancedMesh(
+    new THREE.BoxGeometry(1.18, 1.62, 0.16), darkMetal, maxWindows
+  );
+  const panes = new THREE.InstancedMesh(
+    new THREE.BoxGeometry(0.96, 1.38, 0.075), windowGlass, maxWindows
+  );
+  const verticalBars = new THREE.InstancedMesh(
+    new THREE.BoxGeometry(0.045, 1.36, 0.105), darkMetal, maxWindows
+  );
+  const horizontalBars = new THREE.InstancedMesh(
+    new THREE.BoxGeometry(0.96, 0.045, 0.105), darkMetal, maxWindows
+  );
+  const sills = new THREE.InstancedMesh(
+    new THREE.BoxGeometry(1.25, 0.09, 0.28), concreteTrim, maxWindows
+  );
+  const lintels = new THREE.InstancedMesh(
+    new THREE.BoxGeometry(1.25, 0.08, 0.18), concreteTrim, maxWindows
+  );
+  const instancedWindows = [frames, panes, verticalBars, horizontalBars, sills, lintels];
+  for (const mesh of instancedWindows) {
+    mesh.castShadow = false;
+    mesh.receiveShadow = false;
+    city.add(mesh);
+  }
+  const winDummy = new THREE.Object3D();
   let windowIndex = 0;
 
-  const buildingPalette = [
-    0xaeb4b8, 0xc0bdb5, 0x8d9aa1, 0x9da5a8,
-    0xb6b2aa, 0x7e898f, 0xc5c3bd, 0x8f9699
-  ].map(color => new THREE.MeshStandardMaterial({ color, roughness: 0.9 }));
+  const addWindow = (x, y, z, rotationY) => {
+    if (windowIndex >= maxWindows) return;
+    const rotateOffset = (ox, oy, oz) => {
+      const offset = new THREE.Vector3(ox, oy, oz).applyAxisAngle(
+        new THREE.Vector3(0, 1, 0), rotationY
+      );
+      return new THREE.Vector3(x, y, z).add(offset);
+    };
+    const put = (mesh, px, py, pz) => {
+      const p = rotateOffset(px, py, pz);
+      winDummy.position.copy(p);
+      winDummy.rotation.set(0, rotationY, 0);
+      winDummy.scale.set(1, 1, 1);
+      winDummy.updateMatrix();
+      mesh.setMatrixAt(windowIndex, winDummy.matrix);
+    };
+    put(frames, 0, 0, 0);
+    put(panes, 0, 0, 0.055);
+    put(verticalBars, 0, 0, 0.11);
+    put(horizontalBars, 0, 0, 0.11);
+    put(sills, 0, -0.82, 0.08);
+    put(lintels, 0, 0.82, 0.07);
+    windowIndex++;
+  };
 
+  const facadePalette = [
+    { wall: 0xb9b5ab, trim: 0xd8d3c8, accent: 0x8b8175, kind: "stone" },
+    { wall: 0x9ca7a9, trim: 0xc2c8c5, accent: 0x5f7078, kind: "concrete" },
+    { wall: 0xa77e69, trim: 0xd2b59d, accent: 0x785447, kind: "brick" },
+    { wall: 0xc7bda9, trim: 0xe1d8c7, accent: 0x8e7964, kind: "stucco" },
+    { wall: 0x879399, trim: 0xb8c0c2, accent: 0x475963, kind: "modern" },
+    { wall: 0xb0a9a0, trim: 0xd3cbc0, accent: 0x77716b, kind: "stone" },
+    { wall: 0x9f8d7e, trim: 0xc8b39e, accent: 0x6d5b50, kind: "brick" },
+    { wall: 0xd0c9bc, trim: 0xe7e0d3, accent: 0x8f9898, kind: "stucco" }
+  ];
   const plotPositions = [-72, -48, -24, 24, 48, 72];
 
   for (const x of plotPositions) {
     for (const z of plotPositions) {
-      // Keep the four innermost plots open for a broad central intersection.
+      // Leave the central crossing open so the player has room to move.
       if (Math.abs(x) === 24 && Math.abs(z) === 24) continue;
 
-      const floors = 5 + Math.floor(rand() * 10);
-      const floorHeight = 2.75;
+      const style = Math.floor(rand() * 4);
+      const floors = style === 0 ? 4 + Math.floor(rand() * 4) : 6 + Math.floor(rand() * 8);
+      const floorHeight = style === 0 ? 3.05 : 2.9;
       const height = floors * floorHeight;
-      const width = 10.8 + rand() * 1.45;
-      const depth = 10.8 + rand() * 1.45;
-      const bodyMat = buildingPalette[Math.floor(rand() * buildingPalette.length)];
-
+      const width = 10.2 + rand() * 2.0;
+      const depth = 10.2 + rand() * 2.0;
+      const palette = facadePalette[Math.floor(rand() * facadePalette.length)];
+      const wallMat = new THREE.MeshStandardMaterial({
+        color: palette.wall, roughness: palette.kind === "modern" ? 0.72 : 0.92
+      });
+      const trimMat = new THREE.MeshStandardMaterial({ color: palette.trim, roughness: 0.86 });
+      const accentMat = new THREE.MeshStandardMaterial({ color: palette.accent, roughness: 0.9 });
       const building = new THREE.Group();
-      building.position.set(x + (rand() - 0.5) * 1.2, 0, z + (rand() - 0.5) * 1.2);
-      building.name = "City Building";
+      building.position.set(x + (rand() - 0.5) * 1.0, 0, z + (rand() - 0.5) * 1.0);
+      building.name = "Detailed " + palette.kind + " apartment building";
       city.add(building);
 
-      const body = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), bodyMat);
-      body.position.y = height / 2;
-      body.castShadow = true;
+      // Main facade, lower stone plinth and darker ground-floor band.
+      const body = makeBox(building, "plastered facade", width, height, depth, wallMat, 0, height / 2, 0);
       body.receiveShadow = true;
-      building.add(body);
+      makeBox(building, "stone base course", width + 0.32, 0.46, depth + 0.32,
+        accentMat, 0, 0.23, 0);
+      makeBox(building, "ground floor fascia", width + 0.08, 0.18, depth + 0.08,
+        trimMat, 0, 2.62, 0);
 
-      const base = new THREE.Mesh(
-        new THREE.BoxGeometry(width + 0.25, 0.45, depth + 0.25),
-        new THREE.MeshStandardMaterial({ color: 0x687177, roughness: 0.95 })
-      );
-      base.position.y = 0.225;
-      base.castShadow = true;
-      base.receiveShadow = true;
-      building.add(base);
-
-      // Narrow roof edge and a few rooftop service structures.
-      const parapetMat = new THREE.MeshStandardMaterial({ color: 0x747d82, roughness: 0.9 });
-      const parapetHeight = 0.34;
-      const parapets = [
-        [width + 0.12, parapetHeight, 0.18, 0, height + parapetHeight / 2, depth / 2],
-        [width + 0.12, parapetHeight, 0.18, 0, height + parapetHeight / 2, -depth / 2],
-        [0.18, parapetHeight, depth, width / 2, height + parapetHeight / 2, 0],
-        [0.18, parapetHeight, depth, -width / 2, height + parapetHeight / 2, 0]
-      ];
-      for (const [sx, sy, sz, px, py, pz] of parapets) {
-        const rail = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), parapetMat);
-        rail.position.set(px, py, pz);
-        building.add(rail);
+      // Repeated horizontal floor courses give the facade a believable scale.
+      for (let level = 1; level < floors; level++) {
+        const bandY = level * floorHeight;
+        makeBox(building, "front floor belt", width + 0.12, 0.075, 0.16,
+          trimMat, 0, bandY, depth / 2 + 0.035);
+        makeBox(building, "back floor belt", width + 0.12, 0.075, 0.16,
+          trimMat, 0, bandY, -depth / 2 - 0.035);
+        makeBox(building, "right floor belt", 0.16, 0.075, depth,
+          trimMat, width / 2 + 0.035, bandY, 0);
+        makeBox(building, "left floor belt", 0.16, 0.075, depth,
+          trimMat, -width / 2 - 0.035, bandY, 0);
       }
 
-      if (rand() > 0.35) {
-        const rooftop = new THREE.Mesh(
-          new THREE.BoxGeometry(width * (0.28 + rand() * 0.12), 1.15, depth * 0.3),
-          parapetMat
-        );
-        rooftop.position.set((rand() - 0.5) * 1.2, height + 0.72, (rand() - 0.5) * 1.0);
-        rooftop.castShadow = true;
-        rooftop.receiveShadow = true;
-        building.add(rooftop);
+      // Corner pilasters and framed front facade details.
+      for (const side of [-1, 1]) {
+        makeBox(building, "front vertical pilaster", 0.2, height, 0.24,
+          accentMat, side * (width / 2 - 0.16), height / 2, depth / 2 + 0.04);
+        makeBox(building, "side vertical pilaster", 0.24, height, 0.2,
+          accentMat, side * (width / 2 + 0.04), height / 2, 0);
       }
 
-      // Four-sided window grid. Frames and glass are stored in shared instances.
-      const addWindow = (px, py, pz, rotationY) => {
-        if (windowIndex >= maxWindows) return;
-        windowDummy.position.set(building.position.x + px, py, building.position.z + pz);
-        windowDummy.rotation.set(0, rotationY, 0);
-        windowDummy.scale.set(1, 1, 1);
-        windowDummy.updateMatrix();
-        frames.setMatrixAt(windowIndex, windowDummy.matrix);
-        panes.setMatrixAt(windowIndex, windowDummy.matrix);
-        windowIndex++;
-      };
+      // Entrance: stone portal, glazed door, side lights and a projecting canopy.
+      const entranceZ = depth / 2 + 0.11;
+      const doorFrameMat = new THREE.MeshStandardMaterial({ color: 0x515a5e, roughness: 0.72 });
+      const doorGlassMat = new THREE.MeshStandardMaterial({
+        color: 0x243c49, roughness: 0.22, metalness: 0.15
+      });
+      makeBox(building, "entrance portal left", 0.13, 2.55, 0.22,
+        trimMat, -0.82, 1.28, entranceZ);
+      makeBox(building, "entrance portal right", 0.13, 2.55, 0.22,
+        trimMat, 0.82, 1.28, entranceZ);
+      makeBox(building, "entrance portal top", 1.77, 0.16, 0.22,
+        trimMat, 0, 2.48, entranceZ);
+      makeBox(building, "glazed apartment entrance door", 1.42, 2.25, 0.07,
+        doorGlassMat, 0, 1.18, entranceZ + 0.04);
+      makeBox(building, "entrance canopy", 2.55, 0.12, 0.95,
+        accentMat, 0, 2.63, depth / 2 + 0.52);
+      for (const side of [-1, 1]) {
+        makeBox(building, "entry side glazing", 0.72, 1.72, 0.055,
+          windowGlass, side * 1.65, 1.22, entranceZ + 0.035);
+      }
+      makeBox(building, "entry steps", 2.5, 0.12, 0.62,
+        concreteTrim, 0, 0.06, depth / 2 + 0.58);
 
-      const makeFacade = (faceWidth, faceDepth, side) => {
-        const columns = Math.max(2, Math.floor(faceWidth / 2.4));
+      // Ground-floor shopfronts: broad glazing, narrow metal mullions and a sign band.
+      if (style === 2 || style === 3) {
+        const shopSignMat = new THREE.MeshStandardMaterial({ color: 0x343d43, roughness: 0.78 });
+        makeBox(building, "shop sign fascia", width * 0.68, 0.4, 0.18,
+          shopSignMat, 0, 2.48, depth / 2 + 0.13);
+        for (const side of [-1, 1]) {
+          makeBox(building, "shop display glass", 1.5, 1.8, 0.065,
+            windowGlass, side * 2.55, 1.25, depth / 2 + 0.12);
+          makeBox(building, "shop glass mullion", 0.055, 1.8, 0.09,
+            darkMetal, side * 2.55, 1.25, depth / 2 + 0.16);
+        }
+      }
+
+      // Four-sided window layout. Ground-floor center is kept clear for the door.
+      const makeFacade = (faceWidth, side) => {
+        const columns = Math.max(2, Math.floor(faceWidth / 2.25));
         for (let row = 0; row < floors; row++) {
-          const py = 1.48 + row * floorHeight;
+          const py = 1.58 + row * floorHeight;
           for (let col = 0; col < columns; col++) {
-            const spread = (col - (columns - 1) / 2) * (faceWidth / (columns + 0.2));
-            if (side === "front") addWindow(spread, py, depth / 2 + 0.08, 0);
-            if (side === "back") addWindow(spread, py, -depth / 2 - 0.08, Math.PI);
-            if (side === "right") addWindow(width / 2 + 0.08, py, spread, Math.PI / 2);
-            if (side === "left") addWindow(-width / 2 - 0.08, py, spread, -Math.PI / 2);
+            const spread = (col - (columns - 1) / 2) * (faceWidth / (columns + 0.35));
+            if (row === 0 && side === "front" && Math.abs(spread) < 1.4) continue;
+            if (side === "front") addWindow(building.position.x + spread, py, building.position.z + depth / 2 + 0.10, 0);
+            if (side === "back") addWindow(building.position.x + spread, py, building.position.z - depth / 2 - 0.10, Math.PI);
+            if (side === "right") addWindow(building.position.x + width / 2 + 0.10, py, building.position.z + spread, Math.PI / 2);
+            if (side === "left") addWindow(building.position.x - width / 2 - 0.10, py, building.position.z + spread, -Math.PI / 2);
           }
         }
       };
-      makeFacade(width, depth, "front");
-      makeFacade(width, depth, "back");
-      makeFacade(depth, width, "right");
-      makeFacade(depth, width, "left");
+      makeFacade(width, "front");
+      makeFacade(width, "back");
+      makeFacade(depth, "right");
+      makeFacade(depth, "left");
 
-      // A few slim vertical facade piers create a more finished city silhouette.
-      const pierMat = new THREE.MeshStandardMaterial({ color: 0x727e83, roughness: 0.88 });
-      for (const side of [-1, 1]) {
-        const pier = new THREE.Mesh(new THREE.BoxGeometry(0.12, height, 0.16), pierMat);
-        pier.position.set(side * (width / 2 - 0.12), height / 2, depth / 2 + 0.02);
-        building.add(pier);
+      // Selected buildings have real projecting balconies with glass balustrades.
+      if (style === 1 || (style === 0 && rand() > 0.5)) {
+        const columns = Math.max(2, Math.floor(width / 2.5));
+        const balconyRows = [];
+        for (let row = 2; row < floors - 1; row += (floors > 8 ? 2 : 1)) balconyRows.push(row);
+        for (let i = 0; i < Math.min(3, balconyRows.length); i++) {
+          const row = balconyRows[i];
+          const col = i % columns;
+          const spread = (col - (columns - 1) / 2) * (width / (columns + 0.35));
+          const balconyZ = depth / 2 + 0.62;
+          const balconyY = row * floorHeight + 0.34;
+          makeBox(building, "projecting balcony slab", 1.95, 0.13, 1.14,
+            accentMat, spread, balconyY, balconyZ);
+          makeBox(building, "balcony glass balustrade", 1.82, 0.7, 0.055,
+            balconyGlass, spread, balconyY + 0.39, balconyZ + 0.53);
+          for (const end of [-1, 1]) {
+            makeBox(building, "balcony side railing", 0.055, 0.7, 1.0,
+              darkMetal, spread + end * 0.92, balconyY + 0.39, balconyZ + 0.02);
+          }
+          makeBox(building, "balcony top rail", 1.9, 0.045, 0.075,
+            darkMetal, spread, balconyY + 0.76, balconyZ + 0.53);
+        }
+      }
+
+      // Selected air-conditioning units under some windows add residential detail.
+      if (rand() > 0.44) {
+        const acY = floorHeight * (2 + Math.floor(rand() * Math.max(1, floors - 3)));
+        const acX = (rand() - 0.5) * width * 0.55;
+        makeBox(building, "external air conditioning unit", 0.62, 0.32, 0.25,
+          new THREE.MeshStandardMaterial({ color: 0xd2d4d0, roughness: 0.8 }),
+          acX, acY, depth / 2 + 0.22);
+        makeBox(building, "air conditioner grille", 0.42, 0.18, 0.03,
+          darkMetal, acX, acY, depth / 2 + 0.37);
+      }
+
+      // Roof parapet, coping stones and roof plant equipment.
+      const parapetMat = new THREE.MeshStandardMaterial({ color: palette.accent, roughness: 0.9 });
+      const parapetH = 0.42;
+      makeBox(building, "front roof parapet", width + 0.25, parapetH, 0.2,
+        parapetMat, 0, height + parapetH / 2, depth / 2);
+      makeBox(building, "rear roof parapet", width + 0.25, parapetH, 0.2,
+        parapetMat, 0, height + parapetH / 2, -depth / 2);
+      makeBox(building, "left roof parapet", 0.2, parapetH, depth,
+        parapetMat, -width / 2, height + parapetH / 2, 0);
+      makeBox(building, "right roof parapet", 0.2, parapetH, depth,
+        parapetMat, width / 2, height + parapetH / 2, 0);
+
+      const machineMat = new THREE.MeshStandardMaterial({ color: 0x687278, roughness: 0.86 });
+      const machineX = (rand() - 0.5) * width * 0.3;
+      const machineZ = (rand() - 0.5) * depth * 0.3;
+      makeBox(building, "rooftop elevator housing", width * 0.27, 1.45, depth * 0.28,
+        machineMat, machineX, height + 0.74, machineZ);
+      for (let vent = 0; vent < 3; vent++) {
+        makeBox(building, "roof ventilation louvre", 0.09, 0.78, depth * 0.18,
+          darkMetal, machineX - 0.25 + vent * 0.25, height + 0.77, machineZ + depth * 0.145);
+      }
+      if (rand() > 0.55) {
+        const tank = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.46, 0.46, 1.15, 16),
+          machineMat
+        );
+        tank.name = "rooftop water tank";
+        tank.position.set(machineX + 1.1, height + 0.7, machineZ);
+        tank.castShadow = true;
+        building.add(tank);
       }
     }
   }
 
-  frames.count = windowIndex;
-  panes.count = windowIndex;
-  frames.instanceMatrix.needsUpdate = true;
-  panes.instanceMatrix.needsUpdate = true;
-  city.add(frames);
-  city.add(panes);
+  // Publish all window components in a handful of draw calls.
+  for (const mesh of instancedWindows) {
+    mesh.count = windowIndex;
+    mesh.instanceMatrix.needsUpdate = true;
+  }
 
-  // Simple paved plaza where the player spawns, clear of tall buildings.
-  const plaza = new THREE.Mesh(
-    new THREE.BoxGeometry(20, 0.045, 20),
-    new THREE.MeshStandardMaterial({ color: 0x8c9295, roughness: 0.92 })
-  );
-  plaza.position.set(0, 0.012, 0);
+  // A little city plaza remains free around the player spawn point.
+  const plaza = makeBox(city, "central paved plaza", 20, 0.045, 20,
+    new THREE.MeshStandardMaterial({ color: 0x9da19e, roughness: 0.94 }), 0, 0.012, 0);
   plaza.receiveShadow = true;
-  city.add(plaza);
 
-  console.info("City generated:", plotPositions.length * plotPositions.length - 4, "building plots");
+  console.info("Detailed city generated:", plotPositions.length * plotPositions.length - 4, "buildings");
 }
-
 
 buildCity();
 
