@@ -392,7 +392,6 @@ function addCustomBlackOutfit(characterRoot) {
 
 function prepareCharacter(gltf) {
   character = gltf.scene;
-  lengthenNeck(character);
   character.traverse((obj) => {
     if (!obj.isMesh) return;
     obj.castShadow = true;
