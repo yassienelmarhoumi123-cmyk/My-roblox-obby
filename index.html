@@ -154,8 +154,6 @@ function buildCity() {
   scene.add(city);
 
   const roadMat = new THREE.MeshStandardMaterial({ color: 0x30363c, roughness: 0.98 });
-  const sidewalkMat = new THREE.MeshStandardMaterial({ color: 0xa4a5a2, roughness: 0.96 });
-  const curbMat = new THREE.MeshStandardMaterial({ color: 0xc3c3bd, roughness: 0.92 });
   const laneMat = new THREE.MeshStandardMaterial({ color: 0xe2d7b8, roughness: 0.9 });
   const darkMetal = new THREE.MeshStandardMaterial({ color: 0x343c42, roughness: 0.7, metalness: 0.28 });
   const balconyGlass = new THREE.MeshStandardMaterial({
@@ -228,8 +226,6 @@ function buildCity() {
 
   const sidewalkMat = new THREE.MeshStandardMaterial({ color: 0xa4a5a2, roughness: 0.96 });
   const curbMat = new THREE.MeshStandardMaterial({ color: 0xc3c3bd, roughness: 0.92 });
-  const laneMat = new THREE.MeshStandardMaterial({ color: 0xf0eee6, roughness: 0.86 });
-  const yellowMat = new THREE.MeshStandardMaterial({ color: 0xd6b75f, roughness: 0.9 });
   const drainMat = new THREE.MeshStandardMaterial({ color: 0x333a3e, roughness: 0.82, metalness: 0.35 });
   const manholeMat = new THREE.MeshStandardMaterial({ color: 0x555c60, roughness: 0.7, metalness: 0.5 });
   const paverJointMat = new THREE.MeshStandardMaterial({ color: 0x777d7c, roughness: 1 });
@@ -352,6 +348,9 @@ function buildCity() {
   centerX.forEach((m, i) => centerMeshX.setMatrixAt(i, m));
   edgeZ.forEach((m, i) => edgeMeshZ.setMatrixAt(i, m));
   edgeX.forEach((m, i) => edgeMeshX.setMatrixAt(i, m));
+  for (const mesh of [centerMeshZ, centerMeshX, edgeMeshZ, edgeMeshX]) {
+    mesh.instanceMatrix.needsUpdate = true;
+  }
   city.add(centerMeshZ, centerMeshX, edgeMeshZ, edgeMeshX);
 
   // Zebra crossings at every street intersection.
@@ -380,6 +379,8 @@ function buildCity() {
   );
   crossZ.forEach((m, i) => zebraZ.setMatrixAt(i, m));
   crossX.forEach((m, i) => zebraX.setMatrixAt(i, m));
+  zebraZ.instanceMatrix.needsUpdate = true;
+  zebraX.instanceMatrix.needsUpdate = true;
   city.add(zebraZ, zebraX);
 
   // Drain grates close to curbs and cast-iron manhole covers between junctions.
