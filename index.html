@@ -80,6 +80,8 @@ canvas{display:block;width:100%;height:100%;outline:none}
 <script type="module">
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { KTX2Loader } from "three/addons/loaders/KTX2Loader.js";
+import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
 
 const root = document.getElementById("game");
 const statusEl = document.getElementById("status");
@@ -105,6 +107,12 @@ renderer.toneMappingExposure = 1.12;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 root.appendChild(renderer.domElement);
+
+// Tevy-Modelle verwenden KTX2-Texturen und Meshopt-komprimierte Geometrie.
+// Beide Decoder müssen vor dem GLB-Ladevorgang registriert werden.
+const ktx2Loader = new KTX2Loader()
+  .setTranscoderPath("https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/libs/basis/")
+  .detectSupport(renderer);
 
 const hemi = new THREE.HemisphereLight(0xe8f1ff, 0x646b75, 1.65);
 scene.add(hemi);
@@ -254,6 +262,8 @@ function prepareCharacter(gltf) {
 
 function loadCharacter() {
   const loader = new GLTFLoader();
+  loader.setKTX2Loader(ktx2Loader);
+  loader.setMeshoptDecoder(MeshoptDecoder);
   const modelUrl = "https://tevy.dev/models/casual-walker/v1/lod0.glb";
   loader.load(
     modelUrl,
@@ -266,7 +276,8 @@ function loadCharacter() {
     },
     (error) => {
       console.error("3D character load failed:", error);
-      showLoadError("Verbindung zum Modellserver fehlgeschlagen.");
+      const detail = error && error.message ? " (" + error.message + ")" : "";
+      showLoadError("3D-Modell konnte nicht geladen werden" + detail + ".");
     }
   );
 }
