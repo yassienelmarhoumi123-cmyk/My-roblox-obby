@@ -878,10 +878,10 @@ function updateAirPose() {
   for (const entry of airPoseBones) {
     let angle = 0;
     switch (entry.key) {
-      case "leftArm": angle = -0.55 + kick * 0.22; break;
-      case "rightArm": angle = -0.55 - kick * 0.22; break;
-      case "leftForearm": angle = -0.72; break;
-      case "rightForearm": angle = -0.72; break;
+      case "leftArm": angle = -1.05 + kick * 0.10; break;
+      case "rightArm": angle = -1.05 - kick * 0.10; break;
+      case "leftForearm": angle = -0.42; break;
+      case "rightForearm": angle = -0.42; break;
       case "leftThigh": angle = 0.25 + kick * 0.48; break;
       case "rightThigh": angle = 0.25 - kick * 0.48; break;
       case "leftShin": angle = -0.2 - tuck * 0.65; break;
@@ -994,7 +994,7 @@ function updateMovement(delta) {
   }
 
   const forwardInput = (keys.KeyW || keys.ArrowUp ? 1 : 0) - (keys.KeyS || keys.ArrowDown ? 1 : 0);
-  const sideInput = (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0);
+  const sideInput = (keys.KeyA || keys.ArrowLeft ? 1 : 0) - (keys.KeyD || keys.ArrowRight ? 1 : 0);
 
   forward.set(Math.sin(cameraYaw), 0, Math.cos(cameraYaw));
   right.set(Math.cos(cameraYaw), 0, -Math.sin(cameraYaw));
