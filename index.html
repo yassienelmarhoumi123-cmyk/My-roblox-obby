@@ -191,184 +191,49 @@ function buildCity() {
   const streetPositions = [-60, -36, -12, 12, 36, 60];
   const roadLength = 190;
 
-  // Realistic road surfaces, textured asphalt, tiled sidewalks and road markings.
-  // All repeated details are instanced to keep draw calls low.
-  const asphaltSize = 128;
-  const asphaltPixels = new Uint8Array(asphaltSize * asphaltSize * 4);
-  let asphaltSeed = 92831;
-  for (let i = 0; i < asphaltSize * asphaltSize; i++) {
-    asphaltSeed = (asphaltSeed * 1664525 + 1013904223) >>> 0;
-    const grain = 76 + (asphaltSeed >>> 24) * 0.34;
-    const p = i * 4;
-    asphaltPixels[p] = grain;
-    asphaltPixels[p + 1] = grain + 2;
-    asphaltPixels[p + 2] = grain + 5;
-    asphaltPixels[p + 3] = 255;
-  }
-  const asphaltTexture = new THREE.DataTexture(asphaltPixels, asphaltSize, asphaltSize, THREE.RGBAFormat);
-  asphaltTexture.wrapS = THREE.RepeatWrapping;
-  asphaltTexture.wrapT = THREE.RepeatWrapping;
-  asphaltTexture.repeat.set(1, 22);
-  asphaltTexture.colorSpace = THREE.SRGBColorSpace;
-  asphaltTexture.magFilter = THREE.LinearFilter;
-  asphaltTexture.minFilter = THREE.LinearMipmapLinearFilter;
-  asphaltTexture.generateMipmaps = true;
-  asphaltTexture.needsUpdate = true;
-  roadMat.map = asphaltTexture;
-  roadMat.color.set(0xffffff);
-  roadMat.roughness = 0.94;
-
-  const markingMat = new THREE.MeshStandardMaterial({ color: 0xe7e2d2, roughness: 0.86 });
-  const edgeLineMat = new THREE.MeshStandardMaterial({ color: 0xc7c3b5, roughness: 0.9 });
-  const tileLineMat = new THREE.MeshStandardMaterial({ color: 0x858985, roughness: 0.98 });
-  const drainMat = new THREE.MeshStandardMaterial({ color: 0x41494d, roughness: 0.82, metalness: 0.18 });
-  const manholeMat = new THREE.MeshStandardMaterial({ color: 0x596166, roughness: 0.78, metalness: 0.24 });
-
-  const streetPositions = [-60, -36, -12, 12, 36, 60];
-  const roadLength = 190;
-
+  // Asphalt, raised paving stones and curbs.
   for (const x of streetPositions) {
-    const road = makeBox(city, "textured asphalt street", 8.6, 0.08, roadLength, roadMat, x, 0.015, 0);
+    const road = makeBox(city, "asphalt street", 8.6, 0.08, roadLength, roadMat, x, 0.015, 0);
     road.receiveShadow = true;
     for (const side of [-1, 1]) {
-      makeBox(city, "wide concrete sidewalk", 1.25, 0.13, roadLength, sidewalkMat, x + side * 5.0, 0.055, 0);
-      makeBox(city, "raised stone curb", 0.16, 0.2, roadLength, curbMat, x + side * 4.35, 0.12, 0);
+      makeBox(city, "paved sidewalk", 1.25, 0.13, roadLength, sidewalkMat, x + side * 5.0, 0.055, 0);
+      makeBox(city, "stone curb", 0.16, 0.2, roadLength, curbMat, x + side * 4.35, 0.12, 0);
     }
   }
   for (const z of streetPositions) {
-    const road = makeBox(city, "textured asphalt street", roadLength, 0.08, 8.6, roadMat, 0, 0.016, z);
+    const road = makeBox(city, "asphalt street", roadLength, 0.08, 8.6, roadMat, 0, 0.016, z);
     road.receiveShadow = true;
     for (const side of [-1, 1]) {
-      makeBox(city, "wide concrete sidewalk", roadLength, 0.13, 1.25, sidewalkMat, 0, 0.055, z + side * 5.0);
-      makeBox(city, "raised stone curb", roadLength, 0.2, 0.16, curbMat, 0, 0.12, z + side * 4.35);
+      makeBox(city, "paved sidewalk", roadLength, 0.13, 1.25, sidewalkMat, 0, 0.055, z + side * 5.0);
+      makeBox(city, "stone curb", roadLength, 0.2, 0.16, curbMat, 0, 0.12, z + side * 4.35);
     }
   }
 
-  // Dashed center lines and continuous road-edge guide lines.
-  const centerDashGeo = new THREE.BoxGeometry(0.13, 0.022, 2.35);
-  const centerDashCount = streetPositions.length * 22 * 2;
-  const centerDashes = new THREE.InstancedMesh(centerDashGeo, markingMat, centerDashCount);
-  const edgeGeoZ = new THREE.BoxGeometry(0.075, 0.014, roadLength - 2);
-  const edgeGeoX = new THREE.BoxGeometry(roadLength - 2, 0.014, 0.075);
-  const edgeZ = new THREE.InstancedMesh(edgeGeoZ, edgeLineMat, streetPositions.length * 2);
-  const edgeX = new THREE.InstancedMesh(edgeGeoX, edgeLineMat, streetPositions.length * 2);
-  const markDummy = new THREE.Object3D();
-  let centerIndex = 0, edgeIndex = 0;
+  // Dashed lane markings on the crossing streets.
+  const dashGeometry = new THREE.BoxGeometry(0.15, 0.018, 2.4);
+  const dashCount = streetPositions.length * 2 * 22;
+  const dashes = new THREE.InstancedMesh(dashGeometry, laneMat, dashCount);
+  const dummy = new THREE.Object3D();
+  let dashIndex = 0;
   for (const x of streetPositions) {
     for (let z = -84; z <= 84; z += 8) {
-      markDummy.position.set(x, 0.064, z);
-      markDummy.rotation.set(0, 0, 0);
-      markDummy.updateMatrix();
-      centerDashes.setMatrixAt(centerIndex++, markDummy.matrix);
-    }
-    for (const side of [-1, 1]) {
-      markDummy.position.set(x + side * 3.78, 0.063, 0);
-      markDummy.rotation.set(0, 0, 0);
-      markDummy.updateMatrix();
-      edgeZ.setMatrixAt(edgeIndex, markDummy.matrix);
-      edgeX.setMatrixAt(edgeIndex, markDummy.matrix);
-      edgeIndex++;
+      dummy.position.set(x, 0.064, z);
+      dummy.rotation.set(0, 0, 0);
+      dummy.updateMatrix();
+      dashes.setMatrixAt(dashIndex++, dummy.matrix);
     }
   }
-  // Horizontal road dashes are rotated so their long axis follows the street.
   for (const z of streetPositions) {
     for (let x = -84; x <= 84; x += 8) {
-      markDummy.position.set(x, 0.064, z);
-      markDummy.rotation.set(0, Math.PI / 2, 0);
-      markDummy.updateMatrix();
-      centerDashes.setMatrixAt(centerIndex++, markDummy.matrix);
+      dummy.position.set(x, 0.065, z);
+      dummy.rotation.set(0, Math.PI / 2, 0);
+      dummy.updateMatrix();
+      dashes.setMatrixAt(dashIndex++, dummy.matrix);
     }
   }
-  centerDashes.count = centerIndex;
-  centerDashes.instanceMatrix.needsUpdate = true;
-  edgeZ.count = streetPositions.length * 2;
-  edgeZ.instanceMatrix.needsUpdate = true;
-  city.add(centerDashes, edgeZ);
-
-  // Zebra crossings at each street junction, using one instanced mesh.
-  const zebraGeo = new THREE.BoxGeometry(0.58, 0.026, 0.92);
-  const zebraCapacity = streetPositions.length * streetPositions.length * 2 * 10;
-  const zebra = new THREE.InstancedMesh(zebraGeo, markingMat, zebraCapacity);
-  let zebraIndex = 0;
-  for (const x of streetPositions) {
-    for (const z of streetPositions) {
-      for (let stripe = -4; stripe <= 4; stripe++) {
-        markDummy.position.set(x + stripe * 0.78, 0.067, z - 5.35);
-        markDummy.rotation.set(0, 0, 0);
-        markDummy.updateMatrix();
-        zebra.setMatrixAt(zebraIndex++, markDummy.matrix);
-        markDummy.position.set(x + stripe * 0.78, 0.067, z + 5.35);
-        markDummy.updateMatrix();
-        zebra.setMatrixAt(zebraIndex++, markDummy.matrix);
-      }
-    }
-  }
-  zebra.count = zebraIndex;
-  zebra.instanceMatrix.needsUpdate = true;
-  city.add(zebra);
-
-  // Fine paving joints make the sidewalks read as individual stone slabs.
-  const pavingGeo = new THREE.BoxGeometry(0.035, 0.012, 1.22);
-  const pavingCount = streetPositions.length * 2 * 48 * 2;
-  const paving = new THREE.InstancedMesh(pavingGeo, tileLineMat, pavingCount);
-  let pavingIndex = 0;
-  for (const x of streetPositions) {
-    for (const side of [-1, 1]) {
-      for (let z = -93; z <= 93; z += 4) {
-        markDummy.position.set(x + side * 5.0, 0.126, z);
-        markDummy.rotation.set(0, 0, 0);
-        markDummy.updateMatrix();
-        paving.setMatrixAt(pavingIndex++, markDummy.matrix);
-      }
-    }
-  }
-  // Cross-joints on the sidewalks running perpendicular to the first set.
-  const pavingCrossGeo = new THREE.BoxGeometry(1.22, 0.012, 0.035);
-  const pavingCross = new THREE.InstancedMesh(pavingCrossGeo, tileLineMat, pavingCount);
-  let pavingCrossIndex = 0;
-  for (const z of streetPositions) {
-    for (const side of [-1, 1]) {
-      for (let x = -93; x <= 93; x += 4) {
-        markDummy.position.set(x, 0.126, z + side * 5.0);
-        markDummy.rotation.set(0, 0, 0);
-        markDummy.updateMatrix();
-        pavingCross.setMatrixAt(pavingCrossIndex++, markDummy.matrix);
-      }
-    }
-  }
-  paving.count = pavingIndex;
-  paving.instanceMatrix.needsUpdate = true;
-  pavingCross.count = pavingCrossIndex;
-  pavingCross.instanceMatrix.needsUpdate = true;
-  city.add(paving, pavingCross);
-
-  // Manhole covers and narrow storm-water grates along the curbs.
-  const manholeGeo = new THREE.CylinderGeometry(0.42, 0.42, 0.035, 20);
-  const manholes = new THREE.InstancedMesh(manholeGeo, manholeMat, streetPositions.length * 6);
-  const drainGeo = new THREE.BoxGeometry(0.72, 0.025, 0.18);
-  const drains = new THREE.InstancedMesh(drainGeo, drainMat, streetPositions.length * 2 * 8);
-  let manholeIndex = 0, drainIndex = 0;
-  for (const x of streetPositions) {
-    for (const z of [-72, -24, 24, 72]) {
-      markDummy.position.set(x + 2.75, 0.067, z);
-      markDummy.rotation.set(0, 0, 0);
-      markDummy.updateMatrix();
-      manholes.setMatrixAt(manholeIndex++, markDummy.matrix);
-    }
-    for (const side of [-1, 1]) {
-      for (const z of [-84, -60, -36, -12, 12, 36, 60, 84]) {
-        markDummy.position.set(x + side * 4.23, 0.067, z);
-        markDummy.rotation.set(0, 0, 0);
-        markDummy.updateMatrix();
-        drains.setMatrixAt(drainIndex++, markDummy.matrix);
-      }
-    }
-  }
-  manholes.count = manholeIndex;
-  manholes.instanceMatrix.needsUpdate = true;
-  drains.count = drainIndex;
-  drains.instanceMatrix.needsUpdate = true;
-  city.add(manholes, drains);
+  dashes.count = dashIndex;
+  dashes.instanceMatrix.needsUpdate = true;
+  city.add(dashes);
 
   // Detailed, instanced window assemblies: outer frame, glass, mullions and sill.
   const maxWindows = 12000;
