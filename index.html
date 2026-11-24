@@ -57,19 +57,16 @@ canvas{display:block;width:100%;height:100%;outline:none}
 
 
 
+
 <style>
-#supercar-launch{position:fixed;right:22px;top:76px;z-index:8;border:1px solid #ffffff42;border-radius:12px;padding:11px 15px;background:#182431e8;color:#fff;font:800 11px Inter,system-ui,sans-serif;letter-spacing:.08em;cursor:pointer;backdrop-filter:blur(12px);box-shadow:0 8px 28px #0003}
-#supercar-mode{position:fixed;inset:0;z-index:40;display:none;background:#111923;color:white;font-family:Inter,system-ui,sans-serif}
-#supercar-mode.active{display:block}
-#supercar-canvas{width:100%;height:100%;display:block}
-#supercar-hud{position:absolute;left:18px;top:18px;background:#101820e8;border:1px solid #ffffff25;border-radius:15px;padding:13px 16px;backdrop-filter:blur(10px)}
-#supercar-title{font-size:12px;font-weight:900;letter-spacing:.12em}
-#supercar-info{font-size:11px;color:#c2cbd4;margin-top:6px}
-#supercar-speed{font-size:32px;font-weight:900;margin-top:9px}
-#supercar-controls{position:absolute;right:18px;top:18px;display:flex;gap:8px}
-#supercar-controls button{border:1px solid #ffffff35;border-radius:11px;padding:11px 13px;background:#101820e8;color:#fff;font-size:11px;font-weight:800;cursor:pointer}
-#supercar-help{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);background:#101820d9;border:1px solid #ffffff28;border-radius:13px;padding:10px 15px;text-align:center;font-size:11px;white-space:nowrap}
-@media(max-width:650px){#supercar-launch{right:14px;top:68px}#supercar-hud{left:10px;top:10px}#supercar-controls{right:10px;top:auto;bottom:62px}#supercar-help{bottom:10px;font-size:10px;max-width:calc(100% - 20px);white-space:normal}}
+#vehicle-prompt{position:fixed;left:50%;bottom:104px;transform:translateX(-50%);z-index:7;display:none;align-items:center;gap:10px;padding:10px 15px;border:1px solid #ffffff45;border-radius:12px;background:#111820d9;color:#fff;font-size:12px;font-weight:800;letter-spacing:.04em;backdrop-filter:blur(12px);box-shadow:0 10px 30px #0003;white-space:nowrap}
+#vehicle-prompt-key{display:grid;place-items:center;width:26px;height:26px;border:1px solid #ffffff55;border-bottom-width:3px;border-radius:7px;background:#ffffff16;font-size:12px}
+#vehicle-hud{position:fixed;left:22px;top:76px;z-index:7;display:none;min-width:140px;padding:12px 15px;border:1px solid #ffffff35;border-radius:13px;background:#111820c9;color:#fff;backdrop-filter:blur(12px);box-shadow:0 10px 30px #0002}
+#vehicle-hud-label{font-size:9px;font-weight:900;letter-spacing:.16em;color:#e7edf3b8}
+#vehicle-speed{font-size:29px;font-weight:900;line-height:1.25;font-variant-numeric:tabular-nums}
+#vehicle-speed-unit{font-size:10px;color:#ffffffa8;letter-spacing:.1em}
+#vehicle-hud-help{font-size:9px;color:#ffffffa8;margin-top:5px}
+@media(max-width:650px){#vehicle-prompt{bottom:122px;max-width:calc(100% - 24px);font-size:10px}#vehicle-hud{left:12px;top:66px;padding:9px 12px}#vehicle-speed{font-size:24px}}
 </style>
 
 </head>
@@ -77,13 +74,6 @@ canvas{display:block;width:100%;height:100%;outline:none}
 <div id="game"></div>
 
 
-<button id="supercar-launch" type="button">🏎️ SUPERCAR FAHREN</button>
-<section id="supercar-mode" aria-label="3D Supercar driving game">
- <canvas id="supercar-canvas"></canvas>
- <div id="supercar-hud"><div id="supercar-title">SUPERCAR · DRIVE</div><div id="supercar-info">Lade das 3D-Auto …</div><div id="supercar-speed">0 <span style="font-size:12px;color:#c5ced6">KM/H</span></div></div>
- <div id="supercar-controls"><button id="supercar-reset">↻ RESET</button><button id="supercar-exit">✕ ZURÜCK</button></div>
- <div id="supercar-help">W / ↑ Gas · S / ↓ Bremsen · A / D Lenken · SPACE Handbremse · Maus = Kamera</div>
-</section>
 <div id="topbar">
  <div id="mark" aria-hidden="true">
   <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 19 7v5.5c0 4.5-3 7-7 8.5-4-1.5-7-4-7-8.5V7l7-3.5Z"/><path d="M8.5 12.3 11 15l4.8-5"/></svg>
@@ -102,6 +92,10 @@ canvas{display:block;width:100%;height:100%;outline:none}
  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 2.64-6.36L3 8"/><path d="M3 3v5h5"/></svg>
 </button>
 <div id="credit">GRAB3D MAN BASE MESH · RIGGED · CC0</div>
+
+<div id="vehicle-prompt" aria-live="polite"><span id="vehicle-prompt-key">E</span><span id="vehicle-prompt-text">E · EINSTEIGEN</span></div>
+<div id="vehicle-hud"><div id="vehicle-hud-label">SUPERCAR · FAHREN</div><div><span id="vehicle-speed">0</span> <span id="vehicle-speed-unit">KM/H</span></div><div id="vehicle-hud-help">WASD fahren · E aussteigen · Maus Kamera</div></div>
+
 <div id="loading">
  <div class="spinner" id="spinner"></div>
  <div id="load-title">GRAB3D-FIGUR WIRD GELADEN</div>
@@ -117,6 +111,11 @@ import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
 
 const root = document.getElementById("game");
 const statusEl = document.getElementById("status");
+const vehiclePrompt = document.getElementById("vehicle-prompt");
+const vehiclePromptText = document.getElementById("vehicle-prompt-text");
+const vehicleHud = document.getElementById("vehicle-hud");
+const vehicleSpeedEl = document.getElementById("vehicle-speed");
+const helpEl = document.getElementById("help");
 const loadingEl = document.getElementById("loading");
 const loadTitle = document.getElementById("load-title");
 const loadCopy = document.getElementById("load-copy");
@@ -787,6 +786,195 @@ groundShadow.rotation.x = -Math.PI/2;
 groundShadow.position.y = 0.004;
 player.add(groundShadow);
 
+
+const vehicle = new THREE.Group();
+vehicle.name = "Player Supercar";
+vehicle.position.set(4.2, 0, 0);
+scene.add(vehicle);
+let vehicleVisual = null;
+let vehicleWheelParts = [];
+let vehicleReady = false;
+let driving = false;
+let vehicleSpeed = 0;
+let vehicleYaw = 0;
+const walkingHelpMarkup = helpEl.innerHTML;
+
+function addVehiclePart(parent, geometry, material, position, name) {
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.position.set(position[0], position[1], position[2]);
+  mesh.name = name || "vehicle-part";
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  parent.add(mesh);
+  return mesh;
+}
+
+function makeFallbackVehicle() {
+  const car = new THREE.Group();
+  const paint = new THREE.MeshStandardMaterial({color:0xe86626, metalness:0.62, roughness:0.27});
+  const darkPaint = new THREE.MeshStandardMaterial({color:0x171d25, metalness:0.35, roughness:0.3});
+  const glass = new THREE.MeshStandardMaterial({color:0x152b3b, metalness:0.35, roughness:0.16});
+  const rubber = new THREE.MeshStandardMaterial({color:0x101215, roughness:0.88});
+  const alloy = new THREE.MeshStandardMaterial({color:0xb8c0c6, metalness:0.85, roughness:0.22});
+  const lamp = new THREE.MeshStandardMaterial({color:0xe7f5ff, emissive:0x8bbbe7, emissiveIntensity:0.8});
+  const rearLamp = new THREE.MeshStandardMaterial({color:0x9d1720, emissive:0x9d1119, emissiveIntensity:0.65});
+  addVehiclePart(car,new THREE.BoxGeometry(2.02,.48,4.45),paint,[0,.67,0],"body");
+  addVehiclePart(car,new THREE.BoxGeometry(1.92,.16,1.05),paint,[0,.91,1.47],"hood");
+  addVehiclePart(car,new THREE.BoxGeometry(1.48,.62,1.72),glass,[0,1.08,-.18],"glass-cabin");
+  addVehiclePart(car,new THREE.BoxGeometry(1.62,.13,.72),darkPaint,[0,.87,-1.55],"rear-deck");
+  addVehiclePart(car,new THREE.BoxGeometry(1.9,.12,.2),darkPaint,[0,.48,2.18],"front-splitter");
+  for (const side of [-1,1]) {
+    addVehiclePart(car,new THREE.BoxGeometry(.38,.12,.24),lamp,[side*.69,.76,2.18],"headlight");
+    addVehiclePart(car,new THREE.BoxGeometry(.32,.1,.16),rearLamp,[side*.69,.77,-2.2],"tail-light");
+    for (const z of [-1.42,1.38]) {
+      const tire = addVehiclePart(car,new THREE.CylinderGeometry(.37,.37,.26,24),rubber,[side*1.04,.4,z],"wheel");
+      tire.rotation.z = Math.PI/2;
+      const rim = addVehiclePart(car,new THREE.CylinderGeometry(.19,.19,.275,16),alloy,[side*1.04,.4,z],"alloy-rim");
+      rim.rotation.z = Math.PI/2;
+      vehicleWheelParts.push(tire,rim);
+    }
+  }
+  return car;
+}
+
+function installVehicleModel(model) {
+  const bounds = new THREE.Box3().setFromObject(model);
+  const dimensions = new THREE.Vector3();
+  bounds.getSize(dimensions);
+  const longestSide = Math.max(dimensions.x, dimensions.z);
+  if (!Number.isFinite(longestSide) || longestSide < 0.2) {
+    throw new Error("Das 3D-Automodell hat keine gültige Größe.");
+  }
+
+  // Normalize the downloaded GLB to a realistic car length of about 4.5 metres.
+  model.scale.setScalar(4.5 / longestSide);
+  const fittedBounds = new THREE.Box3().setFromObject(model);
+  model.position.x -= (fittedBounds.min.x + fittedBounds.max.x) * 0.5;
+  model.position.z -= (fittedBounds.min.z + fittedBounds.max.z) * 0.5;
+  model.position.y -= fittedBounds.min.y;
+  vehicleWheelParts = [];
+  model.traverse((part) => {
+    if (part.isMesh) {
+      part.castShadow = true;
+      part.receiveShadow = true;
+    }
+    if (/wheel|tire|tyre|reifen|rad/i.test(part.name || "")) {
+      vehicleWheelParts.push(part);
+    }
+  });
+
+  if (vehicleVisual) vehicle.remove(vehicleVisual);
+  vehicleVisual = model;
+  vehicle.add(vehicleVisual);
+  vehicleReady = true;
+  console.info("3D supercar loaded into the original character scene.");
+}
+
+function loadVehicle() {
+  // A visible fallback is shown immediately while the detailed GLB downloads.
+  vehicleVisual = makeFallbackVehicle();
+  vehicle.add(vehicleVisual);
+  vehicleReady = true;
+
+  const loader = new GLTFLoader();
+  loader.load(
+    "https://tevy.dev/models/supercar/v2/lod2.glb",
+    (gltf) => {
+      try {
+        installVehicleModel(gltf.scene);
+      } catch (error) {
+        console.error("Supercar model setup failed; keeping fallback:", error);
+      }
+    },
+    undefined,
+    (error) => {
+      console.warn("External supercar GLB unavailable; keeping the in-game fallback car.", error);
+    }
+  );
+}
+
+function updateVehiclePrompt() {
+  if (driving) {
+    vehiclePrompt.style.display = "flex";
+    vehiclePromptText.textContent = "E · AUSSTEIGEN";
+    return;
+  }
+  const closeEnough = vehicleReady && player.position.distanceTo(vehicle.position) < 6.2;
+  vehiclePrompt.style.display = closeEnough ? "flex" : "none";
+  vehiclePromptText.textContent = "E · EINSTEIGEN";
+}
+
+function enterVehicle() {
+  if (!vehicleReady || player.position.distanceTo(vehicle.position) >= 6.2) return;
+  driving = true;
+  vehicleSpeed = 0;
+  vehicleYaw = vehicle.rotation.y;
+  velocity.set(0,0,0);
+  jumpQueued = false;
+  if (character) character.visible = false;
+  groundShadow.visible = false;
+  vehicleHud.style.display = "block";
+  helpEl.innerHTML = '<div class="help-item"><div class="keys"><span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span></div><span>Fahren / Lenken</span></div><div class="help-item"><span class="key">SPACE</span><span>Handbremse</span></div><div class="help-item"><span class="key">E</span><span>Aussteigen</span></div><div class="help-item"><span class="key">MAUS</span><span>Kamera</span></div>';
+  cameraDistance = 8.6;
+  cameraPitch = 0.18;
+}
+
+function exitVehicle() {
+  driving = false;
+  vehicleSpeed = 0;
+  const side = new THREE.Vector3(Math.cos(vehicleYaw),0,-Math.sin(vehicleYaw));
+  player.position.copy(vehicle.position).addScaledVector(side,2.45);
+  player.position.y = 0;
+  player.rotation.y = vehicleYaw;
+  velocity.set(0,0,0);
+  if (character) character.visible = true;
+  groundShadow.visible = true;
+  vehicleHud.style.display = "none";
+  helpEl.innerHTML = walkingHelpMarkup;
+  cameraDistance = 5.6;
+  cameraPitch = 0.16;
+}
+
+function toggleVehicle() {
+  if (driving) exitVehicle();
+  else enterVehicle();
+}
+
+function updateVehicleMovement(delta) {
+  if (!driving) return;
+  const accelerate = keys.KeyW || keys.ArrowUp;
+  const reverse = keys.KeyS || keys.ArrowDown;
+  const steer = (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0);
+
+  if (accelerate) {
+    vehicleSpeed = Math.min(42, vehicleSpeed + 15 * delta);
+  } else if (reverse) {
+    if (vehicleSpeed > 0.5) vehicleSpeed = Math.max(0, vehicleSpeed - 30 * delta);
+    else vehicleSpeed = Math.max(-11, vehicleSpeed - 9 * delta);
+  } else {
+    vehicleSpeed *= Math.exp(-1.15 * delta);
+    if (Math.abs(vehicleSpeed) < 0.035) vehicleSpeed = 0;
+  }
+  if (keys.Space) vehicleSpeed *= Math.exp(-5.5 * delta);
+
+  const steeringStrength = 0.25 + Math.min(Math.abs(vehicleSpeed) / 12, 1) * 0.82;
+  if (Math.abs(vehicleSpeed) > 0.12) {
+    vehicleYaw += steer * steeringStrength * delta * (vehicleSpeed >= 0 ? 1 : -1);
+  }
+  vehicle.position.x += Math.sin(vehicleYaw) * vehicleSpeed * delta;
+  vehicle.position.z += Math.cos(vehicleYaw) * vehicleSpeed * delta;
+  vehicle.position.x = THREE.MathUtils.clamp(vehicle.position.x,-88,88);
+  vehicle.position.z = THREE.MathUtils.clamp(vehicle.position.z,-88,88);
+  vehicle.rotation.y = vehicleYaw;
+
+  const wheelTurn = vehicleSpeed * delta / 0.36;
+  for (const wheel of vehicleWheelParts) {
+    if (wheel && wheel.rotation) wheel.rotation.x += wheelTurn;
+  }
+  vehicleSpeedEl.textContent = String(Math.round(Math.abs(vehicleSpeed) * 3.6));
+}
+
+
 const clock = new THREE.Clock();
 const keys = Object.create(null);
 const velocity = new THREE.Vector3();
@@ -1000,6 +1188,7 @@ function loadCharacter() {
 }
 
 function updateMovement(delta) {
+  if (driving) { jumpQueued = false; return; }
   if (!characterReady) {
     jumpQueued = false;
     return;
@@ -1064,12 +1253,15 @@ function updateMovement(delta) {
 }
 
 function updateCamera(delta) {
-  const target = new THREE.Vector3(player.position.x, player.position.y + 1.16, player.position.z);
+  const target = driving
+    ? new THREE.Vector3(vehicle.position.x, vehicle.position.y + 1.35, vehicle.position.z)
+    : new THREE.Vector3(player.position.x, player.position.y + 1.16, player.position.z);
+  const followYaw = cameraYaw + (driving ? vehicleYaw : 0);
   const horizontalDistance = cameraDistance * Math.cos(cameraPitch);
   const offset = new THREE.Vector3(
-    -Math.sin(cameraYaw) * horizontalDistance,
+    -Math.sin(followYaw) * horizontalDistance,
     cameraDistance * Math.sin(cameraPitch) + 0.18,
-    -Math.cos(cameraYaw) * horizontalDistance
+    -Math.cos(followYaw) * horizontalDistance
   );
   const wantedPosition = target.clone().add(offset);
   camera.position.lerp(wantedPosition, 1 - Math.exp(-7.5 * delta));
@@ -1080,17 +1272,21 @@ function animate() {
   requestAnimationFrame(animate);
   const delta = Math.min(clock.getDelta(), 0.04);
   updateMovement(delta);
-  if (mixer) mixer.update(delta);
-  updateAirPose();
+  updateVehicleMovement(delta);
+  if (mixer && !driving) mixer.update(delta);
+  if (!driving) updateAirPose();
+  updateVehiclePrompt();
   updateCamera(delta);
   renderer.render(scene,camera);
 }
 animate();
 loadCharacter();
+loadVehicle();
 
 window.addEventListener("keydown", (event) => {
-  if (["KeyW","KeyA","KeyS","KeyD","ArrowUp","ArrowDown","ArrowLeft","ArrowRight","Space"].includes(event.code)) event.preventDefault();
-  if (event.code === "Space" && !event.repeat && isGrounded) jumpQueued = true;
+  if (["KeyW","KeyA","KeyS","KeyD","ArrowUp","ArrowDown","ArrowLeft","ArrowRight","Space","KeyE"].includes(event.code)) event.preventDefault();
+  if (event.code === "KeyE" && !event.repeat) toggleVehicle();
+  if (event.code === "Space" && !event.repeat && isGrounded && !driving) jumpQueued = true;
   keys[event.code] = true;
 });
 window.addEventListener("keyup", (event) => { keys[event.code] = false; });
@@ -1130,63 +1326,6 @@ window.addEventListener("resize", () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.8));
 });
-</script>
-
-
-
-
-
-
-<script type="module" id="supercar-game">
-import * as THREE from "three";
-import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
-(() => {
- const panel=document.getElementById("supercar-mode"),launch=document.getElementById("supercar-launch"),canvas=document.getElementById("supercar-canvas"),info=document.getElementById("supercar-info"),speedDisplay=document.getElementById("supercar-speed");
- let renderer,scene,camera,clock,car,raf=0,active=false,loaded=false,yaw=0,speed=0,camYaw=0,camPitch=.15,mouseHeld=false;
- const held=Object.create(null);
- const trackRadius=120;
- const wheels=[];
- function makeFallbackCar(){
-  const root=new THREE.Group(),bodyMat=new THREE.MeshStandardMaterial({color:0xe76a26,metalness:.55,roughness:.32}),glass=new THREE.MeshStandardMaterial({color:0x182c3b,metalness:.25,roughness:.2});
-  const base=new THREE.Mesh(new THREE.BoxGeometry(2.05,.48,4.4),bodyMat);base.position.y=.62;root.add(base);
-  const cabin=new THREE.Mesh(new THREE.BoxGeometry(1.52,.64,1.85),glass);cabin.position.set(0,1.04,-.12);root.add(cabin);
-  for(const x of [-1,1])for(const z of [-1.35,1.35]){const tire=new THREE.Mesh(new THREE.CylinderGeometry(.37,.37,.25,18),new THREE.MeshStandardMaterial({color:0x16181b,roughness:.8}));tire.rotation.z=Math.PI/2;tire.position.set(x*1.05,.38,z);root.add(tire);wheels.push(tire);}
-  return root;
- }
- function addTrack(){
-  const ground=new THREE.Mesh(new THREE.PlaneGeometry(1400,1400),new THREE.MeshStandardMaterial({color:0x6c806e,roughness:1}));ground.rotation.x=-Math.PI/2;ground.position.y=-.08;scene.add(ground);
-  const outer=new THREE.Mesh(new THREE.RingGeometry(trackRadius-13,trackRadius+13,180),new THREE.MeshStandardMaterial({color:0x343a40,roughness:.95,side:THREE.DoubleSide}));outer.rotation.x=-Math.PI/2;outer.position.y=.02;scene.add(outer);
-  const inner=new THREE.Mesh(new THREE.RingGeometry(trackRadius-10,trackRadius+10,180),new THREE.MeshStandardMaterial({color:0x6c806e,side:THREE.DoubleSide}));inner.rotation.x=-Math.PI/2;inner.position.y=.03;scene.add(inner);
-  const line=new THREE.Mesh(new THREE.RingGeometry(trackRadius-.1,trackRadius+.1,180),new THREE.MeshBasicMaterial({color:0xf3e9cb,side:THREE.DoubleSide}));line.rotation.x=-Math.PI/2;line.position.y=.06;scene.add(line);
-  for(let i=0;i<100;i++){const a=i/100*Math.PI*2,rad=trackRadius+26+(i%5)*4;const tree=new THREE.Group();tree.position.set(Math.cos(a)*rad,0,Math.sin(a)*rad);const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.2,.3,2.2,6),new THREE.MeshStandardMaterial({color:0x6b4b32}));trunk.position.y=1.1;tree.add(trunk);const crown=new THREE.Mesh(new THREE.ConeGeometry(2.2,5,8),new THREE.MeshStandardMaterial({color:i%3===0?0x2b633b:0x39764b}));crown.position.y=4;tree.add(crown);scene.add(tree);}
-  for(let i=0;i<40;i++){const a=i/40*Math.PI*2,rad=trackRadius+55+(i%3)*9;const block=new THREE.Mesh(new THREE.BoxGeometry(12,8+(i%6)*4,10),new THREE.MeshStandardMaterial({color:[0xb8b0a2,0x9ca8aa,0xc9b7a2,0x8e9b9e][i%4],roughness:.95}));block.position.set(Math.cos(a)*rad,block.geometry.parameters.height/2,Math.sin(a)*rad);block.rotation.y=-a;scene.add(block);}
- }
- function setup(){
-  renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;
-  scene=new THREE.Scene();scene.background=new THREE.Color(0x9bb8d2);scene.fog=new THREE.Fog(0x9bb8d2,250,900);camera=new THREE.PerspectiveCamera(66,innerWidth/innerHeight,.1,2000);
-  scene.add(new THREE.HemisphereLight(0xeaf4ff,0x68705d,2));const sun=new THREE.DirectionalLight(0xffe4bd,2.2);sun.position.set(-100,180,80);scene.add(sun);addTrack();clock=new THREE.Clock();
-  info.textContent="Lade echtes 3D-Supercar-Modell …";
-  new GLTFLoader().load("https://tevy.dev/models/supercar/v2/lod2.glb",g=>{const m=g.scene;m.scale.setScalar(.85);m.position.y=0;car=m;scene.add(car);loaded=true;info.textContent="3D-Supercar geladen · Fahrbereit";},undefined,e=>{car=makeFallbackCar();scene.add(car);loaded=true;info.textContent="3D-Auto nicht erreichbar · Ersatzmodell geladen";});
- }
- function reset(){yaw=0;speed=0;camYaw=0;camPitch=.15;if(car)car.position.set(0,0,trackRadius);}
- function open(){panel.classList.add("active");active=true;if(!renderer)setup();if(!raf)raf=requestAnimationFrame(tick);}
- function close(){active=false;panel.classList.remove("active");Object.keys(held).forEach(k=>held[k]=false);if(document.pointerLockElement===canvas)document.exitPointerLock();if(raf){cancelAnimationFrame(raf);raf=0;}}
- function tick(){if(!active){raf=0;return;}raf=requestAnimationFrame(tick);const dt=Math.min(clock.getDelta(),.04);if(car){if(!car.position.length())car.position.set(0,0,trackRadius);
-  const forward=held.KeyW||held.ArrowUp,reverse=held.KeyS||held.ArrowDown,left=held.KeyA||held.ArrowLeft,right=held.KeyD||held.ArrowRight;
-  if(forward)speed=Math.min(68,speed+24*dt);else if(reverse)speed=Math.max(-16,speed-38*dt);else speed*=Math.pow(.985,dt*60);
-  if(held.Space)speed*=Math.pow(.89,dt*60);const steer=(right?1:0)-(left?1:0);yaw+=steer*Math.min(1,Math.abs(speed)/4)*1.45*dt*(speed>=0?1:-1);
-  car.position.x+=Math.sin(yaw)*speed*dt;car.position.z+=Math.cos(yaw)*speed*dt;car.rotation.y=yaw;
-  const target=car.position.clone().add(new THREE.Vector3(0,1.2,0)),offset=new THREE.Vector3(-Math.sin(yaw+camYaw)*8,4.1+camPitch*5,-Math.cos(yaw+camYaw)*8);
-  camera.position.lerp(target.clone().add(offset),1-Math.exp(-5.5*dt));camera.lookAt(target);
-  speedDisplay.innerHTML=Math.round(Math.abs(speed)*3.6)+' <span style="font-size:12px;color:#c5ced6">KM/H</span>';
- }renderer.render(scene,camera);}
- launch.addEventListener("click",open);document.getElementById("supercar-exit").addEventListener("click",close);document.getElementById("supercar-reset").addEventListener("click",reset);
- canvas.addEventListener("click",()=>{if(active&&canvas.requestPointerLock)canvas.requestPointerLock();});document.addEventListener("pointerlockchange",()=>mouseHeld=document.pointerLockElement===canvas);
- document.addEventListener("mousemove",e=>{if(mouseHeld&&active){camYaw-=e.movementX*.002;camPitch=Math.max(-.35,Math.min(.45,camPitch-e.movementY*.0015));}});
- window.addEventListener("keydown",e=>{if(active&&["KeyW","KeyA","KeyS","KeyD","ArrowUp","ArrowDown","ArrowLeft","ArrowRight","Space"].includes(e.code)){held[e.code]=true;e.preventDefault();}});
- window.addEventListener("keyup",e=>held[e.code]=false);window.addEventListener("blur",()=>Object.keys(held).forEach(k=>held[k]=false));
- window.addEventListener("resize",()=>{if(renderer&&camera){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);}});
-})();
 </script>
 </body>
 </html>
