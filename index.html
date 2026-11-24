@@ -52,89 +52,38 @@ canvas{display:block;width:100%;height:100%;outline:none}
 </script>
 <!-- Pages redeploy: character-only prototype -->
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-<style>
-#drive-launch{position:fixed;right:22px;top:76px;z-index:8;border:1px solid #ffffff42;border-radius:12px;padding:11px 15px;background:#15202cdb;color:#fff;font:800 11px Inter,system-ui,sans-serif;letter-spacing:.08em;cursor:pointer;backdrop-filter:blur(12px);box-shadow:0 8px 28px #0003}
-#drive-launch:hover{background:#26394b}
-#drive-mode{position:fixed;inset:0;z-index:30;display:none;background:#101820;color:#fff;font-family:Inter,system-ui,sans-serif}
-#drive-mode.active{display:block}
-#drive-map{position:absolute;inset:0;background:#dfe5e3}
-#drive-panel{position:absolute;z-index:500;left:18px;top:18px;display:flex;flex-direction:column;gap:10px;max-width:min(360px,calc(100vw - 36px));pointer-events:none}
-.drive-card{pointer-events:auto;background:#101820ed;border:1px solid #ffffff25;border-radius:16px;padding:14px 16px;box-shadow:0 10px 35px #0003;backdrop-filter:blur(12px)}
-#drive-title{font-size:13px;font-weight:900;letter-spacing:.12em}
-#drive-subtitle{font-size:11px;color:#b9c6d2;margin-top:5px;line-height:1.45}
-#drive-stats{display:flex;align-items:baseline;gap:7px;margin-top:10px}
-#drive-speed{font-size:30px;font-weight:900;font-variant-numeric:tabular-nums}
-#drive-unit{font-size:11px;color:#aebdca}
-#drive-hint{font-size:11px;color:#d2dbe3;line-height:1.6}
-#drive-actions{position:absolute;right:18px;top:18px;z-index:500;display:flex;gap:8px}
-.drive-button{border:1px solid #ffffff32;border-radius:12px;padding:11px 14px;background:#101820ed;color:#fff;font-size:11px;font-weight:800;cursor:pointer;box-shadow:0 8px 25px #0003}
-.drive-button:hover{background:#26394b}
-#drive-credit{position:absolute;right:12px;bottom:7px;z-index:500;padding:4px 7px;background:#ffffffd9;color:#25313a;border-radius:5px;font-size:10px}
-#drive-map .leaflet-control-attribution{font-size:10px}
-.buer-poi-wrap{background:transparent;border:0}
-.buer-poi-dot{display:block;width:14px;height:14px;border-radius:50%;background:#e2a23b;border:3px solid #fff;box-shadow:0 2px 8px #17212b99}
-#drive-map .leaflet-tooltip{border:0;border-radius:9px;padding:7px 10px;box-shadow:0 3px 14px #0003;color:#24313a;font-size:11px;line-height:1.4}
-#drive-map .leaflet-tooltip span{color:#687987}
-#drive-map .leaflet-control-scale-line{border-color:#46515b;color:#26333e;background:#ffffffd9}
-.drive-car{width:34px;height:50px;display:grid;place-items:center;filter:drop-shadow(0 3px 4px #0008);transform-origin:50% 50%}
-.drive-car svg{width:32px;height:48px;overflow:visible}
-@media(max-width:650px){
- #drive-launch{right:14px;top:68px;padding:10px 12px}
- #drive-panel{left:10px;top:10px;max-width:calc(100vw - 20px)}
- #drive-actions{right:10px;top:10px}
- .drive-button{padding:10px 11px}
- #drive-hint{max-width:230px}
-}
-</style>
+
+
+
+
 
 <style>
-#buer-walk-launch{position:fixed;right:22px;top:128px;z-index:9;border:1px solid #ffffff42;border-radius:12px;padding:11px 15px;background:#174c3bdc;color:#fff;font:800 11px Inter,system-ui,sans-serif;letter-spacing:.08em;cursor:pointer;backdrop-filter:blur(12px);box-shadow:0 8px 28px #0003}
-#buer-walk{position:fixed;inset:0;z-index:40;display:none;background:#91a7a2;color:#fff;font-family:Inter,system-ui,sans-serif}
-#buer-walk.active{display:block}
-#buer-world{position:absolute;inset:0;width:100%;height:100%;display:block}
-#buer-hud{position:absolute;left:18px;top:18px;z-index:3;pointer-events:none;max-width:min(390px,calc(100vw - 36px))}
-#buer-hud .walk-card{background:#101820e8;border:1px solid #ffffff28;border-radius:15px;padding:13px 15px;box-shadow:0 10px 35px #0004;backdrop-filter:blur(12px)}
-#buer-walk-title{font-size:13px;font-weight:900;letter-spacing:.12em}
-#buer-walk-status{font-size:11px;line-height:1.5;color:#c3d0d9;margin-top:6px}
-#buer-walk-actions{position:absolute;right:18px;top:18px;z-index:4;display:flex;gap:8px}
-#buer-walk-actions button{border:1px solid #ffffff38;border-radius:11px;padding:11px 13px;background:#101820e8;color:white;font-size:11px;font-weight:800;cursor:pointer}
-#buer-walk-help{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);z-index:3;background:#101820d9;border:1px solid #ffffff2b;border-radius:13px;padding:10px 15px;color:#f2f5f7;font-size:11px;text-align:center;white-space:nowrap}
-#buer-walk-help small{color:#bdc9d1}
-@media(max-width:650px){#buer-walk-launch{right:14px;top:120px;padding:10px 11px}#buer-hud{left:10px;top:10px}#buer-walk-actions{right:10px;top:auto;bottom:65px}#buer-walk-help{bottom:10px;font-size:10px;max-width:calc(100% - 20px);white-space:normal}}
+#supercar-launch{position:fixed;right:22px;top:76px;z-index:8;border:1px solid #ffffff42;border-radius:12px;padding:11px 15px;background:#182431e8;color:#fff;font:800 11px Inter,system-ui,sans-serif;letter-spacing:.08em;cursor:pointer;backdrop-filter:blur(12px);box-shadow:0 8px 28px #0003}
+#supercar-mode{position:fixed;inset:0;z-index:40;display:none;background:#111923;color:white;font-family:Inter,system-ui,sans-serif}
+#supercar-mode.active{display:block}
+#supercar-canvas{width:100%;height:100%;display:block}
+#supercar-hud{position:absolute;left:18px;top:18px;background:#101820e8;border:1px solid #ffffff25;border-radius:15px;padding:13px 16px;backdrop-filter:blur(10px)}
+#supercar-title{font-size:12px;font-weight:900;letter-spacing:.12em}
+#supercar-info{font-size:11px;color:#c2cbd4;margin-top:6px}
+#supercar-speed{font-size:32px;font-weight:900;margin-top:9px}
+#supercar-controls{position:absolute;right:18px;top:18px;display:flex;gap:8px}
+#supercar-controls button{border:1px solid #ffffff35;border-radius:11px;padding:11px 13px;background:#101820e8;color:#fff;font-size:11px;font-weight:800;cursor:pointer}
+#supercar-help{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);background:#101820d9;border:1px solid #ffffff28;border-radius:13px;padding:10px 15px;text-align:center;font-size:11px;white-space:nowrap}
+@media(max-width:650px){#supercar-launch{right:14px;top:68px}#supercar-hud{left:10px;top:10px}#supercar-controls{right:10px;top:auto;bottom:62px}#supercar-help{bottom:10px;font-size:10px;max-width:calc(100% - 20px);white-space:normal}}
 </style>
 
 </head>
 <body>
 <div id="game"></div>
 
-<button id="drive-launch" type="button">🚗 STADT-FAHRSPIEL</button>
-<section id="drive-mode" aria-label="Fahrspiel Gelsenkirchen">
- <div id="drive-map"></div>
- <div id="drive-panel">
-  <div class="drive-card">
-   <div id="drive-title">GELSENKIRCHEN · DRIVE</div>
-   <div id="drive-subtitle">Die Straßen der ganzen Stadt – Startpunkt Buer. OpenStreetMap-Kartendaten.</div>
-   <div id="drive-stats"><span id="drive-speed">0</span><span id="drive-unit">km/h</span></div>
-  </div>
-  <div class="drive-card" id="drive-hint"><b>Steuerung</b><br>W / ↑ Gas · S / ↓ Bremsen & rückwärts<br>A / ← und D / → Lenken<br>Leertaste = Handbremse · Mausrad = Zoom</div>
- </div>
- <div id="drive-actions">
-  <button class="drive-button" id="drive-center" type="button">⌖ ZENTRIEREN</button>
-  <button class="drive-button" id="drive-exit" type="button">✕ ZURÜCK</button>
- </div>
- <div id="drive-credit">© OpenStreetMap contributors · ODbL</div>
-</section>
 
-<button id="buer-walk-launch" type="button">🚶 BUER ZU FUSS · 3D</button>
-<section id="buer-walk" aria-label="Begehbares 3D-Gelsenkirchen-Buer">
- <canvas id="buer-world"></canvas>
- <div id="buer-hud"><div class="walk-card"><div id="buer-walk-title">GELSENKIRCHEN-BUER · ZU FUSS</div><div id="buer-walk-status">Lade echte Straßen- und Gebäudegrundrisse aus OpenStreetMap …</div></div></div>
- <div id="buer-walk-actions"><button id="buer-walk-reset" type="button">⌖ ZUM START</button><button id="buer-walk-exit" type="button">✕ ZURÜCK</button></div>
- <div id="buer-walk-help">W A S D = laufen · Maus = umsehen · <small>Klick ins Spiel für Maussteuerung · ESC löst die Maus</small></div>
+<button id="supercar-launch" type="button">🏎️ SUPERCAR FAHREN</button>
+<section id="supercar-mode" aria-label="3D Supercar driving game">
+ <canvas id="supercar-canvas"></canvas>
+ <div id="supercar-hud"><div id="supercar-title">SUPERCAR · DRIVE</div><div id="supercar-info">Lade das 3D-Auto …</div><div id="supercar-speed">0 <span style="font-size:12px;color:#c5ced6">KM/H</span></div></div>
+ <div id="supercar-controls"><button id="supercar-reset">↻ RESET</button><button id="supercar-exit">✕ ZURÜCK</button></div>
+ <div id="supercar-help">W / ↑ Gas · S / ↓ Bremsen · A / D Lenken · SPACE Handbremse · Maus = Kamera</div>
 </section>
-
 <div id="topbar">
  <div id="mark" aria-hidden="true">
   <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 19 7v5.5c0 4.5-3 7-7 8.5-4-1.5-7-4-7-8.5V7l7-3.5Z"/><path d="M8.5 12.3 11 15l4.8-5"/></svg>
@@ -1183,166 +1132,61 @@ window.addEventListener("resize", () => {
 });
 </script>
 
-<script>
-(() => {
- const launch = document.getElementById("drive-launch");
- const mode = document.getElementById("drive-mode");
- const speedEl = document.getElementById("drive-speed");
- let map = null, car = null, marker = null, lastFrame = 0, raf = 0;
- let lat = 51.58103, lon = 7.05261, heading = 0, speed = 0;
- const held = Object.create(null);
- const carSvg = '<div class="drive-car"><svg viewBox="0 0 32 48" aria-hidden="true"><path d="M9 3 Q16 0 23 3 L28 14 L30 37 Q29 44 16 46 Q3 44 2 37 L4 14Z" fill="#202a35" stroke="#f5f8fb" stroke-width="1.5"/><path d="M8 10 Q16 6 24 10 L25 20 L7 20Z" fill="#78b8d9" stroke="#d8f0ff" stroke-width="1"/><path d="M7 25 L25 25 L24 37 Q16 41 8 37Z" fill="#d43b36"/><path d="M5 13 L1 16 L1 23 L6 22 M27 13 L31 16 L31 23 L26 22" fill="#171d24"/><path d="M9 3 L23 3" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></div>';
- function initMap(){
-  if(map) return;
-  map = L.map("drive-map",{zoomControl:true,preferCanvas:true}).setView([lat,lon],15.5);
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
-   maxZoom:19, attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>'
-  }).addTo(map);
-  // Markante, reale Orientierungspunkte in Buer – Positionen nach OpenStreetMap.
-  const places = [
-   {name:"Propsteikirche St. Urbanus",type:"Wahrzeichen · Buer-Mitte",pos:[51.58063,7.05198]},
-   {name:"Rathaus Buer",type:"Goldbergstraße 12",pos:[51.57758,7.05825]},
-   {name:"Kunstmuseum Gelsenkirchen",type:"Horster Straße",pos:[51.57684,7.05401]},
-   {name:"Schloss Berge",type:"Schlosspark · Berger See",pos:[51.56867,7.06945]}
-  ];
-  const poiIcon = L.divIcon({className:"buer-poi-wrap",html:'<span class="buer-poi-dot"></span>',iconSize:[18,18],iconAnchor:[9,9]});
-  places.forEach(place=>{
-   L.marker(place.pos,{icon:poiIcon}).addTo(map)
-    .bindTooltip('<b>'+place.name+'</b><br><span>'+place.type+'</span>',{direction:"top",offset:[0,-8]});
-  });
-  L.control.scale({metric:true,imperial:false,position:"bottomleft"}).addTo(map);
-  const icon = L.divIcon({className:"",html:carSvg,iconSize:[34,50],iconAnchor:[17,25]});
-  marker = L.marker([lat,lon],{icon,interactive:false}).addTo(map);
-  map.on("click",e=>{ /* Map remains freely explorable; the car is controlled with the keyboard. */ });
- }
- function show(){
-  mode.classList.add("active");
-  initMap();
-  setTimeout(()=>map.invalidateSize(),80);
-  if(!raf){lastFrame=performance.now();raf=requestAnimationFrame(tick);}
- }
- function hide(){
-  mode.classList.remove("active");
-  Object.keys(held).forEach(k=>held[k]=false);
-  speed=0; speedEl.textContent="0";
-  if(raf){cancelAnimationFrame(raf);raf=0;}
- }
- function tick(now){
-  if(!mode.classList.contains("active")){raf=0;return;}
-  const dt=Math.min((now-lastFrame)/1000,0.05); lastFrame=now;
-  const forward=held.KeyW||held.ArrowUp, reverse=held.KeyS||held.ArrowDown;
-  const left=held.KeyA||held.ArrowLeft, right=held.KeyD||held.ArrowRight;
-  if(forward) speed=Math.min(22,speed+9*dt);
-  else if(reverse) speed=Math.max(-5,speed-15*dt);
-  else speed*=Math.pow(0.985,dt*60);
-  if(held.Space) speed*=Math.pow(0.90,dt*60);
-  const steer=(right?1:0)-(left?1:0);
-  const steerFactor=Math.min(1,Math.abs(speed)/3);
-  heading += steer*1.75*steerFactor*dt*(speed>=0?1:-1);
-  const distance=speed*dt;
-  const rad=heading;
-  lat += Math.cos(rad)*distance/111320;
-  lon += Math.sin(rad)*distance/(111320*Math.cos(lat*Math.PI/180));
-  marker.setLatLng([lat,lon]);
-  marker.getElement()?.querySelector(".drive-car")?.style.setProperty("transform","rotate("+heading*180/Math.PI+"deg)");
-  if(Math.abs(speed)>0.05) map.panTo([lat,lon],{animate:false});
-  speedEl.textContent=String(Math.round(Math.abs(speed)*3.6));
-  raf=requestAnimationFrame(tick);
- }
- launch.addEventListener("click",show);
- document.getElementById("drive-exit").addEventListener("click",hide);
- document.getElementById("drive-center").addEventListener("click",()=>{if(map)map.setView([lat,lon],17);});
- window.addEventListener("keydown",e=>{
-  if(!mode.classList.contains("active"))return;
-  if(["KeyW","KeyA","KeyS","KeyD","ArrowUp","ArrowDown","ArrowLeft","ArrowRight","Space"].includes(e.code)){e.preventDefault();held[e.code]=true;}
- });
- window.addEventListener("keyup",e=>{held[e.code]=false;});
- window.addEventListener("blur",()=>Object.keys(held).forEach(k=>held[k]=false));
-})();
-</script>
 
-<script type="module" id="buer-walk-engine">
+
+
+
+
+<script type="module" id="supercar-game">
 import * as THREE from "three";
+import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 (() => {
- const panel=document.getElementById("buer-walk"),launch=document.getElementById("buer-walk-launch"),canvas=document.getElementById("buer-world"),status=document.getElementById("buer-walk-status");
- if(!panel||!launch||!canvas)return;
- let renderer,scene,camera,clock,avatar,raf=0,active=false,loaded=false,locked=false,yaw=0,pitch=-.12,walkTime=0;
- const held=Object.create(null),origin={lat:51.58035,lon:7.05265},start={lat:51.58035,lon:7.05265};
- const bbox={s:51.565,n:51.591,w:7.030,e:7.075};
- const places=[
-  {name:"Chicken Boss",sub:"Goldbergplatz 1",lat:51.58035,lon:7.05265,color:"#e5a33b"},
-  {name:"Leibniz-Gymnasium",sub:"Breddestraße 21",lat:51.575956,lon:7.055088,color:"#65b7ed"},
-  {name:"Propsteikirche St. Urbanus",sub:"Buerer Wahrzeichen",lat:51.58063,lon:7.05198,color:"#e8d18a"},
-  {name:"Rathaus Buer",sub:"Goldbergstraße",lat:51.57758,lon:7.05825,color:"#9bce9d"},
-  {name:"Hochstraße · Innenstadt",sub:"Fußgängerzone",lat:51.5801,lon:7.0541,color:"#f0a2b5"},
-  {name:"Kunstmuseum",sub:"Horster Straße",lat:51.57684,lon:7.05401,color:"#b8a0ed"}
- ];
- const project=(lat,lon)=>({x:(lon-origin.lon)*111320*Math.cos(origin.lat*Math.PI/180),z:-(lat-origin.lat)*111320});
- function labelSprite(title,sub,color){
-  const c=document.createElement("canvas"),ctx=c.getContext("2d");c.width=512;c.height=128;
-  ctx.fillStyle="#101820ed";ctx.beginPath();ctx.roundRect(5,5,502,118,20);ctx.fill();ctx.strokeStyle=color;ctx.lineWidth=5;ctx.stroke();
-  ctx.fillStyle="#fff";ctx.font="bold 34px Arial";ctx.fillText(title.slice(0,26),24,55);ctx.fillStyle="#c6d1d9";ctx.font="24px Arial";ctx.fillText(sub.slice(0,38),24,91);
-  const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false}));sp.scale.set(15,3.75,1);return sp;
+ const panel=document.getElementById("supercar-mode"),launch=document.getElementById("supercar-launch"),canvas=document.getElementById("supercar-canvas"),info=document.getElementById("supercar-info"),speedDisplay=document.getElementById("supercar-speed");
+ let renderer,scene,camera,clock,car,raf=0,active=false,loaded=false,yaw=0,speed=0,camYaw=0,camPitch=.15,mouseHeld=false;
+ const held=Object.create(null);
+ const trackRadius=120;
+ const wheels=[];
+ function makeFallbackCar(){
+  const root=new THREE.Group(),bodyMat=new THREE.MeshStandardMaterial({color:0xe76a26,metalness:.55,roughness:.32}),glass=new THREE.MeshStandardMaterial({color:0x182c3b,metalness:.25,roughness:.2});
+  const base=new THREE.Mesh(new THREE.BoxGeometry(2.05,.48,4.4),bodyMat);base.position.y=.62;root.add(base);
+  const cabin=new THREE.Mesh(new THREE.BoxGeometry(1.52,.64,1.85),glass);cabin.position.set(0,1.04,-.12);root.add(cabin);
+  for(const x of [-1,1])for(const z of [-1.35,1.35]){const tire=new THREE.Mesh(new THREE.CylinderGeometry(.37,.37,.25,18),new THREE.MeshStandardMaterial({color:0x16181b,roughness:.8}));tire.rotation.z=Math.PI/2;tire.position.set(x*1.05,.38,z);root.add(tire);wheels.push(tire);}
+  return root;
  }
- function addRoad(a,b,width){
-  const dx=b.x-a.x,dz=b.z-a.z,len=Math.hypot(dx,dz);if(len<1)return;const nx=-dz/len*width/2,nz=dx/len*width/2;
-  const geo=new THREE.BufferGeometry();geo.setAttribute("position",new THREE.Float32BufferAttribute([a.x+nx,.015,a.z+nz,a.x-nx,.015,a.z-nz,b.x-nx,.015,b.z-nz,b.x+nx,.015,b.z+nz],3));geo.setIndex([0,1,2,0,2,3]);geo.computeVertexNormals();
-  scene.add(new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:0x42484b,roughness:.95,side:THREE.DoubleSide})));
- }
- function addBuilding(coords,tags,index){
-  if(coords.length<4)return;const pts=coords.map(n=>project(n.lat,n.lon)),shape=new THREE.Shape();shape.moveTo(pts[0].x,pts[0].z);for(let i=1;i<pts.length;i++)shape.lineTo(pts[i].x,pts[i].z);shape.closePath();
-  const raw=Number(tags.height)||((Number(tags["building:levels"])||0)*3.1)||(5.5+(index%5)*1.25),height=Math.max(3.2,Math.min(raw,38));
-  const geo=new THREE.ExtrudeGeometry(shape,{depth:height,bevelEnabled:false});geo.rotateX(Math.PI/2);geo.translate(0,height,0);
-  const colors=[0xb9b1a3,0xc8c0b2,0x9eaaa7,0xd0c4b0,0xaeb8bd,0xb9a99c];const mesh=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:colors[index%colors.length],roughness:.88}));scene.add(mesh);
-  const roof=new THREE.Mesh(new THREE.ShapeGeometry(shape),new THREE.MeshStandardMaterial({color:0x62686a,roughness:1}));roof.rotation.x=Math.PI/2;roof.position.y=height+.02;scene.add(roof);
- }
- function makeAvatar(){
-  avatar=new THREE.Group();const skin=new THREE.MeshStandardMaterial({color:0xd6a77d}),shirt=new THREE.MeshStandardMaterial({color:0x286b91}),pants=new THREE.MeshStandardMaterial({color:0x273442});
-  const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.34,.65,4,8),shirt);torso.position.y=1.25;avatar.add(torso);
-  const head=new THREE.Mesh(new THREE.SphereGeometry(.22,16,12),skin);head.position.y=1.92;avatar.add(head);const legs=[];
-  for(const side of [-1,1]){const leg=new THREE.Mesh(new THREE.CapsuleGeometry(.12,.52,3,7),pants);leg.position.set(side*.16,.48,0);avatar.add(leg);legs.push(leg);const arm=new THREE.Mesh(new THREE.CapsuleGeometry(.09,.48,3,7),shirt);arm.position.set(side*.43,1.28,0);arm.rotation.z=side*.13;avatar.add(arm);}
-  avatar.userData.legs=legs;scene.add(avatar);
- }
- async function loadCity(){
-  status.textContent="Lade echte Straßen- und Gebäudegrundrisse aus OpenStreetMap …";
-  const box=[bbox.s,bbox.w,bbox.n,bbox.e].join(","),query='[out:json][timeout:35];(way["building"]('+box+');way["highway"]('+box+'););out body;>;out skel qt;';let data;
-  for(const endpoint of ["https://overpass-api.de/api/interpreter","https://overpass.kumi.systems/api/interpreter"]){try{const res=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},body:"data="+encodeURIComponent(query)});if(!res.ok)throw Error("HTTP "+res.status);data=await res.json();break;}catch(err){console.warn("OSM endpoint",err);}}
-  if(!data)throw Error("OpenStreetMap-Gebäudedaten sind gerade nicht erreichbar.");
-  const nodes=new Map(),ways=[];for(const el of data.elements){if(el.type==="node")nodes.set(el.id,{lat:el.lat,lon:el.lon});else if(el.type==="way")ways.push(el);}
-  let buildings=0,roads=0;
-  for(const way of ways){const coords=(way.nodes||[]).map(id=>nodes.get(id)).filter(Boolean);
-   if(way.tags?.building&&coords.length>=4&&buildings<2400)addBuilding(coords,way.tags,buildings++);
-   else if(way.tags?.highway&&coords.length>=2&&roads<2200){const hw=way.tags.highway,width=["motorway","trunk"].includes(hw)?10:["primary","secondary"].includes(hw)?8:hw==="tertiary"?6:hw==="residential"?5:hw==="service"?3.5:2.5;for(let i=1;i<coords.length;i++)addRoad(project(coords[i-1].lat,coords[i-1].lon),project(coords[i].lat,coords[i].lon),width);roads++;}
-  }
-  for(const p of places){const pos=project(p.lat,p.lon),pole=new THREE.Mesh(new THREE.CylinderGeometry(.08,.08,2.5,8),new THREE.MeshStandardMaterial({color:p.color}));pole.position.set(pos.x,1.25,pos.z);scene.add(pole);const ball=new THREE.Mesh(new THREE.SphereGeometry(.35,14,10),new THREE.MeshStandardMaterial({color:p.color,emissive:p.color,emissiveIntensity:.2}));ball.position.set(pos.x,2.7,pos.z);scene.add(ball);const label=labelSprite(p.name,p.sub,p.color);label.position.set(pos.x,5.2,pos.z);scene.add(label);}
-  status.textContent=buildings+" echte Gebäudegrundrisse und "+roads+" Straßenabschnitte geladen. Laufe zu den markierten Orten in Buer!";
+ function addTrack(){
+  const ground=new THREE.Mesh(new THREE.PlaneGeometry(1400,1400),new THREE.MeshStandardMaterial({color:0x6c806e,roughness:1}));ground.rotation.x=-Math.PI/2;ground.position.y=-.08;scene.add(ground);
+  const outer=new THREE.Mesh(new THREE.RingGeometry(trackRadius-13,trackRadius+13,180),new THREE.MeshStandardMaterial({color:0x343a40,roughness:.95,side:THREE.DoubleSide}));outer.rotation.x=-Math.PI/2;outer.position.y=.02;scene.add(outer);
+  const inner=new THREE.Mesh(new THREE.RingGeometry(trackRadius-10,trackRadius+10,180),new THREE.MeshStandardMaterial({color:0x6c806e,side:THREE.DoubleSide}));inner.rotation.x=-Math.PI/2;inner.position.y=.03;scene.add(inner);
+  const line=new THREE.Mesh(new THREE.RingGeometry(trackRadius-.1,trackRadius+.1,180),new THREE.MeshBasicMaterial({color:0xf3e9cb,side:THREE.DoubleSide}));line.rotation.x=-Math.PI/2;line.position.y=.06;scene.add(line);
+  for(let i=0;i<100;i++){const a=i/100*Math.PI*2,rad=trackRadius+26+(i%5)*4;const tree=new THREE.Group();tree.position.set(Math.cos(a)*rad,0,Math.sin(a)*rad);const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.2,.3,2.2,6),new THREE.MeshStandardMaterial({color:0x6b4b32}));trunk.position.y=1.1;tree.add(trunk);const crown=new THREE.Mesh(new THREE.ConeGeometry(2.2,5,8),new THREE.MeshStandardMaterial({color:i%3===0?0x2b633b:0x39764b}));crown.position.y=4;tree.add(crown);scene.add(tree);}
+  for(let i=0;i<40;i++){const a=i/40*Math.PI*2,rad=trackRadius+55+(i%3)*9;const block=new THREE.Mesh(new THREE.BoxGeometry(12,8+(i%6)*4,10),new THREE.MeshStandardMaterial({color:[0xb8b0a2,0x9ca8aa,0xc9b7a2,0x8e9b9e][i%4],roughness:.95}));block.position.set(Math.cos(a)*rad,block.geometry.parameters.height/2,Math.sin(a)*rad);block.rotation.y=-a;scene.add(block);}
  }
  function setup(){
-  renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));renderer.setSize(innerWidth,innerHeight);
-  scene=new THREE.Scene();scene.background=new THREE.Color(0xa9c0cf);scene.fog=new THREE.Fog(0xa9c0cf,130,950);camera=new THREE.PerspectiveCamera(72,innerWidth/innerHeight,.1,2500);
-  scene.add(new THREE.HemisphereLight(0xe7f3ff,0x68745d,2));const sun=new THREE.DirectionalLight(0xffe4bf,2.2);sun.position.set(-120,220,80);scene.add(sun);
-  const ground=new THREE.Mesh(new THREE.PlaneGeometry(6000,6000),new THREE.MeshStandardMaterial({color:0x91a98d,roughness:1}));ground.rotation.x=-Math.PI/2;ground.position.y=-.12;scene.add(ground);
-  makeAvatar();clock=new THREE.Clock();const p=project(start.lat,start.lon);avatar.position.set(p.x,0,p.z);camera.position.set(p.x,3.8,p.z+7);camera.lookAt(p.x,1.4,p.z);
+  renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;
+  scene=new THREE.Scene();scene.background=new THREE.Color(0x9bb8d2);scene.fog=new THREE.Fog(0x9bb8d2,250,900);camera=new THREE.PerspectiveCamera(66,innerWidth/innerHeight,.1,2000);
+  scene.add(new THREE.HemisphereLight(0xeaf4ff,0x68705d,2));const sun=new THREE.DirectionalLight(0xffe4bd,2.2);sun.position.set(-100,180,80);scene.add(sun);addTrack();clock=new THREE.Clock();
+  info.textContent="Lade echtes 3D-Supercar-Modell …";
+  new GLTFLoader().load("https://tevy.dev/models/supercar/v2/lod2.glb",g=>{const m=g.scene;m.scale.setScalar(.85);m.position.y=0;car=m;scene.add(car);loaded=true;info.textContent="3D-Supercar geladen · Fahrbereit";},undefined,e=>{car=makeFallbackCar();scene.add(car);loaded=true;info.textContent="3D-Auto nicht erreichbar · Ersatzmodell geladen";});
  }
- function open(){panel.classList.add("active");active=true;if(!loaded){setup();loadCity().then(()=>loaded=true).catch(e=>{status.textContent=e.message+" Bitte später erneut versuchen.";console.error(e);});}if(!raf)raf=requestAnimationFrame(tick);}
+ function reset(){yaw=0;speed=0;camYaw=0;camPitch=.15;if(car)car.position.set(0,0,trackRadius);}
+ function open(){panel.classList.add("active");active=true;if(!renderer)setup();if(!raf)raf=requestAnimationFrame(tick);}
  function close(){active=false;panel.classList.remove("active");Object.keys(held).forEach(k=>held[k]=false);if(document.pointerLockElement===canvas)document.exitPointerLock();if(raf){cancelAnimationFrame(raf);raf=0;}}
- function tick(){if(!active){raf=0;return;}raf=requestAnimationFrame(tick);if(!avatar)return;const dt=Math.min(clock.getDelta(),.04);
-  if(loaded){const f=(held.KeyW||held.ArrowUp?1:0)-(held.KeyS||held.ArrowDown?1:0),side=(held.KeyD||held.ArrowRight?1:0)-(held.KeyA||held.ArrowLeft?1:0),moving=!!(f||side),speed=held.ShiftLeft||held.ShiftRight?8.2:4.3;
-   const dir=new THREE.Vector3(Math.sin(yaw),0,Math.cos(yaw)),right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw)),move=dir.multiplyScalar(f).add(right.multiplyScalar(side));
-   if(move.lengthSq()>0){move.normalize().multiplyScalar(speed*dt);avatar.position.add(move);avatar.rotation.y=Math.atan2(move.x,move.z);walkTime+=dt*(speed>5?13:9);}
-   avatar.userData.legs.forEach((leg,i)=>leg.rotation.x=moving?Math.sin(walkTime+i*Math.PI)*.65:0);
-   const target=new THREE.Vector3(avatar.position.x,2.1,avatar.position.z),offset=new THREE.Vector3(-Math.sin(yaw)*6,2.8+pitch*5,-Math.cos(yaw)*6);camera.position.lerp(target.clone().add(offset),1-Math.exp(-7*dt));camera.lookAt(target);
-  }renderer.render(scene,camera);
- }
- launch.addEventListener("click",open);document.getElementById("buer-walk-exit").addEventListener("click",close);
- document.getElementById("buer-walk-reset").addEventListener("click",()=>{if(avatar){const p=project(start.lat,start.lon);avatar.position.set(p.x,0,p.z);yaw=0;pitch=-.12;}});
- canvas.addEventListener("click",()=>{if(active&&canvas.requestPointerLock)canvas.requestPointerLock();});document.addEventListener("pointerlockchange",()=>locked=document.pointerLockElement===canvas);
- document.addEventListener("mousemove",e=>{if(locked&&active){yaw-=e.movementX*.0022;pitch=Math.max(-.45,Math.min(.3,pitch-e.movementY*.0015));}});
- window.addEventListener("keydown",e=>{if(!active)return;if(["KeyW","KeyA","KeyS","KeyD","ArrowUp","ArrowDown","ArrowLeft","ArrowRight","ShiftLeft","ShiftRight"].includes(e.code)){held[e.code]=true;e.preventDefault();}});
+ function tick(){if(!active){raf=0;return;}raf=requestAnimationFrame(tick);const dt=Math.min(clock.getDelta(),.04);if(car){if(!car.position.length())car.position.set(0,0,trackRadius);
+  const forward=held.KeyW||held.ArrowUp,reverse=held.KeyS||held.ArrowDown,left=held.KeyA||held.ArrowLeft,right=held.KeyD||held.ArrowRight;
+  if(forward)speed=Math.min(68,speed+24*dt);else if(reverse)speed=Math.max(-16,speed-38*dt);else speed*=Math.pow(.985,dt*60);
+  if(held.Space)speed*=Math.pow(.89,dt*60);const steer=(right?1:0)-(left?1:0);yaw+=steer*Math.min(1,Math.abs(speed)/4)*1.45*dt*(speed>=0?1:-1);
+  car.position.x+=Math.sin(yaw)*speed*dt;car.position.z+=Math.cos(yaw)*speed*dt;car.rotation.y=yaw;
+  const target=car.position.clone().add(new THREE.Vector3(0,1.2,0)),offset=new THREE.Vector3(-Math.sin(yaw+camYaw)*8,4.1+camPitch*5,-Math.cos(yaw+camYaw)*8);
+  camera.position.lerp(target.clone().add(offset),1-Math.exp(-5.5*dt));camera.lookAt(target);
+  speedDisplay.innerHTML=Math.round(Math.abs(speed)*3.6)+' <span style="font-size:12px;color:#c5ced6">KM/H</span>';
+ }renderer.render(scene,camera);}
+ launch.addEventListener("click",open);document.getElementById("supercar-exit").addEventListener("click",close);document.getElementById("supercar-reset").addEventListener("click",reset);
+ canvas.addEventListener("click",()=>{if(active&&canvas.requestPointerLock)canvas.requestPointerLock();});document.addEventListener("pointerlockchange",()=>mouseHeld=document.pointerLockElement===canvas);
+ document.addEventListener("mousemove",e=>{if(mouseHeld&&active){camYaw-=e.movementX*.002;camPitch=Math.max(-.35,Math.min(.45,camPitch-e.movementY*.0015));}});
+ window.addEventListener("keydown",e=>{if(active&&["KeyW","KeyA","KeyS","KeyD","ArrowUp","ArrowDown","ArrowLeft","ArrowRight","Space"].includes(e.code)){held[e.code]=true;e.preventDefault();}});
  window.addEventListener("keyup",e=>held[e.code]=false);window.addEventListener("blur",()=>Object.keys(held).forEach(k=>held[k]=false));
  window.addEventListener("resize",()=>{if(renderer&&camera){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);}});
 })();
 </script>
-
 </body>
 </html>
