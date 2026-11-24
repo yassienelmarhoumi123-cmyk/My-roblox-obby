@@ -51,9 +51,59 @@ canvas{display:block;width:100%;height:100%;outline:none}
 }
 </script>
 <!-- Pages redeploy: character-only prototype -->
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<style>
+#drive-launch{position:fixed;right:22px;top:76px;z-index:8;border:1px solid #ffffff42;border-radius:12px;padding:11px 15px;background:#15202cdb;color:#fff;font:800 11px Inter,system-ui,sans-serif;letter-spacing:.08em;cursor:pointer;backdrop-filter:blur(12px);box-shadow:0 8px 28px #0003}
+#drive-launch:hover{background:#26394b}
+#drive-mode{position:fixed;inset:0;z-index:30;display:none;background:#101820;color:#fff;font-family:Inter,system-ui,sans-serif}
+#drive-mode.active{display:block}
+#drive-map{position:absolute;inset:0;background:#dfe5e3}
+#drive-panel{position:absolute;z-index:500;left:18px;top:18px;display:flex;flex-direction:column;gap:10px;max-width:min(360px,calc(100vw - 36px));pointer-events:none}
+.drive-card{pointer-events:auto;background:#101820ed;border:1px solid #ffffff25;border-radius:16px;padding:14px 16px;box-shadow:0 10px 35px #0003;backdrop-filter:blur(12px)}
+#drive-title{font-size:13px;font-weight:900;letter-spacing:.12em}
+#drive-subtitle{font-size:11px;color:#b9c6d2;margin-top:5px;line-height:1.45}
+#drive-stats{display:flex;align-items:baseline;gap:7px;margin-top:10px}
+#drive-speed{font-size:30px;font-weight:900;font-variant-numeric:tabular-nums}
+#drive-unit{font-size:11px;color:#aebdca}
+#drive-hint{font-size:11px;color:#d2dbe3;line-height:1.6}
+#drive-actions{position:absolute;right:18px;top:18px;z-index:500;display:flex;gap:8px}
+.drive-button{border:1px solid #ffffff32;border-radius:12px;padding:11px 14px;background:#101820ed;color:#fff;font-size:11px;font-weight:800;cursor:pointer;box-shadow:0 8px 25px #0003}
+.drive-button:hover{background:#26394b}
+#drive-credit{position:absolute;right:12px;bottom:7px;z-index:500;padding:4px 7px;background:#ffffffd9;color:#25313a;border-radius:5px;font-size:10px}
+#drive-map .leaflet-control-attribution{font-size:10px}
+.drive-car{width:34px;height:50px;display:grid;place-items:center;filter:drop-shadow(0 3px 4px #0008);transform-origin:50% 50%}
+.drive-car svg{width:32px;height:48px;overflow:visible}
+@media(max-width:650px){
+ #drive-launch{right:14px;top:68px;padding:10px 12px}
+ #drive-panel{left:10px;top:10px;max-width:calc(100vw - 20px)}
+ #drive-actions{right:10px;top:10px}
+ .drive-button{padding:10px 11px}
+ #drive-hint{max-width:230px}
+}
+</style>
 </head>
 <body>
 <div id="game"></div>
+
+<button id="drive-launch" type="button">🚗 STADT-FAHRSPIEL</button>
+<section id="drive-mode" aria-label="Fahrspiel Gelsenkirchen">
+ <div id="drive-map"></div>
+ <div id="drive-panel">
+  <div class="drive-card">
+   <div id="drive-title">GELSENKIRCHEN · DRIVE</div>
+   <div id="drive-subtitle">Die Straßen der ganzen Stadt – Startpunkt Buer. OpenStreetMap-Kartendaten.</div>
+   <div id="drive-stats"><span id="drive-speed">0</span><span id="drive-unit">km/h</span></div>
+  </div>
+  <div class="drive-card" id="drive-hint"><b>Steuerung</b><br>W / ↑ Gas · S / ↓ Bremsen & rückwärts<br>A / ← und D / → Lenken<br>Leertaste = Handbremse · Mausrad = Zoom</div>
+ </div>
+ <div id="drive-actions">
+  <button class="drive-button" id="drive-center" type="button">⌖ ZENTRIEREN</button>
+  <button class="drive-button" id="drive-exit" type="button">✕ ZURÜCK</button>
+ </div>
+ <div id="drive-credit">© OpenStreetMap contributors · ODbL</div>
+</section>
 <div id="topbar">
  <div id="mark" aria-hidden="true">
   <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 19 7v5.5c0 4.5-3 7-7 8.5-4-1.5-7-4-7-8.5V7l7-3.5Z"/><path d="M8.5 12.3 11 15l4.8-5"/></svg>
@@ -1100,6 +1150,71 @@ window.addEventListener("resize", () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.8));
 });
+</script>
+
+<script>
+(() => {
+ const launch = document.getElementById("drive-launch");
+ const mode = document.getElementById("drive-mode");
+ const speedEl = document.getElementById("drive-speed");
+ let map = null, car = null, marker = null, lastFrame = 0, raf = 0;
+ let lat = 51.5790, lon = 7.0520, heading = 0, speed = 0;
+ const held = Object.create(null);
+ const carSvg = '<div class="drive-car"><svg viewBox="0 0 32 48" aria-hidden="true"><path d="M9 3 Q16 0 23 3 L28 14 L30 37 Q29 44 16 46 Q3 44 2 37 L4 14Z" fill="#202a35" stroke="#f5f8fb" stroke-width="1.5"/><path d="M8 10 Q16 6 24 10 L25 20 L7 20Z" fill="#78b8d9" stroke="#d8f0ff" stroke-width="1"/><path d="M7 25 L25 25 L24 37 Q16 41 8 37Z" fill="#d43b36"/><path d="M5 13 L1 16 L1 23 L6 22 M27 13 L31 16 L31 23 L26 22" fill="#171d24"/><path d="M9 3 L23 3" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></div>';
+ function initMap(){
+  if(map) return;
+  map = L.map("drive-map",{zoomControl:true,preferCanvas:true}).setView([lat,lon],15);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
+   maxZoom:19, attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>'
+  }).addTo(map);
+  const icon = L.divIcon({className:"",html:carSvg,iconSize:[34,50],iconAnchor:[17,25]});
+  marker = L.marker([lat,lon],{icon,interactive:false}).addTo(map);
+  map.on("click",e=>{ /* Map remains freely explorable; the car is controlled with the keyboard. */ });
+ }
+ function show(){
+  mode.classList.add("active");
+  initMap();
+  setTimeout(()=>map.invalidateSize(),80);
+  if(!raf){lastFrame=performance.now();raf=requestAnimationFrame(tick);}
+ }
+ function hide(){
+  mode.classList.remove("active");
+  Object.keys(held).forEach(k=>held[k]=false);
+  speed=0; speedEl.textContent="0";
+  if(raf){cancelAnimationFrame(raf);raf=0;}
+ }
+ function tick(now){
+  if(!mode.classList.contains("active")){raf=0;return;}
+  const dt=Math.min((now-lastFrame)/1000,0.05); lastFrame=now;
+  const forward=held.KeyW||held.ArrowUp, reverse=held.KeyS||held.ArrowDown;
+  const left=held.KeyA||held.ArrowLeft, right=held.KeyD||held.ArrowRight;
+  if(forward) speed=Math.min(22,speed+9*dt);
+  else if(reverse) speed=Math.max(-5,speed-15*dt);
+  else speed*=Math.pow(0.985,dt*60);
+  if(held.Space) speed*=Math.pow(0.90,dt*60);
+  const steer=(right?1:0)-(left?1:0);
+  const steerFactor=Math.min(1,Math.abs(speed)/3);
+  heading += steer*1.75*steerFactor*dt*(speed>=0?1:-1);
+  const distance=speed*dt;
+  const rad=heading;
+  lat += Math.cos(rad)*distance/111320;
+  lon += Math.sin(rad)*distance/(111320*Math.cos(lat*Math.PI/180));
+  marker.setLatLng([lat,lon]);
+  marker.getElement()?.querySelector(".drive-car")?.style.setProperty("transform","rotate("+heading*180/Math.PI+"deg)");
+  if(Math.abs(speed)>0.05) map.panTo([lat,lon],{animate:false});
+  speedEl.textContent=String(Math.round(Math.abs(speed)*3.6));
+  raf=requestAnimationFrame(tick);
+ }
+ launch.addEventListener("click",show);
+ document.getElementById("drive-exit").addEventListener("click",hide);
+ document.getElementById("drive-center").addEventListener("click",()=>{if(map)map.setView([lat,lon],17);});
+ window.addEventListener("keydown",e=>{
+  if(!mode.classList.contains("active"))return;
+  if(["KeyW","KeyA","KeyS","KeyD","ArrowUp","ArrowDown","ArrowLeft","ArrowRight","Space"].includes(e.code)){e.preventDefault();held[e.code]=true;}
+ });
+ window.addEventListener("keyup",e=>{held[e.code]=false;});
+ window.addEventListener("blur",()=>Object.keys(held).forEach(k=>held[k]=false));
+})();
 </script>
 </body>
 </html>
