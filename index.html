@@ -67,7 +67,7 @@ canvas{display:block;width:100%;height:100%;outline:none}
  <div id="mark" aria-hidden="true">
   <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 19 7v5.5c0 4.5-3 7-7 8.5-4-1.5-7-4-7-8.5V7l7-3.5Z"/><path d="M8.5 12.3 11 15l4.8-5"/></svg>
  </div>
- <div><div id="heading">OPEN WORLD · CITY DISTRICT</div><div id="subheading">EXPANDED CITY · CHARACTER MODE</div></div>
+ <div><div id="heading">CITY BLOCK · CHARACTER TEST</div><div id="subheading">OPEN WORLD · CITY PROTOTYP 02</div></div>
 </div>
 <div id="status">3D-MODELL LÄDT</div>
 <div id="help">
@@ -109,9 +109,9 @@ const errorEl = document.getElementById("error");
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x557da4);
-scene.fog = new THREE.Fog(0xbccbd2, 175, 560);
+scene.fog = new THREE.Fog(0xbccbd2, 68, 225);
 
-const camera = new THREE.PerspectiveCamera(48, window.innerWidth / window.innerHeight, 0.1, 1000);
+const camera = new THREE.PerspectiveCamera(48, window.innerWidth / window.innerHeight, 0.1, 260);
 camera.position.set(0, 2.8, -6);
 
 const renderer = new THREE.WebGLRenderer({antialias:true, alpha:false, powerPreference:"high-performance"});
@@ -135,15 +135,15 @@ const hemi = new THREE.HemisphereLight(0xdcecff, 0x62685d, 1.48);
 scene.add(hemi);
 
 const keyLight = new THREE.DirectionalLight(0xffe5c6, 2.45);
-keyLight.position.set(-48, 92, -38);
+keyLight.position.set(-18, 30, -14);
 keyLight.castShadow = true;
 keyLight.shadow.mapSize.set(2048,2048);
-keyLight.shadow.camera.left = -76;
-keyLight.shadow.camera.right = 76;
-keyLight.shadow.camera.top = 76;
-keyLight.shadow.camera.bottom = -76;
+keyLight.shadow.camera.left = -25;
+keyLight.shadow.camera.right = 25;
+keyLight.shadow.camera.top = 25;
+keyLight.shadow.camera.bottom = -25;
 keyLight.shadow.camera.near = 0.5;
-keyLight.shadow.camera.far = 240;
+keyLight.shadow.camera.far = 110;
 keyLight.shadow.bias = -0.0003;
 keyLight.shadow.normalBias = 0.03;
 scene.add(keyLight);
@@ -154,14 +154,14 @@ fillLight.position.set(16, 10, 12);
 scene.add(fillLight);
 
 // A small vertex-colour sky dome gives the horizon a natural blue gradient.
-const skyGeometry = new THREE.SphereGeometry(520, 40, 28);
+const skyGeometry = new THREE.SphereGeometry(245, 32, 20);
 const skyPositions = skyGeometry.getAttribute("position");
 const skyColors = new Float32Array(skyPositions.count * 3);
 const horizonSky = new THREE.Color(0xcbd7d9);
 const zenithSky = new THREE.Color(0x557da4);
 const skyColor = new THREE.Color();
 for (let i = 0; i < skyPositions.count; i++) {
-  const vertical = THREE.MathUtils.clamp(skyPositions.getY(i) / 520, 0, 1);
+  const vertical = THREE.MathUtils.clamp(skyPositions.getY(i) / 245, 0, 1);
   const blend = vertical * vertical * (3 - 2 * vertical);
   skyColor.copy(horizonSky).lerp(zenithSky, blend);
   skyColor.toArray(skyColors, i * 3);
@@ -180,7 +180,7 @@ skyDome.frustumCulled = false;
 scene.add(skyDome);
 
 const ground = new THREE.Mesh(
-  new THREE.PlaneGeometry(900,900),
+  new THREE.PlaneGeometry(600,600),
   new THREE.MeshStandardMaterial({color:0x687568, roughness:1, metalness:0})
 );
 ground.rotation.x = -Math.PI/2;
@@ -235,34 +235,8 @@ function buildCity() {
     return mesh;
   };
 
-  function makeSurfaceTexture(baseColor, fleckA, fleckB, repeatX, repeatY) {
-    const canvas = document.createElement("canvas");
-    canvas.width = 128; canvas.height = 128;
-    const ctx = canvas.getContext("2d");
-    ctx.fillStyle = baseColor;
-    ctx.fillRect(0, 0, 128, 128);
-    for (let i = 0; i < 2600; i++) {
-      ctx.fillStyle = rand() > 0.5 ? fleckA : fleckB;
-      const size = rand() > 0.92 ? 2 : 1;
-      ctx.fillRect(Math.floor(rand() * 128), Math.floor(rand() * 128), size, size);
-    }
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.colorSpace = THREE.SRGBColorSpace;
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(repeatX, repeatY);
-    texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
-    return texture;
-  }
-  ground.material.map = makeSurfaceTexture("#697a68", "rgba(139,153,111,.18)", "rgba(34,57,39,.12)", 90, 90);
-  ground.material.needsUpdate = true;
-  roadMat.map = makeSurfaceTexture("#292e31", "rgba(117,122,120,.16)", "rgba(5,9,12,.20)", 18, 18);
-  roadMat.needsUpdate = true;
-  sidewalkMat.map = makeSurfaceTexture("#b3b4ae", "rgba(255,255,255,.20)", "rgba(82,86,84,.12)", 8, 8);
-  sidewalkMat.needsUpdate = true;
-
-  const streetPositions = [-112, -80, -48, -16, 16, 48, 80, 112];
-  const roadLength = 320;
+  const streetPositions = [-60, -36, -12, 12, 36, 60];
+  const roadLength = 190;
 
   // Asphalt roads, raised curbs and broad concrete pavements.
   for (const x of streetPositions) {
@@ -364,7 +338,7 @@ function buildCity() {
   city.add(crossings);
 
   // Detailed, instanced window assemblies: outer frame, glass, mullions and sill.
-  const maxWindows = 18000;
+  const maxWindows = 12000;
   const frames = new THREE.InstancedMesh(
     new THREE.BoxGeometry(1.18, 1.62, 0.16), darkMetal, maxWindows
   );
@@ -428,41 +402,15 @@ function buildCity() {
     { wall: 0xd0c9bc, trim: 0xe7e0d3, accent: 0x8f9898, kind: "stucco" }
   ];
 
-  const shopNames = ["BÄCKEREI", "APOTHEKE", "CAFÉ", "MARKT", "FRISEUR", "PIZZERIA", "BLUMEN", "KIOSK", "BOUTIQUE", "EISCAFÉ"];
-  const shopSignMaterials = new Map();
-  function shopSignMaterial(label) {
-    if (shopSignMaterials.has(label)) return shopSignMaterials.get(label);
-    const canvas = document.createElement("canvas");
-    canvas.width = 512; canvas.height = 96;
-    const ctx = canvas.getContext("2d");
-    const gradient = ctx.createLinearGradient(0, 0, 512, 96);
-    gradient.addColorStop(0, "#172a31");
-    gradient.addColorStop(0.5, "#334a50");
-    gradient.addColorStop(1, "#19282d");
-    ctx.fillStyle = gradient; ctx.fillRect(0, 0, 512, 96);
-    ctx.fillStyle = "#e9e1cc";
-    ctx.font = "bold 43px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.fillText(label, 256, 50, 476);
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.colorSpace = THREE.SRGBColorSpace;
-    texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
-    const material = new THREE.MeshBasicMaterial({map:texture, side:THREE.DoubleSide});
-    shopSignMaterials.set(label, material);
-    return material;
-  }
-
-  const plotPositions = [-128, -96, -64, -32, 32, 64, 96, 128];
+  const plotPositions = [-72, -48, -24, 24, 48, 72];
 
   for (const x of plotPositions) {
     for (const z of plotPositions) {
       // Leave the central crossing open so the player has room to move.
-      if (Math.abs(x) === 32 && Math.abs(z) === 32) continue;
+      if (Math.abs(x) === 24 && Math.abs(z) === 24) continue;
 
       const style = Math.floor(rand() * 4);
-      const floors = style === 0 ? 3 + Math.floor(rand() * 3)
-        : style === 1 ? 4 + Math.floor(rand() * 4)
-        : style === 2 ? 2 + Math.floor(rand() * 3)
-        : 3 + Math.floor(rand() * 4);
+      const floors = style === 0 ? 4 + Math.floor(rand() * 4) : 6 + Math.floor(rand() * 8);
       const floorHeight = style === 0 ? 3.05 : 2.9;
       const height = floors * floorHeight;
       const width = 10.2 + rand() * 2.0;
@@ -535,15 +483,6 @@ function buildCity() {
         const shopSignMat = new THREE.MeshStandardMaterial({ color: 0x343d43, roughness: 0.78 });
         makeBox(building, "shop sign fascia", width * 0.68, 0.4, 0.18,
           shopSignMat, 0, 2.48, depth / 2 + 0.13);
-        const shopName = shopNames[Math.floor(rand() * shopNames.length)];
-        const shopSign = new THREE.Mesh(
-          new THREE.PlaneGeometry(Math.min(width * 0.62, 7.5), 0.29),
-          shopSignMaterial(shopName)
-        );
-        shopSign.name = "shop lettering " + shopName;
-        shopSign.position.set(0, 2.48, depth / 2 + 0.232);
-        shopSign.castShadow = false;
-        building.add(shopSign);
         for (const side of [-1, 1]) {
           makeBox(building, "shop display glass", 1.5, 1.8, 0.065,
             windowGlass, side * 2.55, 1.25, depth / 2 + 0.12);
@@ -820,79 +759,7 @@ function buildCity() {
   city.add(lampPoles, lampArms, lampHeads);
 
 
-  const avenueTreeLocations = [];
-  const avenueOffsets = [-96, -32, 32, 96];
-  for (const street of streetPositions) {
-    for (const along of avenueOffsets) {
-      for (const side of [-1, 1]) {
-        avenueTreeLocations.push({x:street + side * 5.9, z:along});
-        avenueTreeLocations.push({x:along, z:street + side * 5.9});
-      }
-    }
-  }
-  const avenueTrunks = new THREE.InstancedMesh(
-    new THREE.CylinderGeometry(0.13, 0.22, 3.3, 9),
-    new THREE.MeshStandardMaterial({color:0x604834, roughness:1}),
-    avenueTreeLocations.length
-  );
-  const avenueCanopy = new THREE.InstancedMesh(
-    new THREE.SphereGeometry(1, 12, 10),
-    new THREE.MeshStandardMaterial({color:0x477448, roughness:0.98}),
-    avenueTreeLocations.length
-  );
-  for (let i = 0; i < avenueTreeLocations.length; i++) {
-    const tree = avenueTreeLocations[i];
-    treeDummy.position.set(tree.x, 1.65, tree.z);
-    treeDummy.rotation.set(0, 0, 0);
-    treeDummy.scale.set(1, 1, 1);
-    treeDummy.updateMatrix();
-    avenueTrunks.setMatrixAt(i, treeDummy.matrix);
-    const crownScale = 1.65 + (i % 4) * 0.12;
-    treeDummy.position.set(tree.x, 4.25, tree.z);
-    treeDummy.rotation.set(0, (i * 0.71) % (Math.PI * 2), 0);
-    treeDummy.scale.set(crownScale, crownScale * 0.96, crownScale);
-    treeDummy.updateMatrix();
-    avenueCanopy.setMatrixAt(i, treeDummy.matrix);
-  }
-  avenueTrunks.castShadow = true;
-  avenueCanopy.castShadow = true;
-  city.add(avenueTrunks, avenueCanopy);
-
-  const pocketParkCenters = [[64,0],[-64,0],[0,64],[0,-64]];
-  const parkPavingMat = new THREE.MeshStandardMaterial({color:0x999c96, roughness:0.95});
-  const parkGrassMat = new THREE.MeshStandardMaterial({color:0x58724e, roughness:1});
-  const parkWoodMat = new THREE.MeshStandardMaterial({color:0x72533a, roughness:0.88});
-  const parkMetalMat = new THREE.MeshStandardMaterial({color:0x343b3c, roughness:0.74, metalness:0.24});
-  const parkLeafMat = new THREE.MeshStandardMaterial({color:0x416d43, roughness:1});
-  for (const [px, pz] of pocketParkCenters) {
-    makeBox(city, "neighbourhood garden paving", 19, 0.08, 19, parkPavingMat, px, 0.025, pz);
-    makeBox(city, "neighbourhood garden lawn", 12.5, 0.07, 12.5, parkGrassMat, px, 0.085, pz);
-    makeBox(city, "garden crossing path", 1.7, 0.045, 12.8, parkPavingMat, px, 0.13, pz);
-    for (const side of [-1, 1]) {
-      makeBox(city, "raised garden border", 0.22, 0.32, 13.0, curbMat, px + side * 6.45, 0.19, pz);
-      makeBox(city, "garden planter", 2.1, 0.48, 1.8, sidewalkMat, px + side * 4.1, 0.27, pz - 4.15);
-      const shrub = new THREE.Mesh(new THREE.SphereGeometry(0.8, 10, 8), parkLeafMat);
-      shrub.position.set(px + side * 4.1, 0.98, pz - 4.15);
-      shrub.scale.set(1.25, 0.8, 1.0);
-      shrub.castShadow = true;
-      city.add(shrub);
-    }
-    for (const side of [-1, 1]) {
-      const bx = px + side * 3.4;
-      const bz = pz + 4.2;
-      makeBox(city, "park bench seat", 2.15, 0.13, 0.58, parkWoodMat, bx, 0.63, bz);
-      makeBox(city, "park bench back", 2.15, 0.72, 0.12, parkWoodMat, bx, 1.0, bz - 0.23);
-      for (const legSide of [-1, 1]) {
-        makeBox(city, "park bench metal leg", 0.12, 0.58, 0.12, parkMetalMat, bx + legSide * 0.82, 0.34, bz);
-      }
-    }
-    const bin = new THREE.Mesh(new THREE.CylinderGeometry(0.27, 0.31, 0.82, 12), parkMetalMat);
-    bin.position.set(px - 5.2, 0.5, pz + 3.9);
-    bin.castShadow = true;
-    city.add(bin);
-  }
-
-  console.info("Expanded city generated:", plotPositions.length * plotPositions.length - 4, "buildings and", avenueTreeLocations.length, "avenue trees");
+  console.info("Detailed city generated:", plotPositions.length * plotPositions.length - 4, "buildings");
 }
 
 buildCity();
@@ -1174,9 +1041,6 @@ function animate() {
   requestAnimationFrame(animate);
   const delta = Math.min(clock.getDelta(), 0.04);
   updateMovement(delta);
-  keyLight.position.set(player.position.x - 48, 92, player.position.z - 38);
-  keyLight.target.position.set(player.position.x, 0, player.position.z);
-  keyLight.target.updateMatrixWorld();
   if (mixer) mixer.update(delta);
   updateAirPose();
   updateCamera(delta);
