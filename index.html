@@ -1260,5 +1260,89 @@ window.addEventListener("resize", () => {
  window.addEventListener("blur",()=>Object.keys(held).forEach(k=>held[k]=false));
 })();
 </script>
+
+<script type="module" id="buer-walk-engine">
+import * as THREE from "three";
+(() => {
+ const panel=document.getElementById("buer-walk"),launch=document.getElementById("buer-walk-launch"),canvas=document.getElementById("buer-world"),status=document.getElementById("buer-walk-status");
+ if(!panel||!launch||!canvas)return;
+ let renderer,scene,camera,clock,avatar,raf=0,active=false,loaded=false,locked=false,yaw=0,pitch=-.12,walkTime=0;
+ const held=Object.create(null),origin={lat:51.58035,lon:7.05265},start={lat:51.58035,lon:7.05265};
+ const bbox={s:51.565,n:51.591,w:7.030,e:7.075};
+ const places=[
+  {name:"Chicken Boss",sub:"Goldbergplatz 1",lat:51.58035,lon:7.05265,color:"#e5a33b"},
+  {name:"Leibniz-Gymnasium",sub:"Breddestraße 21",lat:51.575956,lon:7.055088,color:"#65b7ed"},
+  {name:"Propsteikirche St. Urbanus",sub:"Buerer Wahrzeichen",lat:51.58063,lon:7.05198,color:"#e8d18a"},
+  {name:"Rathaus Buer",sub:"Goldbergstraße",lat:51.57758,lon:7.05825,color:"#9bce9d"},
+  {name:"Hochstraße · Innenstadt",sub:"Fußgängerzone",lat:51.5801,lon:7.0541,color:"#f0a2b5"},
+  {name:"Kunstmuseum",sub:"Horster Straße",lat:51.57684,lon:7.05401,color:"#b8a0ed"}
+ ];
+ const project=(lat,lon)=>({x:(lon-origin.lon)*111320*Math.cos(origin.lat*Math.PI/180),z:-(lat-origin.lat)*111320});
+ function labelSprite(title,sub,color){
+  const c=document.createElement("canvas"),ctx=c.getContext("2d");c.width=512;c.height=128;
+  ctx.fillStyle="#101820ed";ctx.beginPath();ctx.roundRect(5,5,502,118,20);ctx.fill();ctx.strokeStyle=color;ctx.lineWidth=5;ctx.stroke();
+  ctx.fillStyle="#fff";ctx.font="bold 34px Arial";ctx.fillText(title.slice(0,26),24,55);ctx.fillStyle="#c6d1d9";ctx.font="24px Arial";ctx.fillText(sub.slice(0,38),24,91);
+  const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false}));sp.scale.set(15,3.75,1);return sp;
+ }
+ function addRoad(a,b,width){
+  const dx=b.x-a.x,dz=b.z-a.z,len=Math.hypot(dx,dz);if(len<1)return;const nx=-dz/len*width/2,nz=dx/len*width/2;
+  const geo=new THREE.BufferGeometry();geo.setAttribute("position",new THREE.Float32BufferAttribute([a.x+nx,.015,a.z+nz,a.x-nx,.015,a.z-nz,b.x-nx,.015,b.z-nz,b.x+nx,.015,b.z+nz],3));geo.setIndex([0,1,2,0,2,3]);geo.computeVertexNormals();
+  scene.add(new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:0x42484b,roughness:.95,side:THREE.DoubleSide})));
+ }
+ function addBuilding(coords,tags,index){
+  if(coords.length<4)return;const pts=coords.map(n=>project(n.lat,n.lon)),shape=new THREE.Shape();shape.moveTo(pts[0].x,pts[0].z);for(let i=1;i<pts.length;i++)shape.lineTo(pts[i].x,pts[i].z);shape.closePath();
+  const raw=Number(tags.height)||((Number(tags["building:levels"])||0)*3.1)||(5.5+(index%5)*1.25),height=Math.max(3.2,Math.min(raw,38));
+  const geo=new THREE.ExtrudeGeometry(shape,{depth:height,bevelEnabled:false});geo.rotateX(Math.PI/2);geo.translate(0,height,0);
+  const colors=[0xb9b1a3,0xc8c0b2,0x9eaaa7,0xd0c4b0,0xaeb8bd,0xb9a99c];const mesh=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:colors[index%colors.length],roughness:.88}));scene.add(mesh);
+  const roof=new THREE.Mesh(new THREE.ShapeGeometry(shape),new THREE.MeshStandardMaterial({color:0x62686a,roughness:1}));roof.rotation.x=Math.PI/2;roof.position.y=height+.02;scene.add(roof);
+ }
+ function makeAvatar(){
+  avatar=new THREE.Group();const skin=new THREE.MeshStandardMaterial({color:0xd6a77d}),shirt=new THREE.MeshStandardMaterial({color:0x286b91}),pants=new THREE.MeshStandardMaterial({color:0x273442});
+  const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.34,.65,4,8),shirt);torso.position.y=1.25;avatar.add(torso);
+  const head=new THREE.Mesh(new THREE.SphereGeometry(.22,16,12),skin);head.position.y=1.92;avatar.add(head);const legs=[];
+  for(const side of [-1,1]){const leg=new THREE.Mesh(new THREE.CapsuleGeometry(.12,.52,3,7),pants);leg.position.set(side*.16,.48,0);avatar.add(leg);legs.push(leg);const arm=new THREE.Mesh(new THREE.CapsuleGeometry(.09,.48,3,7),shirt);arm.position.set(side*.43,1.28,0);arm.rotation.z=side*.13;avatar.add(arm);}
+  avatar.userData.legs=legs;scene.add(avatar);
+ }
+ async function loadCity(){
+  status.textContent="Lade echte Straßen- und Gebäudegrundrisse aus OpenStreetMap …";
+  const box=[bbox.s,bbox.w,bbox.n,bbox.e].join(","),query='[out:json][timeout:35];(way["building"]('+box+');way["highway"]('+box+'););out body;>;out skel qt;';let data;
+  for(const endpoint of ["https://overpass-api.de/api/interpreter","https://overpass.kumi.systems/api/interpreter"]){try{const res=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},body:"data="+encodeURIComponent(query)});if(!res.ok)throw Error("HTTP "+res.status);data=await res.json();break;}catch(err){console.warn("OSM endpoint",err);}}
+  if(!data)throw Error("OpenStreetMap-Gebäudedaten sind gerade nicht erreichbar.");
+  const nodes=new Map(),ways=[];for(const el of data.elements){if(el.type==="node")nodes.set(el.id,{lat:el.lat,lon:el.lon});else if(el.type==="way")ways.push(el);}
+  let buildings=0,roads=0;
+  for(const way of ways){const coords=(way.nodes||[]).map(id=>nodes.get(id)).filter(Boolean);
+   if(way.tags?.building&&coords.length>=4&&buildings<2400)addBuilding(coords,way.tags,buildings++);
+   else if(way.tags?.highway&&coords.length>=2&&roads<2200){const hw=way.tags.highway,width=["motorway","trunk"].includes(hw)?10:["primary","secondary"].includes(hw)?8:hw==="tertiary"?6:hw==="residential"?5:hw==="service"?3.5:2.5;for(let i=1;i<coords.length;i++)addRoad(project(coords[i-1].lat,coords[i-1].lon),project(coords[i].lat,coords[i].lon),width);roads++;}
+  }
+  for(const p of places){const pos=project(p.lat,p.lon),pole=new THREE.Mesh(new THREE.CylinderGeometry(.08,.08,2.5,8),new THREE.MeshStandardMaterial({color:p.color}));pole.position.set(pos.x,1.25,pos.z);scene.add(pole);const ball=new THREE.Mesh(new THREE.SphereGeometry(.35,14,10),new THREE.MeshStandardMaterial({color:p.color,emissive:p.color,emissiveIntensity:.2}));ball.position.set(pos.x,2.7,pos.z);scene.add(ball);const label=labelSprite(p.name,p.sub,p.color);label.position.set(pos.x,5.2,pos.z);scene.add(label);}
+  status.textContent=buildings+" echte Gebäudegrundrisse und "+roads+" Straßenabschnitte geladen. Laufe zu den markierten Orten in Buer!";
+ }
+ function setup(){
+  renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));renderer.setSize(innerWidth,innerHeight);
+  scene=new THREE.Scene();scene.background=new THREE.Color(0xa9c0cf);scene.fog=new THREE.Fog(0xa9c0cf,130,950);camera=new THREE.PerspectiveCamera(72,innerWidth/innerHeight,.1,2500);
+  scene.add(new THREE.HemisphereLight(0xe7f3ff,0x68745d,2));const sun=new THREE.DirectionalLight(0xffe4bf,2.2);sun.position.set(-120,220,80);scene.add(sun);
+  const ground=new THREE.Mesh(new THREE.PlaneGeometry(6000,6000),new THREE.MeshStandardMaterial({color:0x91a98d,roughness:1}));ground.rotation.x=-Math.PI/2;ground.position.y=-.12;scene.add(ground);
+  makeAvatar();clock=new THREE.Clock();const p=project(start.lat,start.lon);avatar.position.set(p.x,0,p.z);camera.position.set(p.x,3.8,p.z+7);camera.lookAt(p.x,1.4,p.z);
+ }
+ function open(){panel.classList.add("active");active=true;if(!loaded){setup();loadCity().then(()=>loaded=true).catch(e=>{status.textContent=e.message+" Bitte später erneut versuchen.";console.error(e);});}if(!raf)raf=requestAnimationFrame(tick);}
+ function close(){active=false;panel.classList.remove("active");Object.keys(held).forEach(k=>held[k]=false);if(document.pointerLockElement===canvas)document.exitPointerLock();if(raf){cancelAnimationFrame(raf);raf=0;}}
+ function tick(){if(!active){raf=0;return;}raf=requestAnimationFrame(tick);if(!avatar)return;const dt=Math.min(clock.getDelta(),.04);
+  if(loaded){const f=(held.KeyW||held.ArrowUp?1:0)-(held.KeyS||held.ArrowDown?1:0),side=(held.KeyD||held.ArrowRight?1:0)-(held.KeyA||held.ArrowLeft?1:0),moving=!!(f||side),speed=held.ShiftLeft||held.ShiftRight?8.2:4.3;
+   const dir=new THREE.Vector3(Math.sin(yaw),0,Math.cos(yaw)),right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw)),move=dir.multiplyScalar(f).add(right.multiplyScalar(side));
+   if(move.lengthSq()>0){move.normalize().multiplyScalar(speed*dt);avatar.position.add(move);avatar.rotation.y=Math.atan2(move.x,move.z);walkTime+=dt*(speed>5?13:9);}
+   avatar.userData.legs.forEach((leg,i)=>leg.rotation.x=moving?Math.sin(walkTime+i*Math.PI)*.65:0);
+   const target=new THREE.Vector3(avatar.position.x,2.1,avatar.position.z),offset=new THREE.Vector3(-Math.sin(yaw)*6,2.8+pitch*5,-Math.cos(yaw)*6);camera.position.lerp(target.clone().add(offset),1-Math.exp(-7*dt));camera.lookAt(target);
+  }renderer.render(scene,camera);
+ }
+ launch.addEventListener("click",open);document.getElementById("buer-walk-exit").addEventListener("click",close);
+ document.getElementById("buer-walk-reset").addEventListener("click",()=>{if(avatar){const p=project(start.lat,start.lon);avatar.position.set(p.x,0,p.z);yaw=0;pitch=-.12;}});
+ canvas.addEventListener("click",()=>{if(active&&canvas.requestPointerLock)canvas.requestPointerLock();});document.addEventListener("pointerlockchange",()=>locked=document.pointerLockElement===canvas);
+ document.addEventListener("mousemove",e=>{if(locked&&active){yaw-=e.movementX*.0022;pitch=Math.max(-.45,Math.min(.3,pitch-e.movementY*.0015));}});
+ window.addEventListener("keydown",e=>{if(!active)return;if(["KeyW","KeyA","KeyS","KeyD","ArrowUp","ArrowDown","ArrowLeft","ArrowRight","ShiftLeft","ShiftRight"].includes(e.code)){held[e.code]=true;e.preventDefault();}});
+ window.addEventListener("keyup",e=>held[e.code]=false);window.addEventListener("blur",()=>Object.keys(held).forEach(k=>held[k]=false));
+ window.addEventListener("resize",()=>{if(renderer&&camera){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);}});
+})();
+</script>
+
 </body>
 </html>
