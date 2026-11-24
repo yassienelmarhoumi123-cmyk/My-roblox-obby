@@ -58,24 +58,6 @@ canvas{display:block;width:100%;height:100%;outline:none}
 
 
 
-<style>
-#vehicle-prompt{position:fixed;left:50%;bottom:104px;transform:translateX(-50%);z-index:7;display:none;align-items:center;gap:10px;padding:10px 15px;border:1px solid #ffffff45;border-radius:12px;background:#111820d9;color:#fff;font-size:12px;font-weight:800;letter-spacing:.04em;backdrop-filter:blur(12px);box-shadow:0 10px 30px #0003;white-space:nowrap}
-#vehicle-prompt-key{display:grid;place-items:center;width:26px;height:26px;border:1px solid #ffffff55;border-bottom-width:3px;border-radius:7px;background:#ffffff16;font-size:12px}
-#vehicle-hud{position:fixed;left:22px;top:76px;z-index:7;display:none;min-width:140px;padding:12px 15px;border:1px solid #ffffff35;border-radius:13px;background:#111820c9;color:#fff;backdrop-filter:blur(12px);box-shadow:0 10px 30px #0002}
-#vehicle-hud-label{font-size:9px;font-weight:900;letter-spacing:.16em;color:#e7edf3b8}
-#vehicle-speed{font-size:29px;font-weight:900;line-height:1.25;font-variant-numeric:tabular-nums}
-#vehicle-speed-unit{font-size:10px;color:#ffffffa8;letter-spacing:.1em}
-#vehicle-hud-help{font-size:9px;color:#ffffffa8;margin-top:5px}
-@media(max-width:650px){#vehicle-prompt{bottom:122px;max-width:calc(100% - 24px);font-size:10px}#vehicle-hud{left:12px;top:66px;padding:9px 12px}#vehicle-speed{font-size:24px}}
-</style>
-
-<style>
-#vehicle-upload-panel{position:fixed;right:22px;top:76px;z-index:8;display:flex;align-items:center;gap:9px;max-width:calc(100% - 36px);padding:9px 11px;border:1px solid #ffffff35;border-radius:13px;background:#111820d9;color:#fff;backdrop-filter:blur(12px);box-shadow:0 9px 28px #0003}
-#vehicle-upload-button{border:1px solid #ffffff36;border-radius:9px;padding:9px 12px;background:#263747;color:#fff;font:800 10px Inter,system-ui,sans-serif;letter-spacing:.07em;cursor:pointer;white-space:nowrap}
-#vehicle-upload-button:hover{background:#354d61}#vehicle-upload-button:disabled{opacity:.55;cursor:wait}
-#vehicle-upload-status{font-size:9px;color:#d9e2e9b8;max-width:170px;line-height:1.35}
-@media(max-width:650px){#vehicle-upload-panel{right:12px;top:64px;padding:7px;gap:7px}#vehicle-upload-button{font-size:9px;padding:8px}#vehicle-upload-status{font-size:8px;max-width:110px}}
-</style>
 </head>
 <body>
 <div id="game"></div>
@@ -85,7 +67,7 @@ canvas{display:block;width:100%;height:100%;outline:none}
  <div id="mark" aria-hidden="true">
   <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 19 7v5.5c0 4.5-3 7-7 8.5-4-1.5-7-4-7-8.5V7l7-3.5Z"/><path d="M8.5 12.3 11 15l4.8-5"/></svg>
  </div>
- <div><div id="heading">CITY BLOCK · CHARACTER TEST</div><div id="subheading">OPEN WORLD · CITY PROTOTYP 02</div></div>
+ <div><div id="heading">OPEN WORLD · CITY DISTRICT</div><div id="subheading">EXPANDED CITY · CHARACTER MODE</div></div>
 </div>
 <div id="status">3D-MODELL LÄDT</div>
 <div id="help">
@@ -100,9 +82,6 @@ canvas{display:block;width:100%;height:100%;outline:none}
 </button>
 <div id="credit">GRAB3D MAN BASE MESH · RIGGED · CC0</div>
 
-<div id="vehicle-prompt" aria-live="polite"><span id="vehicle-prompt-key">E</span><span id="vehicle-prompt-text">E · EINSTEIGEN</span></div>
-<div id="vehicle-upload-panel"><button id="vehicle-upload-button" type="button">🏎️ BUGATTI CHIRON LADEN</button><span id="vehicle-upload-status">Wähle deine Bugatti-ZIP einmal aus</span><input id="vehicle-upload-input" type="file" accept=".zip,application/zip" hidden></div>
-<div id="vehicle-hud"><div id="vehicle-hud-label">SUPERCAR · FAHREN</div><div><span id="vehicle-speed">0</span> <span id="vehicle-speed-unit">KM/H</span></div><div id="vehicle-hud-help">WASD fahren · E aussteigen · Maus Kamera</div></div>
 
 <div id="loading">
  <div class="spinner" id="spinner"></div>
@@ -114,20 +93,13 @@ canvas{display:block;width:100%;height:100%;outline:none}
 <script type="module">
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { FBXLoader } from "three/addons/loaders/FBXLoader.js";
-import JSZip from "https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm";
+
+
 import { KTX2Loader } from "three/addons/loaders/KTX2Loader.js";
 import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
 
 const root = document.getElementById("game");
 const statusEl = document.getElementById("status");
-const vehiclePrompt = document.getElementById("vehicle-prompt");
-const vehiclePromptText = document.getElementById("vehicle-prompt-text");
-const vehicleHud = document.getElementById("vehicle-hud");
-const vehicleSpeedEl = document.getElementById("vehicle-speed");
-const vehicleUploadButton = document.getElementById("vehicle-upload-button");
-const vehicleUploadInput = document.getElementById("vehicle-upload-input");
-const vehicleUploadStatus = document.getElementById("vehicle-upload-status");
 const helpEl = document.getElementById("help");
 const loadingEl = document.getElementById("loading");
 const loadTitle = document.getElementById("load-title");
@@ -137,9 +109,9 @@ const errorEl = document.getElementById("error");
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x557da4);
-scene.fog = new THREE.Fog(0xbccbd2, 68, 225);
+scene.fog = new THREE.Fog(0xbccbd2, 175, 560);
 
-const camera = new THREE.PerspectiveCamera(48, window.innerWidth / window.innerHeight, 0.1, 260);
+const camera = new THREE.PerspectiveCamera(48, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.set(0, 2.8, -6);
 
 const renderer = new THREE.WebGLRenderer({antialias:true, alpha:false, powerPreference:"high-performance"});
@@ -163,32 +135,33 @@ const hemi = new THREE.HemisphereLight(0xdcecff, 0x62685d, 1.48);
 scene.add(hemi);
 
 const keyLight = new THREE.DirectionalLight(0xffe5c6, 2.45);
-keyLight.position.set(-18, 30, -14);
+keyLight.position.set(-48, 92, -38);
 keyLight.castShadow = true;
 keyLight.shadow.mapSize.set(2048,2048);
-keyLight.shadow.camera.left = -25;
-keyLight.shadow.camera.right = 25;
-keyLight.shadow.camera.top = 25;
-keyLight.shadow.camera.bottom = -25;
+keyLight.shadow.camera.left = -76;
+keyLight.shadow.camera.right = 76;
+keyLight.shadow.camera.top = 76;
+keyLight.shadow.camera.bottom = -76;
 keyLight.shadow.camera.near = 0.5;
-keyLight.shadow.camera.far = 110;
+keyLight.shadow.camera.far = 240;
 keyLight.shadow.bias = -0.0003;
 keyLight.shadow.normalBias = 0.03;
 scene.add(keyLight);
+scene.add(keyLight.target);
 
 const fillLight = new THREE.DirectionalLight(0xbfdcff, 0.78);
 fillLight.position.set(16, 10, 12);
 scene.add(fillLight);
 
 // A small vertex-colour sky dome gives the horizon a natural blue gradient.
-const skyGeometry = new THREE.SphereGeometry(245, 32, 20);
+const skyGeometry = new THREE.SphereGeometry(520, 40, 28);
 const skyPositions = skyGeometry.getAttribute("position");
 const skyColors = new Float32Array(skyPositions.count * 3);
 const horizonSky = new THREE.Color(0xcbd7d9);
 const zenithSky = new THREE.Color(0x557da4);
 const skyColor = new THREE.Color();
 for (let i = 0; i < skyPositions.count; i++) {
-  const vertical = THREE.MathUtils.clamp(skyPositions.getY(i) / 245, 0, 1);
+  const vertical = THREE.MathUtils.clamp(skyPositions.getY(i) / 520, 0, 1);
   const blend = vertical * vertical * (3 - 2 * vertical);
   skyColor.copy(horizonSky).lerp(zenithSky, blend);
   skyColor.toArray(skyColors, i * 3);
@@ -207,7 +180,7 @@ skyDome.frustumCulled = false;
 scene.add(skyDome);
 
 const ground = new THREE.Mesh(
-  new THREE.PlaneGeometry(600,600),
+  new THREE.PlaneGeometry(900,900),
   new THREE.MeshStandardMaterial({color:0x687568, roughness:1, metalness:0})
 );
 ground.rotation.x = -Math.PI/2;
@@ -262,8 +235,34 @@ function buildCity() {
     return mesh;
   };
 
-  const streetPositions = [-60, -36, -12, 12, 36, 60];
-  const roadLength = 190;
+  function makeSurfaceTexture(baseColor, fleckA, fleckB, repeatX, repeatY) {
+    const canvas = document.createElement("canvas");
+    canvas.width = 128; canvas.height = 128;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = baseColor;
+    ctx.fillRect(0, 0, 128, 128);
+    for (let i = 0; i < 2600; i++) {
+      ctx.fillStyle = rand() > 0.5 ? fleckA : fleckB;
+      const size = rand() > 0.92 ? 2 : 1;
+      ctx.fillRect(Math.floor(rand() * 128), Math.floor(rand() * 128), size, size);
+    }
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(repeatX, repeatY);
+    texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+    return texture;
+  }
+  ground.material.map = makeSurfaceTexture("#697a68", "rgba(139,153,111,.18)", "rgba(34,57,39,.12)", 90, 90);
+  ground.material.needsUpdate = true;
+  roadMat.map = makeSurfaceTexture("#292e31", "rgba(117,122,120,.16)", "rgba(5,9,12,.20)", 18, 18);
+  roadMat.needsUpdate = true;
+  sidewalkMat.map = makeSurfaceTexture("#b3b4ae", "rgba(255,255,255,.20)", "rgba(82,86,84,.12)", 8, 8);
+  sidewalkMat.needsUpdate = true;
+
+  const streetPositions = [-112, -80, -48, -16, 16, 48, 80, 112];
+  const roadLength = 320;
 
   // Asphalt roads, raised curbs and broad concrete pavements.
   for (const x of streetPositions) {
@@ -285,12 +284,13 @@ function buildCity() {
 
   // Dashed center lines: a single instanced draw call for the whole city.
   const dashGeometry = new THREE.BoxGeometry(0.15, 0.018, 2.4);
-  const dashCapacity = streetPositions.length * 2 * 22;
+  const dashesPerRoad = Math.ceil((roadLength - 12) / 8);
+  const dashCapacity = streetPositions.length * 2 * dashesPerRoad;
   const dashes = new THREE.InstancedMesh(dashGeometry, laneMat, dashCapacity);
   const roadDummy = new THREE.Object3D();
   let dashIndex = 0;
   for (const x of streetPositions) {
-    for (let z = -84; z <= 84; z += 8) {
+    for (let z = -roadLength / 2 + 6; z <= roadLength / 2 - 6; z += 8) {
       roadDummy.position.set(x, 0.064, z);
       roadDummy.rotation.set(0, 0, 0);
       roadDummy.updateMatrix();
@@ -298,7 +298,7 @@ function buildCity() {
     }
   }
   for (const z of streetPositions) {
-    for (let x = -84; x <= 84; x += 8) {
+    for (let x = -roadLength / 2 + 6; x <= roadLength / 2 - 6; x += 8) {
       roadDummy.position.set(x, 0.065, z);
       roadDummy.rotation.set(0, Math.PI / 2, 0);
       roadDummy.updateMatrix();
@@ -364,7 +364,7 @@ function buildCity() {
   city.add(crossings);
 
   // Detailed, instanced window assemblies: outer frame, glass, mullions and sill.
-  const maxWindows = 12000;
+  const maxWindows = 18000;
   const frames = new THREE.InstancedMesh(
     new THREE.BoxGeometry(1.18, 1.62, 0.16), darkMetal, maxWindows
   );
@@ -427,15 +427,42 @@ function buildCity() {
     { wall: 0x9f8d7e, trim: 0xc8b39e, accent: 0x6d5b50, kind: "brick" },
     { wall: 0xd0c9bc, trim: 0xe7e0d3, accent: 0x8f9898, kind: "stucco" }
   ];
-  const plotPositions = [-72, -48, -24, 24, 48, 72];
+
+  const shopNames = ["BÄCKEREI", "APOTHEKE", "CAFÉ", "MARKT", "FRISEUR", "PIZZERIA", "BLUMEN", "KIOSK", "BOUTIQUE", "EISCAFÉ"];
+  const shopSignMaterials = new Map();
+  function shopSignMaterial(label) {
+    if (shopSignMaterials.has(label)) return shopSignMaterials.get(label);
+    const canvas = document.createElement("canvas");
+    canvas.width = 512; canvas.height = 96;
+    const ctx = canvas.getContext("2d");
+    const gradient = ctx.createLinearGradient(0, 0, 512, 96);
+    gradient.addColorStop(0, "#172a31");
+    gradient.addColorStop(0.5, "#334a50");
+    gradient.addColorStop(1, "#19282d");
+    ctx.fillStyle = gradient; ctx.fillRect(0, 0, 512, 96);
+    ctx.fillStyle = "#e9e1cc";
+    ctx.font = "bold 43px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(label, 256, 50, 476);
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+    const material = new THREE.MeshBasicMaterial({map:texture, side:THREE.DoubleSide});
+    shopSignMaterials.set(label, material);
+    return material;
+  }
+
+  const plotPositions = [-128, -96, -64, -32, 32, 64, 96, 128];
 
   for (const x of plotPositions) {
     for (const z of plotPositions) {
       // Leave the central crossing open so the player has room to move.
-      if (Math.abs(x) === 24 && Math.abs(z) === 24) continue;
+      if (Math.abs(x) === 32 && Math.abs(z) === 32) continue;
 
       const style = Math.floor(rand() * 4);
-      const floors = style === 0 ? 4 + Math.floor(rand() * 4) : 6 + Math.floor(rand() * 8);
+      const floors = style === 0 ? 3 + Math.floor(rand() * 3)
+        : style === 1 ? 4 + Math.floor(rand() * 4)
+        : style === 2 ? 2 + Math.floor(rand() * 3)
+        : 3 + Math.floor(rand() * 4);
       const floorHeight = style === 0 ? 3.05 : 2.9;
       const height = floors * floorHeight;
       const width = 10.2 + rand() * 2.0;
@@ -508,6 +535,15 @@ function buildCity() {
         const shopSignMat = new THREE.MeshStandardMaterial({ color: 0x343d43, roughness: 0.78 });
         makeBox(building, "shop sign fascia", width * 0.68, 0.4, 0.18,
           shopSignMat, 0, 2.48, depth / 2 + 0.13);
+        const shopName = shopNames[Math.floor(rand() * shopNames.length)];
+        const shopSign = new THREE.Mesh(
+          new THREE.PlaneGeometry(Math.min(width * 0.62, 7.5), 0.29),
+          shopSignMaterial(shopName)
+        );
+        shopSign.name = "shop lettering " + shopName;
+        shopSign.position.set(0, 2.48, depth / 2 + 0.232);
+        shopSign.castShadow = false;
+        building.add(shopSign);
         for (const side of [-1, 1]) {
           makeBox(building, "shop display glass", 1.5, 1.8, 0.065,
             windowGlass, side * 2.55, 1.25, depth / 2 + 0.12);
@@ -783,7 +819,80 @@ function buildCity() {
   }
   city.add(lampPoles, lampArms, lampHeads);
 
-  console.info("Detailed city generated:", plotPositions.length * plotPositions.length - 4, "buildings");
+
+  const avenueTreeLocations = [];
+  const avenueOffsets = [-96, -32, 32, 96];
+  for (const street of streetPositions) {
+    for (const along of avenueOffsets) {
+      for (const side of [-1, 1]) {
+        avenueTreeLocations.push({x:street + side * 5.9, z:along});
+        avenueTreeLocations.push({x:along, z:street + side * 5.9});
+      }
+    }
+  }
+  const avenueTrunks = new THREE.InstancedMesh(
+    new THREE.CylinderGeometry(0.13, 0.22, 3.3, 9),
+    new THREE.MeshStandardMaterial({color:0x604834, roughness:1}),
+    avenueTreeLocations.length
+  );
+  const avenueCanopy = new THREE.InstancedMesh(
+    new THREE.SphereGeometry(1, 12, 10),
+    new THREE.MeshStandardMaterial({color:0x477448, roughness:0.98}),
+    avenueTreeLocations.length
+  );
+  for (let i = 0; i < avenueTreeLocations.length; i++) {
+    const tree = avenueTreeLocations[i];
+    treeDummy.position.set(tree.x, 1.65, tree.z);
+    treeDummy.rotation.set(0, 0, 0);
+    treeDummy.scale.set(1, 1, 1);
+    treeDummy.updateMatrix();
+    avenueTrunks.setMatrixAt(i, treeDummy.matrix);
+    const crownScale = 1.65 + (i % 4) * 0.12;
+    treeDummy.position.set(tree.x, 4.25, tree.z);
+    treeDummy.rotation.set(0, (i * 0.71) % (Math.PI * 2), 0);
+    treeDummy.scale.set(crownScale, crownScale * 0.96, crownScale);
+    treeDummy.updateMatrix();
+    avenueCanopy.setMatrixAt(i, treeDummy.matrix);
+  }
+  avenueTrunks.castShadow = true;
+  avenueCanopy.castShadow = true;
+  city.add(avenueTrunks, avenueCanopy);
+
+  const pocketParkCenters = [[64,0],[-64,0],[0,64],[0,-64]];
+  const parkPavingMat = new THREE.MeshStandardMaterial({color:0x999c96, roughness:0.95});
+  const parkGrassMat = new THREE.MeshStandardMaterial({color:0x58724e, roughness:1});
+  const parkWoodMat = new THREE.MeshStandardMaterial({color:0x72533a, roughness:0.88});
+  const parkMetalMat = new THREE.MeshStandardMaterial({color:0x343b3c, roughness:0.74, metalness:0.24});
+  const parkLeafMat = new THREE.MeshStandardMaterial({color:0x416d43, roughness:1});
+  for (const [px, pz] of pocketParkCenters) {
+    makeBox(city, "neighbourhood garden paving", 19, 0.08, 19, parkPavingMat, px, 0.025, pz);
+    makeBox(city, "neighbourhood garden lawn", 12.5, 0.07, 12.5, parkGrassMat, px, 0.085, pz);
+    makeBox(city, "garden crossing path", 1.7, 0.045, 12.8, parkPavingMat, px, 0.13, pz);
+    for (const side of [-1, 1]) {
+      makeBox(city, "raised garden border", 0.22, 0.32, 13.0, curbMat, px + side * 6.45, 0.19, pz);
+      makeBox(city, "garden planter", 2.1, 0.48, 1.8, sidewalkMat, px + side * 4.1, 0.27, pz - 4.15);
+      const shrub = new THREE.Mesh(new THREE.SphereGeometry(0.8, 10, 8), parkLeafMat);
+      shrub.position.set(px + side * 4.1, 0.98, pz - 4.15);
+      shrub.scale.set(1.25, 0.8, 1.0);
+      shrub.castShadow = true;
+      city.add(shrub);
+    }
+    for (const side of [-1, 1]) {
+      const bx = px + side * 3.4;
+      const bz = pz + 4.2;
+      makeBox(city, "park bench seat", 2.15, 0.13, 0.58, parkWoodMat, bx, 0.63, bz);
+      makeBox(city, "park bench back", 2.15, 0.72, 0.12, parkWoodMat, bx, 1.0, bz - 0.23);
+      for (const legSide of [-1, 1]) {
+        makeBox(city, "park bench metal leg", 0.12, 0.58, 0.12, parkMetalMat, bx + legSide * 0.82, 0.34, bz);
+      }
+    }
+    const bin = new THREE.Mesh(new THREE.CylinderGeometry(0.27, 0.31, 0.82, 12), parkMetalMat);
+    bin.position.set(px - 5.2, 0.5, pz + 3.9);
+    bin.castShadow = true;
+    city.add(bin);
+  }
+
+  console.info("Expanded city generated:", plotPositions.length * plotPositions.length - 4, "buildings and", avenueTreeLocations.length, "avenue trees");
 }
 
 buildCity();
@@ -799,327 +908,6 @@ groundShadow.rotation.x = -Math.PI/2;
 groundShadow.position.y = 0.004;
 player.add(groundShadow);
 
-
-const vehicle = new THREE.Group();
-vehicle.name = "Player Supercar";
-vehicle.position.set(4.2, 0, 0);
-scene.add(vehicle);
-let vehicleVisual = null;
-let vehicleWheelParts = [];
-let vehicleReady = false;
-let driving = false;
-let vehicleSpeed = 0;
-let vehicleYaw = 0;
-const walkingHelpMarkup = helpEl.innerHTML;
-
-function addVehiclePart(parent, geometry, material, position, name) {
-  const mesh = new THREE.Mesh(geometry, material);
-  mesh.position.set(position[0], position[1], position[2]);
-  mesh.name = name || "vehicle-part";
-  mesh.castShadow = true;
-  mesh.receiveShadow = true;
-  parent.add(mesh);
-  return mesh;
-}
-
-function makeFallbackVehicle() {
-  const car = new THREE.Group();
-  const paint = new THREE.MeshStandardMaterial({color:0xe86626, metalness:0.62, roughness:0.27});
-  const darkPaint = new THREE.MeshStandardMaterial({color:0x171d25, metalness:0.35, roughness:0.3});
-  const glass = new THREE.MeshStandardMaterial({color:0x152b3b, metalness:0.35, roughness:0.16});
-  const rubber = new THREE.MeshStandardMaterial({color:0x101215, roughness:0.88});
-  const alloy = new THREE.MeshStandardMaterial({color:0xb8c0c6, metalness:0.85, roughness:0.22});
-  const lamp = new THREE.MeshStandardMaterial({color:0xe7f5ff, emissive:0x8bbbe7, emissiveIntensity:0.8});
-  const rearLamp = new THREE.MeshStandardMaterial({color:0x9d1720, emissive:0x9d1119, emissiveIntensity:0.65});
-  addVehiclePart(car,new THREE.BoxGeometry(2.02,.48,4.45),paint,[0,.67,0],"body");
-  addVehiclePart(car,new THREE.BoxGeometry(1.92,.16,1.05),paint,[0,.91,1.47],"hood");
-  addVehiclePart(car,new THREE.BoxGeometry(1.48,.62,1.72),glass,[0,1.08,-.18],"glass-cabin");
-  addVehiclePart(car,new THREE.BoxGeometry(1.62,.13,.72),darkPaint,[0,.87,-1.55],"rear-deck");
-  addVehiclePart(car,new THREE.BoxGeometry(1.9,.12,.2),darkPaint,[0,.48,2.18],"front-splitter");
-  for (const side of [-1,1]) {
-    addVehiclePart(car,new THREE.BoxGeometry(.38,.12,.24),lamp,[side*.69,.76,2.18],"headlight");
-    addVehiclePart(car,new THREE.BoxGeometry(.32,.1,.16),rearLamp,[side*.69,.77,-2.2],"tail-light");
-    for (const z of [-1.42,1.38]) {
-      const tire = addVehiclePart(car,new THREE.CylinderGeometry(.37,.37,.26,24),rubber,[side*1.04,.4,z],"wheel");
-      tire.rotation.z = Math.PI/2;
-      const rim = addVehiclePart(car,new THREE.CylinderGeometry(.19,.19,.275,16),alloy,[side*1.04,.4,z],"alloy-rim");
-      rim.rotation.z = Math.PI/2;
-      vehicleWheelParts.push(tire,rim);
-    }
-  }
-  return car;
-}
-
-function installVehicleModel(model) {
-  const bounds = new THREE.Box3().setFromObject(model);
-  const dimensions = new THREE.Vector3();
-  bounds.getSize(dimensions);
-  const longestSide = Math.max(dimensions.x, dimensions.z);
-  if (!Number.isFinite(longestSide) || longestSide < 0.2) {
-    throw new Error("Das 3D-Automodell hat keine gültige Größe.");
-  }
-
-  // Normalize the downloaded GLB to a realistic car length of about 4.5 metres.
-  model.scale.setScalar(4.5 / longestSide);
-  const fittedBounds = new THREE.Box3().setFromObject(model);
-  model.position.x -= (fittedBounds.min.x + fittedBounds.max.x) * 0.5;
-  model.position.z -= (fittedBounds.min.z + fittedBounds.max.z) * 0.5;
-  model.position.y -= fittedBounds.min.y;
-  vehicleWheelParts = [];
-  model.traverse((part) => {
-    if (part.isMesh) {
-      part.castShadow = true;
-      part.receiveShadow = true;
-    }
-    if (/wheel|tire|tyre|reifen|rad/i.test(part.name || "")) {
-      vehicleWheelParts.push(part);
-    }
-  });
-
-  if (vehicleVisual) vehicle.remove(vehicleVisual);
-  vehicleVisual = model;
-  vehicle.add(vehicleVisual);
-  vehicleReady = true;
-  console.info("3D supercar loaded into the original character scene.");
-}
-
-
-const VEHICLE_DB_NAME = "character-game-local-assets";
-const VEHICLE_DB_STORE = "models";
-function openVehicleDB() {
-  return new Promise((resolve, reject) => {
-    if (!("indexedDB" in window)) return reject(new Error("Dieser Browser unterstützt keine lokale Modellspeicherung."));
-    const request = indexedDB.open(VEHICLE_DB_NAME, 1);
-    request.onupgradeneeded = () => {
-      if (!request.result.objectStoreNames.contains(VEHICLE_DB_STORE)) request.result.createObjectStore(VEHICLE_DB_STORE);
-    };
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error || new Error("Lokaler Speicher konnte nicht geöffnet werden."));
-  });
-}
-async function saveBugattiArchive(blob) {
-  const db = await openVehicleDB();
-  await new Promise((resolve, reject) => {
-    const tx = db.transaction(VEHICLE_DB_STORE, "readwrite");
-    tx.objectStore(VEHICLE_DB_STORE).put(blob, "bugatti-chiron-zip");
-    tx.oncomplete = resolve; tx.onerror = () => reject(tx.error); tx.onabort = () => reject(tx.error);
-  });
-  db.close();
-}
-async function getSavedBugattiArchive() {
-  const db = await openVehicleDB();
-  const result = await new Promise((resolve, reject) => {
-    const tx = db.transaction(VEHICLE_DB_STORE, "readonly");
-    const request = tx.objectStore(VEHICLE_DB_STORE).get("bugatti-chiron-zip");
-    request.onsuccess = () => resolve(request.result || null); request.onerror = () => reject(request.error);
-  });
-  db.close();
-  return result;
-}
-function textureDataUrl(fileName, base64) {
-  const ext = fileName.split(".").pop().toLowerCase();
-  const mime = ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg";
-  return "data:" + mime + ";base64," + base64;
-}
-async function loadBugattiZip(zipBlob) {
-  vehicleUploadStatus.textContent = "ZIP wird entpackt …";
-  const outerZip = await JSZip.loadAsync(zipBlob);
-  const nestedFile = outerZip.file("source/Bugatti_Chiron.zip") ||
-    Object.values(outerZip.files).find(file => !file.dir && /Bugatti_Chiron\.zip$/i.test(file.name));
-  const modelZip = nestedFile ? await JSZip.loadAsync(await nestedFile.async("uint8array")) : outerZip;
-  const fbxFile = Object.values(modelZip.files).find(file => !file.dir && /Bugatti_Chiron\.fbx$/i.test(file.name));
-  if (!fbxFile) throw new Error("Bugatti_Chiron.fbx wurde in der ZIP nicht gefunden.");
-
-  const textureUrls = Object.create(null);
-  const textureFiles = Object.values(outerZip.files).concat(Object.values(modelZip.files))
-    .filter(file => !file.dir && /\.(png|jpe?g|webp)$/i.test(file.name));
-  for (const textureFile of textureFiles) {
-    const basename = textureFile.name.split("/").pop().toLowerCase();
-    if (!textureUrls[basename]) textureUrls[basename] = textureDataUrl(textureFile.name, await textureFile.async("base64"));
-  }
-
-  vehicleUploadStatus.textContent = "Bugatti-Chiron-Modell wird geladen …";
-  const manager = new THREE.LoadingManager();
-  manager.setURLModifier(url => {
-    let basename = url.split(/[\\/]/).pop().split("?")[0];
-    try { basename = decodeURIComponent(basename); } catch (_) {}
-    return textureUrls[basename.toLowerCase()] || url;
-  });
-  const model = new FBXLoader(manager).parse(await fbxFile.async("arraybuffer"), "");
-  const rawBounds = new THREE.Box3().setFromObject(model);
-  const rawSize = new THREE.Vector3(); rawBounds.getSize(rawSize);
-  const horizontalLength = Math.max(rawSize.x, rawSize.z);
-  if (!Number.isFinite(horizontalLength) || horizontalLength < 0.5 || rawSize.y < 0.1) {
-    throw new Error("Das Bugatti-Modell hat ungültige Abmessungen.");
-  }
-
-  // Fit the FBX to a realistic car length and center it on its ground plane.
-  model.scale.setScalar(4.9 / horizontalLength);
-  const fittedBounds = new THREE.Box3().setFromObject(model);
-  const center = new THREE.Vector3(); fittedBounds.getCenter(center);
-  model.position.x -= center.x; model.position.z -= center.z; model.position.y -= fittedBounds.min.y;
-  model.traverse(part => { if (part.isMesh) { part.castShadow = true; part.receiveShadow = true; } });
-
-  if (vehicleVisual) vehicle.remove(vehicleVisual);
-  vehicleWheelParts = [];
-  model.traverse(part => {
-    if (part.isMesh && /wheel|tire|tyre|reifen|rad/i.test(part.name || "")) vehicleWheelParts.push(part);
-  });
-  vehicleVisual = model; vehicle.add(vehicleVisual); vehicleReady = true;
-  vehicleUploadStatus.textContent = "Bugatti Chiron geladen ✓";
-  console.info("Supplied Bugatti FBX loaded into existing world", rawSize);
-}
-async function initializeBugattiUpload() {
-  vehicleUploadButton.addEventListener("click", () => vehicleUploadInput.click());
-  vehicleUploadInput.addEventListener("change", async event => {
-    const file = event.target.files && event.target.files[0];
-    if (!file) return;
-    vehicleUploadButton.disabled = true;
-    try {
-      vehicleUploadStatus.textContent = "Speichere und lade Bugatti …";
-      await saveBugattiArchive(file);
-      await loadBugattiZip(file);
-    } catch (error) {
-      console.error("Bugatti ZIP loading failed:", error);
-      vehicleUploadStatus.textContent = error.message || "Bugatti konnte nicht geladen werden.";
-    } finally {
-      vehicleUploadButton.disabled = false;
-      vehicleUploadInput.value = "";
-    }
-  });
-  try {
-    const saved = await getSavedBugattiArchive();
-    if (saved) {
-      vehicleUploadButton.disabled = true;
-      await loadBugattiZip(saved);
-      vehicleUploadButton.disabled = false;
-    } else {
-      vehicleUploadStatus.textContent = "Deine free-bugatti-chiron-ZIP einmal wählen";
-    }
-  } catch (error) {
-    console.warn("Noch kein gespeichertes Bugatti-Modell:", error);
-    vehicleUploadStatus.textContent = "ZIP einmal auswählen";
-    vehicleUploadButton.disabled = false;
-  }
-}
-
-function loadVehicle() {
-  // Visible temporary car until the user's actual Chiron FBX has been selected.
-  vehicleVisual = makeFallbackVehicle();
-  vehicle.add(vehicleVisual);
-  vehicleReady = true;
-  vehicleUploadStatus.textContent = "Bugatti-ZIP einmal auswählen";
-}
-
-function updateVehiclePrompt() {
-  if (driving) {
-    vehiclePrompt.style.display = "flex";
-    vehiclePromptText.textContent = "E · AUSSTEIGEN";
-    return;
-  }
-  const closeEnough = vehicleReady && player.position.distanceTo(vehicle.position) < 6.2;
-  vehiclePrompt.style.display = closeEnough ? "flex" : "none";
-  vehiclePromptText.textContent = "E · EINSTEIGEN";
-}
-
-function enterVehicle() {
-  if (!vehicleReady || player.position.distanceTo(vehicle.position) >= 6.2) return;
-  driving = true;
-  vehicleSpeed = 0;
-  vehicleYaw = vehicle.rotation.y;
-  velocity.set(0,0,0);
-  jumpQueued = false;
-  if (character) character.visible = false;
-  groundShadow.visible = false;
-  vehicleHud.style.display = "block";
-  helpEl.innerHTML = '<div class="help-item"><div class="keys"><span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span></div><span>Fahren / Lenken</span></div><div class="help-item"><span class="key">SPACE</span><span>Handbremse</span></div><div class="help-item"><span class="key">E</span><span>Aussteigen</span></div><div class="help-item"><span class="key">MAUS</span><span>Kamera</span></div>';
-  cameraDistance = 8.6;
-  cameraPitch = 0.18;
-}
-
-function exitVehicle() {
-  driving = false;
-  vehicleSpeed = 0;
-  const side = new THREE.Vector3(Math.cos(vehicleYaw),0,-Math.sin(vehicleYaw));
-  player.position.copy(vehicle.position).addScaledVector(side,2.45);
-  player.position.y = 0;
-  player.rotation.y = vehicleYaw;
-  velocity.set(0,0,0);
-  if (character) character.visible = true;
-  groundShadow.visible = true;
-  vehicleHud.style.display = "none";
-  helpEl.innerHTML = walkingHelpMarkup;
-  cameraDistance = 5.6;
-  cameraPitch = 0.16;
-}
-
-function toggleVehicle() {
-  if (driving) exitVehicle();
-  else enterVehicle();
-}
-
-function updateVehicleMovement(delta) {
-  if (!driving) return;
-  const accelerate = keys.KeyW || keys.ArrowUp;
-  const reverse = keys.KeyS || keys.ArrowDown;
-  const steer = (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0);
-
-  if (accelerate) {
-    vehicleSpeed = Math.min(42, vehicleSpeed + 15 * delta);
-  } else if (reverse) {
-    if (vehicleSpeed > 0.5) vehicleSpeed = Math.max(0, vehicleSpeed - 30 * delta);
-    else vehicleSpeed = Math.max(-11, vehicleSpeed - 9 * delta);
-  } else {
-    vehicleSpeed *= Math.exp(-1.15 * delta);
-    if (Math.abs(vehicleSpeed) < 0.035) vehicleSpeed = 0;
-  }
-  if (keys.Space) vehicleSpeed *= Math.exp(-5.5 * delta);
-
-  const steeringStrength = 0.25 + Math.min(Math.abs(vehicleSpeed) / 12, 1) * 0.82;
-  if (Math.abs(vehicleSpeed) > 0.12) {
-    vehicleYaw += steer * steeringStrength * delta * (vehicleSpeed >= 0 ? 1 : -1);
-  }
-  vehicle.position.x += Math.sin(vehicleYaw) * vehicleSpeed * delta;
-  vehicle.position.z += Math.cos(vehicleYaw) * vehicleSpeed * delta;
-  vehicle.position.x = THREE.MathUtils.clamp(vehicle.position.x,-88,88);
-  vehicle.position.z = THREE.MathUtils.clamp(vehicle.position.z,-88,88);
-  vehicle.rotation.y = vehicleYaw;
-
-  const wheelTurn = vehicleSpeed * delta / 0.36;
-  for (const wheel of vehicleWheelParts) {
-    if (wheel && wheel.rotation) wheel.rotation.x += wheelTurn;
-  }
-  vehicleSpeedEl.textContent = String(Math.round(Math.abs(vehicleSpeed) * 3.6));
-}
-
-
-const clock = new THREE.Clock();
-const keys = Object.create(null);
-const velocity = new THREE.Vector3();
-const moveDir = new THREE.Vector3();
-const forward = new THREE.Vector3();
-const right = new THREE.Vector3();
-const desiredVelocity = new THREE.Vector3();
-let verticalVelocity = 0;
-let isGrounded = true;
-let jumpQueued = false;
-
-let character = null;
-let mixer = null;
-let walkAction = null;
-let runAction = null;
-let activeAction = null;
-let cameraYaw = 0;
-let cameraPitch = 0.16;
-let cameraDistance = 5.6;
-let dragging = false;
-let lastPointerX = 0;
-let lastPointerY = 0;
-let characterReady = false;
-let airPoseBones = [];
-let airPoseActive = false;
-let airPoseClock = 0;
-let sprintingNow = false;
 
 function showLoadError(message) {
   spinner.style.display = "none";
@@ -1306,7 +1094,6 @@ function loadCharacter() {
 }
 
 function updateMovement(delta) {
-  if (driving) { jumpQueued = false; return; }
   if (!characterReady) {
     jumpQueued = false;
     return;
@@ -1371,15 +1158,12 @@ function updateMovement(delta) {
 }
 
 function updateCamera(delta) {
-  const target = driving
-    ? new THREE.Vector3(vehicle.position.x, vehicle.position.y + 1.35, vehicle.position.z)
-    : new THREE.Vector3(player.position.x, player.position.y + 1.16, player.position.z);
-  const followYaw = cameraYaw + (driving ? vehicleYaw : 0);
+  const target = new THREE.Vector3(player.position.x, player.position.y + 1.16, player.position.z);
   const horizontalDistance = cameraDistance * Math.cos(cameraPitch);
   const offset = new THREE.Vector3(
-    -Math.sin(followYaw) * horizontalDistance,
+    -Math.sin(cameraYaw) * horizontalDistance,
     cameraDistance * Math.sin(cameraPitch) + 0.18,
-    -Math.cos(followYaw) * horizontalDistance
+    -Math.cos(cameraYaw) * horizontalDistance
   );
   const wantedPosition = target.clone().add(offset);
   camera.position.lerp(wantedPosition, 1 - Math.exp(-7.5 * delta));
@@ -1390,22 +1174,20 @@ function animate() {
   requestAnimationFrame(animate);
   const delta = Math.min(clock.getDelta(), 0.04);
   updateMovement(delta);
-  updateVehicleMovement(delta);
-  if (mixer && !driving) mixer.update(delta);
-  if (!driving) updateAirPose();
-  updateVehiclePrompt();
+  keyLight.position.set(player.position.x - 48, 92, player.position.z - 38);
+  keyLight.target.position.set(player.position.x, 0, player.position.z);
+  keyLight.target.updateMatrixWorld();
+  if (mixer) mixer.update(delta);
+  updateAirPose();
   updateCamera(delta);
   renderer.render(scene,camera);
 }
 animate();
 loadCharacter();
-loadVehicle();
-initializeBugattiUpload();
 
 window.addEventListener("keydown", (event) => {
-  if (["KeyW","KeyA","KeyS","KeyD","ArrowUp","ArrowDown","ArrowLeft","ArrowRight","Space","KeyE"].includes(event.code)) event.preventDefault();
-  if (event.code === "KeyE" && !event.repeat) toggleVehicle();
-  if (event.code === "Space" && !event.repeat && isGrounded && !driving) jumpQueued = true;
+  if (["KeyW","KeyA","KeyS","KeyD","ArrowUp","ArrowDown","ArrowLeft","ArrowRight","Space"].includes(event.code)) event.preventDefault();
+  if (event.code === "Space" && !event.repeat && isGrounded) jumpQueued = true;
   keys[event.code] = true;
 });
 window.addEventListener("keyup", (event) => { keys[event.code] = false; });
