@@ -73,6 +73,11 @@ canvas{display:block;width:100%;height:100%;outline:none}
 .drive-button:hover{background:#26394b}
 #drive-credit{position:absolute;right:12px;bottom:7px;z-index:500;padding:4px 7px;background:#ffffffd9;color:#25313a;border-radius:5px;font-size:10px}
 #drive-map .leaflet-control-attribution{font-size:10px}
+.buer-poi-wrap{background:transparent;border:0}
+.buer-poi-dot{display:block;width:14px;height:14px;border-radius:50%;background:#e2a23b;border:3px solid #fff;box-shadow:0 2px 8px #17212b99}
+#drive-map .leaflet-tooltip{border:0;border-radius:9px;padding:7px 10px;box-shadow:0 3px 14px #0003;color:#24313a;font-size:11px;line-height:1.4}
+#drive-map .leaflet-tooltip span{color:#687987}
+#drive-map .leaflet-control-scale-line{border-color:#46515b;color:#26333e;background:#ffffffd9}
 .drive-car{width:34px;height:50px;display:grid;place-items:center;filter:drop-shadow(0 3px 4px #0008);transform-origin:50% 50%}
 .drive-car svg{width:32px;height:48px;overflow:visible}
 @media(max-width:650px){
@@ -1158,15 +1163,28 @@ window.addEventListener("resize", () => {
  const mode = document.getElementById("drive-mode");
  const speedEl = document.getElementById("drive-speed");
  let map = null, car = null, marker = null, lastFrame = 0, raf = 0;
- let lat = 51.5790, lon = 7.0520, heading = 0, speed = 0;
+ let lat = 51.58103, lon = 7.05261, heading = 0, speed = 0;
  const held = Object.create(null);
  const carSvg = '<div class="drive-car"><svg viewBox="0 0 32 48" aria-hidden="true"><path d="M9 3 Q16 0 23 3 L28 14 L30 37 Q29 44 16 46 Q3 44 2 37 L4 14Z" fill="#202a35" stroke="#f5f8fb" stroke-width="1.5"/><path d="M8 10 Q16 6 24 10 L25 20 L7 20Z" fill="#78b8d9" stroke="#d8f0ff" stroke-width="1"/><path d="M7 25 L25 25 L24 37 Q16 41 8 37Z" fill="#d43b36"/><path d="M5 13 L1 16 L1 23 L6 22 M27 13 L31 16 L31 23 L26 22" fill="#171d24"/><path d="M9 3 L23 3" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></div>';
  function initMap(){
   if(map) return;
-  map = L.map("drive-map",{zoomControl:true,preferCanvas:true}).setView([lat,lon],15);
+  map = L.map("drive-map",{zoomControl:true,preferCanvas:true}).setView([lat,lon],15.5);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
    maxZoom:19, attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>'
   }).addTo(map);
+  // Markante, reale Orientierungspunkte in Buer – Positionen nach OpenStreetMap.
+  const places = [
+   {name:"Propsteikirche St. Urbanus",type:"Wahrzeichen · Buer-Mitte",pos:[51.58063,7.05198]},
+   {name:"Rathaus Buer",type:"Goldbergstraße 12",pos:[51.57758,7.05825]},
+   {name:"Kunstmuseum Gelsenkirchen",type:"Horster Straße",pos:[51.57684,7.05401]},
+   {name:"Schloss Berge",type:"Schlosspark · Berger See",pos:[51.56867,7.06945]}
+  ];
+  const poiIcon = L.divIcon({className:"buer-poi-wrap",html:'<span class="buer-poi-dot"></span>',iconSize:[18,18],iconAnchor:[9,9]});
+  places.forEach(place=>{
+   L.marker(place.pos,{icon:poiIcon}).addTo(map)
+    .bindTooltip('<b>'+place.name+'</b><br><span>'+place.type+'</span>',{direction:"top",offset:[0,-8]});
+  });
+  L.control.scale({metric:true,imperial:false,position:"bottomleft"}).addTo(map);
   const icon = L.divIcon({className:"",html:carSvg,iconSize:[34,50],iconAnchor:[17,25]});
   marker = L.marker([lat,lon],{icon,interactive:false}).addTo(map);
   map.on("click",e=>{ /* Map remains freely explorable; the car is controlled with the keyboard. */ });
