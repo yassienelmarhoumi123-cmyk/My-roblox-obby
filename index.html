@@ -69,6 +69,13 @@ canvas{display:block;width:100%;height:100%;outline:none}
 @media(max-width:650px){#vehicle-prompt{bottom:122px;max-width:calc(100% - 24px);font-size:10px}#vehicle-hud{left:12px;top:66px;padding:9px 12px}#vehicle-speed{font-size:24px}}
 </style>
 
+<style>
+#vehicle-upload-panel{position:fixed;right:22px;top:76px;z-index:8;display:flex;align-items:center;gap:9px;max-width:calc(100% - 36px);padding:9px 11px;border:1px solid #ffffff35;border-radius:13px;background:#111820d9;color:#fff;backdrop-filter:blur(12px);box-shadow:0 9px 28px #0003}
+#vehicle-upload-button{border:1px solid #ffffff36;border-radius:9px;padding:9px 12px;background:#263747;color:#fff;font:800 10px Inter,system-ui,sans-serif;letter-spacing:.07em;cursor:pointer;white-space:nowrap}
+#vehicle-upload-button:hover{background:#354d61}#vehicle-upload-button:disabled{opacity:.55;cursor:wait}
+#vehicle-upload-status{font-size:9px;color:#d9e2e9b8;max-width:170px;line-height:1.35}
+@media(max-width:650px){#vehicle-upload-panel{right:12px;top:64px;padding:7px;gap:7px}#vehicle-upload-button{font-size:9px;padding:8px}#vehicle-upload-status{font-size:8px;max-width:110px}}
+</style>
 </head>
 <body>
 <div id="game"></div>
@@ -94,6 +101,7 @@ canvas{display:block;width:100%;height:100%;outline:none}
 <div id="credit">GRAB3D MAN BASE MESH · RIGGED · CC0</div>
 
 <div id="vehicle-prompt" aria-live="polite"><span id="vehicle-prompt-key">E</span><span id="vehicle-prompt-text">E · EINSTEIGEN</span></div>
+<div id="vehicle-upload-panel"><button id="vehicle-upload-button" type="button">🏎️ BUGATTI CHIRON LADEN</button><span id="vehicle-upload-status">Wähle deine Bugatti-ZIP einmal aus</span><input id="vehicle-upload-input" type="file" accept=".zip,application/zip" hidden></div>
 <div id="vehicle-hud"><div id="vehicle-hud-label">SUPERCAR · FAHREN</div><div><span id="vehicle-speed">0</span> <span id="vehicle-speed-unit">KM/H</span></div><div id="vehicle-hud-help">WASD fahren · E aussteigen · Maus Kamera</div></div>
 
 <div id="loading">
@@ -106,6 +114,8 @@ canvas{display:block;width:100%;height:100%;outline:none}
 <script type="module">
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { FBXLoader } from "three/addons/loaders/FBXLoader.js";
+import JSZip from "https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm";
 import { KTX2Loader } from "three/addons/loaders/KTX2Loader.js";
 import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
 
@@ -115,6 +125,9 @@ const vehiclePrompt = document.getElementById("vehicle-prompt");
 const vehiclePromptText = document.getElementById("vehicle-prompt-text");
 const vehicleHud = document.getElementById("vehicle-hud");
 const vehicleSpeedEl = document.getElementById("vehicle-speed");
+const vehicleUploadButton = document.getElementById("vehicle-upload-button");
+const vehicleUploadInput = document.getElementById("vehicle-upload-input");
+const vehicleUploadStatus = document.getElementById("vehicle-upload-status");
 const helpEl = document.getElementById("help");
 const loadingEl = document.getElementById("loading");
 const loadTitle = document.getElementById("load-title");
@@ -870,27 +883,132 @@ function installVehicleModel(model) {
   console.info("3D supercar loaded into the original character scene.");
 }
 
+
+const VEHICLE_DB_NAME = "character-game-local-assets";
+const VEHICLE_DB_STORE = "models";
+function openVehicleDB() {
+  return new Promise((resolve, reject) => {
+    if (!("indexedDB" in window)) return reject(new Error("Dieser Browser unterstützt keine lokale Modellspeicherung."));
+    const request = indexedDB.open(VEHICLE_DB_NAME, 1);
+    request.onupgradeneeded = () => {
+      if (!request.result.objectStoreNames.contains(VEHICLE_DB_STORE)) request.result.createObjectStore(VEHICLE_DB_STORE);
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error || new Error("Lokaler Speicher konnte nicht geöffnet werden."));
+  });
+}
+async function saveBugattiArchive(blob) {
+  const db = await openVehicleDB();
+  await new Promise((resolve, reject) => {
+    const tx = db.transaction(VEHICLE_DB_STORE, "readwrite");
+    tx.objectStore(VEHICLE_DB_STORE).put(blob, "bugatti-chiron-zip");
+    tx.oncomplete = resolve; tx.onerror = () => reject(tx.error); tx.onabort = () => reject(tx.error);
+  });
+  db.close();
+}
+async function getSavedBugattiArchive() {
+  const db = await openVehicleDB();
+  const result = await new Promise((resolve, reject) => {
+    const tx = db.transaction(VEHICLE_DB_STORE, "readonly");
+    const request = tx.objectStore(VEHICLE_DB_STORE).get("bugatti-chiron-zip");
+    request.onsuccess = () => resolve(request.result || null); request.onerror = () => reject(request.error);
+  });
+  db.close();
+  return result;
+}
+function textureDataUrl(fileName, base64) {
+  const ext = fileName.split(".").pop().toLowerCase();
+  const mime = ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg";
+  return "data:" + mime + ";base64," + base64;
+}
+async function loadBugattiZip(zipBlob) {
+  vehicleUploadStatus.textContent = "ZIP wird entpackt …";
+  const outerZip = await JSZip.loadAsync(zipBlob);
+  const nestedFile = outerZip.file("source/Bugatti_Chiron.zip") ||
+    Object.values(outerZip.files).find(file => !file.dir && /Bugatti_Chiron\.zip$/i.test(file.name));
+  const modelZip = nestedFile ? await JSZip.loadAsync(await nestedFile.async("uint8array")) : outerZip;
+  const fbxFile = Object.values(modelZip.files).find(file => !file.dir && /Bugatti_Chiron\.fbx$/i.test(file.name));
+  if (!fbxFile) throw new Error("Bugatti_Chiron.fbx wurde in der ZIP nicht gefunden.");
+
+  const textureUrls = Object.create(null);
+  const textureFiles = Object.values(outerZip.files).concat(Object.values(modelZip.files))
+    .filter(file => !file.dir && /\.(png|jpe?g|webp)$/i.test(file.name));
+  for (const textureFile of textureFiles) {
+    const basename = textureFile.name.split("/").pop().toLowerCase();
+    if (!textureUrls[basename]) textureUrls[basename] = textureDataUrl(textureFile.name, await textureFile.async("base64"));
+  }
+
+  vehicleUploadStatus.textContent = "Bugatti-Chiron-Modell wird geladen …";
+  const manager = new THREE.LoadingManager();
+  manager.setURLModifier(url => {
+    let basename = url.split(/[\\/]/).pop().split("?")[0];
+    try { basename = decodeURIComponent(basename); } catch (_) {}
+    return textureUrls[basename.toLowerCase()] || url;
+  });
+  const model = new FBXLoader(manager).parse(await fbxFile.async("arraybuffer"), "");
+  const rawBounds = new THREE.Box3().setFromObject(model);
+  const rawSize = new THREE.Vector3(); rawBounds.getSize(rawSize);
+  const horizontalLength = Math.max(rawSize.x, rawSize.z);
+  if (!Number.isFinite(horizontalLength) || horizontalLength < 0.5 || rawSize.y < 0.1) {
+    throw new Error("Das Bugatti-Modell hat ungültige Abmessungen.");
+  }
+
+  // Fit the FBX to a realistic car length and center it on its ground plane.
+  model.scale.setScalar(4.9 / horizontalLength);
+  const fittedBounds = new THREE.Box3().setFromObject(model);
+  const center = new THREE.Vector3(); fittedBounds.getCenter(center);
+  model.position.x -= center.x; model.position.z -= center.z; model.position.y -= fittedBounds.min.y;
+  model.traverse(part => { if (part.isMesh) { part.castShadow = true; part.receiveShadow = true; } });
+
+  if (vehicleVisual) vehicle.remove(vehicleVisual);
+  vehicleWheelParts = [];
+  model.traverse(part => {
+    if (part.isMesh && /wheel|tire|tyre|reifen|rad/i.test(part.name || "")) vehicleWheelParts.push(part);
+  });
+  vehicleVisual = model; vehicle.add(vehicleVisual); vehicleReady = true;
+  vehicleUploadStatus.textContent = "Bugatti Chiron geladen ✓";
+  console.info("Supplied Bugatti FBX loaded into existing world", rawSize);
+}
+async function initializeBugattiUpload() {
+  vehicleUploadButton.addEventListener("click", () => vehicleUploadInput.click());
+  vehicleUploadInput.addEventListener("change", async event => {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+    vehicleUploadButton.disabled = true;
+    try {
+      vehicleUploadStatus.textContent = "Speichere und lade Bugatti …";
+      await saveBugattiArchive(file);
+      await loadBugattiZip(file);
+    } catch (error) {
+      console.error("Bugatti ZIP loading failed:", error);
+      vehicleUploadStatus.textContent = error.message || "Bugatti konnte nicht geladen werden.";
+    } finally {
+      vehicleUploadButton.disabled = false;
+      vehicleUploadInput.value = "";
+    }
+  });
+  try {
+    const saved = await getSavedBugattiArchive();
+    if (saved) {
+      vehicleUploadButton.disabled = true;
+      await loadBugattiZip(saved);
+      vehicleUploadButton.disabled = false;
+    } else {
+      vehicleUploadStatus.textContent = "Deine free-bugatti-chiron-ZIP einmal wählen";
+    }
+  } catch (error) {
+    console.warn("Noch kein gespeichertes Bugatti-Modell:", error);
+    vehicleUploadStatus.textContent = "ZIP einmal auswählen";
+    vehicleUploadButton.disabled = false;
+  }
+}
+
 function loadVehicle() {
-  // A visible fallback is shown immediately while the detailed GLB downloads.
+  // Visible temporary car until the user's actual Chiron FBX has been selected.
   vehicleVisual = makeFallbackVehicle();
   vehicle.add(vehicleVisual);
   vehicleReady = true;
-
-  const loader = new GLTFLoader();
-  loader.load(
-    "https://tevy.dev/models/supercar/v2/lod2.glb",
-    (gltf) => {
-      try {
-        installVehicleModel(gltf.scene);
-      } catch (error) {
-        console.error("Supercar model setup failed; keeping fallback:", error);
-      }
-    },
-    undefined,
-    (error) => {
-      console.warn("External supercar GLB unavailable; keeping the in-game fallback car.", error);
-    }
-  );
+  vehicleUploadStatus.textContent = "Bugatti-ZIP einmal auswählen";
 }
 
 function updateVehiclePrompt() {
@@ -1282,6 +1400,7 @@ function animate() {
 animate();
 loadCharacter();
 loadVehicle();
+initializeBugattiUpload();
 
 window.addEventListener("keydown", (event) => {
   if (["KeyW","KeyA","KeyS","KeyD","ArrowUp","ArrowDown","ArrowLeft","ArrowRight","Space","KeyE"].includes(event.code)) event.preventDefault();
